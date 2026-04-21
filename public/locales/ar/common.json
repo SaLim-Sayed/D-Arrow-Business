@@ -1,0 +1,38 @@
+{
+  "appName": "دي أرو للأعمال",
+  "nav": {
+    "dashboard": "لوحة التحكم",
+    "taskList": "قائمة المهام",
+    "taskBoard": "لوحة المهام",
+    "settings": "الإعدادات"
+  },
+  "actions": {
+    "save": "حفظ",
+    "cancel": "إلغاء",
+    "delete": "حذف",
+    "edit": "تعديل",
+    "create": "إنشاء",
+    "search": "بحث...",
+    "filter": "تصفية",
+    "reset": "إعادة تعيين",
+    "confirm": "تأكيد",
+    "back": "رجوع",
+    "loading": "جارٍ التحميل...",
+    "noResults": "لا توجد نتائج",
+    "viewAll": "عرض الكل"
+  },
+  "language": {
+    "en": "English",
+    "ar": "العربية"
+  },
+  "theme": {
+    "light": "فاتح",
+    "dark": "داكن",
+    "system": "النظام"
+  },
+  "user": {
+    "profile": "الملف الشخصي",
+    "settings": "الإعدادات",
+    "logout": "تسجيل الخروج"
+  }
+}

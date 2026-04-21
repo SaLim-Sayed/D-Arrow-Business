@@ -1,0 +1,49 @@
+import type { User } from "@/features/auth/types/auth.types";
+
+export const mockUsers: (User & { password: string })[] = [
+  {
+    id: "usr-001",
+    email: "admin@darrow.com",
+    password: "admin123",
+    name: "Salem Al-Rashid",
+    nameAr: "سالم الراشد",
+    avatar: "",
+    role: "admin",
+  },
+  {
+    id: "usr-002",
+    email: "sara@darrow.com",
+    password: "sara123",
+    name: "Sara Ahmed",
+    nameAr: "سارة أحمد",
+    avatar: "",
+    role: "manager",
+  },
+  {
+    id: "usr-003",
+    email: "omar@darrow.com",
+    password: "omar123",
+    name: "Omar Hassan",
+    nameAr: "عمر حسن",
+    avatar: "",
+    role: "member",
+  },
+  {
+    id: "usr-004",
+    email: "layla@darrow.com",
+    password: "layla123",
+    name: "Layla Mahmoud",
+    nameAr: "ليلى محمود",
+    avatar: "",
+    role: "member",
+  },
+  {
+    id: "usr-005",
+    email: "khaled@darrow.com",
+    password: "khaled123",
+    name: "Khaled Nasser",
+    nameAr: "خالد ناصر",
+    avatar: "",
+    role: "manager",
+  },
+];

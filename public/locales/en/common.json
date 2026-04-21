@@ -1,0 +1,38 @@
+{
+  "appName": "D-Arrow Business",
+  "nav": {
+    "dashboard": "Dashboard",
+    "taskList": "Task List",
+    "taskBoard": "Task Board",
+    "settings": "Settings"
+  },
+  "actions": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "create": "Create",
+    "search": "Search...",
+    "filter": "Filter",
+    "reset": "Reset",
+    "confirm": "Confirm",
+    "back": "Back",
+    "loading": "Loading...",
+    "noResults": "No results found",
+    "viewAll": "View All"
+  },
+  "language": {
+    "en": "English",
+    "ar": "العربية"
+  },
+  "theme": {
+    "light": "Light",
+    "dark": "Dark",
+    "system": "System"
+  },
+  "user": {
+    "profile": "Profile",
+    "settings": "Settings",
+    "logout": "Logout"
+  }
+}

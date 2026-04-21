@@ -1,0 +1,87 @@
+{
+  "dashboard": {
+    "title": "لوحة المهام",
+    "totalTasks": "إجمالي المهام",
+    "inProgress": "قيد التنفيذ",
+    "overdue": "متأخرة",
+    "completedThisWeek": "مكتملة هذا الأسبوع",
+    "recentTasks": "المهام الأخيرة",
+    "tasksByStatus": "المهام حسب الحالة",
+    "tasksByPriority": "المهام حسب الأولوية"
+  },
+  "list": {
+    "title": "المهام",
+    "newTask": "مهمة جديدة",
+    "columns": {
+      "title": "العنوان",
+      "status": "الحالة",
+      "priority": "الأولوية",
+      "assignee": "المسؤول",
+      "dueDate": "تاريخ الاستحقاق",
+      "created": "تاريخ الإنشاء",
+      "actions": "الإجراءات"
+    }
+  },
+  "board": {
+    "title": "لوحة المهام"
+  },
+  "detail": {
+    "title": "تفاصيل المهمة",
+    "description": "الوصف",
+    "noDescription": "لا يوجد وصف",
+    "comments": "التعليقات",
+    "activity": "النشاط",
+    "addComment": "أضف تعليقاً...",
+    "postComment": "نشر",
+    "noComments": "لا توجد تعليقات بعد"
+  },
+  "form": {
+    "createTitle": "إنشاء مهمة",
+    "editTitle": "تعديل المهمة",
+    "title": {
+      "label": "العنوان",
+      "placeholder": "أدخل عنوان المهمة",
+      "required": "العنوان مطلوب",
+      "minLength": "يجب أن يكون العنوان 3 أحرف على الأقل"
+    },
+    "description": {
+      "label": "الوصف",
+      "placeholder": "صف المهمة..."
+    },
+    "status": {
+      "label": "الحالة"
+    },
+    "priority": {
+      "label": "الأولوية"
+    },
+    "assignee": {
+      "label": "المسؤول",
+      "placeholder": "اختر المسؤول",
+      "unassigned": "غير معين"
+    },
+    "dueDate": {
+      "label": "تاريخ الاستحقاق",
+      "placeholder": "اختر تاريخاً"
+    },
+    "tags": {
+      "label": "الوسوم",
+      "placeholder": "أضف وسوماً..."
+    }
+  },
+  "status": {
+    "todo": "للتنفيذ",
+    "in_progress": "قيد التنفيذ",
+    "in_review": "قيد المراجعة",
+    "done": "مكتمل"
+  },
+  "priority": {
+    "low": "منخفضة",
+    "medium": "متوسطة",
+    "high": "عالية",
+    "urgent": "عاجلة"
+  },
+  "delete": {
+    "title": "حذف المهمة",
+    "message": "هل أنت متأكد من حذف هذه المهمة؟ لا يمكن التراجع عن هذا الإجراء."
+  }
+}

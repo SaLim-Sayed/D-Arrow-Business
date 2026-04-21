@@ -1,0 +1,87 @@
+{
+  "dashboard": {
+    "title": "Task Dashboard",
+    "totalTasks": "Total Tasks",
+    "inProgress": "In Progress",
+    "overdue": "Overdue",
+    "completedThisWeek": "Completed This Week",
+    "recentTasks": "Recent Tasks",
+    "tasksByStatus": "Tasks by Status",
+    "tasksByPriority": "Tasks by Priority"
+  },
+  "list": {
+    "title": "Tasks",
+    "newTask": "New Task",
+    "columns": {
+      "title": "Title",
+      "status": "Status",
+      "priority": "Priority",
+      "assignee": "Assignee",
+      "dueDate": "Due Date",
+      "created": "Created",
+      "actions": "Actions"
+    }
+  },
+  "board": {
+    "title": "Task Board"
+  },
+  "detail": {
+    "title": "Task Details",
+    "description": "Description",
+    "noDescription": "No description provided",
+    "comments": "Comments",
+    "activity": "Activity",
+    "addComment": "Add a comment...",
+    "postComment": "Post",
+    "noComments": "No comments yet"
+  },
+  "form": {
+    "createTitle": "Create Task",
+    "editTitle": "Edit Task",
+    "title": {
+      "label": "Title",
+      "placeholder": "Enter task title",
+      "required": "Title is required",
+      "minLength": "Title must be at least 3 characters"
+    },
+    "description": {
+      "label": "Description",
+      "placeholder": "Describe the task..."
+    },
+    "status": {
+      "label": "Status"
+    },
+    "priority": {
+      "label": "Priority"
+    },
+    "assignee": {
+      "label": "Assignee",
+      "placeholder": "Select assignee",
+      "unassigned": "Unassigned"
+    },
+    "dueDate": {
+      "label": "Due Date",
+      "placeholder": "Pick a date"
+    },
+    "tags": {
+      "label": "Tags",
+      "placeholder": "Add tags..."
+    }
+  },
+  "status": {
+    "todo": "To Do",
+    "in_progress": "In Progress",
+    "in_review": "In Review",
+    "done": "Done"
+  },
+  "priority": {
+    "low": "Low",
+    "medium": "Medium",
+    "high": "High",
+    "urgent": "Urgent"
+  },
+  "delete": {
+    "title": "Delete Task",
+    "message": "Are you sure you want to delete this task? This action cannot be undone."
+  }
+}
