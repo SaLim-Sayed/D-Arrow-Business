@@ -12,7 +12,7 @@ export function LoginPage() {
   if (isLoading) {
     return (
       <div className="flex h-screen items-center justify-center">
-        <Spinner size="lg" color="accent" />
+        <Spinner size="lg" color="secondary" />
       </div>
     );
   }

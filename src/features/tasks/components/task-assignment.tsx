@@ -1,26 +1,19 @@
-import { useTranslation } from "react-i18next";
+import { useAllUsers } from "@/features/users/hooks/use-users";
+import { useAuthStore } from "@/stores/auth.store";
+import { useTasksStore } from "@/stores/tasks.store";
 import {
-  Button,
-  Select,
-  SelectTrigger,
-  SelectValue,
-  SelectPopover,
-  ListBox,
-  ListBoxItem,
   Avatar,
-  AvatarImage,
-  AvatarFallback,
+  Button,
   Chip,
-  ChipLabel,
+  Select,
+  SelectItem,
   Spinner,
 } from "@heroui/react";
-import { User, UserPlus, Users } from "lucide-react";
-import { useTasksStore } from "@/stores/tasks.store";
-import { useAuthStore } from "@/stores/auth.store";
-import { useAllUsers } from "@/features/users/hooks/use-users";
 import { useMutation } from "@tanstack/react-query";
-import * as tasksApi from "../api/tasks.api";
+import { User, UserPlus, Users } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
+import * as tasksApi from "../api/tasks.api";
 
 interface TaskAssignmentProps {
   taskId: string;
@@ -93,17 +86,17 @@ export function TaskAssignment({
       <div className="flex items-center gap-2">
         {currentAssignee ? (
           <div className="flex items-center gap-2">
-            <Avatar size="sm">
-              <AvatarImage src={currentAssignee.avatar} />
-              <AvatarFallback>
-                {(currentAssignee.name ?? "")
-                  .split(" ")
-                  .map((n) => n[0])
-                  .join("")
-                  .toUpperCase()
-                  .slice(0, 2)}
-              </AvatarFallback>
-            </Avatar>
+            <Avatar
+              src={currentAssignee.avatar}
+              fallback={(currentAssignee.name ?? "")
+                .split(" ")
+                .map((n) => n[0])
+                .join("")
+                .toUpperCase()
+                .slice(0, 2)}
+              showFallback
+              size="sm"
+            />
             <span className="text-sm font-medium">{currentAssignee.name}</span>
           </div>
         ) : (
@@ -120,13 +113,15 @@ export function TaskAssignment({
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 text-foreground/80">
           <Users className="h-4 w-4" />
-          <span className="font-medium">{t("assignment.assignTo")}</span>
+          <span className="font-semibold tracking-tight">
+            {t("assignment.assignTo")}
+          </span>
         </div>
         {currentAssignee && (
           <Button
-            variant="tertiary"
+            variant="light"
             size="sm"
             onPress={handleUnassign}
             isDisabled={assignMutation.isPending}
@@ -141,131 +136,90 @@ export function TaskAssignment({
       <Select
         aria-label={t("assignment.selectAssignee")}
         placeholder={t("assignment.selectAssignee")}
-        selectedKey={
-          currentAssigneeId
-            ? currentAssigneeId
-            : showUnassigned
-              ? "unassigned"
-              : ""
+        className="h-11"
+        selectedKeys={
+          new Set([currentAssigneeId || showUnassigned ? "unassigned" : ""])
         }
-        onSelectionChange={(key) => handleAssignmentChange(key as string)}
+        onSelectionChange={(keys) =>
+          handleAssignmentChange(Array.from(keys)[0] as string)
+        }
         isDisabled={assignMutation.isPending || isLoadingUsers}
-      >
-        <SelectTrigger>
-          <SelectValue>
-            {(value) => {
-              const selectedKey = value.state.selectedKey as string;
-              if (selectedKey && selectedKey !== "unassigned") {
-                const user =
-                  allUsers?.find((u) => u.id === selectedKey) || currentUser;
-                return (
-                  <div className="flex items-center gap-2">
-                    <Avatar size="sm">
-                      <AvatarImage src={user?.avatar} />
-                      <AvatarFallback>
-                        {(user?.name ?? "")
-                          .split(" ")
-                          .map((n) => n[0])
-                          .join("")
-                          .toUpperCase()
-                          .slice(0, 2)}
-                      </AvatarFallback>
-                    </Avatar>
-                    <span>{user?.name}</span>
-                  </div>
-                );
-              }
-              return <span>{t("assignment.selectAssignee")}</span>;
-            }}
-          </SelectValue>
-        </SelectTrigger>
-        <SelectPopover>
-          <ListBox>
-            <ListBoxItem id="unassigned" textValue={t("assignment.unassigned")}>
+        renderValue={() => {
+          const selectedKey = currentAssigneeId;
+          if (selectedKey && selectedKey !== "unassigned") {
+            const user =
+              allUsers?.find((u) => u.id === selectedKey) || currentUser;
+            return (
               <div className="flex items-center gap-2">
-                <User className="h-4 w-4" />
-                <span>{t("assignment.unassigned")}</span>
+                <Avatar
+                  size="sm"
+                  src={user?.avatar}
+                  fallback={(user?.name ?? "").charAt(0).toUpperCase()}
+                  showFallback
+                />
+                <span>{user?.name}</span>
               </div>
-            </ListBoxItem>
-
-            {/* Current user option */}
-            {currentUser && (
-              <ListBoxItem
-                id={currentUser.id}
-                key={currentUser.id}
-                textValue={currentUser.name}
-              >
+            );
+          }
+          return <span>{t("assignment.selectAssignee")}</span>;
+        }}
+      >
+        {[
+          {
+            id: "unassigned",
+            type: "unassigned",
+            text: t("assignment.unassigned"),
+          },
+          ...(currentUser
+            ? [{ id: currentUser.id, type: "me", user: currentUser }]
+            : []),
+          ...(allUsers || [])
+            .filter((user) => user.id !== currentUser?.id)
+            .map((user) => ({ id: user.id, type: "other", user })),
+        ].map((option) => {
+          if (option.type === "unassigned") {
+            return (
+              <SelectItem key={option.id} textValue={(option as any).text}>
                 <div className="flex items-center gap-2">
-                  <Avatar size="sm">
-                    <AvatarImage src={currentUser.avatar} />
-                    <AvatarFallback>
-                      {currentUser.name
-                        .split(" ")
-                        .map((n) => n[0])
-                        .join("")
-                        .toUpperCase()
-                        .slice(0, 2)}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="flex flex-col">
-                    <span className="text-small font-medium">
-                      {currentUser.name}
-                    </span>
-                    <span className="text-tiny text-default-400">
-                      {t("assignment.me")}
-                    </span>
-                  </div>
+                  <User className="h-4 w-4" />
+                  <span>{(option as any).text}</span>
                 </div>
-              </ListBoxItem>
-            )}
-
-            {/* Other users */}
-            {(allUsers || [])
-              .filter((user) => user.id !== currentUser?.id)
-              .map((user) => (
-                <ListBoxItem id={user.id} key={user.id} textValue={user.name}>
-                  <div className="flex items-center gap-2">
-                    <Avatar size="sm">
-                      <AvatarImage src={user.avatar} />
-                      <AvatarFallback>
-                        {user.name
-                          .split(" ")
-                          .map((n) => n[0])
-                          .join("")
-                          .toUpperCase()
-                          .slice(0, 2)}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="flex flex-col">
-                      <span className="text-small font-medium">
-                        {user.name}
-                      </span>
-                      <span className="text-tiny text-default-400">
-                        {user.email}
-                      </span>
-                    </div>
-                  </div>
-                </ListBoxItem>
-              ))}
-          </ListBox>
-        </SelectPopover>
+              </SelectItem>
+            );
+          }
+          const user = option.user!;
+          return (
+            <SelectItem key={option.id} textValue={user.name}>
+              <div className="flex items-center gap-2">
+                <Avatar
+                  size="sm"
+                  src={user.avatar}
+                  fallback={user.name.charAt(0).toUpperCase()}
+                  showFallback
+                />
+                <div className="flex flex-col">
+                  <span className="text-small font-medium">{user.name}</span>
+                  <span className="text-tiny text-default-400">
+                    {option.type === "me" ? t("assignment.me") : user.email}
+                  </span>
+                </div>
+              </div>
+            </SelectItem>
+          );
+        })}
       </Select>
 
       {/* Current assignment display */}
       {currentAssignee && (
-        <div className="flex items-center justify-between p-3 bg-default-50 rounded-lg">
+        <div className="flex items-center justify-between p-3 bg-muted/30 rounded-xl border border-border/50 shadow-sm">
           <div className="flex items-center gap-3">
-            <Avatar size="sm">
-              <AvatarImage src={currentAssignee.avatar} />
-              <AvatarFallback>
-                {currentAssignee.name
-                  .split(" ")
-                  .map((n) => n[0])
-                  .join("")
-                  .toUpperCase()
-                  .slice(0, 2)}
-              </AvatarFallback>
-            </Avatar>
+            <Avatar
+              size="sm"
+              className="ring-2 ring-background"
+              src={currentAssignee.avatar}
+              fallback={currentAssignee.name.charAt(0).toUpperCase()}
+              showFallback
+            />
             <div>
               <p className="font-medium">{currentAssignee.name}</p>
               <p className="text-sm text-default-400">
@@ -273,14 +227,14 @@ export function TaskAssignment({
               </p>
             </div>
           </div>
-          <Chip variant="soft" color="success">
-            <ChipLabel>{t("assignment.assigned")}</ChipLabel>
+          <Chip variant="flat" color="success">
+            {t("assignment.assigned")}
           </Chip>
         </div>
       )}
 
       {/* Assignment stats */}
-      <div className="text-xs text-muted-foreground">
+      <div className="text-xs font-medium text-muted-foreground pt-1">
         {t("assignment.availableUsers", { count: allUsers?.length || 0 })}
       </div>
     </div>
@@ -319,17 +273,12 @@ export function QuickTaskAssignment({
     <div className="flex items-center gap-2">
       {currentAssignee ? (
         <div className="flex items-center gap-2">
-          <Avatar size="sm">
-            <AvatarImage src={currentAssignee.avatar} />
-            <AvatarFallback>
-              {currentAssignee.name
-                .split(" ")
-                .map((n) => n[0])
-                .join("")
-                .toUpperCase()
-                .slice(0, 2)}
-            </AvatarFallback>
-          </Avatar>
+          <Avatar
+            size="sm"
+            src={currentAssignee.avatar}
+            fallback={currentAssignee.name.charAt(0).toUpperCase()}
+            showFallback
+          />
           <span className="text-sm">{currentAssignee.name}</span>
         </div>
       ) : (
@@ -339,7 +288,7 @@ export function QuickTaskAssignment({
       )}
 
       <Button
-        variant="tertiary"
+        variant="light"
         size="sm"
         isIconOnly
         onPress={() => assignMutation.mutate(currentUser?.id || null)}

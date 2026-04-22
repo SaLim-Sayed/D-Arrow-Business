@@ -5,21 +5,13 @@ import { z } from "zod";
 import {
   Button,
   Input,
-  TextArea,
+  Textarea,
   Select,
-  SelectTrigger,
-  SelectValue,
-  SelectPopover,
-  ListBox,
-  ListBoxItem,
+  SelectItem,
   Avatar,
-  AvatarImage,
-  AvatarFallback,
-  TextField,
-  Label,
-  FieldError,
   Spinner,
   Form,
+  DatePicker,
 } from "@heroui/react";
 import { TASK_PRIORITIES, TASK_STATUSES } from "@/lib/constants";
 import { useAuthStore } from "@/stores/auth.store";
@@ -85,25 +77,23 @@ export function TaskForm({
 
   return (
     <Form className="space-y-6">
-      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+      <form
+        onSubmit={form.handleSubmit(handleSubmit)}
+        className="space-y-6 w-full"
+      >
         <Controller
           name="title"
           control={control}
           render={({ field }: { field: any }) => (
-            <TextField isInvalid={!!errors.title} fullWidth>
-              <Label className="text-sm font-medium mb-1 inline-block">
-                {t("form.title.label")}
-              </Label>
-              <Input
-                {...field}
-                placeholder={t("form.title.placeholder")}
-                variant="primary"
-                fullWidth
-              />
-              <FieldError className="text-xs text-danger mt-1">
-                {errors.title?.message}
-              </FieldError>
-            </TextField>
+            <Input
+              {...field}
+              label={t("form.title.label")}
+              placeholder={t("form.title.placeholder")}
+              variant="flat"
+              fullWidth
+              isInvalid={!!errors.title}
+              errorMessage={errors.title?.message}
+            />
           )}
         />
 
@@ -111,20 +101,15 @@ export function TaskForm({
           name="description"
           control={control}
           render={({ field }: { field: any }) => (
-            <TextField isInvalid={!!errors.description} fullWidth>
-              <Label className="text-sm font-medium mb-1 inline-block">
-                {t("form.description.label")}
-              </Label>
-              <TextArea
-                {...field}
-                placeholder={t("form.description.placeholder")}
-                variant="primary"
-                fullWidth
-              />
-              <FieldError className="text-xs text-danger mt-1">
-                {errors.description?.message}
-              </FieldError>
-            </TextField>
+            <Textarea
+              {...field}
+              label={t("form.description.label")}
+              placeholder={t("form.description.placeholder")}
+              variant="flat"
+              fullWidth
+              isInvalid={!!errors.description}
+              errorMessage={errors.description?.message}
+            />
           )}
         />
 
@@ -134,25 +119,22 @@ export function TaskForm({
             control={control}
             render={({ field }: { field: any }) => (
               <div className="flex flex-col gap-2">
-                <span className="text-sm font-medium text-default-700">
+                <span className="text-sm font-semibold tracking-tight text-foreground/80">
                   {t("form.status.label")}
                 </span>
                 <Select
-                  selectedKey={field.value}
-                  onSelectionChange={(key) => field.onChange(key)}
+                  aria-label={t("form.status.label")}
+                  selectedKeys={new Set([field.value])}
+                  className="h-11"
+                  onSelectionChange={(keys) =>
+                    field.onChange(Array.from(keys)[0] as string)
+                  }
                 >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectPopover>
-                    <ListBox>
-                      {TASK_STATUSES.map((status) => (
-                        <ListBoxItem key={status} id={status}>
-                          {t(`status.${status}`)}
-                        </ListBoxItem>
-                      ))}
-                    </ListBox>
-                  </SelectPopover>
+                  {TASK_STATUSES.map((status) => (
+                    <SelectItem key={status} textValue={t(`status.${status}`)}>
+                      {t(`status.${status}`)}
+                    </SelectItem>
+                  ))}
                 </Select>
               </div>
             )}
@@ -163,25 +145,25 @@ export function TaskForm({
             control={control}
             render={({ field }: { field: any }) => (
               <div className="flex flex-col gap-2">
-                <span className="text-sm font-medium text-default-700">
+                <span className="text-sm font-semibold tracking-tight text-foreground/80">
                   {t("form.priority.label")}
                 </span>
                 <Select
-                  selectedKey={field.value}
-                  onSelectionChange={(key) => field.onChange(key)}
+                  aria-label={t("form.priority.label")}
+                  selectedKeys={new Set([field.value])}
+                  className="h-11"
+                  onSelectionChange={(keys) =>
+                    field.onChange(Array.from(keys)[0] as string)
+                  }
                 >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectPopover>
-                    <ListBox>
-                      {TASK_PRIORITIES.map((priority) => (
-                        <ListBoxItem key={priority} id={priority}>
-                          {t(`priority.${priority}`)}
-                        </ListBoxItem>
-                      ))}
-                    </ListBox>
-                  </SelectPopover>
+                  {TASK_PRIORITIES.map((priority) => (
+                    <SelectItem
+                      key={priority}
+                      textValue={t(`priority.${priority}`)}
+                    >
+                      {t(`priority.${priority}`)}
+                    </SelectItem>
+                  ))}
                 </Select>
               </div>
             )}
@@ -193,105 +175,86 @@ export function TaskForm({
           control={control}
           render={({ field }: { field: any }) => (
             <div className="flex flex-col gap-2">
-              <span className="text-sm font-medium text-default-700">
+              <span className="text-sm font-semibold tracking-tight text-foreground/80">
                 {t("form.assignee.label")}
               </span>
               <Select
-                variant="primary"
-                selectedKey={field.value || "unassigned"}
-                onSelectionChange={(key) => {
-                  const val = key as string;
+                aria-label={t("form.assignee.label")}
+                color="primary"
+                className="h-11"
+                selectedKeys={new Set([field.value || "unassigned"])}
+                onSelectionChange={(keys) => {
+                  const val = Array.from(keys)[0] as string;
                   field.onChange(val === "unassigned" ? null : val);
                 }}
+                renderValue={() => {
+                  const selectedKey = field.value;
+                  if (selectedKey && selectedKey !== "unassigned") {
+                    const user =
+                      allUsers?.find((u) => u.id === selectedKey) ||
+                      currentUser;
+                    return (
+                      <div className="flex items-center gap-2">
+                        <Avatar
+                          size="sm"
+                          src={user?.avatar}
+                          fallback={(user?.name ?? "").charAt(0).toUpperCase()}
+                          showFallback
+                        />
+                        <span>{user?.name}</span>
+                      </div>
+                    );
+                  }
+                  return <span>{t("form.assignee.placeholder")}</span>;
+                }}
               >
-                <SelectTrigger>
-                  <SelectValue>
-                    {(value) => {
-                      const selectedKey = value.state.selectedKey as string;
-                      if (selectedKey && selectedKey !== "unassigned") {
-                        const user =
-                          allUsers?.find((u) => u.id === selectedKey) ||
-                          currentUser;
-                        return (
-                          <div className="flex items-center gap-2">
-                            <Avatar size="sm">
-                              <AvatarImage src={user?.avatar} />
-                              <AvatarFallback>
-                                {(user?.name ?? "")
-                                  .split(" ")
-                                  .map((n) => n[0])
-                                  .join("")
-                                  .toUpperCase()
-                                  .slice(0, 2)}
-                              </AvatarFallback>
-                            </Avatar>
-                            <span>{user?.name}</span>
-                          </div>
-                        );
-                      }
-                      return <span>{t("form.assignee.placeholder")}</span>;
-                    }}
-                  </SelectValue>
-                </SelectTrigger>
-                <SelectPopover>
-                  <ListBox>
-                    <ListBoxItem
-                      id="unassigned"
-                      textValue={t("form.assignee.unassigned")}
-                    >
-                      {t("form.assignee.unassigned")}
-                    </ListBoxItem>
-                    {currentUser && (
-                      <ListBoxItem
-                        id={currentUser.id}
-                        textValue={currentUser.name}
+                {[
+                  {
+                    id: "unassigned",
+                    type: "unassigned",
+                    text: t("form.assignee.unassigned"),
+                  },
+                  ...(currentUser
+                    ? [{ id: currentUser.id, type: "me", user: currentUser }]
+                    : []),
+                  ...(allUsers || [])
+                    .filter((user) => user.id !== currentUser?.id)
+                    .map((user) => ({ id: user.id, type: "other", user })),
+                ].map((option) => {
+                  if (option.type === "unassigned") {
+                    return (
+                      <SelectItem
+                        key={option.id}
+                        textValue={(option as any).text}
                       >
-                        <div className="flex items-center gap-2">
-                          <Avatar size="sm">
-                            <AvatarImage src={currentUser.avatar} />
-                            <AvatarFallback>
-                              {currentUser.name.charAt(0).toUpperCase()}
-                            </AvatarFallback>
-                          </Avatar>
-                          <div className="flex flex-col">
-                            <span className="text-small font-medium">
-                              {currentUser.name}
-                            </span>
-                            <span className="text-tiny text-default-400">
-                              {t("form.assignee.me")}
-                            </span>
-                          </div>
+                        {(option as any).text}
+                      </SelectItem>
+                    );
+                  }
+                  const user = option.user!;
+                  return (
+                    <SelectItem key={option.id} textValue={user.name}>
+                      <div className="flex items-center gap-2">
+                        <Avatar
+                          size="sm"
+                          src={user.avatar}
+                          fallback={user.name.charAt(0).toUpperCase()}
+                          showFallback
+                        />
+                        <div className="flex flex-col">
+                          <span className="text-small font-medium">
+                            {user.name}
+                          </span>
+                          <span className="text-tiny text-default-400">
+                            {option.type === "me"
+                              ? t("form.assignee.me")
+                              : user.email}
+                          </span>
                         </div>
-                      </ListBoxItem>
-                    )}
-                    {(allUsers || [])
-                      .filter((user) => user.id !== currentUser?.id)
-                      .map((user) => (
-                        <ListBoxItem
-                          key={user.id}
-                          id={user.id}
-                          textValue={user.name}
-                        >
-                          <div className="flex items-center gap-2">
-                            <Avatar size="sm">
-                              <AvatarImage src={user.avatar} />
-                              <AvatarFallback>
-                                {user.name.charAt(0).toUpperCase()}
-                              </AvatarFallback>
-                            </Avatar>
-                            <div className="flex flex-col">
-                              <span className="text-small font-medium">
-                                {user.name}
-                              </span>
-                              <span className="text-tiny text-default-400">
-                                {user.email}
-                              </span>
-                            </div>
-                          </div>
-                        </ListBoxItem>
-                      ))}
-                  </ListBox>
-                </SelectPopover>
+                      </div>
+                    </SelectItem>
+                  );
+                })}
               </Select>
             </div>
           )}
@@ -301,32 +264,30 @@ export function TaskForm({
           name="dueDate"
           control={control}
           render={({ field }: { field: any }) => (
-            <TextField isInvalid={!!errors.dueDate} fullWidth>
-              <Label className="text-sm font-medium mb-1 inline-block">
-                {t("form.dueDate.label")}
-              </Label>
-              <Input
-                {...field}
-                type="date"
-                value={field.value || ""}
-                variant="primary"
-                fullWidth
+            <div className="flex flex-col">
+              <DatePicker
+                label={t("form.dueDate.label")}
+                className="max-w-full"
+                variant="flat"
+                onChange={(date) => field.onChange(date?.toString() || null)}
+                isInvalid={!!errors.dueDate}
+                errorMessage={errors.dueDate?.message}
               />
-              <FieldError className="text-xs text-danger mt-1">
-                {errors.dueDate?.message}
-              </FieldError>
-            </TextField>
+            </div>
           )}
         />
 
         <div className="flex justify-end gap-2 pt-4">
           <Button
             type="submit"
-            variant="primary"
+            color="primary"
+            variant="solid"
             isDisabled={isSubmitting}
-            className="w-full flex items-center justify-center gap-2"
+            className="w-full h-11 font-semibold shadow-lg shadow-primary/20 flex items-center justify-center gap-2"
           >
-            {isSubmitting && <Spinner size="sm" color="current" />}
+            {isSubmitting ? (
+              <Spinner size="sm" color="current" className="mr-2" />
+            ) : null}
             {isSubmitting ? tc("actions.loading") : tc("actions.save")}
           </Button>
         </div>

@@ -9,12 +9,7 @@ import {
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
-import { 
-  Button, 
-  TooltipRoot,
-  TooltipTrigger,
-  TooltipContent
-} from "@heroui/react";
+import { Button, Tooltip } from "@heroui/react";
 
 interface NavItem {
   labelKey: string;
@@ -26,18 +21,17 @@ const navItems: NavItem[] = [
   {
     labelKey: "nav.dashboard",
     path: "/tasks/dashboard",
-
-    icon: <LayoutDashboard className="h-5 w-5 text-blue-700" />,
+    icon: <LayoutDashboard className="h-5 w-5" />,
   },
   {
     labelKey: "nav.taskList",
     path: "/tasks/list",
-    icon: <ListTodo className="h-5 w-5 text-blue-700" />,
+    icon: <ListTodo className="h-5 w-5" />,
   },
   {
     labelKey: "nav.taskBoard",
     path: "/tasks/board",
-    icon: <Kanban className="h-5 w-5 text-blue-700" />,
+    icon: <Kanban className="h-5 w-5" />,
   },
 ];
 
@@ -49,77 +43,90 @@ export function Sidebar() {
   return (
     <aside
       className={cn(
-        "hidden md:flex flex-col border-r bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 transition-all duration-300 shadow-xl",
-        sidebarCollapsed ? "w-16" : "w-60"
+        "hidden md:flex flex-col border-r border-default-100 bg-sidebar text-sidebar-foreground transition-all duration-300 shadow-premium",
+        sidebarCollapsed ? "w-20" : "w-64",
       )}
     >
       {/* Logo area */}
-      <div className="flex h-14 items-center border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-4">
+      <div className="flex h-16 items-center border-b border-default-100 px-4">
         {!sidebarCollapsed && (
-          <span className="text-lg font-bold truncate bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+          <span className="text-xl font-bold truncate text-gradient">
             {t("appName")}
           </span>
         )}
         <Button
           isIconOnly
-          variant="tertiary"
+          variant="flat"
           size="sm"
           className={cn(
-            "h-8 w-8 shrink-0 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors", 
-            !sidebarCollapsed && "ms-auto"
+            "h-8 w-8 shrink-0 bg-default-100/50 hover:bg-default-200/50 transition-all",
+            !sidebarCollapsed && (isRtl ? "mr-auto" : "ml-auto"),
           )}
           onPress={toggleSidebar}
         >
           {sidebarCollapsed ? (
             isRtl ? (
-              <ChevronLeft className="h-4 w-4" />
+              <ChevronLeft className="h-5 w-5" />
             ) : (
-              <ChevronRight className="h-4 w-4" />
+              <ChevronRight className="h-5 w-5" />
             )
           ) : isRtl ? (
-            <ChevronRight className="h-4 w-4" />
+            <ChevronRight className="h-5 w-5" />
           ) : (
-            <ChevronLeft className="h-4 w-4" />
+            <ChevronLeft className="h-5 w-5" />
           )}
         </Button>
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 space-y-2 p-3">
+      <nav className="flex-1 space-y-2 p-4">
         {navItems.map((item) => (
-          <TooltipRoot 
-            key={item.path} 
+          <Tooltip
+            key={item.path}
             isDisabled={!sidebarCollapsed}
+            content={t(item.labelKey)}
+            placement={isRtl ? "left" : "right"}
           >
-            <TooltipTrigger>
+            <div className="w-full">
               <NavLink
                 to={item.path}
                 className={({ isActive }) =>
                   cn(
-                    "group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200",
-                    "hover:bg-slate-100 dark:hover:bg-slate-800 hover:shadow-sm hover:scale-[1.02]",
+                    "group flex items-center gap-3 rounded-2xl px-4 py-3.5 text-sm font-medium transition-all duration-300",
+                    "hover:bg-default-100/80 hover:scale-[1.02] active:scale-[0.98]",
                     isActive
-                      ? "bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-md"
-                      : "text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100",
-                    sidebarCollapsed && "justify-center px-2.5"
+                      ? "bg-primary text-secondary shadow-glow opacity-100"
+                      : "text-default-500 hover:bg-default-100",
+                    sidebarCollapsed && "justify-center px-0",
                   )
                 }
               >
-                <div className={cn(
-                  "transition-transform duration-200",
-                  "group-hover:scale-110"
-                )}>
-                  {item.icon}
-                </div>
-                {!sidebarCollapsed && (
-                  <span className="truncate text-blue-700">{t(item.labelKey)}</span>
+                {({ isActive }) => (
+                  <>
+                    <div
+                      className={cn(
+                        "transition-all duration-300",
+                        "group-hover:scale-110",
+                        isActive && "scale-110 text-white",
+                      )}
+                    >
+                      {item.icon}
+                    </div>
+                    {!sidebarCollapsed && (
+                      <span
+                        className={cn(
+                          "truncate font-bold tracking-tight",
+                          isActive ? "text-white" : "text-default-700",
+                        )}
+                      >
+                        {t(item.labelKey)}
+                      </span>
+                    )}
+                  </>
                 )}
               </NavLink>
-            </TooltipTrigger>
-            <TooltipContent placement={isRtl ? "left" : "right"}>
-              {t(item.labelKey)}
-            </TooltipContent>
-          </TooltipRoot>
+            </div>
+          </Tooltip>
         ))}
       </nav>
     </aside>

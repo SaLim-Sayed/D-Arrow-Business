@@ -1,6 +1,7 @@
 {
   "dashboard": {
     "title": "لوحة المهام",
+    "subtitle": "نظرة عامة على أداء فريقك والأنشطة الأخيرة.",
     "totalTasks": "إجمالي المهام",
     "inProgress": "قيد التنفيذ",
     "overdue": "متأخرة",
@@ -12,6 +13,7 @@
   "list": {
     "title": "المهام",
     "newTask": "مهمة جديدة",
+    "searchPlaceholder": "البحث في المهام...",
     "columns": {
       "title": "العنوان",
       "status": "الحالة",

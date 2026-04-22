@@ -12,7 +12,7 @@ export function LoadingSpinner({
 }: LoadingSpinnerProps) {
   return (
     <div className={cn("flex items-center justify-center p-4", className)}>
-      <Spinner color="accent" size={size} />
+      <Spinner color="secondary" size={size} />
     </div>
   );
 }

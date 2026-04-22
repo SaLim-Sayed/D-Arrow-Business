@@ -1,14 +1,14 @@
-import { Chip, ChipLabel } from "@heroui/react";
+import { Chip } from "@heroui/react";
 import { useTranslation } from "react-i18next";
 import type { TaskStatus } from "@/features/tasks/types/task.types";
 
 const statusConfig: Record<
   TaskStatus,
-  { color: "default" | "success" | "danger" | "accent" | "warning" }
+  { color: "default" | "success" | "danger" | "secondary" | "warning" }
 > = {
   todo: { color: "default" },
   in_progress: { color: "warning" },
-  in_review: { color: "accent" },
+  in_review: { color: "secondary" },
   done: { color: "success" },
 };
 
@@ -19,11 +19,11 @@ export function StatusBadge({ status }: { status: TaskStatus }) {
   return (
     <Chip 
       size="sm" 
-      variant="soft" 
+      variant="flat" 
       color={config.color}
       className="font-medium"
     >
-      <ChipLabel>{t(`status.${status}`)}</ChipLabel>
+      {t(`status.${status}`)}
     </Chip>
   );
 }

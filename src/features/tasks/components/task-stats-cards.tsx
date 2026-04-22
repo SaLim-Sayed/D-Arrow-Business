@@ -1,5 +1,5 @@
 import { useTranslation } from "react-i18next";
-import { Card, CardHeader, CardContent } from "@heroui/react";
+import { Card, CardHeader, CardBody } from "@heroui/react";
 import { ListTodo, Clock, AlertTriangle, CheckCircle } from "lucide-react";
 import type { Task } from "../types/task.types";
 
@@ -30,49 +30,51 @@ export function TaskStatsCards({ tasks }: TaskStatsCardsProps) {
       label: t("dashboard.totalTasks"),
       value: total,
       icon: ListTodo,
-      color: "text-blue-600 dark:text-blue-400",
-      bg: "bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950 dark:to-blue-900",
-      border: "border-blue-200 dark:border-blue-800",
+      color: "text-blue-500",
+      bg: "bg-blue-500/10",
+      gradient: "from-blue-500/20 to-indigo-500/20",
     },
     {
       label: t("dashboard.inProgress"),
       value: inProgress,
       icon: Clock,
-      color: "text-amber-600 dark:text-amber-400",
-      bg: "bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-950 dark:to-amber-900",
-      border: "border-amber-200 dark:border-amber-800",
+      color: "text-amber-500",
+      bg: "bg-amber-500/10",
+      gradient: "from-amber-500/20 to-orange-500/20",
     },
     {
       label: t("dashboard.overdue"),
       value: overdue,
       icon: AlertTriangle,
-      color: "text-red-600 dark:text-red-400",
-      bg: "bg-gradient-to-br from-red-50 to-red-100 dark:from-red-950 dark:to-red-900",
-      border: "border-red-200 dark:border-red-800",
+      color: "text-rose-500",
+      bg: "bg-rose-500/10",
+      gradient: "from-rose-500/20 to-red-500/20",
     },
     {
       label: t("dashboard.completedThisWeek"),
       value: completedThisWeek,
       icon: CheckCircle,
-      color: "text-green-600 dark:text-green-400",
-      bg: "bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950 dark:to-green-900",
-      border: "border-green-200 dark:border-green-800",
+      color: "text-emerald-500",
+      bg: "bg-emerald-500/10",
+      gradient: "from-emerald-500/20 to-teal-500/20",
     },
   ];
 
   return (
-    <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
+    <div className="grid gap-6 grid-cols-2 lg:grid-cols-4">
       {stats.map((stat) => (
-        <Card key={stat.label} className="bg-content1 border-none">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <p className="text-sm font-medium text-default-500">{stat.label}</p>
-            <div className={`rounded-lg p-2.5 ${stat.bg} shadow-sm`}>
-              <stat.icon className={`h-4 w-4 ${stat.color}`} />
+        <Card key={stat.label} className="glass-card border-none overflow-hidden relative group">
+          <div className={`absolute inset-0 bg-gradient-to-br ${stat.gradient} opacity-0 group-hover:opacity-100 transition-opacity duration-500`} />
+          <CardHeader className="flex flex-row items-center justify-between pb-2 relative z-10">
+            <p className="text-[10px] font-black text-default-400 uppercase tracking-[0.15em]">{stat.label}</p>
+            <div className={`rounded-2xl p-3 ${stat.bg} shadow-sm group-hover:scale-110 group-hover:rotate-6 transition-all duration-300`}>
+              <stat.icon className={`h-5 w-5 ${stat.color}`} />
             </div>
           </CardHeader>
-          <CardContent className="py-2">
-            <div className="text-3xl font-bold">{stat.value}</div>
-          </CardContent>
+          <CardBody className="py-4 relative z-10">
+            <div className="text-4xl font-black tracking-tight">{stat.value}</div>
+            <div className="mt-2 h-1 w-12 rounded-full bg-default-200 group-hover:w-full transition-all duration-500" />
+          </CardBody>
         </Card>
       ))}
     </div>

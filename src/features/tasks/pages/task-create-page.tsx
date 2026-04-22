@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useCreateTask } from "../hooks/use-task-mutations";
 import { TaskForm } from "../components/task-form";
 import { PageHeader } from "@/components/shared/page-header";
-import { Button, Card, CardContent } from "@heroui/react";
+import { Button, Card, CardBody } from "@heroui/react";
 import { ArrowLeft } from "lucide-react";
 
 export function TaskCreatePage() {
@@ -17,7 +17,11 @@ export function TaskCreatePage() {
       <PageHeader
         title={t("form.createTitle")}
         actions={
-          <Button variant="tertiary" onPress={() => navigate(-1)} className="flex items-center gap-2">
+          <Button
+            variant="light"
+            onPress={() => navigate(-1)}
+            className="flex items-center gap-2"
+          >
             <ArrowLeft className="h-4 w-4" />
             {tc("actions.back")}
           </Button>
@@ -25,7 +29,7 @@ export function TaskCreatePage() {
       />
 
       <Card className="bg-content1">
-        <CardContent className="p-6">
+        <CardBody className="p-6">
           <TaskForm
             onSubmit={(data) => {
               createTask.mutate(data, {
@@ -34,7 +38,7 @@ export function TaskCreatePage() {
             }}
             isSubmitting={createTask.isPending}
           />
-        </CardContent>
+        </CardBody>
       </Card>
     </div>
   );

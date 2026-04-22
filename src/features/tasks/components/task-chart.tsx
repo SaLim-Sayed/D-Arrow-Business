@@ -10,21 +10,21 @@ import {
   Pie,
   Cell,
 } from "recharts";
-import { Card, CardContent, CardHeader } from "@heroui/react";
+import { Card, CardBody, CardHeader } from "@heroui/react";
 import type { Task } from "../types/task.types";
 
 const STATUS_COLORS: Record<string, string> = {
-  todo: "#3b82f6", /* Vibrant blue */
-  in_progress: "#a855f7", /* Vibrant purple */
-  in_review: "#f97316", /* Vibrant orange */
-  done: "#22c55e", /* Vibrant green */
+  todo: "#94A3B8",
+  in_progress: "#6366F1",
+  in_review: "#A855F7",
+  done: "#10B981",
 };
 
 const PRIORITY_COLORS: Record<string, string> = {
-  low: "#ec4899", /* Vibrant pink */
-  medium: "#3b82f6", /* Vibrant blue */
-  high: "#f97316", /* Vibrant orange */
-  urgent: "#ef4444", /* Vibrant red */
+  low: "#3B82F6",
+  medium: "#6366F1",
+  high: "#F59E0B",
+  urgent: "#EF4444",
 };
 
 export function TaskCharts({ tasks }: { tasks: Task[] }) {
@@ -45,55 +45,62 @@ export function TaskCharts({ tasks }: { tasks: Task[] }) {
   ];
 
   return (
-    <div className="grid gap-4 md:grid-cols-2">
-      <Card className="bg-content1">
-        <CardHeader className="pb-0 pt-4 px-4 flex-col items-start">
-          <h4 className="text-base font-semibold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+    <div className="grid gap-6 md:grid-cols-2 animate-in fade-in zoom-in duration-500 delay-200">
+      <Card className="glass-card border-none overflow-hidden">
+        <CardHeader className="pb-0 pt-6 px-6 flex-col items-start">
+          <p className="text-[10px] font-black uppercase tracking-[0.2em] text-primary mb-1">Overview</p>
+          <h4 className="text-xl font-black">
             {t("dashboard.tasksByStatus")}
           </h4>
         </CardHeader>
-        <CardContent>
-          <ResponsiveContainer width="100%" height={250}>
-            <BarChart data={statusData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+        <CardBody className="px-2">
+          <ResponsiveContainer width="100%" height={280}>
+            <BarChart data={statusData} margin={{ top: 20, right: 30, left: 10, bottom: 5 }}>
               <XAxis 
                 dataKey="name" 
-                fontSize={12} 
+                fontSize={10} 
+                fontWeight={700}
                 tickLine={false} 
                 axisLine={false}
-                tick={{ fill: '#64748b' }}
+                tick={{ fill: 'currentColor', opacity: 0.5 }}
               />
               <YAxis 
-                fontSize={12} 
+                fontSize={10} 
+                fontWeight={700}
                 tickLine={false} 
                 axisLine={false} 
                 allowDecimals={false}
-                tick={{ fill: '#64748b' }}
+                tick={{ fill: 'currentColor', opacity: 0.5 }}
               />
               <Tooltip 
+                cursor={{ fill: 'currentColor', opacity: 0.05 }}
                 contentStyle={{ 
-                  backgroundColor: 'hsl(var(--heroui-content1))',
-                  border: '1px solid hsl(var(--heroui-divider))',
-                  borderRadius: '12px'
+                  backgroundColor: 'rgba(var(--heroui-content1), 0.8)',
+                  backdropFilter: 'blur(12px)',
+                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                  borderRadius: '16px',
+                  boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)'
                 }}
               />
-              <Bar dataKey="value" radius={[8, 8, 0, 0]} fillOpacity={0.9}>
+              <Bar dataKey="value" radius={[12, 12, 0, 0]} barSize={40}>
                 {statusData.map((entry) => (
                   <Cell key={entry.key} fill={STATUS_COLORS[entry.key]} />
                 ))}
               </Bar>
             </BarChart>
           </ResponsiveContainer>
-        </CardContent>
+        </CardBody>
       </Card>
 
-      <Card className="bg-content1">
-        <CardHeader className="pb-0 pt-4 px-4 flex-col items-start">
-          <h4 className="text-base font-semibold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+      <Card className="glass-card border-none overflow-hidden">
+        <CardHeader className="pb-0 pt-6 px-6 flex-col items-start">
+          <p className="text-[10px] font-black uppercase tracking-[0.2em] text-secondary mb-1">Distribution</p>
+          <h4 className="text-xl font-black">
             {t("dashboard.tasksByPriority")}
           </h4>
         </CardHeader>
-        <CardContent>
-          <ResponsiveContainer width="100%" height={250}>
+        <CardBody className="px-2">
+          <ResponsiveContainer width="100%" height={220}>
             <PieChart>
               <Pie
                 data={priorityData}
@@ -102,39 +109,44 @@ export function TaskCharts({ tasks }: { tasks: Task[] }) {
                 cx="50%"
                 cy="50%"
                 innerRadius={60}
-                outerRadius={90}
-                paddingAngle={2}
-                fillOpacity={0.9}
+                outerRadius={85}
+                paddingAngle={8}
+                stroke="none"
               >
                 {priorityData.map((entry) => (
-                  <Cell key={entry.key} fill={PRIORITY_COLORS[entry.key]} />
+                  <Cell 
+                    key={entry.key} 
+                    fill={PRIORITY_COLORS[entry.key]} 
+                    className="hover:opacity-80 transition-opacity cursor-pointer"
+                  />
                 ))}
               </Pie>
               <Tooltip 
                 contentStyle={{ 
-                  backgroundColor: 'hsl(var(--heroui-content1))',
-                  border: '1px solid hsl(var(--heroui-divider))',
-                  borderRadius: '12px'
+                  backgroundColor: 'rgba(var(--heroui-content1), 0.8)',
+                  backdropFilter: 'blur(12px)',
+                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                  borderRadius: '16px'
                 }}
               />
             </PieChart>
           </ResponsiveContainer>
-          <div className="flex flex-wrap justify-center gap-3 mt-4">
+          <div className="flex flex-wrap justify-center gap-4 px-4 pb-4">
             {priorityData.map((entry) => (
-              <div key={entry.key} className="flex items-center gap-2 text-xs font-medium">
+              <div key={entry.key} className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider">
                 <div
-                  className="h-3 w-3 rounded-full shadow-sm"
+                  className="h-2.5 w-2.5 rounded-full"
                   style={{ 
                     backgroundColor: PRIORITY_COLORS[entry.key],
-                    boxShadow: `0 0 8px ${PRIORITY_COLORS[entry.key]}40`
+                    boxShadow: `0 0 10px ${PRIORITY_COLORS[entry.key]}60`
                   }}
                 />
-                <span className="text-default-600">{entry.name}</span>
-                <span className="font-semibold">({entry.value})</span>
+                <span className="text-default-500">{entry.name}</span>
+                <span className="text-default-900">{entry.value}</span>
               </div>
             ))}
           </div>
-        </CardContent>
+        </CardBody>
       </Card>
     </div>
   );

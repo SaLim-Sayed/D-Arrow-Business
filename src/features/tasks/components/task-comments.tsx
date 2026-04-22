@@ -1,15 +1,7 @@
 import { useTranslation } from "react-i18next";
 import { useState } from "react";
 import { useCommentsQuery, useAddComment } from "../hooks/use-comments";
-import { 
-  Avatar, 
-  AvatarImage,
-  AvatarFallback,
-  Button, 
-  TextArea, 
-  Skeleton,
-  Spinner 
-} from "@heroui/react";
+import { Avatar, Button, Textarea, Skeleton, Spinner } from "@heroui/react";
 import { formatDate } from "@/lib/utils";
 import { Send } from "lucide-react";
 
@@ -26,7 +18,7 @@ export function TaskComments({ taskId }: { taskId: string }) {
     if (!content.trim()) return;
     addComment.mutate(
       { taskId, content: content.trim() },
-      { onSuccess: () => setContent("") }
+      { onSuccess: () => setContent("") },
     );
   }
 
@@ -68,10 +60,12 @@ export function TaskComments({ taskId }: { taskId: string }) {
 
         return (
           <div key={comment.id} className="flex gap-3">
-            <Avatar size="sm" className="shrink-0">
-              <AvatarImage src={comment.author?.avatar} />
-              <AvatarFallback>{initials}</AvatarFallback>
-            </Avatar>
+            <Avatar
+              size="sm"
+              src={comment.author?.avatar}
+              fallback={initials}
+              showFallback
+            />
             <div className="flex-1 min-w-0">
               <div className="flex items-baseline gap-2">
                 <span className="text-sm font-medium">{name}</span>
@@ -88,21 +82,26 @@ export function TaskComments({ taskId }: { taskId: string }) {
       })}
 
       {/* Add comment */}
-      <form onSubmit={handleSubmit} className="flex gap-2 pt-4 border-t border-default-100">
-        <TextArea
+      <form
+        onSubmit={handleSubmit}
+        className="flex gap-2 pt-4 border-t border-default-100"
+      >
+        <Textarea
           value={content}
           onChange={(e: any) => setContent(e.target.value)}
           placeholder={t("detail.commentPlaceholder")}
-          variant="primary"
+          color="primary"
+          variant="bordered"
           rows={3}
           className="bg-content1 flex-1"
         />
         <Button
           type="submit"
           isIconOnly
-          variant="primary"
+          color="primary"
+          variant="solid"
           isDisabled={!content.trim() || addComment.isPending}
-          className="shrink-0 self-end flex items-center justify-center"
+          className="shrink-0 self-end flex items-center justify-center shadow-md shadow-primary/20 h-11 w-11"
         >
           {addComment.isPending ? (
             <Spinner size="sm" color="current" />
