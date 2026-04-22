@@ -2,18 +2,15 @@ import type { ReactNode } from "react";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "@/lib/query-client";
 import { AuthProvider } from "@/features/auth/context/auth-context";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { Toaster } from "@/components/ui/sonner";
+import { Toaster } from "sonner";
 
 export function Providers({ children }: { children: ReactNode }) {
   return (
     <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <TooltipProvider>
+        <AuthProvider>
           {children}
           <Toaster position="bottom-right" />
-        </TooltipProvider>
-      </AuthProvider>
+        </AuthProvider>
     </QueryClientProvider>
   );
 }

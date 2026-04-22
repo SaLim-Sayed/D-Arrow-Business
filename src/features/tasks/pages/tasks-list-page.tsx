@@ -9,24 +9,27 @@ import { StatusBadge } from "@/components/shared/status-badge";
 import { PriorityBadge } from "@/components/shared/priority-badge";
 import { EmptyState } from "@/components/shared/empty-state";
 import { LoadingSpinner } from "@/components/shared/loading-spinner";
-import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import {
-  Table,
-  TableBody,
+import { 
+  Button, 
+  Avatar, 
+  AvatarImage,
+  AvatarFallback,
+  TableRoot,
+  TableScrollContainer,
+  TableContent,
+  TableHeader, 
+  TableColumn, 
+  TableBody, 
+  TableRow, 
   TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+  Dropdown, 
+  DropdownTrigger, 
+  DropdownMenu, 
+  DropdownItem
+} from "@heroui/react";
 import { Plus, MoreHorizontal, Eye, Trash2 } from "lucide-react";
 import { formatDate } from "@/lib/utils";
+import { Pagination } from "@/components/shared/pagination";
 
 export function TasksListPage() {
   const { t, i18n } = useTranslation("tasks");
@@ -54,12 +57,13 @@ export function TasksListPage() {
       <PageHeader
         title={t("list.title")}
         actions={
-          <Button asChild>
-            <Link to="/tasks/new">
-              <Plus className="h-4 w-4 me-1" />
-              {t("list.newTask")}
-            </Link>
-          </Button>
+          <Link 
+            to="/tasks/new" 
+            className="inline-flex items-center justify-center rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary/90 transition-colors gap-2"
+          >
+            <Plus className="h-4 w-4" />
+            {t("list.newTask")}
+          </Link>
         }
       />
 
@@ -71,143 +75,125 @@ export function TasksListPage() {
         <EmptyState
           title={tc("actions.noResults")}
           action={
-            <Button asChild>
-              <Link to="/tasks/new">
-                <Plus className="h-4 w-4 me-1" />
-                {t("list.newTask")}
-              </Link>
-            </Button>
+            <Link 
+              to="/tasks/new" 
+              className="inline-flex items-center justify-center rounded-lg border border-default-200 bg-content2 px-4 py-2 text-sm font-medium hover:bg-content3 transition-colors gap-2"
+            >
+              <Plus className="h-4 w-4" />
+              {t("list.newTask")}
+            </Link>
           }
         />
       ) : (
         <>
-          <div className="rounded-lg border">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="min-w-[250px]">
-                    {t("list.columns.title")}
-                  </TableHead>
-                  <TableHead>{t("list.columns.status")}</TableHead>
-                  <TableHead>{t("list.columns.priority")}</TableHead>
-                  <TableHead className="hidden md:table-cell">
-                    {t("list.columns.assignee")}
-                  </TableHead>
-                  <TableHead className="hidden md:table-cell">
-                    {t("list.columns.dueDate")}
-                  </TableHead>
-                  <TableHead className="w-[50px]" />
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {tasks.map((task) => {
-                  const assigneeName =
-                    i18n.language === "ar"
-                      ? task.assignee?.nameAr
-                      : task.assignee?.name;
-                  const initials = (task.assignee?.name ?? "")
-                    .split(" ")
-                    .map((n) => n[0])
-                    .join("")
-                    .toUpperCase()
-                    .slice(0, 2);
+          <TableRoot className="bg-content1 rounded-xl">
+            <TableScrollContainer>
+              <TableContent 
+                aria-label="Tasks table"
+                selectionMode="single"
+                onRowAction={(key) => navigate(`/tasks/${key}`)}
+              >
+                <TableHeader>
+                  <TableColumn className="min-w-[250px]">{t("list.columns.title")}</TableColumn>
+                  <TableColumn>{t("list.columns.status")}</TableColumn>
+                  <TableColumn>{t("list.columns.priority")}</TableColumn>
+                  <TableColumn className="hidden md:table-cell">{t("list.columns.assignee")}</TableColumn>
+                  <TableColumn className="hidden md:table-cell">{t("list.columns.dueDate")}</TableColumn>
+                  <TableColumn className="w-[50px]">{""}</TableColumn>
+                </TableHeader>
+                <TableBody items={tasks}>
+                  {(task) => {
+                    const assigneeName =
+                      i18n.language === "ar"
+                        ? task.assignee?.nameAr
+                        : task.assignee?.name;
+                    const initials = (task.assignee?.name ?? "")
+                      .split(" ")
+                      .map((n) => n[0])
+                      .join("")
+                      .toUpperCase()
+                      .slice(0, 2);
 
-                  return (
-                    <TableRow
-                      key={task.id}
-                      className="cursor-pointer"
-                      onClick={() => navigate(`/tasks/${task.id}`)}
-                    >
-                      <TableCell className="font-medium">
-                        {task.title}
-                      </TableCell>
-                      <TableCell>
-                        <StatusBadge status={task.status} />
-                      </TableCell>
-                      <TableCell>
-                        <PriorityBadge priority={task.priority} />
-                      </TableCell>
-                      <TableCell className="hidden md:table-cell">
-                        {task.assignee ? (
-                          <div className="flex items-center gap-2">
-                            <Avatar className="h-6 w-6">
-                              <AvatarFallback className="text-[10px]">
-                                {initials}
-                              </AvatarFallback>
-                            </Avatar>
-                            <span className="text-sm">{assigneeName}</span>
-                          </div>
-                        ) : (
-                          <span className="text-sm text-muted-foreground">
-                            {t("form.assignee.unassigned")}
-                          </span>
-                        )}
-                      </TableCell>
-                      <TableCell className="hidden md:table-cell text-sm">
-                        {task.dueDate ? formatDate(task.dueDate) : "—"}
-                      </TableCell>
-                      <TableCell>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger
-                            asChild
-                            onClick={(e) => e.stopPropagation()}
-                          >
-                            <Button variant="ghost" size="icon" className="h-8 w-8">
-                              <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem
-                              onClick={(e: React.MouseEvent) => {
-                                e.stopPropagation();
-                                navigate(`/tasks/${task.id}`);
-                              }}
-                            >
-                              <Eye className="me-2 h-4 w-4" />
-                              {tc("actions.edit")}
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                              className="text-destructive"
-                              onClick={(e: React.MouseEvent) => {
-                                e.stopPropagation();
-                                deleteTask.mutate(task.id);
-                              }}
-                            >
-                              <Trash2 className="me-2 h-4 w-4" />
-                              {tc("actions.delete")}
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
-          </div>
+                    return (
+                      <TableRow key={task.id}>
+                        <TableCell>
+                          <span className="font-medium">{task.title}</span>
+                        </TableCell>
+                        <TableCell>
+                          <StatusBadge status={task.status} />
+                        </TableCell>
+                        <TableCell>
+                          <PriorityBadge priority={task.priority} />
+                        </TableCell>
+                        <TableCell className="hidden md:table-cell">
+                          {task.assignee ? (
+                            <div className="flex items-center gap-2">
+                              <Avatar size="sm">
+                                <AvatarImage src={task.assignee.avatar} />
+                                <AvatarFallback>{initials}</AvatarFallback>
+                              </Avatar>
+                              <span className="text-sm">{assigneeName}</span>
+                            </div>
+                          ) : (
+                            <span className="text-sm text-default-400">
+                              {t("form.assignee.unassigned")}
+                            </span>
+                          )}
+                        </TableCell>
+                        <TableCell className="hidden md:table-cell text-sm">
+                          {task.dueDate ? formatDate(task.dueDate) : "—"}
+                        </TableCell>
+                        <TableCell>
+                          <Dropdown>
+                            <DropdownTrigger>
+                              <Button 
+                                isIconOnly 
+                                variant="tertiary" 
+                                size="sm"
+                              >
+                                <MoreHorizontal className="h-4 w-4" />
+                              </Button>
+                            </DropdownTrigger>
+                            <DropdownMenu aria-label="Task actions">
+                              <DropdownItem
+                                key="edit"
+                                onPress={() => navigate(`/tasks/${task.id}`)}
+                                className="flex items-center gap-2"
+                              >
+                                <div className="flex items-center gap-2">
+                                  <Eye className="h-4 w-4" />
+                                  {tc("actions.edit")}
+                                </div>
+                              </DropdownItem>
+                              <DropdownItem
+                                key="delete"
+                                className="text-danger flex items-center gap-2"
+                                onPress={() => deleteTask.mutate(task.id)}
+                              >
+                                <div className="flex items-center gap-2">
+                                  <Trash2 className="h-4 w-4" />
+                                  {tc("actions.delete")}
+                                </div>
+                              </DropdownItem>
+                            </DropdownMenu>
+                          </Dropdown>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  }}
+                </TableBody>
+              </TableContent>
+            </TableScrollContainer>
+          </TableRoot>
 
           {/* Pagination */}
           {totalPages > 1 && (
-            <div className="flex items-center justify-center gap-2 mt-4">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setPage(page - 1)}
-                disabled={page <= 1}
-              >
-                {tc("actions.back")}
-              </Button>
-              <span className="text-sm text-muted-foreground">
-                {page} / {totalPages}
-              </span>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setPage(page + 1)}
-                disabled={page >= totalPages}
-              >
-                Next
-              </Button>
+            <div className="flex justify-center mt-6">
+              <Pagination
+                total={totalPages}
+                page={page}
+                onChange={setPage}
+              />
             </div>
           )}
         </>

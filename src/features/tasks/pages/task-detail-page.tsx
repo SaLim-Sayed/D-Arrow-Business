@@ -9,29 +9,42 @@ import { PageHeader } from "@/components/shared/page-header";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { PriorityBadge } from "@/components/shared/priority-badge";
 import { LoadingSpinner } from "@/components/shared/loading-spinner";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Separator } from "@/components/ui/separator";
-import { ArrowLeft, Pencil, Trash2, Calendar, User } from "lucide-react";
+  Button,
+  Card,
+  CardContent,
+  Avatar,
+  AvatarImage,
+  AvatarFallback,
+  Chip,
+  ChipLabel,
+  TabsRoot,
+  TabList,
+  Tab,
+  TabPanel,
+  ModalRoot,
+  ModalBackdrop,
+  ModalContainer,
+  ModalDialog,
+  ModalHeader,
+  ModalBody,
+  ModalFooter,
+  Separator,
+  Spinner,
+} from "@heroui/react";
+import { ArrowLeft, Pencil, Trash2 } from "lucide-react";
 import { formatDate } from "@/lib/utils";
 
 export function TaskDetailPage() {
-  const { t, i18n } = useTranslation("tasks");
+  const { t } = useTranslation("tasks");
   const { t: tc } = useTranslation();
   const { taskId } = useParams<{ taskId: string }>();
   const navigate = useNavigate();
   const { data, isLoading } = useTaskQuery(taskId!);
-  const updateTask = useUpdateTask();
-  const deleteTask = useDeleteTask();
-  const [editOpen, setEditOpen] = useState(false);
+  const updateMutation = useUpdateTask();
+  const deleteMutation = useDeleteTask();
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
   if (isLoading) return <LoadingSpinner />;
 
@@ -39,24 +52,17 @@ export function TaskDetailPage() {
   if (!task) {
     return (
       <div className="text-center py-12">
-        <p className="text-muted-foreground">Task not found</p>
-        <Button variant="ghost" className="mt-4" onClick={() => navigate(-1)}>
+        <p className="text-default-400">Task not found</p>
+        <Button
+          variant="tertiary"
+          className="mt-4"
+          onPress={() => navigate(-1)}
+        >
           {tc("actions.back")}
         </Button>
       </div>
     );
   }
-
-  const assigneeName =
-    i18n.language === "ar" ? task.assignee?.nameAr : task.assignee?.name;
-  const reporterName =
-    i18n.language === "ar" ? task.reporter?.nameAr : task.reporter?.name;
-  const assigneeInitials = (task.assignee?.name ?? "")
-    .split(" ")
-    .map((n) => n[0])
-    .join("")
-    .toUpperCase()
-    .slice(0, 2);
 
   return (
     <div className="max-w-4xl mx-auto">
@@ -64,23 +70,28 @@ export function TaskDetailPage() {
         title={task.title}
         actions={
           <div className="flex gap-2">
-            <Button variant="ghost" onClick={() => navigate(-1)}>
-              <ArrowLeft className="h-4 w-4 me-1" />
+            <Button
+              variant="tertiary"
+              onPress={() => navigate(-1)}
+              className="flex items-center gap-2"
+            >
+              <ArrowLeft className="h-4 w-4" />
               {tc("actions.back")}
             </Button>
-            <Button variant="outline" onClick={() => setEditOpen(true)}>
-              <Pencil className="h-4 w-4 me-1" />
+            <Button
+              variant="outline"
+              onPress={() => setIsEditModalOpen(true)}
+              className="flex items-center gap-2"
+            >
+              <Pencil className="h-4 w-4" />
               {tc("actions.edit")}
             </Button>
             <Button
-              variant="destructive"
-              onClick={() => {
-                deleteTask.mutate(task.id, {
-                  onSuccess: () => navigate("/tasks/list"),
-                });
-              }}
+              variant="danger"
+              onPress={() => setIsDeleteModalOpen(true)}
+              className="flex items-center gap-2"
             >
-              <Trash2 className="h-4 w-4 me-1" />
+              <Trash2 className="h-4 w-4" />
               {tc("actions.delete")}
             </Button>
           </div>
@@ -88,140 +99,201 @@ export function TaskDetailPage() {
       />
 
       <div className="grid gap-6 md:grid-cols-3">
-        {/* Main content */}
-        <div className="md:col-span-2 space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">
-                {t("detail.description")}
-              </CardTitle>
-            </CardHeader>
+        <div className="md:col-span-2">
+          <Card className="bg-content1">
             <CardContent>
-              {task.description ? (
-                <p className="text-sm whitespace-pre-wrap">
-                  {task.description}
-                </p>
-              ) : (
-                <p className="text-sm text-muted-foreground italic">
-                  {t("detail.noDescription")}
-                </p>
-              )}
-            </CardContent>
-          </Card>
+              <TabsRoot variant="primary">
+                <TabList className="flex gap-4 border-b border-default-200 mb-4">
+                  <Tab
+                    id="details"
+                    className="pb-2 px-1 focus:outline-none data-[selected]:border-b-2 data-[selected]:border-primary data-[selected]:text-primary cursor-pointer"
+                  >
+                    {t("detail.details")}
+                  </Tab>
+                  <Tab
+                    id="comments"
+                    className="pb-2 px-1 focus:outline-none data-[selected]:border-b-2 data-[selected]:border-primary data-[selected]:text-primary cursor-pointer"
+                  >
+                    {t("detail.comments")}
+                    <Chip
+                      size="sm"
+                      variant="soft"
+                      color="accent"
+                      className="ml-2"
+                    >
+                      <ChipLabel>{task.commentsCount}</ChipLabel>
+                    </Chip>
+                  </Tab>
+                  <Tab
+                    id="history"
+                    className="pb-2 px-1 focus:outline-none data-[selected]:border-b-2 data-[selected]:border-primary data-[selected]:text-primary cursor-pointer"
+                  >
+                    {t("detail.history")}
+                  </Tab>
+                </TabList>
 
-          <Card>
-            <CardHeader>
-              <Tabs defaultValue="comments">
-                <TabsList>
-                  <TabsTrigger value="comments">
-                    {t("detail.comments")} ({task.commentsCount})
-                  </TabsTrigger>
-                </TabsList>
-                <TabsContent value="comments" className="mt-4">
+                <TabPanel id="details">
+                  <div className="space-y-6">
+                    <div className="flex flex-col gap-1">
+                      <h3 className="text-sm font-medium text-default-500">
+                        {t("form.description.label")}
+                      </h3>
+                      <p className="text-default-700 whitespace-pre-wrap">
+                        {task.description || t("detail.noDescription")}
+                      </p>
+                    </div>
+
+                    <Separator className="h-px bg-default-100" />
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                      <div className="flex flex-col gap-1">
+                        <h3 className="text-sm font-medium text-default-500">
+                          {t("form.assignee.label")}
+                        </h3>
+                        <div className="flex items-center gap-2 mt-1">
+                          <Avatar size="sm">
+                            <AvatarImage src={task.assignee?.avatar} />
+                            <AvatarFallback>
+                              {(task.assignee?.name ?? "U")
+                                .split(" ")
+                                .map((n) => n[0])
+                                .join("")
+                                .toUpperCase()
+                                .slice(0, 2)}
+                            </AvatarFallback>
+                          </Avatar>
+                          <span>
+                            {task.assignee?.name ||
+                              t("form.assignee.unassigned")}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="flex flex-col gap-1">
+                        <h3 className="text-sm font-medium text-default-500">
+                          {t("form.dueDate.label")}
+                        </h3>
+                        <p className="mt-1">
+                          {task.dueDate
+                            ? formatDate(task.dueDate)
+                            : t("detail.noDueDate")}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </TabPanel>
+
+                <TabPanel id="comments">
                   <TaskComments taskId={task.id} />
-                </TabsContent>
-              </Tabs>
-            </CardHeader>
+                </TabPanel>
+
+                <TabPanel id="history">
+                  <p className="text-sm text-default-500 py-8 text-center">
+                    {t("detail.historyPlaceholder")}
+                  </p>
+                </TabPanel>
+              </TabsRoot>
+            </CardContent>
           </Card>
         </div>
 
-        {/* Sidebar */}
         <div className="space-y-4">
-          <Card>
-            <CardContent className="pt-6 space-y-4">
+          <Card className="bg-content1">
+            <CardContent className="p-6 space-y-4">
               <div>
-                <p className="text-xs text-muted-foreground mb-1">
+                <p className="text-xs text-default-400 mb-1">
                   {t("form.status.label")}
                 </p>
                 <StatusBadge status={task.status} />
               </div>
               <Separator />
               <div>
-                <p className="text-xs text-muted-foreground mb-1">
+                <p className="text-xs text-default-400 mb-1">
                   {t("form.priority.label")}
                 </p>
                 <PriorityBadge priority={task.priority} />
-              </div>
-              <Separator />
-              <div>
-                <p className="text-xs text-muted-foreground mb-1 flex items-center gap-1">
-                  <User className="h-3 w-3" />
-                  {t("form.assignee.label")}
-                </p>
-                {task.assignee ? (
-                  <div className="flex items-center gap-2">
-                    <Avatar className="h-6 w-6">
-                      <AvatarFallback className="text-[10px]">
-                        {assigneeInitials}
-                      </AvatarFallback>
-                    </Avatar>
-                    <span className="text-sm">{assigneeName}</span>
-                  </div>
-                ) : (
-                  <span className="text-sm text-muted-foreground">
-                    {t("form.assignee.unassigned")}
-                  </span>
-                )}
-              </div>
-              <Separator />
-              <div>
-                <p className="text-xs text-muted-foreground mb-1 flex items-center gap-1">
-                  <Calendar className="h-3 w-3" />
-                  {t("form.dueDate.label")}
-                </p>
-                <span className="text-sm">
-                  {task.dueDate ? formatDate(task.dueDate) : "—"}
-                </span>
               </div>
               {task.tags.length > 0 && (
                 <>
                   <Separator />
                   <div>
-                    <p className="text-xs text-muted-foreground mb-1">
+                    <p className="text-xs text-default-400 mb-1">
                       {t("form.tags.label")}
                     </p>
                     <div className="flex flex-wrap gap-1">
                       {task.tags.map((tag) => (
-                        <span
-                          key={tag}
-                          className="rounded-full bg-muted px-2 py-0.5 text-xs"
-                        >
-                          {tag}
-                        </span>
+                        <Chip key={tag} size="sm" variant="soft">
+                          <ChipLabel>{tag}</ChipLabel>
+                        </Chip>
                       ))}
                     </div>
                   </div>
                 </>
               )}
-              <Separator />
-              <div className="text-xs text-muted-foreground space-y-1">
-                {reporterName && <p>Reporter: {reporterName}</p>}
-                <p>Created: {formatDate(task.createdAt)}</p>
-                <p>Updated: {formatDate(task.updatedAt)}</p>
-              </div>
             </CardContent>
           </Card>
         </div>
       </div>
 
-      {/* Edit Dialog */}
-      <Dialog open={editOpen} onOpenChange={setEditOpen}>
-        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>{t("form.editTitle")}</DialogTitle>
-          </DialogHeader>
-          <TaskForm
-            defaultValues={task}
-            onSubmit={(formData) => {
-              updateTask.mutate(
-                { id: task.id, data: formData },
-                { onSuccess: () => setEditOpen(false) }
-              );
-            }}
-            isSubmitting={updateTask.isPending}
-          />
-        </DialogContent>
-      </Dialog>
+      <ModalRoot isOpen={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
+        <ModalBackdrop />
+        <ModalContainer size="md">
+          <ModalDialog>
+            <ModalHeader>
+              <h3 className="text-lg font-bold">{t("detail.editTask")}</h3>
+            </ModalHeader>
+            <ModalBody>
+              <TaskForm
+                defaultValues={task}
+                onSubmit={(data) => {
+                  updateMutation.mutate(
+                    { id: task.id, data },
+                    { onSuccess: () => setIsEditModalOpen(false) },
+                  );
+                }}
+                isSubmitting={updateMutation.isPending}
+              />
+            </ModalBody>
+          </ModalDialog>
+        </ModalContainer>
+      </ModalRoot>
+
+      <ModalRoot isOpen={isDeleteModalOpen} onOpenChange={setIsDeleteModalOpen}>
+        <ModalBackdrop />
+        <ModalContainer size="sm">
+          <ModalDialog>
+            <ModalHeader>
+              <h3 className="text-lg font-bold">{t("detail.deleteTask")}</h3>
+            </ModalHeader>
+            <ModalBody>
+              <p>{t("detail.deleteConfirmation")}</p>
+            </ModalBody>
+            <ModalFooter>
+              <Button
+                variant="tertiary"
+                onPress={() => setIsDeleteModalOpen(false)}
+              >
+                {tc("actions.cancel")}
+              </Button>
+              <Button
+                variant="danger"
+                onPress={() =>
+                  deleteMutation.mutate(task.id, {
+                    onSuccess: () => navigate("/tasks/list"),
+                  })
+                }
+                isDisabled={deleteMutation.isPending}
+                className="flex items-center gap-2"
+              >
+                {deleteMutation.isPending && (
+                  <Spinner size="sm" color="current" />
+                )}
+                {tc("actions.delete")}
+              </Button>
+            </ModalFooter>
+          </ModalDialog>
+        </ModalContainer>
+      </ModalRoot>
     </div>
   );
 }

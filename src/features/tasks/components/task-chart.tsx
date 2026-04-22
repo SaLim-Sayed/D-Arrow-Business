@@ -10,7 +10,7 @@ import {
   Pie,
   Cell,
 } from "recharts";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@heroui/react";
 import type { Task } from "../types/task.types";
 
 const STATUS_COLORS: Record<string, string> = {
@@ -46,11 +46,11 @@ export function TaskCharts({ tasks }: { tasks: Task[] }) {
 
   return (
     <div className="grid gap-4 md:grid-cols-2">
-      <Card className="border-0 shadow-lg bg-white dark:bg-slate-800">
-        <CardHeader className="pb-3">
-          <CardTitle className="text-base font-semibold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+      <Card className="bg-content1">
+        <CardHeader className="pb-0 pt-4 px-4 flex-col items-start">
+          <h4 className="text-base font-semibold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
             {t("dashboard.tasksByStatus")}
-          </CardTitle>
+          </h4>
         </CardHeader>
         <CardContent>
           <ResponsiveContainer width="100%" height={250}>
@@ -71,9 +71,9 @@ export function TaskCharts({ tasks }: { tasks: Task[] }) {
               />
               <Tooltip 
                 contentStyle={{ 
-                  backgroundColor: '#ffffff',
-                  border: '1px solid #e2e8f0',
-                  borderRadius: '8px'
+                  backgroundColor: 'hsl(var(--heroui-content1))',
+                  border: '1px solid hsl(var(--heroui-divider))',
+                  borderRadius: '12px'
                 }}
               />
               <Bar dataKey="value" radius={[8, 8, 0, 0]} fillOpacity={0.9}>
@@ -86,11 +86,11 @@ export function TaskCharts({ tasks }: { tasks: Task[] }) {
         </CardContent>
       </Card>
 
-      <Card className="border-0 shadow-lg bg-white dark:bg-slate-800">
-        <CardHeader className="pb-3">
-          <CardTitle className="text-base font-semibold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+      <Card className="bg-content1">
+        <CardHeader className="pb-0 pt-4 px-4 flex-col items-start">
+          <h4 className="text-base font-semibold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
             {t("dashboard.tasksByPriority")}
-          </CardTitle>
+          </h4>
         </CardHeader>
         <CardContent>
           <ResponsiveContainer width="100%" height={250}>
@@ -112,9 +112,9 @@ export function TaskCharts({ tasks }: { tasks: Task[] }) {
               </Pie>
               <Tooltip 
                 contentStyle={{ 
-                  backgroundColor: '#ffffff',
-                  border: '1px solid #e2e8f0',
-                  borderRadius: '8px'
+                  backgroundColor: 'hsl(var(--heroui-content1))',
+                  border: '1px solid hsl(var(--heroui-divider))',
+                  borderRadius: '12px'
                 }}
               />
             </PieChart>
@@ -129,7 +129,7 @@ export function TaskCharts({ tasks }: { tasks: Task[] }) {
                     boxShadow: `0 0 8px ${PRIORITY_COLORS[entry.key]}40`
                   }}
                 />
-                <span className="text-slate-600 dark:text-slate-400">{entry.name}</span>
+                <span className="text-default-600">{entry.name}</span>
                 <span className="font-semibold">({entry.value})</span>
               </div>
             ))}

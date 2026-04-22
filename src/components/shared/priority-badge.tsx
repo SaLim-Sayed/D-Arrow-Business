@@ -1,16 +1,15 @@
+import { Chip, ChipLabel } from "@heroui/react";
 import { useTranslation } from "react-i18next";
-import { Badge } from "@/components/ui/badge";
 import type { TaskPriority } from "@/features/tasks/types/task.types";
-import { cn } from "@/lib/utils";
 
 const priorityConfig: Record<
   TaskPriority,
-  { className: string }
+  { color: "default" | "accent" | "warning" | "danger" | "success" }
 > = {
-  low: { className: "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400" },
-  medium: { className: "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300" },
-  high: { className: "bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300" },
-  urgent: { className: "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300" },
+  low: { color: "default" },
+  medium: { color: "accent" },
+  high: { color: "warning" },
+  urgent: { color: "danger" },
 };
 
 export function PriorityBadge({ priority }: { priority: TaskPriority }) {
@@ -18,8 +17,13 @@ export function PriorityBadge({ priority }: { priority: TaskPriority }) {
   const config = priorityConfig[priority];
 
   return (
-    <Badge variant="secondary" className={cn("font-medium", config.className)}>
-      {t(`priority.${priority}`)}
-    </Badge>
+    <Chip 
+      size="sm" 
+      variant="soft" 
+      color={config.color}
+      className="font-medium"
+    >
+      <ChipLabel>{t(`priority.${priority}`)}</ChipLabel>
+    </Chip>
   );
 }

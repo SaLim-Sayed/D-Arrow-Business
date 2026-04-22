@@ -4,7 +4,7 @@ import { QUERY_KEYS } from "@/lib/constants";
 import * as tasksApi from "../api/tasks.api";
 import { useTasksStore } from "@/stores/tasks.store";
 import { toast } from "sonner";
-import type { TaskFormData } from "@/lib/schemas";
+import type { Task, TaskFormData } from "@/lib/schemas";
 import type { TaskFilters } from "../types/task.types";
 
 // Enhanced query hooks with optimistic updates
@@ -18,8 +18,8 @@ export function useTasksQuery(filters?: TaskFilters) {
 
   // Handle side effects
   React.useEffect(() => {
-    if (query.data) {
-      setTasks(query.data.tasks || query.data);
+    if (query.data?.data) {
+      setTasks(query.data.data as Task[]);
       setLoading(false);
       setError(null);
     }
@@ -42,18 +42,26 @@ export function useTasksQuery(filters?: TaskFilters) {
 export function useTaskQuery(id: string) {
   const { setSelectedTask, setError } = useTasksStore();
   
-  return useQuery({
+  const query = useQuery({
     queryKey: QUERY_KEYS.tasks.detail(id),
     queryFn: () => tasksApi.getTask(id),
     enabled: !!id,
-    onSuccess: (data) => {
-      setSelectedTask(data);
-      setError(null);
-    },
-    onError: (error) => {
-      setError(error instanceof Error ? error.message : "Failed to fetch task");
-    },
   });
+
+  React.useEffect(() => {
+    if (query.data?.data) {
+      setSelectedTask(query.data.data as Task);
+      setError(null);
+    }
+  }, [query.data, setSelectedTask, setError]);
+
+  React.useEffect(() => {
+    if (query.error) {
+      setError(query.error instanceof Error ? query.error.message : "Failed to fetch task");
+    }
+  }, [query.error, setError]);
+
+  return query;
 }
 
 export function useCreateTaskMutation() {
@@ -71,17 +79,23 @@ export function useCreateTaskMutation() {
       
       // Optimistically update to the new value
       const optimisticTask = {
-        ...newTask,
         id: `temp-${Date.now()}`,
+        ...newTask,
+        status: newTask.status || "todo",
+        priority: newTask.priority || "medium",
+        reporterId: "current-user", // Fallback for optimistic UI
+        tags: [],
+        commentsCount: 0,
+        completedAt: null,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
-      };
+      } as Task;
       
       addTask(optimisticTask);
       
       return { previousTasks };
     },
-    onError: (error, variables, context) => {
+    onError: (error, _variables, context) => {
       setError(error instanceof Error ? error.message : "Failed to create task");
       toast.error("Failed to create task");
       // Rollback on error
@@ -89,7 +103,7 @@ export function useCreateTaskMutation() {
         queryClient.setQueryData(QUERY_KEYS.tasks.all, context.previousTasks);
       }
     },
-    onSuccess: (data) => {
+    onSuccess: () => {
       toast.success("Task created successfully");
       setError(null);
     },
@@ -133,13 +147,11 @@ export function useUpdateTaskMutation() {
       }
     },
     onSuccess: (data, variables) => {
+      if (data?.data) {
+        updateTask(variables.id, data.data as Partial<Task>);
+      }
       toast.success("Task updated successfully");
       setError(null);
-      // Update the store with the actual response
-      updateTask(variables.id, data);
-    },
-    onSettled: (_, error, variables) => {
-      // Always refetch after error or success
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.tasks.all });
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.tasks.detail(variables.id) });
     },
@@ -165,7 +177,7 @@ export function useDeleteTaskMutation() {
       
       return { previousTasks };
     },
-    onError: (error, variables, context) => {
+    onError: (error, _variables, context) => {
       setError(error instanceof Error ? error.message : "Failed to delete task");
       toast.error("Failed to delete task");
       // Rollback on error

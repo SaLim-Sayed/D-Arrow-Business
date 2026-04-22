@@ -1,5 +1,5 @@
 import { useTranslation } from "react-i18next";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardHeader, CardContent } from "@heroui/react";
 import { ListTodo, Clock, AlertTriangle, CheckCircle } from "lucide-react";
 import type { Task } from "../types/task.types";
 
@@ -11,14 +11,9 @@ export function TaskStatsCards({ tasks }: TaskStatsCardsProps) {
   const { t } = useTranslation("tasks");
 
   const total = tasks.length;
-  const inProgress = tasks.filter(
-    (t) => t.status === "in_progress"
-  ).length;
+  const inProgress = tasks.filter((t) => t.status === "in_progress").length;
   const overdue = tasks.filter(
-    (t) =>
-      t.dueDate &&
-      new Date(t.dueDate) < new Date() &&
-      t.status !== "done"
+    (t) => t.dueDate && new Date(t.dueDate) < new Date() && t.status !== "done",
   ).length;
 
   const weekAgo = new Date();
@@ -27,7 +22,7 @@ export function TaskStatsCards({ tasks }: TaskStatsCardsProps) {
     (t) =>
       t.status === "done" &&
       t.completedAt &&
-      new Date(t.completedAt) >= weekAgo
+      new Date(t.completedAt) >= weekAgo,
   ).length;
 
   const stats = [
@@ -68,19 +63,15 @@ export function TaskStatsCards({ tasks }: TaskStatsCardsProps) {
   return (
     <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
       {stats.map((stat) => (
-        <Card key={stat.label} className={`border-0 shadow-lg hover:shadow-xl transition-shadow duration-300 ${stat.border}`}>
-          <CardHeader className="flex flex-row items-center justify-between pb-3">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              {stat.label}
-            </CardTitle>
+        <Card key={stat.label} className="bg-content1 border-none">
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <p className="text-sm font-medium text-default-500">{stat.label}</p>
             <div className={`rounded-lg p-2.5 ${stat.bg} shadow-sm`}>
               <stat.icon className={`h-4 w-4 ${stat.color}`} />
             </div>
           </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold bg-gradient-to-r from-foreground to-muted-foreground bg-clip-text text-transparent">
-              {stat.value}
-            </div>
+          <CardContent className="py-2">
+            <div className="text-3xl font-bold">{stat.value}</div>
           </CardContent>
         </Card>
       ))}

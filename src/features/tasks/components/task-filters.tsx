@@ -1,14 +1,17 @@
 import { useTranslation } from "react-i18next";
 import { useTasksUIStore } from "../store/tasks-ui.store";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { 
+  InputGroup,
+  InputGroupPrefix,
+  InputGroupInput,
+  Button, 
+  Select, 
+  SelectTrigger, 
+  SelectValue, 
+  SelectPopover, 
+  ListBox, 
+  ListBoxItem 
+} from "@heroui/react";
 import { TASK_STATUSES, TASK_PRIORITIES } from "@/lib/constants";
 import { Search, X } from "lucide-react";
 
@@ -25,60 +28,77 @@ export function TaskFilters() {
   return (
     <div className="flex flex-wrap items-center gap-3 mb-4">
       {/* Search */}
-      <div className="relative flex-1 min-w-[200px] max-w-sm">
-        <Search className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-        <Input
-          placeholder={tc("actions.search")}
+      <InputGroup className="flex-1 min-w-[200px] max-w-sm" variant="primary">
+        <InputGroupPrefix>
+          <Search className="h-4 w-4 text-default-400" />
+        </InputGroupPrefix>
+        <InputGroupInput
+          placeholder={t("list.searchPlaceholder")}
           value={filters.search}
-          onChange={(e) => setFilter("search", e.target.value)}
-          className="ps-9"
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFilter("search", e.target.value)}
         />
-      </div>
+      </InputGroup>
 
       {/* Status filter */}
       <Select
-        value={filters.status[0] ?? "all"}
-        onValueChange={(value) =>
-          setFilter("status", value === "all" ? [] : [value as typeof filters.status[number]])
-        }
+        aria-label={t("list.columns.status")}
+        variant="primary"
+        className="w-[180px]"
+        selectedKey={filters.status[0] ?? "all"}
+        onSelectionChange={(key) => {
+          const value = key as string;
+          setFilter("status", value === "all" ? [] : [value as any]);
+        }}
       >
-        <SelectTrigger className="w-[150px]">
-          <SelectValue placeholder={t("list.columns.status")} />
+        <SelectTrigger>
+          <SelectValue />
         </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="all">{t("list.columns.status")}</SelectItem>
-          {TASK_STATUSES.map((s) => (
-            <SelectItem key={s} value={s}>
-              {t(`status.${s}`)}
-            </SelectItem>
-          ))}
-        </SelectContent>
+        <SelectPopover>
+          <ListBox>
+            <ListBoxItem id="all" textValue={t("list.columns.status")}>
+              {t("list.columns.status")}
+            </ListBoxItem>
+            {TASK_STATUSES.map((s) => (
+              <ListBoxItem id={s} key={s} textValue={t(`status.${s}`)}>
+                {t(`status.${s}`)}
+              </ListBoxItem>
+            ))}
+          </ListBox>
+        </SelectPopover>
       </Select>
 
       {/* Priority filter */}
       <Select
-        value={filters.priority[0] ?? "all"}
-        onValueChange={(value: string) =>
-          setFilter("priority", value === "all" ? [] : [value as typeof filters.priority[number]])
-        }
+        aria-label={t("list.columns.priority")}
+        variant="primary"
+        className="w-[180px]"
+        selectedKey={filters.priority[0] ?? "all"}
+        onSelectionChange={(key) => {
+          const value = key as string;
+          setFilter("priority", value === "all" ? [] : [value as any]);
+        }}
       >
-        <SelectTrigger className="w-[150px]">
-          <SelectValue placeholder={t("list.columns.priority")} />
+        <SelectTrigger>
+          <SelectValue />
         </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="all">{t("list.columns.priority")}</SelectItem>
-          {TASK_PRIORITIES.map((p) => (
-            <SelectItem key={p} value={p}>
-              {t(`priority.${p}`)}
-            </SelectItem>
-          ))}
-        </SelectContent>
+        <SelectPopover>
+          <ListBox>
+            <ListBoxItem id="all" textValue={t("list.columns.priority")}>
+              {t("list.columns.priority")}
+            </ListBoxItem>
+            {TASK_PRIORITIES.map((p) => (
+              <ListBoxItem id={p} key={p} textValue={t(`priority.${p}`)}>
+                {t(`priority.${p}`)}
+              </ListBoxItem>
+            ))}
+          </ListBox>
+        </SelectPopover>
       </Select>
 
       {/* Reset */}
       {hasFilters && (
-        <Button variant="ghost" size="sm" onClick={resetFilters}>
-          <X className="h-4 w-4 me-1" />
+        <Button variant="tertiary" size="sm" onPress={resetFilters} className="flex items-center gap-2">
+          <X className="h-4 w-4" />
           {tc("actions.reset")}
         </Button>
       )}

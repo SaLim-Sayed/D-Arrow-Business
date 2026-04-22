@@ -8,7 +8,8 @@ import {
 import { useAllTasksQuery } from "../hooks/use-tasks";
 import { useUpdateTask } from "../hooks/use-task-mutations";
 import { TaskCard } from "./task-card";
-import { ScrollArea } from "@/components/ui/scroll-area";
+// ScrollArea removed, using native scrollbars
+import { Chip } from "@heroui/react";
 import { LoadingSpinner } from "@/components/shared/loading-spinner";
 import { TASK_STATUSES } from "@/lib/constants";
 import type { Task, TaskStatus } from "../types/task.types";
@@ -63,17 +64,15 @@ export function KanbanBoard() {
             className={`rounded-lg border border-t-4 bg-muted/30 ${columnColors[status]}`}
           >
             <div className="flex items-center justify-between p-3 pb-2">
-              <h3 className="text-sm font-semibold">
-                {t(`status.${status}`)}
-              </h3>
-              <span className="text-xs text-muted-foreground bg-muted rounded-full px-2 py-0.5">
+              <h3 className="text-sm font-semibold">{t(`status.${status}`)}</h3>
+              <Chip size="sm" variant="soft" color="accent" className="ml-2">
                 {columns[status].length}
-              </span>
+              </Chip>
             </div>
 
             <Droppable droppableId={status}>
               {(provided) => (
-                <ScrollArea className="h-[calc(100vh-280px)]">
+                <div className="h-[calc(100vh-280px)] overflow-y-auto overflow-x-hidden">
                   <div
                     ref={provided.innerRef}
                     {...provided.droppableProps}
@@ -101,7 +100,7 @@ export function KanbanBoard() {
                     ))}
                     {provided.placeholder}
                   </div>
-                </ScrollArea>
+                </div>
               )}
             </Droppable>
           </div>

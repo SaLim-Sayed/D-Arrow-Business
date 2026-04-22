@@ -1,15 +1,21 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import {
+  Button,
+  InputGroup,
+  InputGroupPrefix,
+  InputGroupInput,
   Select,
-  SelectContent,
-  SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
+  SelectPopover,
+  ListBox,
+  ListBoxItem,
+  Chip,
+  ChipLabel,
+  Card,
+  CardContent,
+} from "@heroui/react";
 import { X, Search, Filter } from "lucide-react";
 import { TASK_STATUSES, TASK_PRIORITIES } from "@/lib/constants";
 import { useTasksStore } from "@/stores/tasks.store";
@@ -18,16 +24,13 @@ import type { TaskFilters } from "../types/task.types";
 export function TaskFiltersEnhanced() {
   const { t } = useTranslation("tasks");
   const { t: tc } = useTranslation();
-  
-  const { 
-    filters, 
-    setFilters, 
-    clearFilters, 
-    availableUsers, 
+
+  const {
+    filters,
+    setFilters,
+    clearFilters,
+    availableUsers,
     filterTasks,
-    getTasksByAssignee,
-    getTasksByStatus,
-    getTasksByPriority
   } = useTasksStore();
 
   const [showAdvanced, setShowAdvanced] = React.useState(false);
@@ -46,7 +49,7 @@ export function TaskFiltersEnhanced() {
   };
 
   const activeFiltersCount = Object.values(filters).filter(
-    value => value !== undefined && value !== "" && value !== null
+    (value) => value !== undefined && value !== "" && value !== null,
   ).length;
 
   const filteredTasks = filterTasks();
@@ -54,75 +57,110 @@ export function TaskFiltersEnhanced() {
   return (
     <div className="space-y-4">
       {/* Search Bar */}
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-        <Input
+      <InputGroup fullWidth variant="primary">
+        <InputGroupPrefix>
+          <Search className="text-default-400 h-4 w-4" />
+        </InputGroupPrefix>
+        <InputGroupInput
           placeholder={t("filters.searchPlaceholder")}
           value={filters.search || ""}
-          onChange={(e) => handleFilterChange("search", e.target.value)}
-          className="pl-10"
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleFilterChange("search", e.target.value)}
         />
-      </div>
+      </InputGroup>
 
       {/* Quick Filters */}
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap gap-2 items-center">
         <Select
-          value={filters.status?.[0] || ""}
-          onValueChange={(value) => handleFilterChange("status", value ? [value] : undefined)}
+          aria-label={t("filters.status")}
+          variant="primary"
+          className="w-[180px]"
+          selectedKey={
+            filters.status && filters.status.length > 0 ? filters.status[0] : ""
+          }
+          onSelectionChange={(key) => {
+            const val = key as string;
+            handleFilterChange("status", val ? [val] : undefined);
+          }}
         >
-          <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder={t("filters.status")} />
+          <SelectTrigger>
+            <SelectValue />
           </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="">{t("filters.allStatuses")}</SelectItem>
-            {TASK_STATUSES.map((status) => (
-              <SelectItem key={status} value={status}>
-                {t(`status.${status}`)}
-              </SelectItem>
-            ))}
-          </SelectContent>
+          <SelectPopover>
+            <ListBox>
+              <ListBoxItem id="" textValue={t("filters.allStatuses")}>
+                {t("filters.allStatuses")}
+              </ListBoxItem>
+              {TASK_STATUSES.map((status) => (
+                <ListBoxItem
+                  id={status}
+                  key={status}
+                  textValue={t(`status.${status}`)}
+                >
+                  {t(`status.${status}`)}
+                </ListBoxItem>
+              ))}
+            </ListBox>
+          </SelectPopover>
         </Select>
 
         <Select
-          value={filters.priority?.[0] || ""}
-          onValueChange={(value) => handleFilterChange("priority", value ? [value] : undefined)}
+          aria-label={t("filters.priority")}
+          variant="primary"
+          className="w-[180px]"
+          selectedKey={
+            filters.priority && filters.priority.length > 0
+              ? filters.priority[0]
+              : ""
+          }
+          onSelectionChange={(key) => {
+            const val = key as string;
+            handleFilterChange("priority", val ? [val] : undefined);
+          }}
         >
-          <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder={t("filters.priority")} />
+          <SelectTrigger>
+            <SelectValue />
           </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="">{t("filters.allPriorities")}</SelectItem>
-            {TASK_PRIORITIES.map((priority) => (
-              <SelectItem key={priority} value={priority}>
-                {t(`priority.${priority}`)}
-              </SelectItem>
-            ))}
-          </SelectContent>
+          <SelectPopover>
+            <ListBox>
+              <ListBoxItem id="" textValue={t("filters.allPriorities")}>
+                {t("filters.allPriorities")}
+              </ListBoxItem>
+              {TASK_PRIORITIES.map((priority) => (
+                <ListBoxItem
+                  id={priority}
+                  key={priority}
+                  textValue={t(`priority.${priority}`)}
+                >
+                  {t(`priority.${priority}`)}
+                </ListBoxItem>
+              ))}
+            </ListBox>
+          </SelectPopover>
         </Select>
 
         <Button
           variant="outline"
           size="sm"
-          onClick={() => setShowAdvanced(!showAdvanced)}
-          className="flex items-center gap-2"
+          onPress={() => setShowAdvanced(!showAdvanced)}
+          className="h-12 flex items-center gap-2"
         >
           <Filter className="h-4 w-4" />
           {t("filters.advanced")}
           {activeFiltersCount > 0 && (
-            <Badge variant="secondary" className="ml-1">
-              {activeFiltersCount}
-            </Badge>
+            <Chip size="sm" variant="soft" color="accent">
+              <ChipLabel>{activeFiltersCount}</ChipLabel>
+            </Chip>
           )}
         </Button>
 
         {activeFiltersCount > 0 && (
           <Button
-            variant="ghost"
+            variant="tertiary"
             size="sm"
-            onClick={handleClearAll}
-            className="text-muted-foreground"
+            onPress={handleClearAll}
+            className="text-default-500 h-12 flex items-center gap-2"
           >
-            <X className="h-4 w-4 mr-1" />
+            <X className="h-4 w-4" />
             {tc("actions.clear")}
           </Button>
         )}
@@ -130,124 +168,128 @@ export function TaskFiltersEnhanced() {
 
       {/* Advanced Filters */}
       {showAdvanced && (
-        <div className="border rounded-lg p-4 space-y-4 bg-muted/50">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {/* Assignee Filter */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium">{t("filters.assignee")}</label>
-              <Select
-                value={filters.assigneeId || ""}
-                onValueChange={(value) => handleFilterChange("assigneeId", value || undefined)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder={t("filters.selectAssignee")} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="">{t("filters.unassigned")}</SelectItem>
-                  {availableUsers.map((user) => (
-                    <SelectItem key={user.id} value={user.id}>
-                      {user.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+        <Card className="bg-default-50 border-none shadow-none">
+          <CardContent className="p-4 space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+              {/* Assignee Filter */}
+              <div className="flex flex-col gap-2">
+                <span className="text-sm font-medium text-default-700">
+                  {t("filters.assignee")}
+                </span>
+                <Select
+                  aria-label={t("filters.assignee")}
+                  placeholder={t("filters.selectAssignee")}
+                  variant="primary"
+                  selectedKey={filters.assigneeId || ""}
+                  onSelectionChange={(key) => {
+                    const val = key as string;
+                    handleFilterChange("assigneeId", val || undefined);
+                  }}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectPopover>
+                    <ListBox>
+                      <ListBoxItem id="" textValue={t("filters.unassigned")}>
+                        {t("filters.unassigned")}
+                      </ListBoxItem>
+                      {availableUsers.map((user) => (
+                        <ListBoxItem
+                          id={user.id}
+                          key={user.id}
+                          textValue={user.name}
+                        >
+                          {user.name}
+                        </ListBoxItem>
+                      ))}
+                    </ListBox>
+                  </SelectPopover>
+                </Select>
+              </div>
+
+              {/* Sort Options */}
+              {/* Note: Store doesn't seem to support sortBy/sortOrder directly in TaskFilterData but we'll keep it for UI if needed or fix it later */}
             </div>
 
-            {/* Date Range */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium">{t("filters.dueDate")}</label>
-              <Input
-                type="date"
-                value={filters.dueDate || ""}
-                onChange={(e) => handleFilterChange("dueDate", e.target.value || undefined)}
-              />
-            </div>
-
-            {/* Sort Options */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium">{t("filters.sortBy")}</label>
-              <Select
-                value={filters.sortBy || "createdAt"}
-                onValueChange={(value) => handleFilterChange("sortBy", value)}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="createdAt">{t("filters.createdAt")}</SelectItem>
-                  <SelectItem value="updatedAt">{t("filters.updatedAt")}</SelectItem>
-                  <SelectItem value="dueDate">{t("filters.dueDate")}</SelectItem>
-                  <SelectItem value="priority">{t("filters.priority")}</SelectItem>
-                  <SelectItem value="title">{t("filters.title")}</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Sort Order */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium">{t("filters.sortOrder")}</label>
-              <Select
-                value={filters?.sortOrder || "desc"}
-                onValueChange={(value) => handleFilterChange("sortOrder", value as "asc" | "desc")}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="desc">{t("filters.descending")}</SelectItem>
-                  <SelectItem value="asc">{t("filters.ascending")}</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          {/* Active Filter Badges */}
-          {activeFiltersCount > 0 && (
-            <div className="flex flex-wrap gap-2 pt-2 border-t">
-              {filters.search && (
-                <Badge variant="secondary" className="flex items-center gap-1">
-                  {t("filters.search")}: {filters.search}
-                  <X
-                    className="h-3 w-3 cursor-pointer"
-                    onClick={() => handleClearFilter("search")}
-                  />
-                </Badge>
-              )}
-              {filters.status?.[0] && (
-                <Badge variant="secondary" className="flex items-center gap-1">
-                  {t("filters.status")}: {t(`status.${filters.status[0]}`)}
-                  <X
-                    className="h-3 w-3 cursor-pointer"
-                    onClick={() => handleClearFilter("status")}
-                  />
-                </Badge>
-              )}
-              {filters.priority?.[0] && (
-                <Badge variant="secondary" className="flex items-center gap-1">
-                  {t("filters.priority")}: {t(`priority.${filters.priority[0]}`)}
-                  <X
-                    className="h-3 w-3 cursor-pointer"
-                    onClick={() => handleClearFilter("priority")}
-                  />
-                </Badge>
-              )}
-              {filters.assigneeId && (
-                <Badge variant="secondary" className="flex items-center gap-1">
-                  {t("filters.assignee")}: {availableUsers.find(u => u.id === filters.assigneeId)?.name || "Unknown"}
-                  <X
-                    className="h-3 w-3 cursor-pointer"
-                    onClick={() => handleClearFilter("assigneeId")}
-                  />
-                </Badge>
-              )}
-            </div>
-          )}
-        </div>
+            {/* Active Filter Badges */}
+            {activeFiltersCount > 0 && (
+              <div className="flex flex-wrap gap-2 pt-2 border-t border-default-100">
+                {filters.search && (
+                  <Chip variant="soft" className="h-7">
+                    <ChipLabel>
+                      {t("filters.search")}: {filters.search}
+                    </ChipLabel>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="ml-1 h-4 w-4 min-w-0 p-0"
+                      onPress={() => handleClearFilter("search")}
+                    >
+                      <X className="h-3 w-3" />
+                    </Button>
+                  </Chip>
+                )}
+                {filters.status && filters.status[0] && (
+                  <Chip variant="soft" className="h-7">
+                    <ChipLabel>
+                      {t("filters.status")}: {t(`status.${filters.status[0]}`)}
+                    </ChipLabel>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="ml-1 h-4 w-4 min-w-0 p-0"
+                      onPress={() => handleClearFilter("status")}
+                    >
+                      <X className="h-3 w-3" />
+                    </Button>
+                  </Chip>
+                )}
+                {filters.priority && filters.priority[0] && (
+                  <Chip variant="soft" className="h-7">
+                    <ChipLabel>
+                      {t("filters.priority")}:{" "}
+                      {t(`priority.${filters.priority[0]}`)}
+                    </ChipLabel>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="ml-1 h-4 w-4 min-w-0 p-0"
+                      onPress={() => handleClearFilter("priority")}
+                    >
+                      <X className="h-3 w-3" />
+                    </Button>
+                  </Chip>
+                )}
+                {filters.assigneeId && (
+                  <Chip variant="soft" className="h-7">
+                    <ChipLabel>
+                      {t("filters.assignee")}:{" "}
+                      {availableUsers.find((u) => u.id === filters.assigneeId)
+                        ?.name || "Unknown"}
+                    </ChipLabel>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="ml-1 h-4 w-4 min-w-0 p-0"
+                      onPress={() => handleClearFilter("assigneeId")}
+                    >
+                      <X className="h-3 w-3" />
+                    </Button>
+                  </Chip>
+                )}
+              </div>
+            )}
+          </CardContent>
+        </Card>
       )}
 
       {/* Results Summary */}
       <div className="text-sm text-muted-foreground">
-        {t("filters.showingResults", { count: filteredTasks.length, total: filteredTasks.length })}
+        {t("filters.showingResults", {
+          count: filteredTasks.length,
+          total: filteredTasks.length,
+        })}
       </div>
     </div>
   );

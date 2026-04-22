@@ -1,10 +1,15 @@
 import { useTranslation } from "react-i18next";
 import { useState } from "react";
 import { useCommentsQuery, useAddComment } from "../hooks/use-comments";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { Skeleton } from "@/components/ui/skeleton";
+import { 
+  Avatar, 
+  AvatarImage,
+  AvatarFallback,
+  Button, 
+  TextArea, 
+  Skeleton,
+  Spinner 
+} from "@heroui/react";
 import { formatDate } from "@/lib/utils";
 import { Send } from "lucide-react";
 
@@ -32,8 +37,8 @@ export function TaskComments({ taskId }: { taskId: string }) {
           <div key={i} className="flex gap-3">
             <Skeleton className="h-8 w-8 rounded-full" />
             <div className="flex-1 space-y-2">
-              <Skeleton className="h-4 w-32" />
-              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-32 rounded-lg" />
+              <Skeleton className="h-4 w-full rounded-lg" />
             </div>
           </div>
         ))}
@@ -63,8 +68,9 @@ export function TaskComments({ taskId }: { taskId: string }) {
 
         return (
           <div key={comment.id} className="flex gap-3">
-            <Avatar className="h-8 w-8 shrink-0">
-              <AvatarFallback className="text-xs">{initials}</AvatarFallback>
+            <Avatar size="sm" className="shrink-0">
+              <AvatarImage src={comment.author?.avatar} />
+              <AvatarFallback>{initials}</AvatarFallback>
             </Avatar>
             <div className="flex-1 min-w-0">
               <div className="flex items-baseline gap-2">
@@ -82,21 +88,27 @@ export function TaskComments({ taskId }: { taskId: string }) {
       })}
 
       {/* Add comment */}
-      <form onSubmit={handleSubmit} className="flex gap-2 pt-2 border-t">
-        <Textarea
-          placeholder={t("detail.addComment")}
+      <form onSubmit={handleSubmit} className="flex gap-2 pt-4 border-t border-default-100">
+        <TextArea
           value={content}
-          onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setContent(e.target.value)}
-          rows={2}
-          className="flex-1 resize-none"
+          onChange={(e: any) => setContent(e.target.value)}
+          placeholder={t("detail.commentPlaceholder")}
+          variant="primary"
+          rows={3}
+          className="bg-content1 flex-1"
         />
         <Button
           type="submit"
-          size="icon"
-          disabled={!content.trim() || addComment.isPending}
-          className="shrink-0 self-end"
+          isIconOnly
+          variant="primary"
+          isDisabled={!content.trim() || addComment.isPending}
+          className="shrink-0 self-end flex items-center justify-center"
         >
-          <Send className="h-4 w-4" />
+          {addComment.isPending ? (
+            <Spinner size="sm" color="current" />
+          ) : (
+            <Send className="h-4 w-4" />
+          )}
         </Button>
       </form>
     </div>

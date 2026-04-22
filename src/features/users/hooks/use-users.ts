@@ -57,7 +57,7 @@ export function useAllUsers() {
   const { user: currentUser } = useAuthStore();
   const { setAvailableUsers, setLoadingUsers } = useTasksStore();
 
-  const query = useQuery({
+  return useQuery({
     queryKey: ["users", "all"],
     queryFn: async () => {
       setLoadingUsers(true);
@@ -65,12 +65,26 @@ export function useAllUsers() {
         // Simulate API delay
         await new Promise(resolve => setTimeout(resolve, 500));
         
-        // In a real app, this would be:
-        // const response = await usersApi.getAllUsers();
-        // return response.data;
-        
         // For now, return mock users
-        return mockUsers;
+        const users = mockUsers;
+        
+        // Include current user if not already in the list
+        const allUsers = currentUser 
+          ? users.some((u: User) => u.id === currentUser.id) 
+            ? users 
+            : [...users, {
+                id: currentUser.id,
+                name: currentUser.name,
+                email: currentUser.email,
+                role: currentUser.role === 'member' ? 'user' : currentUser.role as "admin" | "manager" | "user",
+                avatar: currentUser.avatar,
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
+              }]
+          : users;
+        
+        setAvailableUsers(allUsers);
+        return allUsers;
       } catch (error) {
         console.error("Failed to fetch users:", error);
         toast.error("Failed to load users");
@@ -79,45 +93,24 @@ export function useAllUsers() {
         setLoadingUsers(false);
       }
     },
-    onSuccess: (data: User[]) => {
-      const users = data;
-      // Include current user if not already in the list
-      const allUsers = currentUser 
-        ? users.some((u: User) => u.id === currentUser.id) 
-          ? users 
-          : [...users, {
-              id: currentUser.id,
-              name: currentUser.name,
-              email: currentUser.email,
-              role: currentUser.role === 'member' ? 'user' : currentUser.role as "admin" | "manager" | "user",
-              avatar: currentUser.avatar,
-              createdAt: new Date().toISOString(),
-              updatedAt: new Date().toISOString(),
-            }]
-        : users;
-      
-      setAvailableUsers(allUsers);
-    },
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
-
-  return query;
 }
 
 export function useUsersByRole(role?: string) {
-  const { data: allUsers } = useAllUsers();
+  const query = useAllUsers();
   
   return {
-    ...allUsers,
-    data: role ? allUsers?.filter(user => user.role === role) : allUsers,
+    ...query,
+    data: role ? query.data?.filter((user: User) => user.role === role) : query.data,
   };
 }
 
 export function useActiveUsers() {
-  const { data: allUsers } = useAllUsers();
+  const query = useAllUsers();
   
   return {
-    ...allUsers,
-    data: allUsers?.filter(user => user.role !== 'inactive'),
+    ...query,
+    data: query.data?.filter((user: User) => (user.role as string) !== 'inactive'),
   };
 }

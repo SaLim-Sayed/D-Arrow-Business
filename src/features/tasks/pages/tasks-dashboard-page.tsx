@@ -5,13 +5,18 @@ import { TaskStatsCards } from "../components/task-stats-cards";
 import { TaskCharts } from "../components/task-chart";
 import { PageHeader } from "@/components/shared/page-header";
 import { LoadingSpinner } from "@/components/shared/loading-spinner";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { StatusBadge } from "@/components/shared/status-badge";
-import { PriorityBadge } from "@/components/shared/priority-badge";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { 
+  Card, 
+  CardHeader, 
+  CardContent, 
+  Avatar,
+  AvatarImage,
+  AvatarFallback
+} from "@heroui/react";
 import { Plus } from "lucide-react";
 import { formatDate } from "@/lib/utils";
+import { StatusBadge } from "@/components/shared/status-badge";
+import { PriorityBadge } from "@/components/shared/priority-badge";
 
 export function TasksDashboardPage() {
   const { t } = useTranslation("tasks");
@@ -35,12 +40,13 @@ export function TasksDashboardPage() {
       <PageHeader
         title={t("dashboard.title")}
         actions={
-          <Button asChild>
-            <Link to="/tasks/new">
-              <Plus className="h-4 w-4 me-1" />
-              {t("list.newTask")}
-            </Link>
-          </Button>
+          <Link 
+            to="/tasks/new" 
+            className="inline-flex items-center justify-center rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary/90 transition-colors gap-2"
+          >
+            <Plus className="h-4 w-4" />
+            {t("list.newTask")}
+          </Link>
         }
       />
 
@@ -48,14 +54,17 @@ export function TasksDashboardPage() {
       <TaskCharts tasks={tasks} />
 
       {/* Recent Tasks */}
-      <Card>
+      <Card className="bg-content1">
         <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle className="text-base">
+          <h4 className="text-base font-semibold">
             {t("dashboard.recentTasks")}
-          </CardTitle>
-          <Button variant="ghost" size="sm" asChild>
-            <Link to="/tasks/list">{tc("actions.viewAll")}</Link>
-          </Button>
+          </h4>
+          <Link 
+            to="/tasks/list"
+            className="text-primary text-sm font-medium hover:underline"
+          >
+            {tc("actions.viewAll")}
+          </Link>
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
@@ -71,23 +80,22 @@ export function TasksDashboardPage() {
                 <Link
                   key={task.id}
                   to={`/tasks/${task.id}`}
-                  className="flex items-center gap-3 rounded-md p-2 hover:bg-muted transition-colors"
+                  className="flex items-center gap-3 rounded-xl p-2 hover:bg-default-100 transition-colors"
                 >
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium truncate">
                       {task.title}
                     </p>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-xs text-default-400">
                       {formatDate(task.updatedAt)}
                     </p>
                   </div>
                   <StatusBadge status={task.status} />
                   <PriorityBadge priority={task.priority} />
                   {task.assignee && (
-                    <Avatar className="h-6 w-6 hidden sm:flex">
-                      <AvatarFallback className="text-[10px]">
-                        {initials}
-                      </AvatarFallback>
+                    <Avatar size="sm">
+                      <AvatarImage src={task.assignee.avatar} />
+                      <AvatarFallback>{initials}</AvatarFallback>
                     </Avatar>
                   )}
                 </Link>

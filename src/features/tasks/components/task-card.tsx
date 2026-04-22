@@ -2,7 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import type { Task } from "../types/task.types";
 import { PriorityBadge } from "@/components/shared/priority-badge";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarImage, AvatarFallback, Card, CardContent } from "@heroui/react";
 import { MessageSquare } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -28,48 +28,49 @@ export function TaskCard({ task, isDragging }: TaskCardProps) {
     task.dueDate && new Date(task.dueDate) < new Date() && task.status !== "done";
 
   return (
-    <div
+    <Card
       onClick={() => navigate(`/tasks/${task.id}`)}
       className={cn(
-        "rounded-lg border bg-card p-3 shadow-sm cursor-pointer transition-shadow hover:shadow-md",
+        "bg-content1 shadow-sm transition-shadow hover:shadow-md",
         isDragging && "shadow-lg ring-2 ring-primary/20"
       )}
     >
-      <h4 className="text-sm font-medium leading-snug mb-2 line-clamp-2">
-        {task.title}
-      </h4>
+      <CardContent className="p-3">
+        <h4 className="text-sm font-medium leading-snug mb-2 line-clamp-2">
+          {task.title}
+        </h4>
 
-      <div className="flex items-center gap-2 mb-2">
-        <PriorityBadge priority={task.priority} />
-        {isOverdue && (
-          <span className="text-xs text-red-600 dark:text-red-400 font-medium">
-            Overdue
-          </span>
-        )}
-      </div>
-
-      <div className="flex items-center justify-between mt-2">
-        <div className="flex items-center gap-1.5">
-          {task.assignee && (
-            <>
-              <Avatar className="h-5 w-5">
-                <AvatarFallback className="text-[10px]">
-                  {initials}
-                </AvatarFallback>
-              </Avatar>
-              <span className="text-xs text-muted-foreground truncate max-w-[80px]">
-                {assigneeName}
-              </span>
-            </>
+        <div className="flex items-center gap-2 mb-2">
+          <PriorityBadge priority={task.priority} />
+          {isOverdue && (
+            <span className="text-xs text-danger font-medium">
+              Overdue
+            </span>
           )}
         </div>
-        {task.commentsCount > 0 && (
-          <div className="flex items-center gap-1 text-xs text-muted-foreground">
-            <MessageSquare className="h-3 w-3" />
-            {task.commentsCount}
+
+        <div className="flex items-center justify-between mt-2">
+          <div className="flex items-center gap-1.5">
+            {task.assignee && (
+              <>
+                <Avatar size="sm">
+                  <AvatarImage src={task.assignee.avatar} />
+                  <AvatarFallback>{initials}</AvatarFallback>
+                </Avatar>
+                <span className="text-xs text-default-500 truncate max-w-[80px]">
+                  {assigneeName}
+                </span>
+              </>
+            )}
           </div>
-        )}
-      </div>
-    </div>
+          {task.commentsCount > 0 && (
+            <div className="flex items-center gap-1 text-xs text-default-400">
+              <MessageSquare className="h-3 w-3" />
+              {task.commentsCount}
+            </div>
+          )}
+        </div>
+      </CardContent>
+    </Card>
   );
 }

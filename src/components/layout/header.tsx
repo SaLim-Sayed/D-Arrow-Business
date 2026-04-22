@@ -3,16 +3,20 @@ import { useAuth } from "@/features/auth/context/auth-context";
 import { useLayoutStore } from "@/stores/layout.store";
 import { useThemeStore } from "@/stores/theme.store";
 import { LanguageSwitcher } from "./language-switcher";
-import { Button } from "@/components/ui/button";
 import {
+  Button,
+  Dropdown,
+  DropdownTrigger,
   DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+  DropdownItem,
+  Avatar,
+  AvatarImage,
+  AvatarFallback,
+  DrawerRoot,
+  DrawerBackdrop,
+  DrawerContent,
+  DrawerDialog,
+} from "@heroui/react";
 import { Menu, Moon, Sun, LogOut, User } from "lucide-react";
 import { MobileSidebar } from "./mobile-sidebar";
 
@@ -22,8 +26,7 @@ export function Header() {
   const { mobileSidebarOpen, setMobileSidebarOpen } = useLayoutStore();
   const { mode, toggleMode } = useThemeStore();
 
-  const displayName =
-    i18n.language === "ar" ? user?.nameAr : user?.name;
+  const displayName = i18n.language === "ar" ? user?.nameAr : user?.name;
   const initials = (user?.name ?? "U")
     .split(" ")
     .map((n) => n[0])
@@ -34,16 +37,27 @@ export function Header() {
   return (
     <header className="flex h-14 items-center gap-4 border-b bg-background px-4">
       {/* Mobile menu trigger */}
-      <Sheet open={mobileSidebarOpen} onOpenChange={setMobileSidebarOpen}>
-        <SheetTrigger asChild>
-          <Button variant="ghost" size="icon" className="md:hidden">
-            <Menu className="h-5 w-5" />
-          </Button>
-        </SheetTrigger>
-        <SheetContent side={i18n.language === "ar" ? "right" : "left"} className="w-60 p-0">
-          <MobileSidebar />
-        </SheetContent>
-      </Sheet>
+      <Button
+        isIconOnly
+        variant="outline"
+        className="md:hidden"
+        onPress={() => setMobileSidebarOpen(true)}
+      >
+        <Menu className="h-5 w-5" />
+      </Button>
+
+      <DrawerRoot
+        isOpen={mobileSidebarOpen}
+        onOpenChange={setMobileSidebarOpen}
+      >
+        <DrawerBackdrop>
+          <DrawerContent placement={i18n.language === "ar" ? "right" : "left"}>
+            <DrawerDialog>
+              <MobileSidebar />
+            </DrawerDialog>
+          </DrawerContent>
+        </DrawerBackdrop>
+      </DrawerRoot>
 
       <div className="flex-1" />
 
@@ -51,7 +65,7 @@ export function Header() {
       <div className="flex items-center gap-2">
         <LanguageSwitcher />
 
-        <Button variant="ghost" size="icon" onClick={toggleMode}>
+        <Button isIconOnly variant="primary" onPress={toggleMode}>
           {mode === "dark" ? (
             <Sun className="h-4 w-4" />
           ) : (
@@ -59,31 +73,33 @@ export function Header() {
           )}
         </Button>
 
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="gap-2 px-2">
-              <Avatar className="h-7 w-7">
-                <AvatarFallback className="text-xs">
-                  {initials}
-                </AvatarFallback>
+        <Dropdown>
+          <DropdownTrigger>
+            <Button variant="primary" className="gap-2 px-2 h-9 min-w-0">
+              <Avatar size="sm">
+                <AvatarImage src={user?.avatar} />
+                <AvatarFallback>{initials}</AvatarFallback>
               </Avatar>
               <span className="hidden text-sm sm:inline-block">
                 {displayName}
               </span>
             </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-48">
-            <DropdownMenuItem>
-              <User className="me-2 h-4 w-4" />
-              {t("user.profile")}
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={logout}>
-              <LogOut className="me-2 h-4 w-4" />
-              {t("user.logout")}
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+          </DropdownTrigger>
+          <DropdownMenu aria-label="User Actions">
+            <DropdownItem key="profile">
+              <div className="flex items-center gap-2">
+                <User className="h-4 w-4" />
+                {t("user.profile")}
+              </div>
+            </DropdownItem>
+            <DropdownItem key="logout" className="text-danger" onPress={logout}>
+              <div className="flex items-center gap-2">
+                <LogOut className="h-4 w-4" />
+                {t("user.logout")}
+              </div>
+            </DropdownItem>
+          </DropdownMenu>
+        </Dropdown>
       </div>
     </header>
   );

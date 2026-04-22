@@ -1,7 +1,18 @@
-export function LoadingSpinner({ className }: { className?: string }) {
+import { Spinner } from "@heroui/react";
+import { cn } from "@/lib/utils";
+
+interface LoadingSpinnerProps {
+  className?: string;
+  size?: "sm" | "md" | "lg";
+}
+
+export function LoadingSpinner({ 
+  className,
+  size = "md" 
+}: LoadingSpinnerProps) {
   return (
-    <div className={`flex items-center justify-center py-12 ${className ?? ""}`}>
-      <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+    <div className={cn("flex items-center justify-center p-4", className)}>
+      <Spinner color="accent" size={size} />
     </div>
   );
 }

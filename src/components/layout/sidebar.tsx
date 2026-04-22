@@ -9,12 +9,12 @@ import {
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import {
-  Tooltip,
-  TooltipContent,
+import { 
+  Button, 
+  TooltipRoot,
   TooltipTrigger,
-} from "@/components/ui/tooltip";
+  TooltipContent
+} from "@heroui/react";
 
 interface NavItem {
   labelKey: string;
@@ -61,13 +61,14 @@ export function Sidebar() {
           </span>
         )}
         <Button
-          variant="ghost"
-          size="icon"
+          isIconOnly
+          variant="tertiary"
+          size="sm"
           className={cn(
             "h-8 w-8 shrink-0 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors", 
             !sidebarCollapsed && "ms-auto"
           )}
-          onClick={toggleSidebar}
+          onPress={toggleSidebar}
         >
           {sidebarCollapsed ? (
             isRtl ? (
@@ -86,8 +87,11 @@ export function Sidebar() {
       {/* Navigation */}
       <nav className="flex-1 space-y-2 p-3">
         {navItems.map((item) => (
-          <Tooltip key={item.path} delayDuration={0}>
-            <TooltipTrigger asChild>
+          <TooltipRoot 
+            key={item.path} 
+            isDisabled={!sidebarCollapsed}
+          >
+            <TooltipTrigger>
               <NavLink
                 to={item.path}
                 className={({ isActive }) =>
@@ -112,12 +116,10 @@ export function Sidebar() {
                 )}
               </NavLink>
             </TooltipTrigger>
-            {sidebarCollapsed && (
-              <TooltipContent side={isRtl ? "left" : "right"} className="font-medium">
-                {t(item.labelKey)}
-              </TooltipContent>
-            )}
-          </Tooltip>
+            <TooltipContent placement={isRtl ? "left" : "right"}>
+              {t(item.labelKey)}
+            </TooltipContent>
+          </TooltipRoot>
         ))}
       </nav>
     </aside>

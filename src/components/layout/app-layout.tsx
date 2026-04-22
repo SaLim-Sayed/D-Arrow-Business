@@ -1,7 +1,7 @@
 import { Outlet } from "react-router-dom";
 import { Sidebar } from "./sidebar";
 import { Header } from "./header";
-import { ScrollArea } from "@/components/ui/scroll-area";
+// No ScrollArea import needed for HeroUI as it uses native scrollbars or custom styles
 
 export function AppLayout() {
   return (
@@ -9,9 +9,9 @@ export function AppLayout() {
       <Sidebar />
       <div className="flex flex-1 flex-col overflow-hidden">
         <Header />
-        <ScrollArea className="flex-1">
+        <div className="flex-1 overflow-y-auto">
           <main className="p-4 md:p-6">{<Outlet />}</main>
-        </ScrollArea>
+        </div>
       </div>
     </div>
   );
