@@ -6,6 +6,8 @@ export const STORAGE_KEYS = {
   LAYOUT: "d-arrow-layout",
   LANGUAGE: "d-arrow-lang",
   REFRESH_TOKEN: "d-arrow-refresh-token",
+  AUTH_STORE: "d-arrow-auth-store",
+  TASKS_STORE: "d-arrow-tasks-store",
 } as const;
 
 export const QUERY_KEYS = {

@@ -1,7 +1,4 @@
-import { useTranslation } from "react-i18next";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
+import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
@@ -11,8 +8,6 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Button } from "@/components/ui/button";
 import {
   Select,
   SelectContent,
@@ -20,7 +15,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { TASK_STATUSES, TASK_PRIORITIES } from "@/lib/constants";
+import { Textarea } from "@/components/ui/textarea";
+import { TASK_PRIORITIES, TASK_STATUSES } from "@/lib/constants";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { useTranslation } from "react-i18next";
+import { z } from "zod";
+import { useTasksStore } from "@/stores/tasks.store";
+import { useAuthStore } from "@/stores/auth.store";
+import { useAllUsers } from "@/features/users/hooks/use-users";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import type { CreateTaskDTO, Task } from "../types/task.types";
 
 const taskSchema = z.object({
@@ -47,6 +51,8 @@ export function TaskForm({
 }: TaskFormProps) {
   const { t } = useTranslation("tasks");
   const { t: tc } = useTranslation();
+  const { data: allUsers, isLoading: isLoadingUsers } = useAllUsers();
+  const { user: currentUser } = useAuthStore();
 
   const form = useForm<TaskFormValues>({
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -169,6 +175,76 @@ export function TaskForm({
             )}
           />
         </div>
+
+        <FormField
+          control={form.control}
+          name="assigneeId"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>{t("form.assignee.label")}</FormLabel>
+              <Select
+                onValueChange={(value) => field.onChange(value === "unassigned" ? null : value)}
+                defaultValue={field.value || "unassigned"}
+                value={field.value || "unassigned"}
+              >
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder={t("form.assignee.placeholder")} />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  <SelectItem value="unassigned">
+                    {t("form.assignee.unassigned")}
+                  </SelectItem>
+                  {/* Add current user as option */}
+                  {currentUser && (
+                    <SelectItem value={currentUser.id}>
+                      <div className="flex items-center gap-2">
+                        <Avatar className="h-6 w-6">
+                          <AvatarImage src={currentUser.avatar} />
+                          <AvatarFallback>
+                            {currentUser.name.charAt(0).toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="flex flex-col">
+                          <span className="font-medium">{currentUser.name}</span>
+                          <span className="text-xs text-muted-foreground">
+                            {t("form.assignee.me")}
+                          </span>
+                        </div>
+                      </div>
+                    </SelectItem>
+                  )}
+                  {/* Add all system users */}
+                  {(allUsers || [])
+                    .filter(user => user.id !== currentUser?.id)
+                    .map((user) => (
+                      <SelectItem key={user.id} value={user.id}>
+                        <div className="flex items-center gap-2">
+                          <Avatar className="h-6 w-6">
+                            <AvatarImage src={user.avatar} />
+                            <AvatarFallback>
+                              {user.name.charAt(0).toUpperCase()}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="flex flex-col">
+                            <span className="font-medium">{user.name}</span>
+                            <span className="text-xs text-muted-foreground">
+                              {user.email}
+                            </span>
+                            <span className="text-xs text-primary">
+                              {user.role}
+                            </span>
+                          </div>
+                        </div>
+                      </SelectItem>
+                    ))}
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
         <FormField
           control={form.control}

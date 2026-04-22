@@ -50,6 +50,7 @@ export interface TaskFilters {
   pageSize?: number;
   sortBy?: string;
   sortOrder?: "asc" | "desc";
+  dueDate?: string;
 }
 
 export interface Comment {
