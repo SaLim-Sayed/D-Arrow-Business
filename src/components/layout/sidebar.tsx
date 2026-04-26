@@ -1,15 +1,14 @@
-import { useTranslation } from "react-i18next";
-import { NavLink } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useLayoutStore } from "@/stores/layout.store";
+import { Button, Tooltip } from "@heroui/react";
 import {
-  LayoutDashboard,
-  ListTodo,
-  Kanban,
   ChevronLeft,
   ChevronRight,
+  LayoutDashboard,
+  ListTodo,
 } from "lucide-react";
-import { Button, Tooltip } from "@heroui/react";
+import { useTranslation } from "react-i18next";
+import { NavLink } from "react-router-dom";
 
 interface NavItem {
   labelKey: string;
