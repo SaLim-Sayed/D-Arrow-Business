@@ -1,31 +1,30 @@
-import { useTranslation } from "react-i18next";
-import { Link, useNavigate } from "react-router-dom";
-import { useTasksQuery } from "../hooks/use-tasks";
-import { useDeleteTask } from "../hooks/use-task-mutations";
-import { useTasksUIStore } from "../store/tasks-ui.store";
-import { TaskFilters } from "../components/task-filters";
-import { PageHeader } from "@/components/shared/page-header";
-import { StatusBadge } from "@/components/shared/status-badge";
-import { PriorityBadge } from "@/components/shared/priority-badge";
 import { EmptyState } from "@/components/shared/empty-state";
 import { LoadingSpinner } from "@/components/shared/loading-spinner";
-import {
-  Button,
-  Avatar,
-  Table,
-  TableHeader,
-  TableColumn,
-  TableBody,
-  TableRow,
-  TableCell,
-  Dropdown,
-  DropdownTrigger,
-  DropdownMenu,
-  DropdownItem,
-} from "@heroui/react";
-import { Plus, MoreHorizontal, Eye, Trash2 } from "lucide-react";
-import { formatDate } from "@/lib/utils";
+import { PageHeader } from "@/components/shared/page-header";
 import { Pagination } from "@/components/shared/pagination";
+import { PriorityBadge } from "@/components/shared/priority-badge";
+import { StatusBadge } from "@/components/shared/status-badge";
+import { formatDate } from "@/lib/utils";
+import {
+  Avatar,
+  Button,
+  Dropdown,
+  DropdownItem,
+  DropdownMenu,
+  DropdownTrigger,
+  Table,
+  TableBody,
+  TableCell,
+  TableColumn,
+  TableHeader,
+  TableRow,
+} from "@heroui/react";
+import { Eye, MoreHorizontal, Plus, Trash2 } from "lucide-react";
+import { useTranslation } from "react-i18next";
+import { Link, useNavigate } from "react-router-dom";
+import { useDeleteTask } from "../hooks/use-task-mutations";
+import { useTasksQuery } from "../hooks/use-tasks";
+import { useTasksUIStore } from "../store/tasks-ui.store";
 
 export function TasksListPage() {
   const { t, i18n } = useTranslation("tasks");
