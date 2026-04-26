@@ -63,7 +63,7 @@ export function TasksListPage() {
         }
       />
 
-      <TaskFilters />
+      {/* <TaskFilters /> */}
 
       {isLoading ? (
         <LoadingSpinner />
