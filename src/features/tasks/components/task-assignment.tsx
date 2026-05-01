@@ -13,7 +13,7 @@ import { useMutation } from "@tanstack/react-query";
 import { User, UserPlus, Users } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
-import * as tasksApi from "../api/tasks.api";
+import { TaskService } from "../api/tasks.service";
 
 import { useCompany } from "@/features/companies/context/company-context";
 
@@ -43,9 +43,9 @@ export function TaskAssignment({
   const assignMutation = useMutation({
     mutationFn: async (assigneeId: string | null) => {
       if (assigneeId) {
-        return tasksApi.updateTask(companyId!, taskId, { assigneeId });
+        return TaskService.updateTask(companyId!, taskId, { assigneeId });
       } else {
-        return tasksApi.updateTask(companyId!, taskId, { assigneeId: null });
+        return TaskService.updateTask(companyId!, taskId, { assigneeId: null });
       }
     },
     onMutate: (assigneeId) => {
@@ -259,7 +259,7 @@ export function QuickTaskAssignment({
 
   const assignMutation = useMutation({
     mutationFn: async (assigneeId: string | null) => {
-      return tasksApi.updateTask(companyId!, taskId, { assigneeId });
+      return TaskService.updateTask(companyId!, taskId, { assigneeId });
     },
     onSuccess: () => {
       toast.success(t("assignment.updated"));

@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { getLeads } from "../api/leads.api";
+import { LeadsService } from "../api/leads.service";
 import { useCompany } from "@/features/companies/context/company-context";
 import { PageHeader } from "@/components/shared/page-header";
 import { LoadingSpinner } from "@/components/shared/loading-spinner";
@@ -32,7 +32,7 @@ export function LeadsListPage() {
 
   const { data, isLoading } = useQuery({
     queryKey: ["leads", companyId],
-    queryFn: () => getLeads(companyId!),
+    queryFn: () => LeadsService.getLeads(companyId!),
     enabled: !!companyId,
   });
 

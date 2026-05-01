@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import type { User } from "@/features/auth/types/auth.types";
-import * as authApi from "@/features/auth/api/auth.api";
+import { AuthService } from "@/features/auth/api/auth.service";
 import { STORAGE_KEYS } from "@/lib/constants";
 import { onAuthStateChanged, getIdToken } from "firebase/auth";
 import { auth, db } from "@/lib/firebase";
@@ -27,7 +27,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   login: async (email: string, password: string) => {
     set({ isLoading: true });
     try {
-      const response = await authApi.login({ email, password });
+      const response = await AuthService.login({ email, password });
       const { user: userData, refreshToken } = response.data;
       
       localStorage.setItem(STORAGE_KEYS.REFRESH_TOKEN, refreshToken);
@@ -44,7 +44,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   },
 
   logout: async () => {
-    await authApi.logout();
+    await AuthService.logout();
     get().clearAuth();
   },
 

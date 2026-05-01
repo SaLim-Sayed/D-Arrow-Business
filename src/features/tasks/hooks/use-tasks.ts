@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { QUERY_KEYS } from "@/lib/constants";
-import * as tasksApi from "../api/tasks.api";
+import { TaskService } from "../api/tasks.service";
 import type { TaskFilters } from "../types/task.types";
 import { useCompany } from "@/features/companies/context/company-context";
 
@@ -9,7 +9,7 @@ export function useTasksQuery(filters?: TaskFilters) {
   
   return useQuery({
     queryKey: QUERY_KEYS.tasks.list({ ...filters, companyId } as Record<string, unknown>),
-    queryFn: () => tasksApi.getTasks(companyId!, filters),
+    queryFn: () => TaskService.getTasks(companyId!, filters),
     enabled: !!companyId,
   });
 }
@@ -19,7 +19,7 @@ export function useTaskQuery(id: string) {
 
   return useQuery({
     queryKey: QUERY_KEYS.tasks.detail(id),
-    queryFn: () => tasksApi.getTask(companyId!, id),
+    queryFn: () => TaskService.getTask(companyId!, id),
     enabled: !!id && !!companyId,
   });
 }
@@ -29,7 +29,7 @@ export function useAllTasksQuery() {
 
   return useQuery({
     queryKey: QUERY_KEYS.tasks.list({ all: true, companyId }),
-    queryFn: () => tasksApi.getTasks(companyId!, { pageSize: 200 }),
+    queryFn: () => TaskService.getTasks(companyId!, { pageSize: 200 }),
     enabled: !!companyId,
   });
 }

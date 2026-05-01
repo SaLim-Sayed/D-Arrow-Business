@@ -7,7 +7,7 @@ import { useTranslation } from "react-i18next";
 import { Link, useNavigate } from "react-router-dom";
 import * as z from "zod";
 import { useAuthStore } from "@/stores/auth.store";
-import { register as registerApi } from "../api/auth.api";
+import { AuthService } from "../api/auth.service";
 
 const registerSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
@@ -43,7 +43,7 @@ export function RegisterPage() {
     setError("");
 
     try {
-      await registerApi(data);
+      await AuthService.register(data);
       initialize(); // Re-initialize store to pick up new user
       navigate("/tasks/dashboard", { replace: true });
     } catch (err: any) {
