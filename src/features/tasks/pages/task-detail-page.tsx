@@ -15,7 +15,7 @@ import { ArrowLeft, Pencil, Trash2 } from "lucide-react";
 import { formatDate } from "@/lib/utils";
 
 export function TaskDetailPage() {
-  const { t } = useTranslation("tasks");
+  const { t, i18n } = useTranslation("tasks");
   const { t: tc } = useTranslation();
   const { taskId } = useParams<{ taskId: string }>();
   const navigate = useNavigate();
@@ -30,11 +30,14 @@ export function TaskDetailPage() {
 
   if (isLoading) return <LoadingSpinner />;
 
-  const task = data?.data;
+  const task = data?.data ? {
+    ...data.data,
+    assignee: allUsers?.find(u => u.id === data.data.assigneeId) || null
+  } : null;
   if (!task) {
     return (
       <div className="text-center py-12">
-        <p className="text-default-400">Task not found</p>
+        <p className="text-default-400">{t("detail.notFound")}</p>
         <Button
           variant="light"
           className="mt-4"
@@ -111,7 +114,7 @@ export function TaskDetailPage() {
                             showFallback 
                           />
                           <span>
-                            {task.assignee?.name ||
+                            {(i18n.language === "ar" ? task.assignee?.nameAr : task.assignee?.name) ||
                               t("form.assignee.unassigned")}
                           </span>
                         </div>
@@ -215,10 +218,10 @@ export function TaskDetailPage() {
           {() => (
             <>
               <ModalHeader>
-                <h3 className="text-lg font-bold">{t("detail.deleteTask")}</h3>
+                <h3 className="text-lg font-bold">{t("delete.title")}</h3>
               </ModalHeader>
               <ModalBody>
-                <p>{t("detail.deleteConfirmation")}</p>
+                <p>{t("delete.message")}</p>
               </ModalBody>
               <ModalFooter>
                 <Button

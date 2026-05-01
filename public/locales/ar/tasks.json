@@ -29,13 +29,19 @@
   },
   "detail": {
     "title": "تفاصيل المهمة",
+    "notFound": "المهمة غير موجودة",
     "description": "الوصف",
     "noDescription": "لا يوجد وصف",
     "comments": "التعليقات",
     "activity": "النشاط",
     "addComment": "أضف تعليقاً...",
     "postComment": "نشر",
-    "noComments": "لا توجد تعليقات بعد"
+    "noComments": "لا توجد تعليقات بعد",
+    "details": "التفاصيل",
+    "noDueDate": "لا يوجد تاريخ استحقاق",
+    "history": "السجل",
+    "historyPlaceholder": "سجل النشاط سيظهر هنا.",
+    "editTask": "تعديل المهمة"
   },
   "form": {
     "createTitle": "إنشاء مهمة",

@@ -141,21 +141,21 @@ export function LoginForm() {
       </Button>
 
       <p className="text-center text-sm text-default-500">
-        Don&apos;t have an account?{" "}
+        {t("login.dontHaveAccount")}{" "}
         <Link to="/register" className="text-primary font-bold hover:underline">
-          Create Account
+          {t("login.createAccountLink")}
         </Link>
       </p>
 
       <div className="pt-6 border-t  w-full  border-default-100 mt-2">
         <div className="rounded-2xl bg-default-50 p-4 border border-default-200">
           <p className="text-center text-[10px] font-bold text-default-400 uppercase tracking-wider mb-2">
-            Demo Credentials
+            {t("login.demoCredentials")}
           </p>
           <div className="flex justify-center items-center gap-4 text-xs">
             <div className="flex flex-col items-center">
               <span className="text-[10px] text-default-400 uppercase">
-                Email
+                {t("login.email")}
               </span>
               <span className="text-default-900 font-bold">
                 admin@darrow.com
@@ -164,7 +164,7 @@ export function LoginForm() {
             <div className="h-8 w-px bg-default-200" />
             <div className="flex flex-col items-center">
               <span className="text-[10px] text-default-400 uppercase">
-                Password
+                {t("login.password")}
               </span>
               <span className="text-default-900 font-bold">admin123</span>
             </div>

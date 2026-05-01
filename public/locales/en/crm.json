@@ -1,0 +1,24 @@
+{
+  "leads": {
+    "title": "CRM Leads",
+    "description": "Manage your sales pipeline and track potential customers.",
+    "addLead": "Add Lead",
+    "searchPlaceholder": "Search leads...",
+    "columns": {
+      "name": "NAME",
+      "company": "COMPANY",
+      "status": "STATUS",
+      "phone": "PHONE",
+      "actions": "ACTIONS"
+    },
+    "empty": "No leads found.",
+    "details": "Details",
+    "status": {
+      "new": "New",
+      "contacted": "Contacted",
+      "qualified": "Qualified",
+      "lost": "Lost",
+      "won": "Won"
+    }
+  }
+}

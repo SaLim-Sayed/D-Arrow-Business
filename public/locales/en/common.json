@@ -38,5 +38,35 @@
     "profile": "Profile",
     "settings": "Settings",
     "logout": "Logout"
+  },
+  "notFound": {
+    "comingSoon": "Coming Soon",
+    "description": "This feature is currently under development. We're working hard to bring you something amazing!",
+    "goBack": "Go Back",
+    "returnToDashboard": "Return to Dashboard",
+    "businessSuite": "D-Arrow Business Suite"
+  },
+  "seed": {
+    "title": "System Seeding",
+    "description": "Populate your Firestore database with demo data for testing.",
+    "cardTitle": "Seed Demo Data",
+    "cardSubtitle": "This will populate users, tasks, and comments.",
+    "instructions": "Clicking the button below will initialize your database with mock data. This is perfect for demonstrating the multi-tenant CRM and Task features.",
+    "startButton": "Start Seeding",
+    "loading": "Writing to Firestore...",
+    "success": "Seeding Successful!",
+    "successMessage": "The database has been populated with mock tasks and users. You can now explore the dashboard.",
+    "againButton": "Seed Again",
+    "failed": "Seeding Failed",
+    "retryButton": "Retry Seeding",
+    "whatWillBeSeeded": "What will be seeded?",
+    "items": {
+      "company": "Default Company: default-company",
+      "users": "Mock Users with Roles",
+      "tasks": "Task Collections for Company",
+      "activity": "Recent Activity & Comments",
+      "projects": "Project Assignments",
+      "stats": "Status & Priority Stats"
+    }
   }
 }

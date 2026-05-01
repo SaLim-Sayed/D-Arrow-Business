@@ -10,6 +10,7 @@ import { TaskCreatePage } from "@/features/tasks/pages/task-create-page";
 import { TaskDetailPage } from "@/features/tasks/pages/task-detail-page";
 import { LeadsListPage } from "@/features/crm/pages/LeadsListPage";
 import { SeedPage } from "@/features/admin/pages/SeedPage";
+import { NotFoundPage } from "@/components/shared/not-found-page";
 
 export const router = createBrowserRouter([
   {
@@ -60,6 +61,14 @@ export const router = createBrowserRouter([
         path: "seed",
         element: <SeedPage />,
       },
+      {
+        path: "*",
+        element: <NotFoundPage />,
+      },
     ],
+  },
+  {
+    path: "*",
+    element: <NotFoundPage />,
   },
 ]);

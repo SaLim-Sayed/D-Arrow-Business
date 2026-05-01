@@ -9,21 +9,21 @@ import * as z from "zod";
 import { useAuthStore } from "@/stores/auth.store";
 import { AuthService } from "../api/auth.service";
 
-const registerSchema = z.object({
-  name: z.string().min(2, "Name must be at least 2 characters"),
-  email: z.string().email("Invalid email address"),
-  companyName: z.string().min(2, "Company name must be at least 2 characters"),
-  password: z.string().min(6, "Password must be at least 6 characters"),
-});
-
-type RegisterFormData = z.infer<typeof registerSchema>;
-
 export function RegisterPage() {
-  useTranslation("auth");
+  const { t } = useTranslation("auth");
   const navigate = useNavigate();
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const { initialize } = useAuthStore();
+
+  const registerSchema = z.object({
+    name: z.string().min(2, t("register.error")), // Simplified error handling for localization
+    email: z.string().email(),
+    companyName: z.string().min(2),
+    password: z.string().min(6),
+  });
+
+  type RegisterFormData = z.infer<typeof registerSchema>;
 
   const {
     control,
@@ -47,7 +47,7 @@ export function RegisterPage() {
       initialize(); // Re-initialize store to pick up new user
       navigate("/tasks/dashboard", { replace: true });
     } catch (err: any) {
-      setError(err?.message || "Registration failed. Please try again.");
+      setError(err?.message || t("register.error"));
     }
   }
 
@@ -59,10 +59,10 @@ export function RegisterPage() {
             <span className="text-3xl font-black text-white">D</span>
           </div>
           <h1 className="text-3xl font-black tracking-tight text-center">
-            Create Account
+            {t("register.title")}
           </h1>
           <p className="text-default-500 text-center font-medium">
-            Start managing your business with D-Arrow
+            {t("register.subtitle")}
           </p>
         </CardHeader>
         <CardBody>
@@ -84,9 +84,9 @@ export function RegisterPage() {
               render={({ field }) => (
                 <Input
                   {...field}
-                  label="Full Name"
+                  label={t("register.name")}
                   labelPlacement="outside"
-                  placeholder="John Doe"
+                  placeholder={t("register.namePlaceholder")}
                   variant="bordered"
                   color="primary"
                   size="lg"
@@ -104,9 +104,9 @@ export function RegisterPage() {
                 <Input
                   {...field}
                   type="email"
-                  label="Email Address"
+                  label={t("register.email")}
                   labelPlacement="outside"
-                  placeholder="name@example.com"
+                  placeholder={t("register.emailPlaceholder")}
                   variant="bordered"
                   color="primary"
                   size="lg"
@@ -123,9 +123,9 @@ export function RegisterPage() {
               render={({ field }) => (
                 <Input
                   {...field}
-                  label="Company Name"
+                  label={t("register.companyName")}
                   labelPlacement="outside"
-                  placeholder="D-Arrow Business"
+                  placeholder={t("register.companyNamePlaceholder")}
                   variant="bordered"
                   color="primary"
                   size="lg"
@@ -143,9 +143,9 @@ export function RegisterPage() {
                 <Input
                   {...field}
                   type={showPassword ? "text" : "password"}
-                  label="Password"
+                  label={t("register.password")}
                   labelPlacement="outside"
-                  placeholder="••••••••"
+                  placeholder={t("register.passwordPlaceholder")}
                   variant="bordered"
                   color="primary"
                   size="lg"
@@ -176,13 +176,13 @@ export function RegisterPage() {
               isLoading={isSubmitting}
               endContent={<ArrowRight className="h-4 w-4" />}
             >
-              Get Started
+              {t("register.submit")}
             </Button>
 
             <p className="text-center text-sm text-default-500 mt-6">
-              Already have an account?{" "}
+              {t("register.alreadyHaveAccount")}{" "}
               <Link to="/login" className="text-primary font-bold hover:underline">
-                Sign In
+                {t("register.signIn")}
               </Link>
             </p>
           </Form>

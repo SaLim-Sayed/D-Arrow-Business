@@ -13,7 +13,7 @@ interface TaskCardProps {
 
 export function TaskCard({ task, isDragging }: TaskCardProps) {
   const navigate = useNavigate();
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation("tasks");
 
   const assigneeName =
     i18n.language === "ar" ? task.assignee?.nameAr : task.assignee?.name;
@@ -76,7 +76,7 @@ export function TaskCard({ task, isDragging }: TaskCardProps) {
             </div>
             {isOverdue && (
               <div className="px-2 py-0.5 rounded-full bg-danger/10 text-[9px] font-black uppercase tracking-tighter text-danger animate-pulse">
-                Overdue
+                {t("dashboard.overdue")}
               </div>
             )}
           </div>

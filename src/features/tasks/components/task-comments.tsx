@@ -89,7 +89,7 @@ export function TaskComments({ taskId }: { taskId: string }) {
         <Textarea
           value={content}
           onChange={(e: any) => setContent(e.target.value)}
-          placeholder={t("detail.commentPlaceholder")}
+          placeholder={t("detail.addComment")}
           color="primary"
           variant="bordered"
           rows={3}

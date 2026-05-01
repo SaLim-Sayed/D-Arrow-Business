@@ -29,13 +29,19 @@
   },
   "detail": {
     "title": "Task Details",
+    "notFound": "Task not found",
     "description": "Description",
     "noDescription": "No description provided",
     "comments": "Comments",
     "activity": "Activity",
     "addComment": "Add a comment...",
     "postComment": "Post",
-    "noComments": "No comments yet"
+    "noComments": "No comments yet",
+    "details": "Details",
+    "noDueDate": "No due date",
+    "history": "History",
+    "historyPlaceholder": "Activity history will appear here.",
+    "editTask": "Edit Task"
   },
   "form": {
     "createTitle": "Create Task",

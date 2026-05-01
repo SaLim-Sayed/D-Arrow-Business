@@ -1,0 +1,24 @@
+{
+  "leads": {
+    "title": "عملاء CRM",
+    "description": "إدارة خط مبيعاتك وتتبع العملاء المحتملين.",
+    "addLead": "إضافة عميل",
+    "searchPlaceholder": "البحث في العملاء...",
+    "columns": {
+      "name": "الاسم",
+      "company": "الشركة",
+      "status": "الحالة",
+      "phone": "الهاتف",
+      "actions": "الإجراءات"
+    },
+    "empty": "لم يتم العثور على عملاء.",
+    "details": "التفاصيل",
+    "status": {
+      "new": "جديد",
+      "contacted": "تم التواصل",
+      "qualified": "مؤهل",
+      "lost": "خاسر",
+      "won": "رابح"
+    }
+  }
+}
