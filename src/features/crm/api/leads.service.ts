@@ -8,8 +8,9 @@ import {
   deleteDoc, 
   query,
   orderBy, 
+  limit,
   serverTimestamp 
-} from "firebase/firestore";
+} from "firebase/firestore/lite";
 import { db } from "@/lib/firebase";
 import type { ApiResponse } from "@/types/api.types";
 import { withLogging } from "@/lib/service-utils";
@@ -18,14 +19,15 @@ import type { Lead, CreateLeadDTO, UpdateLeadDTO } from "../types/leads.types";
 const SERVICE_NAME = "LeadsService";
 
 /**
- * Leads Service
- * Handles CRM leads for specific companies.
+ * Leads Service (Lite)
+ * Handles CRM leads using Firestore Lite to reduce network overhead.
  */
 export const LeadsService = {
   async getLeads(companyId: string): Promise<ApiResponse<Lead[]>> {
     return withLogging(SERVICE_NAME, "getLeads", (async () => {
       const leadsRef = collection(db, "companies", companyId, "leads");
-      const q = query(leadsRef, orderBy("createdAt", "desc"));
+      // Use basic server-side sorting and limit
+      const q = query(leadsRef, orderBy("createdAt", "desc"), limit(100));
       
       const querySnapshot = await getDocs(q);
       const leads: Lead[] = querySnapshot.docs.map(doc => ({

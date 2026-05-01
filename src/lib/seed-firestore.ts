@@ -1,5 +1,5 @@
 import { db } from "./firebase";
-import { collection, doc, setDoc, addDoc, serverTimestamp } from "firebase/firestore";
+import { collection, doc, setDoc, addDoc, serverTimestamp } from "firebase/firestore/lite";
 import { mockUsers } from "../mocks/data/users.data";
 import { mockTasks } from "../mocks/data/tasks.data";
 import { mockComments } from "../mocks/data/comments.data";

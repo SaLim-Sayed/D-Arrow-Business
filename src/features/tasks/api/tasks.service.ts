@@ -6,9 +6,12 @@ import {
   addDoc, 
   updateDoc, 
   deleteDoc, 
+  query,
+  where,
+  limit,
   serverTimestamp,
   Timestamp
-} from "firebase/firestore";
+} from "firebase/firestore/lite";
 import { db } from "@/lib/firebase";
 import type { ApiResponse, PaginatedResponse } from "@/types/api.types";
 import { withLogging } from "@/lib/service-utils";
@@ -22,8 +25,8 @@ import type {
 const SERVICE_NAME = "TaskService";
 
 /**
- * Task Service
- * Handles task management for specific companies.
+ * Task Service (Lite)
+ * Handles task management using Firestore Lite to reduce network overhead.
  */
 export const TaskService = {
   async getTasks(
@@ -33,7 +36,19 @@ export const TaskService = {
     return withLogging(SERVICE_NAME, "getTasks", (async () => {
       const tasksRef = collection(db, "companies", companyId, "tasks");
       
-      const querySnapshot = await getDocs(tasksRef);
+      // Implement basic server-side filtering where possible
+      // to reduce the amount of data transferred.
+      let q = query(tasksRef);
+      
+      if (filters?.projectId) {
+        q = query(q, where("projectId", "==", filters.projectId));
+      }
+      
+      // Limit results to avoid massive data transfer
+      // Increased limit to 500 for safety since we still do some client-side sorting/filtering
+      q = query(q, limit(500));
+      
+      const querySnapshot = await getDocs(q);
       
       let tasks: Task[] = querySnapshot.docs.map(docSnap => {
         const data = docSnap.data();
@@ -47,10 +62,7 @@ export const TaskService = {
         } as Task;
       });
 
-      // Client-side Filtering
-      if (filters?.projectId) {
-        tasks = tasks.filter(t => (t as any).projectId === filters.projectId);
-      }
+      // Remaining Client-side Filtering
       if (filters?.status?.length) {
         tasks = tasks.filter(t => filters.status!.includes(t.status));
       }

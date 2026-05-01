@@ -8,8 +8,9 @@ import {
   deleteDoc, 
   query, 
   orderBy, 
+  limit,
   serverTimestamp 
-} from "firebase/firestore";
+} from "firebase/firestore/lite";
 import { db } from "@/lib/firebase";
 import type { ApiResponse } from "@/types/api.types";
 import { withLogging } from "@/lib/service-utils";
@@ -18,14 +19,14 @@ import type { Project, CreateProjectDTO, UpdateProjectDTO } from "../types/proje
 const SERVICE_NAME = "ProjectService";
 
 /**
- * Project Service
- * Handles project management for specific companies.
+ * Project Service (Lite)
+ * Handles project management using Firestore Lite to reduce network overhead.
  */
 export const ProjectService = {
   async getProjects(companyId: string): Promise<ApiResponse<Project[]>> {
     return withLogging(SERVICE_NAME, "getProjects", (async () => {
       const projectsRef = collection(db, "companies", companyId, "projects");
-      const q = query(projectsRef, orderBy("createdAt", "desc"));
+      const q = query(projectsRef, orderBy("createdAt", "desc"), limit(100));
       
       const querySnapshot = await getDocs(q);
       const projects: Project[] = querySnapshot.docs.map(doc => ({

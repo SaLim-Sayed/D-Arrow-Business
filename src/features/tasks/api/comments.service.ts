@@ -4,10 +4,12 @@ import {
   addDoc, 
   query, 
   orderBy, 
+  limit,
   serverTimestamp,
   doc,
-  getDoc
-} from "firebase/firestore";
+  getDoc,
+  Timestamp
+} from "firebase/firestore/lite";
 import { db, auth } from "@/lib/firebase";
 import type { ApiResponse } from "@/types/api.types";
 import { withLogging } from "@/lib/service-utils";
@@ -17,8 +19,8 @@ import type { User } from "@/features/auth/types/auth.types";
 const SERVICE_NAME = "CommentService";
 
 /**
- * Comment Service
- * Handles task comments for specific companies.
+ * Comment Service (Lite)
+ * Handles task comments using Firestore Lite to reduce network overhead.
  */
 export const CommentService = {
   async getComments(
@@ -27,7 +29,8 @@ export const CommentService = {
   ): Promise<ApiResponse<Comment[]>> {
     return withLogging(SERVICE_NAME, "getComments", (async () => {
       const commentsRef = collection(db, "companies", companyId, "tasks", taskId, "comments");
-      const q = query(commentsRef, orderBy("createdAt", "asc"));
+      // Use basic server-side sorting and limit
+      const q = query(commentsRef, orderBy("createdAt", "asc"), limit(200));
       
       const querySnapshot = await getDocs(q);
       const comments: Comment[] = [];
@@ -37,7 +40,7 @@ export const CommentService = {
         const comment: Comment = {
           id: commentDoc.id,
           ...data,
-          createdAt: data.createdAt?.toDate?.()?.toISOString() || data.createdAt,
+          createdAt: data.createdAt instanceof Timestamp ? data.createdAt.toDate().toISOString() : data.createdAt,
         } as Comment;
 
         if (comment.authorId) {
@@ -81,7 +84,7 @@ export const CommentService = {
         data: { 
           id: newDoc.id, 
           ...data,
-          createdAt: data.createdAt?.toDate?.()?.toISOString() || new Date().toISOString()
+          createdAt: data.createdAt instanceof Timestamp ? data.createdAt.toDate().toISOString() : new Date().toISOString()
         } as Comment,
         message: "Comment added successfully",
       };

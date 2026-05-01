@@ -4,7 +4,7 @@ import { AuthService } from "@/features/auth/api/auth.service";
 import { STORAGE_KEYS } from "@/lib/constants";
 import { onAuthStateChanged, getIdToken } from "firebase/auth";
 import { auth, db } from "@/lib/firebase";
-import { doc, getDoc } from "firebase/firestore";
+import { doc, getDoc } from "firebase/firestore/lite";
 
 interface AuthState {
   user: User | null;

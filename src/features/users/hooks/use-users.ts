@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useTasksStore } from "@/stores/tasks.store";
 import { toast } from "sonner";
 import type { User } from "@/features/auth/types/auth.types";
-import { collection, getDocs, query, where } from "firebase/firestore";
+import { collection, getDocs, query, where } from "firebase/firestore/lite";
 import { db } from "@/lib/firebase";
 import { useCompany } from "@/features/companies/context/company-context";
 
