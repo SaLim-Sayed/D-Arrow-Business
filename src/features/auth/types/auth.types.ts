@@ -1,10 +1,13 @@
+export type UserRole = "super_admin" | "admin" | "manager" | "employee" | "viewer";
+
 export interface User {
   id: string;
   email: string;
   name: string;
   nameAr: string;
   avatar: string;
-  role: "admin" | "manager" | "member";
+  role: UserRole;
+  companyId: string;
 }
 
 export interface LoginRequest {
@@ -16,6 +19,13 @@ export interface LoginResponse {
   user: User;
   accessToken: string;
   refreshToken: string;
+}
+
+export interface RegisterRequest {
+  email: string;
+  password: string;
+  name: string;
+  companyName: string;
 }
 
 export interface AuthState {

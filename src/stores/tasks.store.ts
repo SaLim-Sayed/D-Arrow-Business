@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
-import type { Task, TaskFilterData, User } from "@/lib/schemas";
+import type { Task, TaskFilters as TaskFilterData } from "@/features/tasks/types/task.types";
+import type { User } from "@/features/auth/types/auth.types";
 import { STORAGE_KEYS } from "@/lib/constants";
 
 interface TasksState {

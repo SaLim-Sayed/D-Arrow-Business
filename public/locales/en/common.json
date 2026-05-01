@@ -2,8 +2,12 @@
   "appName": "D-Arrow Business",
   "nav": {
     "dashboard": "Dashboard",
+    "crm": "CRM Leads",
+    "projects": "Projects",
     "taskList": "Task List",
     "taskBoard": "Task Board",
+    "analytics": "Analytics",
+    "seed": "Seed Data",
     "settings": "Settings"
   },
   "actions": {

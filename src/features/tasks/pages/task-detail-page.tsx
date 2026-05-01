@@ -2,6 +2,7 @@ import { useTranslation } from "react-i18next";
 import { useParams, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { useTaskQuery } from "../hooks/use-tasks";
+import { useAllUsers } from "@/features/users/hooks/use-users";
 import { useUpdateTask, useDeleteTask } from "../hooks/use-task-mutations";
 import { TaskForm } from "../components/task-form";
 import { TaskComments } from "../components/task-comments";
@@ -18,11 +19,14 @@ export function TaskDetailPage() {
   const { t: tc } = useTranslation();
   const { taskId } = useParams<{ taskId: string }>();
   const navigate = useNavigate();
-  const { data, isLoading } = useTaskQuery(taskId!);
+  const { data: allUsers } = useAllUsers();
+  const { data, isLoading: isTaskLoading } = useTaskQuery(taskId!);
   const updateMutation = useUpdateTask();
   const deleteMutation = useDeleteTask();
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+
+  const isLoading = isTaskLoading || !allUsers;
 
   if (isLoading) return <LoadingSpinner />;
 
@@ -160,7 +164,7 @@ export function TaskDetailPage() {
                 </p>
                 <PriorityBadge priority={task.priority} />
               </div>
-              {task.tags.length > 0 && (
+              {task.tags && task.tags.length > 0 && (
                 <>
                   <Separator />
                   <div>

@@ -18,16 +18,12 @@ interface AuthContextValue {
 const AuthContext = createContext<AuthContextValue | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const { user, isAuthenticated, isLoading, login, logout, checkAuth } = useAuthStore();
+  const { user, isAuthenticated, isLoading, login, logout, initialize } = useAuthStore();
 
   useEffect(() => {
-    // Only check auth on initial mount
-    const hasCheckedAuth = sessionStorage.getItem('auth-checked');
-    if (!hasCheckedAuth) {
-      checkAuth();
-      sessionStorage.setItem('auth-checked', 'true');
-    }
-  }, []);
+    const unsubscribe = initialize();
+    return () => unsubscribe();
+  }, [initialize]);
 
   return (
     <AuthContext.Provider

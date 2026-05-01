@@ -4,7 +4,7 @@ import { AlertCircle, Eye, EyeOff } from "lucide-react";
 import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
-import { useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import * as z from "zod";
 import { useAuth } from "../context/auth-context";
 
@@ -139,6 +139,13 @@ export function LoginForm() {
       >
         {t("login.submit")}
       </Button>
+
+      <p className="text-center text-sm text-default-500">
+        Don&apos;t have an account?{" "}
+        <Link to="/register" className="text-primary font-bold hover:underline">
+          Create Account
+        </Link>
+      </p>
 
       <div className="pt-6 border-t  w-full  border-default-100 mt-2">
         <div className="rounded-2xl bg-default-50 p-4 border border-default-200">

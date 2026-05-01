@@ -10,8 +10,8 @@ function enrichTask(task: Task): Task {
   const reporter = mockUsers.find((u) => u.id === task.reporterId);
   return {
     ...task,
-    assignee: assignee ? { id: assignee.id, email: assignee.email, name: assignee.name, nameAr: assignee.nameAr, avatar: assignee.avatar, role: assignee.role } : null,
-    reporter: reporter ? { id: reporter.id, email: reporter.email, name: reporter.name, nameAr: reporter.nameAr, avatar: reporter.avatar, role: reporter.role } : undefined,
+    assignee: assignee ? { id: assignee.id, email: assignee.email, name: assignee.name, nameAr: assignee.nameAr, avatar: assignee.avatar, role: assignee.role, companyId: assignee.companyId } : null,
+    reporter: reporter ? { id: reporter.id, email: reporter.email, name: reporter.name, nameAr: reporter.nameAr, avatar: reporter.avatar, role: reporter.role, companyId: reporter.companyId } : undefined,
   };
 }
 

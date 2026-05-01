@@ -18,7 +18,7 @@ export function LoginPage() {
   }
 
   if (isAuthenticated) {
-    return <Navigate to="/tasks/dashboard" replace />;
+    return <Navigate to="/" replace />;
   }
 
   return (

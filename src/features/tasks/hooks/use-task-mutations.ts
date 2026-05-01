@@ -3,12 +3,14 @@ import { QUERY_KEYS } from "@/lib/constants";
 import * as tasksApi from "../api/tasks.api";
 import type { CreateTaskDTO, UpdateTaskDTO } from "../types/task.types";
 import { toast } from "sonner";
+import { useCompany } from "@/features/companies/context/company-context";
 
 export function useCreateTask() {
   const queryClient = useQueryClient();
+  const { companyId } = useCompany();
 
   return useMutation({
-    mutationFn: (data: CreateTaskDTO) => tasksApi.createTask(data),
+    mutationFn: (data: CreateTaskDTO) => tasksApi.createTask(companyId!, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.tasks.all });
       toast.success("Task created successfully");
@@ -21,10 +23,11 @@ export function useCreateTask() {
 
 export function useUpdateTask() {
   const queryClient = useQueryClient();
+  const { companyId } = useCompany();
 
   return useMutation({
     mutationFn: ({ id, data }: { id: string; data: UpdateTaskDTO }) =>
-      tasksApi.updateTask(id, data),
+      tasksApi.updateTask(companyId!, id, data),
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.tasks.all });
       queryClient.invalidateQueries({
@@ -40,9 +43,10 @@ export function useUpdateTask() {
 
 export function useDeleteTask() {
   const queryClient = useQueryClient();
+  const { companyId } = useCompany();
 
   return useMutation({
-    mutationFn: (id: string) => tasksApi.deleteTask(id),
+    mutationFn: (id: string) => tasksApi.deleteTask(companyId!, id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.tasks.all });
       toast.success("Task deleted successfully");

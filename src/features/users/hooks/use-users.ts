@@ -1,90 +1,38 @@
 import { useQuery } from "@tanstack/react-query";
-import { useAuthStore } from "@/stores/auth.store";
 import { useTasksStore } from "@/stores/tasks.store";
 import { toast } from "sonner";
-import type { User } from "@/lib/schemas";
-
-// Mock users data - in a real app, this would come from an API
-const mockUsers: User[] = [
-  {
-    id: "user-1",
-    name: "John Doe",
-    email: "john.doe@example.com",
-    role: "admin",
-    avatar: "https://avatar.vercel.sh/john",
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-  {
-    id: "user-2",
-    name: "Jane Smith",
-    email: "jane.smith@example.com",
-    role: "user",
-    avatar: "https://avatar.vercel.sh/jane",
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-  {
-    id: "user-3",
-    name: "Bob Johnson",
-    email: "bob.johnson@example.com",
-    role: "manager",
-    avatar: "https://avatar.vercel.sh/bob",
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-  {
-    id: "user-4",
-    name: "Alice Williams",
-    email: "alice.williams@example.com",
-    role: "user",
-    avatar: "https://avatar.vercel.sh/alice",
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-  {
-    id: "user-5",
-    name: "Charlie Brown",
-    email: "charlie.brown@example.com",
-    role: "user",
-    avatar: "https://avatar.vercel.sh/charlie",
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-];
+import type { User } from "@/features/auth/types/auth.types";
+import { collection, getDocs, query, where } from "firebase/firestore";
+import { db } from "@/lib/firebase";
+import { useCompany } from "@/features/companies/context/company-context";
 
 export function useAllUsers() {
-  const { user: currentUser } = useAuthStore();
   const { setAvailableUsers, setLoadingUsers } = useTasksStore();
+  const { companyId } = useCompany();
 
   return useQuery({
-    queryKey: ["users", "all"],
+    queryKey: ["users", "all", companyId],
     queryFn: async () => {
+      if (!companyId) return [];
       setLoadingUsers(true);
       try {
-        // Simulate API delay
-        await new Promise(resolve => setTimeout(resolve, 500));
+        const usersRef = collection(db, "users");
+        const q = query(
+          usersRef, 
+          where("companyId", "==", companyId)
+        );
+        const querySnapshot = await getDocs(q);
         
-        // For now, return mock users
-        const users = mockUsers;
+        let users: User[] = querySnapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        } as User));
+
+        // Client-side sorting to avoid index requirement during development
+        users.sort((a, b) => (a.name || "").localeCompare(b.name || ""));
         
-        // Include current user if not already in the list
-        const allUsers = currentUser 
-          ? users.some((u: User) => u.id === currentUser.id) 
-            ? users 
-            : [...users, {
-                id: currentUser.id,
-                name: currentUser.name,
-                email: currentUser.email,
-                role: currentUser.role === 'member' ? 'user' : currentUser.role as "admin" | "manager" | "user",
-                avatar: currentUser.avatar,
-                createdAt: new Date().toISOString(),
-                updatedAt: new Date().toISOString(),
-              }]
-          : users;
-        
-        setAvailableUsers(allUsers);
-        return allUsers;
+        setAvailableUsers(users);
+        return users;
       } catch (error) {
         console.error("Failed to fetch users:", error);
         toast.error("Failed to load users");
@@ -94,6 +42,7 @@ export function useAllUsers() {
       }
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
+    enabled: !!companyId,
   });
 }
 

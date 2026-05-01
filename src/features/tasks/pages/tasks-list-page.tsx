@@ -25,15 +25,18 @@ import { Link, useNavigate } from "react-router-dom";
 import { useDeleteTask } from "../hooks/use-task-mutations";
 import { useTasksQuery } from "../hooks/use-tasks";
 import { useTasksUIStore } from "../store/tasks-ui.store";
+import { useAllUsers } from "@/features/users/hooks/use-users";
+import type { Task } from "../types/task.types";
+
 
 export function TasksListPage() {
   const { t, i18n } = useTranslation("tasks");
   const { t: tc } = useTranslation();
   const navigate = useNavigate();
   const { filters, sort, page, pageSize, setPage } = useTasksUIStore();
-  const deleteTask = useDeleteTask();
+  const { data: allUsers } = useAllUsers();
 
-  const { data, isLoading } = useTasksQuery({
+  const { data, isLoading: isTasksLoading } = useTasksQuery({
     status: filters.status.length ? filters.status : undefined,
     priority: filters.priority.length ? filters.priority : undefined,
     assigneeId: filters.assigneeId ?? undefined,
@@ -44,7 +47,14 @@ export function TasksListPage() {
     sortOrder: sort.order,
   });
 
-  const tasks = data?.data ?? [];
+  const deleteTask = useDeleteTask();
+
+  const isLoading = isTasksLoading || !allUsers;
+
+  const tasks = (data?.data ?? []).map((task: Task) => ({
+    ...task,
+    assignee: allUsers?.find(u => u.id === task.assigneeId) || null
+  }));
   const totalPages = data?.totalPages ?? 1;
 
   return (
@@ -102,14 +112,14 @@ export function TasksListPage() {
               <TableColumn className="w-[50px]">{""}</TableColumn>
             </TableHeader>
             <TableBody items={tasks}>
-              {(task) => {
+              {(task: Task) => {
                 const assigneeName =
                   i18n.language === "ar"
                     ? task.assignee?.nameAr
                     : task.assignee?.name;
                 const initials = (task.assignee?.name ?? "")
                   .split(" ")
-                  .map((n) => n[0])
+                  .map((n: string) => n[0])
                   .join("")
                   .toUpperCase()
                   .slice(0, 2);

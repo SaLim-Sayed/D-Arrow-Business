@@ -1,6 +1,13 @@
 import { cn } from "@/lib/utils";
 import { useLayoutStore } from "@/stores/layout.store";
-import { Kanban, LayoutDashboard, ListTodo } from "lucide-react";
+import {
+  Kanban,
+  LayoutDashboard,
+  ListTodo,
+  Users,
+  Briefcase,
+  BarChart3,
+} from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { NavLink } from "react-router-dom";
 
@@ -11,6 +18,16 @@ const navItems = [
     icon: <LayoutDashboard className="h-5 w-5" />,
   },
   {
+    labelKey: "nav.crm",
+    path: "/crm/leads",
+    icon: <Users className="h-5 w-5" />,
+  },
+  {
+    labelKey: "nav.projects",
+    path: "/projects",
+    icon: <Briefcase className="h-5 w-5" />,
+  },
+  {
     labelKey: "nav.taskList",
     path: "/tasks/list",
     icon: <ListTodo className="h-5 w-5" />,
@@ -19,6 +36,11 @@ const navItems = [
     labelKey: "nav.taskBoard",
     path: "/tasks/board",
     icon: <Kanban className="h-5 w-5" />,
+  },
+  {
+    labelKey: "nav.analytics",
+    path: "/analytics",
+    icon: <BarChart3 className="h-5 w-5" />,
   },
 ];
 

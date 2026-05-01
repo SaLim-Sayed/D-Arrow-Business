@@ -1,0 +1,33 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // User profiles: Users can only read/write their own profile
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // Helper: Check if user belongs to a company
+    function belongsToCompany(companyId) {
+      return request.auth != null && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.companyId == companyId;
+    }
+
+    // Company Data: Leads, Projects, Tasks are isolated by companyId
+    match /companies/{companyId} {
+      // Allow read/write for any authenticated user belonging to the company
+      allow read, write: if belongsToCompany(companyId);
+      
+      match /{allSubcollections=**} {
+        allow read, write: if belongsToCompany(companyId);
+      }
+    }
+
+    // Allow creating the first user/company document if it doesn't exist
+    // This is a simplified rule for registration flow
+    match /companies/{companyId} {
+      allow create: if request.auth != null;
+    }
+  }
+}

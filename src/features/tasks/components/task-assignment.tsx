@@ -15,6 +15,8 @@ import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import * as tasksApi from "../api/tasks.api";
 
+import { useCompany } from "@/features/companies/context/company-context";
+
 interface TaskAssignmentProps {
   taskId: string;
   currentAssigneeId?: string | null;
@@ -31,6 +33,7 @@ export function TaskAssignment({
   size = "md",
 }: TaskAssignmentProps) {
   const { t } = useTranslation("tasks");
+  const { companyId } = useCompany();
 
   const { assignTask, unassignTask } = useTasksStore();
   const { user: currentUser } = useAuthStore();
@@ -40,9 +43,9 @@ export function TaskAssignment({
   const assignMutation = useMutation({
     mutationFn: async (assigneeId: string | null) => {
       if (assigneeId) {
-        return tasksApi.updateTask(taskId, { assigneeId });
+        return tasksApi.updateTask(companyId!, taskId, { assigneeId });
       } else {
-        return tasksApi.updateTask(taskId, { assigneeId: null });
+        return tasksApi.updateTask(companyId!, taskId, { assigneeId: null });
       }
     },
     onMutate: (assigneeId) => {
@@ -250,12 +253,13 @@ export function QuickTaskAssignment({
   currentAssigneeId?: string | null;
 }) {
   const { t } = useTranslation("tasks");
+  const { companyId } = useCompany();
   const { data: allUsers } = useAllUsers();
   const { user: currentUser } = useAuthStore();
 
   const assignMutation = useMutation({
     mutationFn: async (assigneeId: string | null) => {
-      return tasksApi.updateTask(taskId, { assigneeId });
+      return tasksApi.updateTask(companyId!, taskId, { assigneeId });
     },
     onSuccess: () => {
       toast.success(t("assignment.updated"));

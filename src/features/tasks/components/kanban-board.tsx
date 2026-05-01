@@ -6,6 +6,7 @@ import {
   type DropResult,
 } from "@hello-pangea/dnd";
 import { useAllTasksQuery } from "../hooks/use-tasks";
+import { useAllUsers } from "@/features/users/hooks/use-users";
 import { useUpdateTask } from "../hooks/use-task-mutations";
 import { TaskCard } from "./task-card";
 // ScrollArea removed, using native scrollbars
@@ -17,10 +18,15 @@ import { cn } from "@/lib/utils";
 
 export function KanbanBoard() {
   const { t } = useTranslation("tasks");
-  const { data, isLoading } = useAllTasksQuery();
+  const { data: allUsers } = useAllUsers();
+  const { data, isLoading: isTasksLoading } = useAllTasksQuery();
   const updateTask = useUpdateTask();
 
-  const tasks = data?.data ?? [];
+  const isLoading = isTasksLoading || !allUsers;
+  const tasks = (data?.data ?? []).map((task: Task) => ({
+    ...task,
+    assignee: allUsers?.find(u => u.id === task.assigneeId) || null
+  }));
 
   const columns: Record<TaskStatus, Task[]> = {
     todo: [],
@@ -30,7 +36,7 @@ export function KanbanBoard() {
   };
 
   for (const task of tasks) {
-    columns[task.status].push(task);
+    columns[task.status as TaskStatus].push(task);
   }
 
   function handleDragEnd(result: DropResult) {
@@ -39,7 +45,7 @@ export function KanbanBoard() {
     const taskId = result.draggableId;
     const newStatus = result.destination.droppableId as TaskStatus;
 
-    const task = tasks.find((t) => t.id === taskId);
+    const task = tasks.find((t: Task) => t.id === taskId);
     if (!task || task.status === newStatus) return;
 
     updateTask.mutate({ id: taskId, data: { status: newStatus } });
