@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
 import { useLayoutStore } from "@/stores/layout.store";
-import { LayoutDashboard, ListTodo } from "lucide-react";
+import { Kanban, LayoutDashboard, ListTodo } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { NavLink } from "react-router-dom";
 
@@ -15,11 +15,11 @@ const navItems = [
     path: "/tasks/list",
     icon: <ListTodo className="h-5 w-5" />,
   },
-  // {
-  //   labelKey: "nav.taskBoard",
-  //   path: "/tasks/board",
-  //   icon: <Kanban className="h-5 w-5" />,
-  // },
+  {
+    labelKey: "nav.taskBoard",
+    path: "/tasks/board",
+    icon: <Kanban className="h-5 w-5" />,
+  },
 ];
 
 export function MobileSidebar() {
