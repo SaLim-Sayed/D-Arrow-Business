@@ -164,6 +164,7 @@ export const AuthService = {
         avatar: userData?.avatar || firebaseUser.photoURL || `https://avatar.vercel.sh/${firebaseUser.uid}`,
         role: userData?.role || "employee",
         companyId: userData?.companyId || "default-company",
+        companyName: userData?.companyName || "D-Arrow Business",
       };
 
       return {
