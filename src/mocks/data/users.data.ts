@@ -10,6 +10,7 @@ export const mockUsers: (User & { password: string })[] = [
     avatar: "",
     role: "admin",
     companyId: "default-company",
+    companyName: "D-Arrow Business",
   },
   {
     id: "usr-002",
@@ -20,6 +21,7 @@ export const mockUsers: (User & { password: string })[] = [
     avatar: "",
     role: "manager",
     companyId: "default-company",
+    companyName: "D-Arrow Business",
   },
   {
     id: "usr-003",
@@ -30,6 +32,7 @@ export const mockUsers: (User & { password: string })[] = [
     avatar: "",
     role: "employee",
     companyId: "default-company",
+    companyName: "D-Arrow Business",
   },
   {
     id: "usr-004",
@@ -40,6 +43,7 @@ export const mockUsers: (User & { password: string })[] = [
     avatar: "",
     role: "employee",
     companyId: "default-company",
+    companyName: "D-Arrow Business",
   },
   {
     id: "usr-005",
@@ -50,5 +54,6 @@ export const mockUsers: (User & { password: string })[] = [
     avatar: "",
     role: "manager",
     companyId: "default-company",
+    companyName: "D-Arrow Business",
   },
 ];

@@ -70,7 +70,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           await getIdToken(firebaseUser);
           
           const userDoc = await getDoc(doc(db, "users", firebaseUser.uid));
-          const userData = userDoc.data() as User | undefined;
+          const userData = userDoc.data() as any;
 
           const user: User = {
             id: firebaseUser.uid,
@@ -80,6 +80,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
             avatar: userData?.avatar || firebaseUser.photoURL || `https://avatar.vercel.sh/${firebaseUser.uid}`,
             role: (userData?.role as any) || "employee",
             companyId: userData?.companyId || "default-company",
+            companyName: userData?.companyName || "D-Arrow Business",
           };
 
           set({

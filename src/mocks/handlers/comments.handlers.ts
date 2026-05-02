@@ -9,7 +9,7 @@ function enrichComment(comment: Comment): Comment {
   return {
     ...comment,
     author: author
-      ? { id: author.id, email: author.email, name: author.name, nameAr: author.nameAr, avatar: author.avatar, role: author.role, companyId: author.companyId }
+      ? { id: author.id, email: author.email, name: author.name, nameAr: author.nameAr, avatar: author.avatar, role: author.role, companyId: author.companyId, companyName: author.companyName }
       : undefined,
   };
 }

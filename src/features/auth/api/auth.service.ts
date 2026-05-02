@@ -38,7 +38,7 @@ export const AuthService = {
       // Get additional user data from Firestore
       const userDocRef = doc(db, "users", firebaseUser.uid);
       const userDoc = await getDoc(userDocRef);
-      let userData = userDoc.data() as User;
+      let userData = userDoc.data() as any;
 
       if (!userDoc.exists()) {
         // Create default user profile in Firestore if it doesn't exist
@@ -105,6 +105,7 @@ export const AuthService = {
         avatar: `https://avatar.vercel.sh/${firebaseUser.uid}`,
         role: "admin", // First user is admin
         companyId: data.companyName.toLowerCase().replace(/\s+/g, "-") || "default-company",
+        companyName: data.companyName,
       };
 
       // Create user document in Firestore
@@ -152,7 +153,7 @@ export const AuthService = {
       }
 
       const userDoc = await getDoc(doc(db, "users", firebaseUser.uid));
-      const userData = userDoc.data() as User | undefined;
+      const userData = userDoc.data() as any;
       
       const user: User = {
         id: firebaseUser.uid,

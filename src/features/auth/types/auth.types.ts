@@ -8,6 +8,7 @@ export interface User {
   avatar: string;
   role: UserRole;
   companyId: string;
+  companyName: string;
 }
 
 export interface LoginRequest {

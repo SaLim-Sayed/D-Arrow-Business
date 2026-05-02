@@ -1,9 +1,8 @@
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import type { Task } from "../types/task.types";
-import { PriorityBadge } from "@/components/shared/priority-badge";
-import { Avatar, Card, CardBody } from "@heroui/react";
-import { MessageSquare, Plus } from "lucide-react";
+import { Avatar, Card, CardBody, Chip } from "@heroui/react";
+import { MessageSquare, MoreHorizontal, Paperclip } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface TaskCardProps {
@@ -13,10 +12,8 @@ interface TaskCardProps {
 
 export function TaskCard({ task, isDragging }: TaskCardProps) {
   const navigate = useNavigate();
-  const { t, i18n } = useTranslation("tasks");
+  const { t } = useTranslation("tasks");
 
-  const assigneeName =
-    i18n.language === "ar" ? task.assignee?.nameAr : task.assignee?.name;
   const initials = (task.assignee?.name ?? "")
     .split(" ")
     .map((n) => n[0])
@@ -24,64 +21,84 @@ export function TaskCard({ task, isDragging }: TaskCardProps) {
     .toUpperCase()
     .slice(0, 2);
 
-  const isOverdue =
-    task.dueDate &&
-    new Date(task.dueDate) < new Date() &&
-    task.status !== "done";
-
   return (
-    <Link to={`/tasks/${task.id}`}>
+    <div
+      onClick={() => navigate(`/tasks/${task.id}`)}
+      className={cn(
+        "group cursor-pointer transition-all duration-200",
+        isDragging ? "opacity-50 scale-105" : "hover:scale-[1.01]"
+      )}
+    >
       <Card
-        onClick={() => navigate(`/tasks/${task.id}`)}
         className={cn(
-          "glass-card border-none hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 cursor-pointer group",
-          isDragging && "shadow-2xl ring-2 ring-primary/40 rotate-2 z-50",
+          "border border-default-200 shadow-sm hover:shadow-md transition-shadow duration-300 rounded-lg",
+          isDragging && "shadow-2xl ring-2 ring-primary/20 rotate-1"
         )}
       >
-        <CardBody className="p-4">
-          <div className="flex items-center justify-between mb-3">
-            <PriorityBadge priority={task.priority} />
-            {task.commentsCount > 0 && (
-              <div className="flex items-center gap-1.5 text-[10px] font-bold text-default-400 group-hover:text-primary transition-colors">
-                <MessageSquare className="h-3.5 w-3.5" />
-                {task.commentsCount}
-              </div>
+        <CardBody className="p-4 space-y-3">
+          {/* Header: ID and Assignee */}
+          <div className="flex items-center justify-between mb-1">
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] font-bold text-default-400 uppercase tracking-wider">
+                TASK-{task.id.slice(-4).toUpperCase()}
+              </span>
+            </div>
+            {task.assignee && (
+              <Avatar
+                size="sm"
+                src={task.assignee.avatar}
+                fallback={initials}
+                showFallback
+                className="h-6 w-6 ring-2 ring-background"
+              />
             )}
           </div>
 
-          <h4 className="text-sm font-bold leading-relaxed mb-4 group-hover:text-primary transition-colors">
+          {/* Title */}
+          <h4 className="text-sm font-semibold text-default-900 leading-snug group-hover:text-primary transition-colors">
             {task.title}
           </h4>
 
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              {task.assignee ? (
-                <div className="flex items-center gap-2">
-                  <Avatar
-                    size="sm"
-                    src={task.assignee.avatar}
-                    fallback={initials}
-                    showFallback
-                    className="ring-2 ring-background group-hover:ring-primary/20 transition-all"
-                  />
-                  <span className="text-[10px] font-bold text-default-500 uppercase tracking-wider truncate max-w-[100px]">
-                    {assigneeName}
-                  </span>
-                </div>
-              ) : (
-                <div className="h-8 w-8 rounded-full bg-default-100 flex items-center justify-center border border-dashed border-default-300">
-                  <Plus className="h-3 w-3 text-default-400" />
+          {/* Tags / Labels */}
+          <div className="flex flex-wrap gap-2 pt-1">
+            <Chip 
+              size="sm" 
+              variant="flat" 
+              className={cn(
+                "h-5 text-[9px] font-bold uppercase tracking-tighter px-1",
+                task.priority === 'urgent' ? 'bg-danger/10 text-danger' : 
+                task.priority === 'high' ? 'bg-warning/10 text-warning' : 
+                'bg-default-100 text-default-600'
+              )}
+            >
+              {t(`priority.${task.priority}`)}
+            </Chip>
+            {task.tags?.slice(0, 2).map(tag => (
+              <Chip key={tag} size="sm" variant="flat" className="h-5 text-[9px] font-medium bg-default-100">
+                {tag}
+              </Chip>
+            ))}
+          </div>
+
+          {/* Footer: Icons */}
+          <div className="flex items-center justify-between pt-2 border-t border-default-50">
+            <div className="flex items-center gap-3">
+              {task.commentsCount > 0 && (
+                <div className="flex items-center gap-1 text-default-400">
+                  <MessageSquare className="h-3.5 w-3.5" />
+                  <span className="text-[10px] font-bold">{task.commentsCount}</span>
                 </div>
               )}
-            </div>
-            {isOverdue && (
-              <div className="px-2 py-0.5 rounded-full bg-danger/10 text-[9px] font-black uppercase tracking-tighter text-danger animate-pulse">
-                {t("dashboard.overdue")}
+              <div className="flex items-center gap-1 text-default-300">
+                <Paperclip className="h-3.5 w-3.5" />
               </div>
-            )}
+            </div>
+            <button className="text-default-300 hover:text-default-600 transition-colors">
+              <MoreHorizontal className="h-4 w-4" />
+            </button>
           </div>
         </CardBody>
       </Card>
-    </Link>
+    </div>
   );
 }
