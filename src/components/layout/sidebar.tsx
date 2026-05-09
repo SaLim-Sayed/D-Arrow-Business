@@ -2,15 +2,14 @@ import { cn } from "@/lib/utils";
 import { useLayoutStore } from "@/stores/layout.store";
 import { Button, Tooltip } from "@heroui/react";
 import {
+  BarChart3,
+  Briefcase,
   ChevronLeft,
   ChevronRight,
-  Kanban,
+  Database,
   LayoutDashboard,
   ListTodo,
   Users,
-  Briefcase,
-  BarChart3,
-  Database,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { NavLink } from "react-router-dom";
@@ -42,11 +41,11 @@ const navItems: NavItem[] = [
     path: "/tasks/list",
     icon: <ListTodo className="h-5 w-5" />,
   },
-  {
-    labelKey: "nav.taskBoard",
-    path: "/tasks/board",
-    icon: <Kanban className="h-5 w-5" />,
-  },
+  // {
+  //   labelKey: "nav.taskBoard",
+  //   path: "/tasks/board",
+  //   icon: <Kanban className="h-5 w-5" />,
+  // },
   {
     labelKey: "nav.analytics",
     path: "/analytics",
