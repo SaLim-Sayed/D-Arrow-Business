@@ -1,6 +1,7 @@
 import { createBrowserRouter, Navigate } from "react-router-dom";
 import { LoginPage } from "@/features/auth/pages/login-page";
 import { RegisterPage } from "@/features/auth/pages/register-page";
+import { ProfilePage } from "@/features/auth/pages/profile-page";
 import { ProtectedRoute } from "@/features/auth/components/protected-route";
 import { AppLayout } from "@/components/layout/app-layout";
 import { TasksDashboardPage } from "@/features/tasks/pages/tasks-dashboard-page";
@@ -60,6 +61,10 @@ export const router = createBrowserRouter([
       {
         path: "seed",
         element: <SeedPage />,
+      },
+      {
+        path: "profile",
+        element: <ProfilePage />,
       },
       {
         path: "*",

@@ -6,12 +6,14 @@ import { LanguageSwitcher } from "./language-switcher";
 import { Button, Dropdown, DropdownTrigger, DropdownMenu, DropdownItem, Avatar, Drawer, DrawerContent } from "@heroui/react";
 import { Menu, Moon, Sun, LogOut, User } from "lucide-react";
 import { MobileSidebar } from "./mobile-sidebar";
+import { useNavigate } from "react-router-dom";
 
 export function Header() {
   const { t, i18n } = useTranslation();
   const { user, logout } = useAuth();
   const { mobileSidebarOpen, setMobileSidebarOpen } = useLayoutStore();
   const { mode, toggleMode } = useThemeStore();
+  const navigate = useNavigate();
 
   const displayName = i18n.language === "ar" ? user?.nameAr : user?.name;
   const initials = (user?.name ?? "U")
@@ -79,7 +81,11 @@ export function Header() {
             </div>
           </DropdownTrigger>
           <DropdownMenu aria-label="User Actions" variant="flat">
-            <DropdownItem key="profile" startContent={<User className="h-4 w-4" />}>
+            <DropdownItem
+              key="profile"
+              startContent={<User className="h-4 w-4" />}
+              onPress={() => navigate("/profile")}
+            >
               {t("user.profile")}
             </DropdownItem>
             <DropdownItem 

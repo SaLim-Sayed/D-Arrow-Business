@@ -13,12 +13,13 @@ interface AuthContextValue {
   isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
   logout: () => void;
+  updateUser: (partial: Partial<User>) => void;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const { user, isAuthenticated, isLoading, login, logout, initialize } = useAuthStore();
+  const { user, isAuthenticated, isLoading, login, logout, initialize, updateUser } = useAuthStore();
 
   useEffect(() => {
     const unsubscribe = initialize();
@@ -33,6 +34,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isLoading,
         login,
         logout,
+        updateUser,
       }}
     >
       {children}

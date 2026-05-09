@@ -1,0 +1,15 @@
+{
+  "title": "My Profile",
+  "description": "Update your personal information and profile photo",
+  "changePhoto": "Change Photo",
+  "email": "Email Address",
+  "name": "Full Name",
+  "namePlaceholder": "Enter your full name",
+  "nameAr": "Arabic Name",
+  "nameArPlaceholder": "أدخل اسمك بالعربية",
+  "role": "Role",
+  "nameRequired": "Name is required",
+  "avatarTooLarge": "Image must be smaller than 5 MB",
+  "saveSuccess": "Profile updated successfully",
+  "saveError": "Failed to update profile. Please try again."
+}

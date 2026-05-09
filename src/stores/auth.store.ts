@@ -14,6 +14,7 @@ interface AuthState {
   logout: () => void;
   checkAuth: () => Promise<void>;
   clearAuth: () => void;
+  updateUser: (partial: Partial<User>) => void;
   initialize: () => () => void;
 }
 
@@ -61,6 +62,11 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       isLoading: false,
     });
   },
+
+  updateUser: (partial: Partial<User>) =>
+    set((state) => ({
+      user: state.user ? { ...state.user, ...partial } : state.user,
+    })),
 
   initialize: () => {
     set({ isLoading: true });
