@@ -7,6 +7,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Database,
+  Kanban,
   LayoutDashboard,
   ListTodo,
   Users,
@@ -41,11 +42,11 @@ const navItems: NavItem[] = [
     path: "/tasks/list",
     icon: <ListTodo className="h-5 w-5" />,
   },
-  // {
-  //   labelKey: "nav.taskBoard",
-  //   path: "/tasks/board",
-  //   icon: <Kanban className="h-5 w-5" />,
-  // },
+  {
+    labelKey: "nav.taskBoard",
+    path: "/tasks/board",
+    icon: <Kanban className="h-5 w-5" />,
+  },
   {
     labelKey: "nav.analytics",
     path: "/analytics",
