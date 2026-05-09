@@ -1,7 +1,7 @@
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 import { KanbanBoard } from "../components/kanban-board";
-import { Plus, Search, Filter, MoreHorizontal } from "lucide-react";
+import { Plus, Search, Filter, MoreHorizontal, UserCircle2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTasksUIStore } from "../store/tasks-ui.store";
 import {
@@ -12,14 +12,17 @@ import {
   DropdownMenu,
   DropdownItem,
   Chip,
+  Avatar,
 } from "@heroui/react";
 import { useAuth } from "@/features/auth/context/auth-context";
+import { useAllUsers } from "@/features/users/hooks/use-users";
 
 export function TasksBoardPage() {
-  const { t } = useTranslation("tasks");
+  const { t, i18n } = useTranslation("tasks");
   const { t: tc } = useTranslation();
   const { filters, setFilter, resetFilters } = useTasksUIStore();
   const { user } = useAuth();
+  const { data: allUsers } = useAllUsers();
 
   const tabs = [{ label: "Board", path: "/tasks/board", active: true }];
 
@@ -29,6 +32,9 @@ export function TasksBoardPage() {
   const companyName = user?.companyName || "D-Arrow Business";
   const [firstPart, ...rest] = companyName.split(" ");
   const secondPart = rest.join(" ");
+
+  const selectedAssignee = allUsers?.find((u) => u.id === filters.assigneeId) ?? null;
+  const hasActiveFilters = !!filters.search || filters.priority.length > 0 || !!filters.assigneeId;
 
   return (
     <div className="h-[calc(100vh-4rem)] flex flex-col -m-6 animate-in fade-in duration-700 bg-white">
@@ -95,6 +101,7 @@ export function TasksBoardPage() {
               }}
             />
 
+            {/* Priority Filter */}
             <Dropdown>
               <DropdownTrigger>
                 <Button
@@ -132,7 +139,64 @@ export function TasksBoardPage() {
               </DropdownMenu>
             </Dropdown>
 
-            {(filters.search || filters.priority.length > 0) && (
+            {/* Assignee Filter */}
+            <Dropdown>
+              <DropdownTrigger>
+                <Button
+                  size="sm"
+                  variant="bordered"
+                  className={cn(
+                    "rounded-lg border-default-200 font-bold text-xs gap-2",
+                    filters.assigneeId && "border-primary/40 bg-primary/5 text-primary",
+                  )}
+                  startContent={
+                    selectedAssignee ? (
+                      <Avatar
+                        src={selectedAssignee.avatar}
+                        name={selectedAssignee.name}
+                        size="sm"
+                        className="h-4 w-4 text-[8px]"
+                        showFallback
+                      />
+                    ) : (
+                      <UserCircle2 className="h-3.5 w-3.5" />
+                    )
+                  }
+                >
+                  {selectedAssignee
+                    ? (i18n.language === "ar" ? selectedAssignee.nameAr : selectedAssignee.name)
+                    : t("form.assignee.label")}
+                </Button>
+              </DropdownTrigger>
+              <DropdownMenu
+                aria-label="Filter by assignee"
+                selectionMode="single"
+                selectedKeys={filters.assigneeId ? new Set([filters.assigneeId]) : new Set()}
+                onSelectionChange={(keys) => {
+                  const selected = Array.from(keys)[0] as string | undefined;
+                  setFilter("assigneeId", selected ?? null);
+                }}
+              >
+                {(allUsers ?? []).map((u) => (
+                  <DropdownItem
+                    key={u.id}
+                    startContent={
+                      <Avatar
+                        src={u.avatar}
+                        name={u.name}
+                        size="sm"
+                        className="h-6 w-6 text-[10px]"
+                        showFallback
+                      />
+                    }
+                  >
+                    {i18n.language === "ar" ? u.nameAr : u.name}
+                  </DropdownItem>
+                ))}
+              </DropdownMenu>
+            </Dropdown>
+
+            {hasActiveFilters && (
               <Button
                 size="sm"
                 variant="light"

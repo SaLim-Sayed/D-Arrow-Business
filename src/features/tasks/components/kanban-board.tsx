@@ -23,6 +23,7 @@ export function KanbanBoard() {
   const { data, isLoading: isTasksLoading } = useTasksQuery({
     search: filters.search || undefined,
     priority: filters.priority.length ? filters.priority : undefined,
+    assigneeId: filters.assigneeId ?? undefined,
     pageSize: 100, // Show more tasks on board
   });
   
