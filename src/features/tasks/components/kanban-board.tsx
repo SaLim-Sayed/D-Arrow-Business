@@ -14,11 +14,18 @@ import { TASK_STATUSES } from "@/lib/constants";
 import type { Task, TaskStatus } from "../types/task.types";
 import { cn } from "@/lib/utils";
 import { useTasksUIStore } from "../store/tasks-ui.store";
+import { useAuthStore } from "@/stores/auth.store";
+import { toast } from "sonner";
+
+/** Roles that can approve tasks (move in_review → done) */
+const APPROVER_ROLES = new Set(["super_admin", "admin", "manager"]);
 
 export function KanbanBoard() {
   const { t } = useTranslation("tasks");
   const { data: allUsers } = useAllUsers();
   const { filters } = useTasksUIStore();
+  const { user } = useAuthStore();
+  const canApprove = APPROVER_ROLES.has(user?.role ?? "");
   
   const { data, isLoading: isTasksLoading } = useTasksQuery({
     search: filters.search || undefined,
@@ -58,6 +65,12 @@ export function KanbanBoard() {
 
     const task = tasks.find((t: Task) => t.id === taskId);
     if (!task || task.status === newStatus) return;
+
+    // 🔒 Only approvers can move a task from in_review → done
+    if (task.status === "in_review" && newStatus === "done" && !canApprove) {
+      toast.error(t("errors.approvePermission"));
+      return;
+    }
 
     updateTask.mutate({ id: taskId, data: { status: newStatus } });
   }

@@ -16,6 +16,10 @@ import { TASK_PRIORITIES, TASK_STATUSES } from "@/lib/constants";
 import { useAuthStore } from "@/stores/auth.store";
 import { useAllUsers } from "@/features/users/hooks/use-users";
 import type { CreateTaskDTO, Task } from "../types/task.types";
+import { toast } from "sonner";
+
+/** Roles that can approve tasks (move in_review → done) */
+const APPROVER_ROLES = new Set(["super_admin", "admin", "manager"]);
 
 const taskSchema = z.object({
   title: z.string().min(3, "Title must be at least 3 characters"),
@@ -43,6 +47,7 @@ export function TaskForm({
   const { t: tc } = useTranslation();
   const { data: allUsers } = useAllUsers();
   const { user: currentUser } = useAuthStore();
+  const canApprove = APPROVER_ROLES.has(currentUser?.role ?? "");
 
   const form = useForm<TaskFormValues>({
     resolver: zodResolver(taskSchema),
@@ -64,6 +69,16 @@ export function TaskForm({
   } = form;
 
   function handleSubmit(values: TaskFormValues) {
+    // 🔒 Guard: non-approvers cannot set status to done from in_review
+    if (
+      !canApprove &&
+      values.status === "done" &&
+      defaultValues?.status === "in_review"
+    ) {
+      toast.error(t("errors.approvePermission"));
+      return;
+    }
+
     console.log("Submitting task form:", values);
     
     let isoDueDate = null;
@@ -139,8 +154,23 @@ export function TaskForm({
                 }
               >
                 {TASK_STATUSES.map((status) => (
-                  <SelectItem key={status} textValue={t(`status.${status}`)}>
+                  <SelectItem
+                    key={status}
+                    textValue={t(`status.${status}`)}
+                    isDisabled={
+                      status === "done" &&
+                      defaultValues?.status === "in_review" &&
+                      !canApprove
+                    }
+                  >
                     {t(`status.${status}`)}
+                    {status === "done" &&
+                      defaultValues?.status === "in_review" &&
+                      !canApprove && (
+                        <span className="text-xs text-default-400 ml-1">
+                          ({t("errors.approveOnly")})
+                        </span>
+                      )}
                   </SelectItem>
                 ))}
               </Select>
