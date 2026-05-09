@@ -10,9 +10,22 @@ import {
   CardBody,
   Divider,
   Input,
+  Select,
+  SelectItem,
 } from "@heroui/react";
-import { Camera, Check, Loader2, Mail, User } from "lucide-react";
+import { Camera, Check, Loader2, Mail, Shield, User } from "lucide-react";
 import { toast } from "sonner";
+import type { UserRole } from "@/features/auth/types/auth.types";
+import { doc, updateDoc } from "firebase/firestore/lite";
+import { auth, db } from "@/lib/firebase";
+
+const USER_ROLES: { value: UserRole; label: string }[] = [
+  { value: "super_admin", label: "Super Admin" },
+  { value: "admin",       label: "Admin" },
+  { value: "manager",     label: "Manager" },
+  { value: "employee",    label: "Employee" },
+  { value: "viewer",      label: "Viewer" },
+];
 
 export function ProfilePage() {
   const { t } = useTranslation();
@@ -21,6 +34,7 @@ export function ProfilePage() {
 
   const [name, setName] = useState(user?.name ?? "");
   const [nameAr, setNameAr] = useState(user?.nameAr ?? "");
+  const [role, setRole] = useState<UserRole>(user?.role ?? "employee");
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [isSaving, setIsSaving] = useState(false);
@@ -55,16 +69,27 @@ export function ProfilePage() {
     }
     setIsSaving(true);
     try {
+      // 1. Update name + avatar via ProfileService
       const updated = await ProfileService.updateProfile({
         name: name.trim(),
         nameAr: nameAr.trim(),
         avatarFile,
       });
 
-      // Merge into the auth context / store (keep existing role, companyId, etc.)
+      // 2. Persist role change directly to Firestore
+      const firebaseUser = auth.currentUser;
+      if (firebaseUser && role !== user?.role) {
+        await updateDoc(doc(db, "users", firebaseUser.uid), {
+          role,
+          updatedAt: new Date().toISOString(),
+        });
+      }
+
+      // 3. Merge into the auth context / store
       updateUser({
         name: updated.name,
         nameAr: updated.nameAr,
+        role,
         ...(avatarFile ? { avatar: updated.avatar } : {}),
       });
 
@@ -164,13 +189,22 @@ export function ProfilePage() {
               classNames={{ input: "text-right font-arabic" }}
             />
 
-            {/* Role (read-only) */}
-            <Input
-              isReadOnly
+            {/* Role — editable select */}
+            <Select
               label={tp("role")}
-              value={user?.role ?? ""}
-              classNames={{ input: "text-default-500 capitalize", inputWrapper: "bg-default-50" }}
-            />
+              selectedKeys={new Set([role])}
+              onSelectionChange={(keys) => {
+                const selected = Array.from(keys)[0] as UserRole;
+                if (selected) setRole(selected);
+              }}
+              startContent={<Shield className="h-4 w-4 text-default-400 shrink-0" />}
+            >
+              {USER_ROLES.map((r) => (
+                <SelectItem key={r.value}>
+                  {r.label}
+                </SelectItem>
+              ))}
+            </Select>
           </div>
 
           <Divider />
