@@ -50,7 +50,7 @@ export function LeadsListPage() {
           <Button 
             color="primary" 
             startContent={<Plus className="h-4 w-4" />}
-            className="rounded-2xl font-bold"
+            className="rounded-full font-bold"
           >
             {t("leads.addLead")}
           </Button>

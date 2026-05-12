@@ -53,7 +53,7 @@ export function SeedPage() {
                   color="primary" 
                   size="lg" 
                   onPress={handleSeed}
-                  className="font-black uppercase tracking-widest shadow-xl shadow-primary/30 h-14 px-12 rounded-2xl hover:scale-105 active:scale-95 transition-all"
+                  className="font-black uppercase tracking-widest shadow-xl shadow-primary/30 h-14 px-12 rounded-full hover:scale-105 active:scale-95 transition-all"
                 >
                   {t("seed.startButton")}
                 </Button>

@@ -11,7 +11,7 @@ import { StatusBadge } from "@/components/shared/status-badge";
 import { PriorityBadge } from "@/components/shared/priority-badge";
 import { LoadingSpinner } from "@/components/shared/loading-spinner";
 import { Button, Card, CardBody, Avatar, Chip, Tabs, Tab, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Divider as Separator, Spinner } from "@heroui/react";
-import { ArrowLeft, Pencil, Trash2 } from "lucide-react";
+import { Pencil, Trash2 } from "lucide-react";
 import { formatDate } from "@/lib/utils";
 
 export function TaskDetailPage() {
@@ -53,20 +53,13 @@ export function TaskDetailPage() {
     <div className="max-w-4xl mx-auto">
       <PageHeader
         title={task.title}
+        onBack={() => navigate(-1)}
         actions={
           <div className="flex gap-2">
             <Button
-              variant="light"
-              onPress={() => navigate(-1)}
-              className="flex items-center gap-2"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              {tc("actions.back")}
-            </Button>
-            <Button
               variant="bordered"
               onPress={() => setIsEditModalOpen(true)}
-              className="flex items-center gap-2"
+              className="flex items-center gap-2 rounded-full font-bold"
             >
               <Pencil className="h-4 w-4" />
               {tc("actions.edit")}
@@ -74,7 +67,7 @@ export function TaskDetailPage() {
             <Button
               color="danger" variant="solid"
               onPress={() => setIsDeleteModalOpen(true)}
-              className="flex items-center gap-2"
+              className="flex items-center gap-2 rounded-full font-bold shadow-lg shadow-danger/20"
             >
               <Trash2 className="h-4 w-4" />
               {tc("actions.delete")}

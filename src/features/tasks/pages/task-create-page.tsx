@@ -3,12 +3,10 @@ import { useNavigate } from "react-router-dom";
 import { useCreateTask } from "../hooks/use-task-mutations";
 import { TaskForm } from "../components/task-form";
 import { PageHeader } from "@/components/shared/page-header";
-import { Button, Card, CardBody } from "@heroui/react";
-import { ArrowLeft } from "lucide-react";
+import { Card, CardBody } from "@heroui/react";
 
 export function TaskCreatePage() {
   const { t } = useTranslation("tasks");
-  const { t: tc } = useTranslation();
   const navigate = useNavigate();
   const createTask = useCreateTask();
 
@@ -16,16 +14,7 @@ export function TaskCreatePage() {
     <div className=" mx-auto">
       <PageHeader
         title={t("form.createTitle")}
-        actions={
-          <Button
-            variant="light"
-            onPress={() => navigate(-1)}
-            className="flex items-center gap-2"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            {tc("actions.back")}
-          </Button>
-        }
+        onBack={() => navigate(-1)}
       />
 
       <Card className="bg-content1">

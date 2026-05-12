@@ -39,7 +39,7 @@ export function TasksDashboardPage() {
           actions={
             <Link 
               to="/tasks/new" 
-              className="inline-flex items-center justify-center rounded-2xl bg-primary px-6 py-3 text-sm font-black text-white shadow-xl shadow-primary/40 hover:bg-primary/90 hover:scale-105 active:scale-95 transition-all gap-2"
+              className="inline-flex items-center justify-center rounded-full bg-primary px-6 py-3 text-sm font-black text-white shadow-xl shadow-primary/40 hover:bg-primary/90 hover:scale-105 active:scale-95 transition-all gap-2"
             >
               <Plus className="h-4 w-4 stroke-[4px]" />
               {t("list.newTask")}
