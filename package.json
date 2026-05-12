@@ -12,8 +12,8 @@
   "dependencies": {
     "@emailjs/browser": "^4.4.1",
     "@hello-pangea/dnd": "^18.0.1",
-    "@heroui/react": "^2.8.10",
-    "@heroui/theme": "^2.4.26",
+    "@heroui/react": "2.7.11",
+    "@heroui/theme": "2.4.17",
     "@hookform/resolvers": "^5.2.2",
     "@radix-ui/react-avatar": "^1.1.11",
     "@radix-ui/react-dialog": "^1.1.15",
