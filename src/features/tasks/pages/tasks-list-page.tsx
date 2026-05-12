@@ -41,6 +41,7 @@ export function TasksListPage() {
     status: filters.status.length ? filters.status : undefined,
     priority: filters.priority.length ? filters.priority : undefined,
     assigneeId: filters.assigneeId ?? undefined,
+    sprintId: filters.sprintId ?? undefined,
     search: filters.search || undefined,
     page,
     pageSize,
@@ -59,7 +60,7 @@ export function TasksListPage() {
   const totalPages = data?.totalPages ?? 1;
 
   const selectedAssignee = allUsers?.find((u) => u.id === filters.assigneeId) ?? null;
-  const hasActiveFilters = !!filters.search || filters.priority.length > 0 || !!filters.assigneeId;
+  const hasActiveFilters = !!filters.search || filters.priority.length > 0 || !!filters.assigneeId || !!filters.sprintId;
 
   return (
     <div>
@@ -230,7 +231,17 @@ export function TasksListPage() {
                 return (
                   <TableRow key={task.id}>
                     <TableCell>
-                      <span className="font-medium">{task.title}</span>
+                      <div className="flex flex-col gap-0.5">
+                        {task.parentId && (
+                          <span className="text-[10px] font-medium text-primary cursor-pointer hover:underline" onClick={(e) => {
+                            e.stopPropagation();
+                            navigate(`/tasks/${task.parentId}`);
+                          }}>
+                            ↑ TASK-{task.parentId.slice(-4).toUpperCase()}
+                          </span>
+                        )}
+                        <span className="font-medium">{task.title}</span>
+                      </div>
                     </TableCell>
                     <TableCell>
                       <StatusBadge status={task.status} />

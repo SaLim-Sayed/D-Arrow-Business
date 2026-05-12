@@ -30,6 +30,15 @@ export function useAllTasksQuery() {
   return useQuery({
     queryKey: QUERY_KEYS.tasks.list({ all: true, companyId }),
     queryFn: () => TaskService.getTasks(companyId!, { pageSize: 200 }),
+  });
+}
+
+export function useSprintsQuery() {
+  const { companyId } = useCompany();
+
+  return useQuery({
+    queryKey: ["sprints", companyId],
+    queryFn: () => TaskService.getSprints(companyId!),
     enabled: !!companyId,
   });
 }

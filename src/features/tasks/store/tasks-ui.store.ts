@@ -7,6 +7,7 @@ interface TasksUIState {
     status: TaskStatus[];
     priority: TaskPriority[];
     assigneeId: string | null;
+    sprintId: string | null;
     search: string;
   };
   sort: {
@@ -29,6 +30,7 @@ const defaultFilters = {
   status: [] as TaskStatus[],
   priority: [] as TaskPriority[],
   assigneeId: null as string | null,
+  sprintId: null as string | null,
   search: "",
 };
 

@@ -11,6 +11,7 @@ import { TasksListPage } from "@/features/tasks/pages/tasks-list-page";
 import { TasksBoardPage } from "@/features/tasks/pages/tasks-board-page";
 import { TaskCreatePage } from "@/features/tasks/pages/task-create-page";
 import { TaskDetailPage } from "@/features/tasks/pages/task-detail-page";
+import { SprintsPage } from "@/features/tasks/pages/sprints-page";
 import { LeadsListPage } from "@/features/crm/pages/LeadsListPage";
 import { SeedPage } from "@/features/admin/pages/SeedPage";
 import { NotFoundPage } from "@/components/shared/not-found-page";
@@ -63,6 +64,10 @@ export const router = createBrowserRouter([
       {
         path: "tasks/new",
         element: <TaskCreatePage />,
+      },
+      {
+        path: "tasks/sprints",
+        element: <SprintsPage />,
       },
       {
         path: "tasks/:taskId",

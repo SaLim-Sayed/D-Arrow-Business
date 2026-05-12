@@ -15,8 +15,10 @@ import {
 import { TASK_PRIORITIES, TASK_STATUSES } from "@/lib/constants";
 import { useAuthStore } from "@/stores/auth.store";
 import { useAllUsers } from "@/features/users/hooks/use-users";
+import { useAllTasksQuery, useSprintsQuery } from "../hooks/use-tasks";
 import type { CreateTaskDTO, Task } from "../types/task.types";
 import { toast } from "sonner";
+import { parseDate } from "@internationalized/date";
 
 /** Roles that can approve tasks (move in_review → done) */
 const APPROVER_ROLES = new Set(["super_admin", "admin", "manager"]);
@@ -26,7 +28,10 @@ const taskSchema = z.object({
   description: z.string(),
   status: z.enum(["todo", "in_progress", "in_review", "done"]),
   priority: z.enum(["low", "medium", "high", "urgent"]),
+  type: z.enum(["task", "epic", "subtask"]),
   assigneeId: z.string().nullable().optional(),
+  parentId: z.string().nullable().optional(),
+  sprintId: z.string().nullable().optional(),
   dueDate: z.string().nullable().optional(),
 });
 
@@ -36,18 +41,25 @@ interface TaskFormProps {
   defaultValues?: Partial<Task>;
   onSubmit: (data: CreateTaskDTO) => void;
   isSubmitting?: boolean;
+  onCancel?: () => void;
 }
 
 export function TaskForm({
   defaultValues,
   onSubmit,
   isSubmitting,
+  onCancel,
 }: TaskFormProps) {
   const { t } = useTranslation("tasks");
   const { t: tc } = useTranslation();
   const { data: allUsers } = useAllUsers();
+  const { data: allTasks } = useAllTasksQuery();
+  const { data: allSprints } = useSprintsQuery();
   const { user: currentUser } = useAuthStore();
   const canApprove = APPROVER_ROLES.has(currentUser?.role ?? "");
+
+  const epics = allTasks?.data?.filter(t => t.type === "epic") || [];
+  const sprints = allSprints?.data || [];
 
   const form = useForm<TaskFormValues>({
     resolver: zodResolver(taskSchema),
@@ -56,7 +68,10 @@ export function TaskForm({
       description: defaultValues?.description ?? "",
       status: defaultValues?.status ?? "todo",
       priority: defaultValues?.priority ?? "medium",
+      type: defaultValues?.type ?? "task",
       assigneeId: defaultValues?.assigneeId ?? null,
+      parentId: defaultValues?.parentId ?? null,
+      sprintId: defaultValues?.sprintId ?? null,
       dueDate: defaultValues?.dueDate
         ? defaultValues.dueDate.split("T")[0]
         : null,
@@ -65,11 +80,13 @@ export function TaskForm({
 
   const {
     control,
+    watch,
     formState: { errors },
   } = form;
 
+  const taskType = watch("type");
+
   function handleSubmit(values: TaskFormValues) {
-    // 🔒 Guard: non-approvers cannot set status to done from in_review
     if (
       !canApprove &&
       values.status === "done" &&
@@ -79,8 +96,6 @@ export function TaskForm({
       return;
     }
 
-    console.log("Submitting task form:", values);
-    
     let isoDueDate = null;
     if (values.dueDate) {
       const d = new Date(values.dueDate);
@@ -94,6 +109,9 @@ export function TaskForm({
       description: values.description,
       status: values.status,
       priority: values.priority,
+      type: values.type,
+      parentId: values.parentId,
+      sprintId: values.sprintId,
       assigneeId: values.assigneeId,
       dueDate: isoDueDate,
     });
@@ -135,6 +153,90 @@ export function TaskForm({
           />
         )}
       />
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <Controller
+          name="type"
+          control={control}
+          render={({ field }: { field: any }) => (
+            <div className="flex flex-col gap-2">
+              <span className="text-sm font-semibold tracking-tight text-foreground/80">
+                {t("form.type.label", "Task Type")}
+              </span>
+              <Select
+                aria-label="Task Type"
+                selectedKeys={new Set([field.value])}
+                className="h-11"
+                onSelectionChange={(keys) =>
+                  field.onChange(Array.from(keys)[0] as string)
+                }
+              >
+                <SelectItem key="task" textValue="Task">Task</SelectItem>
+                <SelectItem key="epic" textValue="Epic">Epic</SelectItem>
+                <SelectItem key="subtask" textValue="Subtask">Subtask</SelectItem>
+              </Select>
+            </div>
+          )}
+        />
+
+        <Controller
+          name="sprintId"
+          control={control}
+          render={({ field }: { field: any }) => (
+            <div className="flex flex-col gap-2">
+              <span className="text-sm font-semibold tracking-tight text-foreground/80">
+                {t("form.sprint.label", "Sprint")}
+              </span>
+              <Select
+                aria-label="Sprint"
+                selectedKeys={new Set([field.value || "no-sprint"])}
+                className="h-11"
+                onSelectionChange={(keys) => {
+                  const val = Array.from(keys)[0] as string;
+                  field.onChange(val === "no-sprint" ? null : val);
+                }}
+              >
+                {[
+                  <SelectItem key="no-sprint" textValue="No Sprint">No Sprint</SelectItem>,
+                  ...sprints.map((s) => (
+                    <SelectItem key={s.id} textValue={s.name}>{s.name}</SelectItem>
+                  ))
+                ]}
+              </Select>
+            </div>
+          )}
+        />
+      </div>
+
+      {taskType === "subtask" && (
+        <Controller
+          name="parentId"
+          control={control}
+          render={({ field }: { field: any }) => (
+            <div className="flex flex-col gap-2 animate-in fade-in slide-in-from-top-2 duration-300">
+              <span className="text-sm font-semibold tracking-tight text-foreground/80">
+                {t("form.parent.label", "Parent Task (Epic)")}
+              </span>
+              <Select
+                aria-label="Parent Task"
+                selectedKeys={new Set([field.value || "no-parent"])}
+                className="h-11"
+                onSelectionChange={(keys) => {
+                  const val = Array.from(keys)[0] as string;
+                  field.onChange(val === "no-parent" ? null : val);
+                }}
+              >
+                {[
+                  <SelectItem key="no-parent" textValue="No Parent">No Parent</SelectItem>,
+                  ...epics.map((e) => (
+                    <SelectItem key={e.id} textValue={e.title}>{e.title}</SelectItem>
+                  ))
+                ]}
+              </Select>
+            </div>
+          )}
+        />
+      )}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <Controller
@@ -306,6 +408,7 @@ export function TaskForm({
               label={t("form.dueDate.label")}
               className="max-w-full"
               variant="flat"
+              value={field.value ? parseDate(field.value) : null}
               onChange={(date: any) => field.onChange(date?.toString() || null)}
               isInvalid={!!errors.dueDate}
               errorMessage={errors.dueDate?.message}
@@ -315,12 +418,23 @@ export function TaskForm({
       />
 
       <div className="flex justify-end gap-2 pt-4">
+        {onCancel && (
+          <Button
+            type="button"
+            variant="flat"
+            onPress={onCancel}
+            isDisabled={isSubmitting}
+            className="h-11 font-semibold px-6"
+          >
+            {tc("actions.cancel")}
+          </Button>
+        )}
         <Button
           type="submit"
           color="primary"
           variant="solid"
           isDisabled={isSubmitting}
-          className="w-full h-11 font-semibold shadow-lg shadow-primary/20 flex items-center justify-center gap-2"
+          className={`h-11 font-semibold shadow-lg shadow-primary/20 flex items-center justify-center gap-2 ${!onCancel ? 'w-full' : 'px-8'}`}
         >
           {isSubmitting ? (
             <Spinner size="sm" color="current" className="mr-2" />

@@ -3,6 +3,7 @@ import { collection, doc, setDoc, addDoc, serverTimestamp } from "firebase/fires
 import { mockUsers } from "../mocks/data/users.data";
 import { mockTasks } from "../mocks/data/tasks.data";
 import { mockComments } from "../mocks/data/comments.data";
+import { mockSprints } from "../mocks/data/sprints.data";
 
 export async function seedFirestore() {
   console.log("Starting Firestore seeding...");
@@ -19,8 +20,16 @@ export async function seedFirestore() {
       });
     }
 
-    // 2. Seed Tasks (to a default company)
-    const companyId = "default-company";
+    // 2. Seed Company Document (Crucial for REST runQuery on sub-collections)
+    const companyId = "d-arrow";
+    console.log(`Seeding company document: ${companyId}...`);
+    await setDoc(doc(db, "companies", companyId), {
+      name: "D-Arrow Business",
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    });
+
+    // 3. Seed Tasks
     console.log(`Seeding tasks for company: ${companyId}...`);
     for (const task of mockTasks) {
       const taskRef = doc(db, "companies", companyId, "tasks", task.id);
@@ -45,6 +54,19 @@ export async function seedFirestore() {
           });
         }
       }
+    }
+
+    // 4. Seed Sprints
+    console.log(`Seeding sprints for company: ${companyId}...`);
+    for (const sprint of mockSprints) {
+      const sprintRef = doc(db, "companies", companyId, "sprints", sprint.id);
+      await setDoc(sprintRef, {
+        ...sprint,
+        createdAt: sprint.createdAt ? new Date(sprint.createdAt) : serverTimestamp(),
+        updatedAt: sprint.updatedAt ? new Date(sprint.updatedAt) : serverTimestamp(),
+        startDate: new Date(sprint.startDate),
+        endDate: new Date(sprint.endDate),
+      });
     }
 
     console.log("Firestore seeding completed successfully!");

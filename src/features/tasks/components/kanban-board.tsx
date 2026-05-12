@@ -31,6 +31,7 @@ export function KanbanBoard() {
     search: filters.search || undefined,
     priority: filters.priority.length ? filters.priority : undefined,
     assigneeId: filters.assigneeId ?? undefined,
+    sprintId: filters.sprintId ?? undefined,
     pageSize: 100, // Show more tasks on board
   });
   
@@ -160,6 +161,8 @@ export function KanbanBoard() {
                             <TaskCard
                               task={task}
                               isDragging={snapshot.isDragging}
+                              subtasks={tasks.filter((t: Task) => t.parentId === task.id)}
+                              parentTask={task.parentId ? tasks.find((t: Task) => t.id === task.parentId) : undefined}
                             />
                           </div>
                         )}

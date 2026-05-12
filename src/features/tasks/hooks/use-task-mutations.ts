@@ -38,12 +38,26 @@ export function useUpdateTask() {
       // Optimistically update to the new value across all matching queries
       queryClient.setQueriesData({ queryKey: QUERY_KEYS.tasks.all }, (old: any) => {
         if (!old || !old.data) return old;
-        return {
-          ...old,
-          data: old.data.map((task: any) =>
-            task.id === id ? { ...task, ...data } : task
-          ),
-        };
+        
+        // Handle list queries (where data is an array of tasks)
+        if (Array.isArray(old.data)) {
+          return {
+            ...old,
+            data: old.data.map((task: any) =>
+              task.id === id ? { ...task, ...data } : task
+            ),
+          };
+        }
+        
+        // Handle detail queries (where data is a single task object)
+        if (old.data.id === id) {
+          return {
+            ...old,
+            data: { ...old.data, ...data }
+          };
+        }
+
+        return old;
       });
 
       // Return a context object with the snapshotted values

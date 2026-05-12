@@ -2,6 +2,18 @@ import type { User } from "@/features/auth/types/auth.types";
 
 export type TaskStatus = "todo" | "in_progress" | "in_review" | "done";
 export type TaskPriority = "low" | "medium" | "high" | "urgent";
+export type TaskType = "task" | "epic" | "subtask";
+
+export interface Sprint {
+  id: string;
+  name: string;
+  startDate: string;
+  endDate: string;
+  status: "active" | "planned" | "completed";
+  goal?: string;
+  createdAt: string;
+  updatedAt: string;
+}
 
 export interface Task {
   id: string;
@@ -9,6 +21,9 @@ export interface Task {
   description: string;
   status: TaskStatus;
   priority: TaskPriority;
+  type: TaskType;
+  parentId: string | null;
+  sprintId: string | null;
   assigneeId: string | null;
   assignee?: User | null;
   reporterId: string;
@@ -26,6 +41,9 @@ export interface CreateTaskDTO {
   description?: string;
   status?: TaskStatus;
   priority: TaskPriority;
+  type?: TaskType;
+  parentId?: string | null;
+  sprintId?: string | null;
   assigneeId?: string | null;
   tags?: string[];
   dueDate?: string | null;
@@ -36,6 +54,9 @@ export interface UpdateTaskDTO {
   description?: string;
   status?: TaskStatus;
   priority?: TaskPriority;
+  type?: TaskType;
+  parentId?: string | null;
+  sprintId?: string | null;
   assigneeId?: string | null;
   tags?: string[];
   dueDate?: string | null;
@@ -44,6 +65,9 @@ export interface UpdateTaskDTO {
 export interface TaskFilters {
   status?: TaskStatus[];
   priority?: TaskPriority[];
+  type?: TaskType[];
+  parentId?: string | null;
+  sprintId?: string | null;
   assigneeId?: string;
   search?: string;
   page?: number;

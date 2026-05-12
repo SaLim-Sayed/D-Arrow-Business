@@ -8,9 +8,11 @@ import { cn } from "@/lib/utils";
 interface TaskCardProps {
   task: Task;
   isDragging?: boolean;
+  subtasks?: Task[];
+  parentTask?: Task;
 }
 
-export function TaskCard({ task, isDragging }: TaskCardProps) {
+export function TaskCard({ task, isDragging, subtasks = [], parentTask }: TaskCardProps) {
   const navigate = useNavigate();
   const { t } = useTranslation("tasks");
 
@@ -55,9 +57,22 @@ export function TaskCard({ task, isDragging }: TaskCardProps) {
           </div>
 
           {/* Title */}
-          <h4 className="text-sm font-bold text-default-900 dark:text-default-100 leading-snug group-hover:text-primary transition-colors">
-            {task.title}
-          </h4>
+          <div className="space-y-1">
+            {parentTask && (
+              <div 
+                className="text-[10px] font-medium text-primary hover:underline cursor-pointer flex items-center gap-1"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  navigate(`/tasks/${parentTask.id}`);
+                }}
+              >
+                ↑ {parentTask.title}
+              </div>
+            )}
+            <h4 className="text-sm font-bold text-default-900 dark:text-default-100 leading-snug group-hover:text-primary transition-colors">
+              {task.title}
+            </h4>
+          </div>
 
           {/* Tags / Labels */}
           <div className="flex flex-wrap gap-2 pt-1">
@@ -79,6 +94,45 @@ export function TaskCard({ task, isDragging }: TaskCardProps) {
               </Chip>
             ))}
           </div>
+
+          {/* Subtasks */}
+          {subtasks.length > 0 && (
+            <div className="pt-2 space-y-1">
+              <div className="text-[10px] font-bold text-default-400 uppercase tracking-wider">
+                Subtasks ({subtasks.filter(st => st.status === 'done').length}/{subtasks.length})
+              </div>
+              <div className="space-y-1">
+                {subtasks.slice(0, 3).map((st) => (
+                  <div 
+                    key={st.id} 
+                    className="flex items-center gap-2 text-xs p-1 rounded-md hover:bg-default-100 transition-colors"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      navigate(`/tasks/${st.id}`);
+                    }}
+                  >
+                    <div className={cn(
+                      "w-1.5 h-1.5 rounded-full shrink-0",
+                      st.status === 'done' ? "bg-success" : 
+                      st.status === 'in_progress' ? "bg-blue-500" : 
+                      "bg-default-300"
+                    )} />
+                    <span className={cn(
+                      "truncate font-medium",
+                      st.status === 'done' ? "text-default-400 line-through" : "text-default-600"
+                    )}>
+                      {st.title}
+                    </span>
+                  </div>
+                ))}
+                {subtasks.length > 3 && (
+                  <div className="text-[10px] text-default-400 pl-3">
+                    + {subtasks.length - 3} more
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
 
           {/* Footer: Icons */}
           <div className="flex items-center justify-between pt-2 border-t border-default-100/50">

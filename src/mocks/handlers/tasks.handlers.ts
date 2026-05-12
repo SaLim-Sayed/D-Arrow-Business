@@ -1,7 +1,8 @@
 import { http, HttpResponse, delay } from "msw";
 import { mockTasks } from "../data/tasks.data";
 import { mockUsers } from "../data/users.data";
-import type { Task, TaskStatus, TaskPriority } from "@/features/tasks/types/task.types";
+import { mockSprints } from "../data/sprints.data";
+import type { Task, TaskStatus, TaskPriority, TaskType, Sprint } from "@/features/tasks/types/task.types";
 
 function enrichTask(task: Task): Task {
   const assignee = task.assigneeId
@@ -23,7 +24,10 @@ export const tasksHandlers = [
 
     const statusParam = url.searchParams.get("status");
     const priorityParam = url.searchParams.get("priority");
+    const typeParam = url.searchParams.get("type");
     const assigneeId = url.searchParams.get("assigneeId");
+    const parentId = url.searchParams.get("parentId");
+    const sprintId = url.searchParams.get("sprintId");
     const search = url.searchParams.get("search")?.toLowerCase();
     const page = parseInt(url.searchParams.get("page") || "1");
     const pageSize = parseInt(url.searchParams.get("pageSize") || "10");
@@ -44,9 +48,25 @@ export const tasksHandlers = [
       filtered = filtered.filter((t) => priorities.includes(t.priority));
     }
 
+    // Filter by type (comma-separated)
+    if (typeParam) {
+      const types = typeParam.split(",") as TaskType[];
+      filtered = filtered.filter((t) => types.includes(t.type));
+    }
+
     // Filter by assignee
     if (assigneeId) {
       filtered = filtered.filter((t) => t.assigneeId === assigneeId);
+    }
+
+    // Filter by parentId
+    if (parentId !== null) {
+      filtered = filtered.filter((t) => t.parentId === (parentId === "null" ? null : parentId));
+    }
+
+    // Filter by sprintId
+    if (sprintId !== null) {
+      filtered = filtered.filter((t) => t.sprintId === (sprintId === "null" ? null : sprintId));
     }
 
     // Search
@@ -114,6 +134,9 @@ export const tasksHandlers = [
       description: body.description || "",
       status: body.status || "todo",
       priority: body.priority || "medium",
+      type: body.type || "task",
+      parentId: body.parentId || null,
+      sprintId: body.sprintId || null,
       assigneeId: body.assigneeId || null,
       reporterId: "usr-001",
       tags: body.tags || [],
@@ -180,5 +203,45 @@ export const tasksHandlers = [
     mockTasks.splice(index, 1);
 
     return new HttpResponse(null, { status: 204 });
+  }),
+
+  // GET /api/sprints
+  http.get("/api/sprints", async () => {
+    await delay(300);
+    return HttpResponse.json({
+      data: mockSprints,
+      message: "Success",
+    });
+  }),
+
+  // POST /api/sprints
+  http.post("/api/sprints", async ({ request }) => {
+    await delay(300);
+    const body = (await request.json()) as Partial<Sprint>;
+    const newSprint: Sprint = {
+      id: `spr-${String(mockSprints.length + 1).padStart(3, "0")}`,
+      name: body.name || "New Sprint",
+      startDate: body.startDate || new Date().toISOString(),
+      endDate: body.endDate || new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
+      status: body.status || "planned",
+      goal: body.goal || "",
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    mockSprints.unshift(newSprint);
+    return HttpResponse.json({ data: newSprint, message: "Sprint created" }, { status: 201 });
+  }),
+
+  // PUT /api/sprints/:id
+  http.put("/api/sprints/:id", async ({ params, request }) => {
+    await delay(200);
+    const body = (await request.json()) as Partial<Sprint>;
+    const index = mockSprints.findIndex((s) => s.id === params.id);
+    if (index === -1) {
+      return HttpResponse.json({ message: "Sprint not found" }, { status: 404 });
+    }
+    const updated = { ...mockSprints[index], ...body, updatedAt: new Date().toISOString() };
+    mockSprints[index] = updated;
+    return HttpResponse.json({ data: updated, message: "Sprint updated" });
   }),
 ];

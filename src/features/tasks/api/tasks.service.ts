@@ -17,6 +17,7 @@ import type { ApiResponse, PaginatedResponse } from "@/types/api.types";
 import { withLogging } from "@/lib/service-utils";
 import type {
   Task,
+  Sprint,
   CreateTaskDTO,
   UpdateTaskDTO,
   TaskFilters,
@@ -36,16 +37,20 @@ export const TaskService = {
     return withLogging(SERVICE_NAME, "getTasks", (async () => {
       const tasksRef = collection(db, "companies", companyId, "tasks");
       
-      // Implement basic server-side filtering where possible
-      // to reduce the amount of data transferred.
       let q = query(tasksRef);
       
       if (filters?.projectId) {
         q = query(q, where("projectId", "==", filters.projectId));
       }
+
+      if (filters?.parentId !== undefined) {
+        q = query(q, where("parentId", "==", filters.parentId));
+      }
+
+      if (filters?.sprintId !== undefined) {
+        q = query(q, where("sprintId", "==", filters.sprintId));
+      }
       
-      // Limit results to avoid massive data transfer
-      // Increased limit to 500 for safety since we still do some client-side sorting/filtering
       q = query(q, limit(500));
       
       const querySnapshot = await getDocs(q);
@@ -68,6 +73,9 @@ export const TaskService = {
       }
       if (filters?.priority?.length) {
         tasks = tasks.filter(t => filters.priority!.includes(t.priority));
+      }
+      if (filters?.type?.length) {
+        tasks = tasks.filter(t => filters.type!.includes(t.type));
       }
       if (filters?.assigneeId) {
         tasks = tasks.filter(t => t.assigneeId === filters.assigneeId);
@@ -141,6 +149,9 @@ export const TaskService = {
       const tasksRef = collection(db, "companies", companyId, "tasks");
       const docRef = await addDoc(tasksRef, {
         ...data,
+        type: data.type || "task",
+        parentId: data.parentId || null,
+        sprintId: data.sprintId || null,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
         commentsCount: 0,
@@ -170,8 +181,12 @@ export const TaskService = {
   ): Promise<ApiResponse<Task>> {
     return withLogging(SERVICE_NAME, "updateTask", (async () => {
       const docRef = doc(db, "companies", companyId, "tasks", id);
+      const cleanData = Object.fromEntries(
+        Object.entries(data).filter(([_, v]) => v !== undefined)
+      );
+
       await updateDoc(docRef, {
-        ...data,
+        ...cleanData,
         updatedAt: serverTimestamp(),
       });
 
@@ -196,6 +211,87 @@ export const TaskService = {
     return withLogging(SERVICE_NAME, "deleteTask", (async () => {
       const docRef = doc(db, "companies", companyId, "tasks", id);
       await deleteDoc(docRef);
+    })());
+  },
+
+  // Sprint Management
+  async getSprints(companyId: string): Promise<ApiResponse<Sprint[]>> {
+    return withLogging(SERVICE_NAME, "getSprints", (async () => {
+      const sprintsRef = collection(db, "companies", companyId, "sprints");
+      const querySnapshot = await getDocs(sprintsRef);
+      
+      const sprints = querySnapshot.docs.map(docSnap => {
+        const data = docSnap.data();
+        return {
+          id: docSnap.id,
+          ...data,
+          createdAt: data.createdAt instanceof Timestamp ? data.createdAt.toDate().toISOString() : data.createdAt,
+          updatedAt: data.updatedAt instanceof Timestamp ? data.updatedAt.toDate().toISOString() : data.updatedAt,
+          startDate: data.startDate instanceof Timestamp ? data.startDate.toDate().toISOString() : data.startDate,
+          endDate: data.endDate instanceof Timestamp ? data.endDate.toDate().toISOString() : data.endDate,
+        } as Sprint;
+      });
+
+      return {
+        data: sprints,
+        message: "Success",
+      };
+    })());
+  },
+
+  async createSprint(companyId: string, data: Partial<Sprint>): Promise<ApiResponse<Sprint>> {
+    return withLogging(SERVICE_NAME, "createSprint", (async () => {
+      const sprintsRef = collection(db, "companies", companyId, "sprints");
+      const docRef = await addDoc(sprintsRef, {
+        ...data,
+        status: data.status || "planned",
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      });
+
+      const newDoc = await getDoc(docRef);
+      const docData = newDoc.data()!;
+
+      return {
+        data: { 
+          id: newDoc.id, 
+          ...docData,
+          createdAt: docData.createdAt instanceof Timestamp ? docData.createdAt.toDate().toISOString() : docData.createdAt,
+          updatedAt: docData.updatedAt instanceof Timestamp ? docData.updatedAt.toDate().toISOString() : docData.updatedAt,
+          startDate: docData.startDate instanceof Timestamp ? docData.startDate.toDate().toISOString() : docData.startDate,
+          endDate: docData.endDate instanceof Timestamp ? docData.endDate.toDate().toISOString() : docData.endDate,
+        } as Sprint,
+        message: "Sprint created successfully",
+      };
+    })());
+  },
+
+  async updateSprint(companyId: string, id: string, data: Partial<Sprint>): Promise<ApiResponse<Sprint>> {
+    return withLogging(SERVICE_NAME, "updateSprint", (async () => {
+      const docRef = doc(db, "companies", companyId, "sprints", id);
+      const cleanData = Object.fromEntries(
+        Object.entries(data).filter(([_, v]) => v !== undefined)
+      );
+
+      await updateDoc(docRef, {
+        ...cleanData,
+        updatedAt: serverTimestamp(),
+      });
+
+      const updatedDoc = await getDoc(docRef);
+      const docData = updatedDoc.data()!;
+
+      return {
+        data: { 
+          id: updatedDoc.id, 
+          ...docData,
+          createdAt: docData.createdAt instanceof Timestamp ? docData.createdAt.toDate().toISOString() : docData.createdAt,
+          updatedAt: docData.updatedAt instanceof Timestamp ? docData.updatedAt.toDate().toISOString() : docData.updatedAt,
+          startDate: docData.startDate instanceof Timestamp ? docData.startDate.toDate().toISOString() : docData.startDate,
+          endDate: docData.endDate instanceof Timestamp ? docData.endDate.toDate().toISOString() : docData.endDate,
+        } as Sprint,
+        message: "Sprint updated successfully",
+      };
     })());
   }
 };

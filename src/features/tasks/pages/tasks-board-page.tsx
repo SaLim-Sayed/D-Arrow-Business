@@ -1,5 +1,5 @@
 import { useTranslation } from "react-i18next";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { KanbanBoard } from "../components/kanban-board";
 import { Plus, Search, Filter, MoreHorizontal, UserCircle2 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -16,6 +16,7 @@ import {
 } from "@heroui/react";
 import { useAuth } from "@/features/auth/context/auth-context";
 import { useAllUsers } from "@/features/users/hooks/use-users";
+import { useEffect } from "react";
 
 export function TasksBoardPage() {
   const { t, i18n } = useTranslation("tasks");
@@ -23,6 +24,14 @@ export function TasksBoardPage() {
   const { filters, setFilter, resetFilters } = useTasksUIStore();
   const { user } = useAuth();
   const { data: allUsers } = useAllUsers();
+  const [searchParams] = useSearchParams();
+
+  useEffect(() => {
+    const sprintId = searchParams.get("sprintId");
+    if (sprintId) {
+      setFilter("sprintId", sprintId);
+    }
+  }, [searchParams, setFilter]);
 
   const tabs = [{ label: "Board", path: "/tasks/board", active: true }];
 
@@ -34,7 +43,7 @@ export function TasksBoardPage() {
   const secondPart = rest.join(" ");
 
   const selectedAssignee = allUsers?.find((u) => u.id === filters.assigneeId) ?? null;
-  const hasActiveFilters = !!filters.search || filters.priority.length > 0 || !!filters.assigneeId;
+  const hasActiveFilters = !!filters.search || filters.priority.length > 0 || !!filters.assigneeId || !!filters.sprintId;
 
   return (
     <div className="h-[calc(100vh-4rem)] flex flex-col -m-6 animate-in fade-in duration-700 bg-background">

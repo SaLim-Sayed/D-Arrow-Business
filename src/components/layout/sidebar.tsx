@@ -7,6 +7,7 @@ import {
   Briefcase,
   ChevronLeft,
   ChevronRight,
+  Clock,
   Database,
   Kanban,
   LayoutDashboard,
@@ -47,6 +48,11 @@ const navItems: NavItem[] = [
     labelKey: "nav.taskBoard",
     path: "/tasks/board",
     icon: <Kanban className="h-5 w-5" />,
+  },
+  {
+    labelKey: "nav.sprints",
+    path: "/tasks/sprints",
+    icon: <Clock className="h-5 w-5" />,
   },
   {
     labelKey: "nav.analytics",

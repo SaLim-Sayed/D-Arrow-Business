@@ -74,7 +74,21 @@
     "tags": {
       "label": "Tags",
       "placeholder": "Add tags..."
+    },
+    "type": {
+      "label": "Task Type"
+    },
+    "parent": {
+      "label": "Parent Task (Epic)"
+    },
+    "sprint": {
+      "label": "Sprint"
     }
+  },
+  "type": {
+    "task": "Task",
+    "epic": "Epic",
+    "subtask": "Subtask"
   },
   "status": {
     "todo": "To Do",
