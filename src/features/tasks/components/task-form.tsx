@@ -306,7 +306,7 @@ export function TaskForm({
               label={t("form.dueDate.label")}
               className="max-w-full"
               variant="flat"
-              onChange={(date) => field.onChange(date?.toString() || null)}
+              onChange={(date: any) => field.onChange(date?.toString() || null)}
               isInvalid={!!errors.dueDate}
               errorMessage={errors.dueDate?.message}
             />
