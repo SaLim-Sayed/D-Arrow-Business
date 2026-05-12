@@ -11,5 +11,19 @@
   "nameRequired": "Name is required",
   "avatarTooLarge": "Image must be smaller than 5 MB",
   "saveSuccess": "Profile updated successfully",
-  "saveError": "Failed to update profile. Please try again."
+  "saveError": "Failed to update profile. Please try again.",
+  "security": "Security Settings",
+  "currentPassword": "Current Password",
+  "currentPasswordPlaceholder": "Enter current password",
+  "newPassword": "New Password",
+  "newPasswordPlaceholder": "Enter new password",
+  "confirmPassword": "Confirm Password",
+  "confirmPasswordPlaceholder": "Re-enter new password",
+  "changePassword": "Change Password",
+  "passwordMismatch": "Passwords do not match",
+  "passwordTooShort": "Password must be at least 6 characters",
+  "passwordSuccess": "Password updated successfully",
+  "passwordError": "Failed to update password",
+  "invalidCurrentPassword": "Current password is incorrect",
+  "requiresRecentLogin": "Please log out and log back in to change your password for security reasons."
 }

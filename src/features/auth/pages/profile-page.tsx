@@ -13,9 +13,10 @@ import {
   Select,
   SelectItem,
 } from "@heroui/react";
-import { Camera, Check, Loader2, Mail, Shield, User } from "lucide-react";
+import { Camera, Check, Loader2, Mail, Shield, User, Lock, Eye, EyeOff, KeyRound } from "lucide-react";
 import { toast } from "sonner";
 import type { UserRole } from "@/features/auth/types/auth.types";
+import { updatePassword, EmailAuthProvider, reauthenticateWithCredential } from "firebase/auth";
 import { doc, updateDoc } from "firebase/firestore/lite";
 import { auth, db } from "@/lib/firebase";
 
@@ -38,6 +39,14 @@ export function ProfilePage() {
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -100,6 +109,46 @@ export function ProfilePage() {
       toast.error(tp("saveError"));
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const handleChangePassword = async () => {
+    if (!currentPassword) {
+      toast.error(tp("invalidCurrentPassword"));
+      return;
+    }
+    if (!newPassword || newPassword !== confirmPassword) {
+      toast.error(tp("passwordMismatch"));
+      return;
+    }
+    if (newPassword.length < 6) {
+      toast.error(tp("passwordTooShort"));
+      return;
+    }
+    
+    setIsChangingPassword(true);
+    try {
+      if (auth.currentUser && user?.email) {
+        const credential = EmailAuthProvider.credential(user.email, currentPassword);
+        await reauthenticateWithCredential(auth.currentUser, credential);
+        
+        await updatePassword(auth.currentUser, newPassword);
+        setCurrentPassword("");
+        setNewPassword("");
+        setConfirmPassword("");
+        toast.success(tp("passwordSuccess"));
+      }
+    } catch (err: any) {
+      console.error("Change password error:", err);
+      if (err.code === "auth/requires-recent-login") {
+        toast.error(tp("requiresRecentLogin"));
+      } else if (err.code === "auth/invalid-credential") {
+        toast.error(tp("invalidCurrentPassword"));
+      } else {
+        toast.error(tp("passwordError"));
+      }
+    } finally {
+      setIsChangingPassword(false);
     }
   };
 
@@ -226,6 +275,105 @@ export function ProfilePage() {
               className="px-8 font-bold shadow-lg shadow-primary/20"
             >
               {isSaving ? t("actions.loading") : t("actions.save")}
+            </Button>
+          </div>
+        </CardBody>
+      </Card>
+
+      <Card className="rounded-2xl shadow-md border border-default-100 mt-6">
+        <CardBody className="p-8 flex flex-col gap-6">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-primary/10 rounded-lg text-primary">
+              <KeyRound className="w-5 h-5" />
+            </div>
+            <h2 className="text-xl font-bold">{tp("security")}</h2>
+          </div>
+
+          <div className="flex flex-col gap-5">
+            <Input
+              label={tp("currentPassword")}
+              placeholder={tp("currentPasswordPlaceholder")}
+              value={currentPassword}
+              onValueChange={setCurrentPassword}
+              type={showCurrentPassword ? "text" : "password"}
+              startContent={<Lock className="h-4 w-4 text-default-400 shrink-0" />}
+              endContent={
+                <button
+                  className="focus:outline-none"
+                  type="button"
+                  onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                >
+                  {showCurrentPassword ? (
+                    <EyeOff className="h-4 w-4 text-default-400" />
+                  ) : (
+                    <Eye className="h-4 w-4 text-default-400" />
+                  )}
+                </button>
+              }
+            />
+
+            <Input
+              label={tp("newPassword")}
+              placeholder={tp("newPasswordPlaceholder")}
+              value={newPassword}
+              onValueChange={setNewPassword}
+              type={showNewPassword ? "text" : "password"}
+              startContent={<KeyRound className="h-4 w-4 text-default-400 shrink-0" />}
+              endContent={
+                <button
+                  className="focus:outline-none"
+                  type="button"
+                  onClick={() => setShowNewPassword(!showNewPassword)}
+                >
+                  {showNewPassword ? (
+                    <EyeOff className="h-4 w-4 text-default-400" />
+                  ) : (
+                    <Eye className="h-4 w-4 text-default-400" />
+                  )}
+                </button>
+              }
+            />
+
+            <Input
+              label={tp("confirmPassword")}
+              placeholder={tp("confirmPasswordPlaceholder")}
+              value={confirmPassword}
+              onValueChange={setConfirmPassword}
+              type={showConfirmPassword ? "text" : "password"}
+              startContent={<Check className="h-4 w-4 text-default-400 shrink-0" />}
+              endContent={
+                <button
+                  className="focus:outline-none"
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                >
+                  {showConfirmPassword ? (
+                    <EyeOff className="h-4 w-4 text-default-400" />
+                  ) : (
+                    <Eye className="h-4 w-4 text-default-400" />
+                  )}
+                </button>
+              }
+              errorMessage={
+                confirmPassword && newPassword !== confirmPassword
+                  ? tp("passwordMismatch")
+                  : undefined
+              }
+            />
+          </div>
+
+          <Divider />
+
+          <div className="flex justify-end">
+            <Button
+              color="primary"
+              variant="flat"
+              onPress={handleChangePassword}
+              isLoading={isChangingPassword}
+              isDisabled={!currentPassword || !newPassword || newPassword !== confirmPassword || isChangingPassword}
+              className="px-8 font-bold"
+            >
+              {tp("changePassword")}
             </Button>
           </div>
         </CardBody>
