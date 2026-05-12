@@ -31,8 +31,8 @@ export function TaskCard({ task, isDragging }: TaskCardProps) {
     >
       <Card
         className={cn(
-          "border border-default-200 shadow-sm hover:shadow-md transition-shadow duration-300 rounded-lg",
-          isDragging && "shadow-2xl ring-2 ring-primary/20 rotate-1"
+          "border border-default-200 dark:border-default-100 shadow-sm hover:shadow-md dark:hover:shadow-primary/10 transition-all duration-300 rounded-xl bg-white dark:bg-content1/50 backdrop-blur-sm",
+          isDragging && "shadow-2xl ring-2 ring-primary/20 rotate-1 scale-[1.02]"
         )}
       >
         <CardBody className="p-4 space-y-3">
@@ -55,7 +55,7 @@ export function TaskCard({ task, isDragging }: TaskCardProps) {
           </div>
 
           {/* Title */}
-          <h4 className="text-sm font-semibold text-default-900 leading-snug group-hover:text-primary transition-colors">
+          <h4 className="text-sm font-bold text-default-900 dark:text-default-100 leading-snug group-hover:text-primary transition-colors">
             {task.title}
           </h4>
 
@@ -68,7 +68,7 @@ export function TaskCard({ task, isDragging }: TaskCardProps) {
                 "h-5 text-[9px] font-bold uppercase tracking-tighter px-1",
                 task.priority === 'urgent' ? 'bg-danger/10 text-danger' : 
                 task.priority === 'high' ? 'bg-warning/10 text-warning' : 
-                'bg-default-100 text-default-600'
+                'bg-default-100 dark:bg-default-100/20 text-default-600 dark:text-default-400'
               )}
             >
               {t(`priority.${task.priority}`)}
@@ -81,7 +81,7 @@ export function TaskCard({ task, isDragging }: TaskCardProps) {
           </div>
 
           {/* Footer: Icons */}
-          <div className="flex items-center justify-between pt-2 border-t border-default-50">
+          <div className="flex items-center justify-between pt-2 border-t border-default-100/50">
             <div className="flex items-center gap-3">
               {task.commentsCount > 0 && (
                 <div className="flex items-center gap-1 text-default-400">
@@ -89,11 +89,11 @@ export function TaskCard({ task, isDragging }: TaskCardProps) {
                   <span className="text-[10px] font-bold">{task.commentsCount}</span>
                 </div>
               )}
-              <div className="flex items-center gap-1 text-default-300">
+              <div className="flex items-center gap-1 text-default-400">
                 <Paperclip className="h-3.5 w-3.5" />
               </div>
             </div>
-            <button className="text-default-300 hover:text-default-600 transition-colors">
+            <button className="text-default-400 hover:text-primary transition-colors">
               <MoreHorizontal className="h-4 w-4" />
             </button>
           </div>

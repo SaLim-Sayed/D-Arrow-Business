@@ -37,20 +37,20 @@ export function TasksBoardPage() {
   const hasActiveFilters = !!filters.search || filters.priority.length > 0 || !!filters.assigneeId;
 
   return (
-    <div className="h-[calc(100vh-4rem)] flex flex-col -m-6 animate-in fade-in duration-700 bg-white">
+    <div className="h-[calc(100vh-4rem)] flex flex-col -m-6 animate-in fade-in duration-700 bg-background">
       {/* Integrated Header - Jira Style */}
-      <div className="px-8 pt-8 pb-4 flex flex-col gap-6 border-b border-default-100">
+      <div className="px-8 pt-8 pb-4 flex flex-col gap-6 border-b border-default-100 dark:border-default-50/20">
         <div className="flex items-center justify-between">
           <div className="flex flex-col">
-            <nav className="flex items-center gap-1 text-[10px] font-bold text-default-400 uppercase tracking-widest mb-2">
+            <nav className="flex items-center gap-1 text-[10px] font-bold text-default-400 dark:text-default-500 uppercase tracking-widest mb-2">
               <span>{firstPart.toUpperCase()}-</span>
-              <span className="text-primary/70">
+              <span className="text-primary/70 dark:text-primary">
                 {secondPart.toUpperCase()}
               </span>
-              <span className="mx-1">/</span>
-              <span className="text-default-900">{t("board.title")}</span>
+              <span className="mx-1 text-default-300">/</span>
+              <span className="text-default-900 dark:text-default-100">{t("board.title")}</span>
             </nav>
-            <h1 className="text-2xl font-black tracking-tight text-default-900">
+            <h1 className="text-3xl font-black tracking-tight text-default-900 dark:text-white">
               {t("board.title")}
             </h1>
           </div>
@@ -221,7 +221,7 @@ export function TasksBoardPage() {
       </div>
 
       {/* Full height board */}
-      <div className="flex-1 overflow-hidden p-8 bg-default-50/30">
+      <div className="flex-1 overflow-hidden p-8 bg-transparent">
         <KanbanBoard />
       </div>
     </div>

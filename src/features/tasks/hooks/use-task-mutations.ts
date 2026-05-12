@@ -28,15 +28,43 @@ export function useUpdateTask() {
   return useMutation({
     mutationFn: ({ id, data }: { id: string; data: UpdateTaskDTO }) =>
       TaskService.updateTask(companyId!, id, data),
+    onMutate: async ({ id, data }) => {
+      // Cancel any outgoing refetches (so they don't overwrite our optimistic update)
+      await queryClient.cancelQueries({ queryKey: QUERY_KEYS.tasks.all });
+
+      // Snapshot the previous values for all matching queries
+      const previousQueries = queryClient.getQueriesData({ queryKey: QUERY_KEYS.tasks.all });
+
+      // Optimistically update to the new value across all matching queries
+      queryClient.setQueriesData({ queryKey: QUERY_KEYS.tasks.all }, (old: any) => {
+        if (!old || !old.data) return old;
+        return {
+          ...old,
+          data: old.data.map((task: any) =>
+            task.id === id ? { ...task, ...data } : task
+          ),
+        };
+      });
+
+      // Return a context object with the snapshotted values
+      return { previousQueries };
+    },
+    onError: (_err, _variables, context) => {
+      // If the mutation fails, roll back all affected queries
+      context?.previousQueries?.forEach(([queryKey, previousData]) => {
+        queryClient.setQueryData(queryKey, previousData);
+      });
+      toast.error("Failed to update task");
+    },
     onSuccess: (_data, variables) => {
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.tasks.all });
       queryClient.invalidateQueries({
         queryKey: QUERY_KEYS.tasks.detail(variables.id),
       });
       toast.success("Task updated successfully");
     },
-    onError: () => {
-      toast.error("Failed to update task");
+    onSettled: () => {
+      // Always refetch after error or success to ensure we are in sync with the server
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.tasks.all });
     },
   });
 }

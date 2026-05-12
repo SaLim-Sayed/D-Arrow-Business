@@ -1,6 +1,7 @@
 import { cn } from "@/lib/utils";
 import { useLayoutStore } from "@/stores/layout.store";
 import { Button, Tooltip } from "@heroui/react";
+import { Logo } from "../shared/logo";
 import {
   BarChart3,
   Briefcase,
@@ -72,12 +73,20 @@ export function Sidebar() {
       )}
     >
       {/* Logo area */}
-      <div className="flex h-16 items-center border-b border-default-100 px-4">
-        {!sidebarCollapsed && (
-          <span className="text-xl font-bold truncate text-gradient">
-            {t("appName")}
-          </span>
+      <div
+        className={cn(
+          "flex h-20 items-center border-b border-default-100 px-4 transition-all duration-300",
+          sidebarCollapsed ? "justify-center" : "justify-between",
         )}
+      >
+        <Logo
+          size={sidebarCollapsed ? "sm" : "md"}
+          variant={sidebarCollapsed ? "icon" : "full"}
+          className={cn(
+            "transition-all duration-300",
+            sidebarCollapsed ? "w-12" : "w-full",
+          )}
+        />
         <Button
           isIconOnly
           variant="flat"

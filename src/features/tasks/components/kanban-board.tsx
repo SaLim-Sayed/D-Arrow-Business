@@ -84,23 +84,23 @@ export function KanbanBoard() {
     { color: string; bg: string; dot: string }
   > = {
     todo: {
-      color: "text-default-600",
-      bg: "bg-default-50/30",
+      color: "text-default-600 dark:text-default-400",
+      bg: "bg-default-50/50 dark:bg-default-100/10",
       dot: "border-default-400",
     },
     in_progress: {
-      color: "text-blue-600",
-      bg: "bg-blue-50/10",
+      color: "text-blue-600 dark:text-blue-400",
+      bg: "bg-blue-50/20 dark:bg-primary/10",
       dot: "border-blue-500",
     },
     in_review: {
-      color: "text-orange-600",
-      bg: "bg-orange-50/10",
+      color: "text-orange-600 dark:text-orange-400",
+      bg: "bg-orange-50/20 dark:bg-secondary/10",
       dot: "border-orange-500",
     },
     done: {
-      color: "text-green-600",
-      bg: "bg-green-50/10",
+      color: "text-green-600 dark:text-green-400",
+      bg: "bg-green-50/20 dark:bg-success/10",
       dot: "border-green-500",
     },
   };
@@ -112,7 +112,7 @@ export function KanbanBoard() {
           <div
             key={status}
             className={cn(
-              "flex-shrink-0 w-[300px] flex flex-col group/column",
+              "flex-shrink-0 w-[300px] flex flex-col group/column rounded-2xl transition-all duration-300",
               columnConfig[status].bg
             )}
           >
@@ -170,15 +170,15 @@ export function KanbanBoard() {
                     {/* Empty State */}
                     {columns[status].length === 0 && !snapshot.isDraggingOver && (
                       <div className="flex flex-col items-center justify-center py-20 text-center px-4 animate-in fade-in duration-500">
-                        <div className="h-24 w-32 mb-6 opacity-10">
-                          <svg viewBox="0 0 120 80" className="w-full h-full fill-current text-default-900">
+                        <div className="h-24 w-32 mb-6 opacity-20 dark:opacity-10">
+                          <svg viewBox="0 0 120 80" className="w-full h-full fill-current text-default-300 dark:text-default-700">
                             <rect x="10" y="10" width="40" height="25" rx="2" />
                             <rect x="60" y="15" width="40" height="25" rx="2" />
                             <rect x="20" y="45" width="40" height="25" rx="2" />
                           </svg>
                         </div>
-                        <h4 className="text-sm font-bold text-default-900 mb-2">No items available</h4>
-                        <p className="text-xs text-default-400 leading-relaxed max-w-[200px]">
+                        <h4 className="text-sm font-bold text-default-400 dark:text-default-500 mb-2">No items available</h4>
+                        <p className="text-xs text-default-300 dark:text-default-600 leading-relaxed max-w-[200px]">
                           Add an item to this status and track them across status
                         </p>
                       </div>

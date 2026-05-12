@@ -44,14 +44,16 @@ const navItems = [
   },
 ];
 
+import { Logo } from "../shared/logo";
+
 export function MobileSidebar() {
   const { t } = useTranslation();
   const { setMobileSidebarOpen } = useLayoutStore();
 
   return (
     <div className="flex h-full flex-col">
-      <div className="flex h-14 items-center border-b px-4">
-        <span className="text-lg font-bold">{t("appName")}</span>
+      <div className="flex h-16 items-center border-b px-4">
+        <Logo size="sm" variant="icon" />
       </div>
       <nav className="flex-1 space-y-1 p-2">
         {navItems.map((item) => (
