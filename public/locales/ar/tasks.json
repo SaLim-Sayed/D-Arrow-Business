@@ -25,7 +25,9 @@
     }
   },
   "board": {
-    "title": "لوحة المهام"
+    "title": "لوحة المهام",
+    "emptyTitle": "لا توجد مهام متاحة",
+    "emptySubtitle": "أضف مهمة إلى هذه الحالة وتتبعها"
   },
   "detail": {
     "title": "تفاصيل المهمة",
@@ -41,7 +43,13 @@
     "noDueDate": "لا يوجد تاريخ استحقاق",
     "history": "السجل",
     "historyPlaceholder": "سجل النشاط سيظهر هنا.",
-    "editTask": "تعديل المهمة"
+    "editTask": "تعديل المهمة",
+    "subtasks": "المهام الفرعية",
+    "more": "+ {{count}} أخرى",
+    "noSubtasks": "لا توجد مهام فرعية.",
+    "parentTask": "المهمة الأساسية",
+    "saveChanges": "حفظ التغييرات",
+    "createdAt": "تاريخ الإنشاء"
   },
   "form": {
     "createTitle": "إنشاء مهمة",
@@ -74,6 +82,11 @@
     "tags": {
       "label": "الوسوم",
       "placeholder": "أضف وسوماً..."
+    },
+    "sprint": {
+      "label": "السبرينت",
+      "assigned": "معينة للسبرينت",
+      "unassigned": "بدون سبرينت"
     }
   },
   "status": {

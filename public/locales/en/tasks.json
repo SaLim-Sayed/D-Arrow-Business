@@ -25,7 +25,9 @@
     }
   },
   "board": {
-    "title": "Task Board"
+    "title": "Task Board",
+    "emptyTitle": "No items available",
+    "emptySubtitle": "Add an item to this status and track them across status"
   },
   "detail": {
     "title": "Task Details",
@@ -41,7 +43,13 @@
     "noDueDate": "No due date",
     "history": "History",
     "historyPlaceholder": "Activity history will appear here.",
-    "editTask": "Edit Task"
+    "editTask": "Edit Task",
+    "subtasks": "Subtasks",
+    "more": "+ {{count}} more",
+    "noSubtasks": "No subtasks found.",
+    "parentTask": "Parent Task",
+    "saveChanges": "Save Changes",
+    "createdAt": "Created At"
   },
   "form": {
     "createTitle": "Create Task",
@@ -82,7 +90,9 @@
       "label": "Parent Task (Epic)"
     },
     "sprint": {
-      "label": "Sprint"
+      "label": "Sprint",
+      "assigned": "Assigned to Sprint",
+      "unassigned": "No Sprint"
     }
   },
   "type": {

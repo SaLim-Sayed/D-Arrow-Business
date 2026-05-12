@@ -195,13 +195,13 @@ export function SprintsPage() {
                     label="Start Date"
                     variant="flat"
                     value={newSprint.startDate ? parseDate(newSprint.startDate.split('T')[0]) : null}
-                    onChange={(date) => setNewSprint({ ...newSprint, startDate: date?.toString() || "" })}
+                    onChange={(date: any) => setNewSprint({ ...newSprint, startDate: date?.toString() || "" })}
                   />
                   <DatePicker
                     label="End Date"
                     variant="flat"
                     value={newSprint.endDate ? parseDate(newSprint.endDate.split('T')[0]) : null}
-                    onChange={(date) => setNewSprint({ ...newSprint, endDate: date?.toString() || "" })}
+                    onChange={(date: any) => setNewSprint({ ...newSprint, endDate: date?.toString() || "" })}
                   />
                 </div>
                 <Input

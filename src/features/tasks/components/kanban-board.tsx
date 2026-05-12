@@ -86,22 +86,22 @@ export function KanbanBoard() {
   > = {
     todo: {
       color: "text-default-600 dark:text-default-400",
-      bg: "bg-default-50/50 dark:bg-default-100/10",
+      bg: "bg-default-50/50 dark:bg-default-50/30 border border-transparent dark:border-default-100/30",
       dot: "border-default-400",
     },
     in_progress: {
       color: "text-blue-600 dark:text-blue-400",
-      bg: "bg-blue-50/20 dark:bg-primary/10",
+      bg: "bg-blue-50/20 dark:bg-default-50/30 border border-transparent dark:border-default-100/30",
       dot: "border-blue-500",
     },
     in_review: {
       color: "text-orange-600 dark:text-orange-400",
-      bg: "bg-orange-50/20 dark:bg-secondary/10",
+      bg: "bg-orange-50/20 dark:bg-default-50/30 border border-transparent dark:border-default-100/30",
       dot: "border-orange-500",
     },
     done: {
       color: "text-green-600 dark:text-green-400",
-      bg: "bg-green-50/20 dark:bg-success/10",
+      bg: "bg-green-50/20 dark:bg-default-50/30 border border-transparent dark:border-default-100/30",
       dot: "border-green-500",
     },
   };
@@ -180,9 +180,9 @@ export function KanbanBoard() {
                             <rect x="20" y="45" width="40" height="25" rx="2" />
                           </svg>
                         </div>
-                        <h4 className="text-sm font-bold text-default-400 dark:text-default-500 mb-2">No items available</h4>
+                        <h4 className="text-sm font-bold text-default-400 dark:text-default-500 mb-2">{t("board.emptyTitle")}</h4>
                         <p className="text-xs text-default-300 dark:text-default-600 leading-relaxed max-w-[200px]">
-                          Add an item to this status and track them across status
+                          {t("board.emptySubtitle")}
                         </p>
                       </div>
                     )}

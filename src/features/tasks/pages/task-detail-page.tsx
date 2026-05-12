@@ -50,6 +50,7 @@ import { useTasksQuery } from "../hooks/use-tasks";
 import { Link } from "react-router-dom";
 
 function SubtasksList({ parentId }: { parentId: string }) {
+  const { t } = useTranslation("tasks");
   const { data, isLoading } = useTasksQuery({ parentId, pageSize: 50 });
 
   if (isLoading) return <Spinner size="sm" />;
@@ -57,7 +58,7 @@ function SubtasksList({ parentId }: { parentId: string }) {
   const subtasks = data?.data || [];
 
   if (subtasks.length === 0) {
-    return <p className="text-sm text-default-500">No subtasks found.</p>;
+    return <p className="text-sm text-default-500">{t("detail.noSubtasks")}</p>;
   }
 
   return (
@@ -78,6 +79,7 @@ function SubtasksList({ parentId }: { parentId: string }) {
 }
 
 function ParentTaskCard({ parentId }: { parentId: string }) {
+  const { t } = useTranslation("tasks");
   const { data, isLoading } = useTaskQuery(parentId);
 
   if (isLoading) return <Spinner size="sm" />;
@@ -90,7 +92,7 @@ function ParentTaskCard({ parentId }: { parentId: string }) {
       <CardBody className="p-6">
         <div className="flex items-center gap-2 mb-4">
           <Target className="w-5 h-5 text-default-500" />
-          <h3 className="text-lg font-bold">Parent Task</h3>
+          <h3 className="text-lg font-bold">{t("detail.parentTask")}</h3>
         </div>
         <Link to={`/tasks/${parent.id}`} className="block">
           <div className="flex items-center justify-between p-3 rounded-lg border border-default-200 hover:bg-default-100 transition-colors">
@@ -199,7 +201,7 @@ export function TaskDetailPage() {
                   isLoading={updateMutation.isPending}
                   className="flex items-center gap-2 rounded-full font-bold shadow-lg shadow-primary/20"
                 >
-                  Save Changes
+                  {tc("detail.saveChanges")}
                 </Button>
               </>
             ) : (
@@ -359,7 +361,7 @@ export function TaskDetailPage() {
                           <div className="flex items-center gap-2 text-default-500">
                             <Target className="w-4 h-4" />
                             <h3 className="text-xs font-semibold uppercase tracking-wider">
-                              Sprint
+                              {t("form.sprint.label")}
                             </h3>
                           </div>
                           <Dropdown>
@@ -367,8 +369,8 @@ export function TaskDetailPage() {
                               <div className="mt-1 cursor-pointer hover:bg-default-200 p-1.5 -ml-1.5 rounded-lg transition-colors">
                                 <p className="font-medium text-sm pl-1 truncate">
                                   {task.sprintId
-                                    ? (allSprints?.data?.find(s => s.id === task.sprintId)?.name || "Assigned to Sprint")
-                                    : "No Sprint"}
+                                    ? (allSprints?.data?.find(s => s.id === task.sprintId)?.name || t("form.sprint.assigned"))
+                                    : t("form.sprint.unassigned")}
                                 </p>
                               </div>
                             </DropdownTrigger>
@@ -382,7 +384,7 @@ export function TaskDetailPage() {
                             >
                               {[
                                 <DropdownItem key="no-sprint">
-                                  No Sprint
+                                  {t("form.sprint.unassigned")}
                                 </DropdownItem>,
                                 ...(allSprints?.data || []).map(
                                   (sprint: any) => (
@@ -400,7 +402,7 @@ export function TaskDetailPage() {
                           <div className="flex items-center gap-2 text-default-500">
                             <Clock className="w-4 h-4" />
                             <h3 className="text-xs font-semibold uppercase tracking-wider">
-                              Created At
+                              {t("detail.createdAt")}
                             </h3>
                           </div>
                           <p className="mt-1 font-medium text-sm pl-1">
@@ -530,7 +532,7 @@ export function TaskDetailPage() {
               <CardBody className="p-6">
                 <div className="flex items-center gap-2 mb-4">
                   <AlignLeft className="w-5 h-5 text-default-500" />
-                  <h3 className="text-lg font-bold">Subtasks</h3>
+                  <h3 className="text-lg font-bold">{t("detail.subtasks")}</h3>
                 </div>
                 <SubtasksList parentId={task.id} />
               </CardBody>
