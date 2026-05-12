@@ -29,16 +29,7 @@ const navItems: NavItem[] = [
     path: "/tasks/dashboard",
     icon: <LayoutDashboard className="h-5 w-5" />,
   },
-  {
-    labelKey: "nav.crm",
-    path: "/crm/leads",
-    icon: <Users className="h-5 w-5" />,
-  },
-  {
-    labelKey: "nav.projects",
-    path: "/projects",
-    icon: <Briefcase className="h-5 w-5" />,
-  },
+
   {
     labelKey: "nav.taskList",
     path: "/tasks/list",
@@ -53,6 +44,16 @@ const navItems: NavItem[] = [
     labelKey: "nav.sprints",
     path: "/tasks/sprints",
     icon: <Clock className="h-5 w-5" />,
+  },
+  {
+    labelKey: "nav.crm",
+    path: "/crm/leads",
+    icon: <Users className="h-5 w-5" />,
+  },
+  {
+    labelKey: "nav.projects",
+    path: "/projects",
+    icon: <Briefcase className="h-5 w-5" />,
   },
   {
     labelKey: "nav.analytics",
