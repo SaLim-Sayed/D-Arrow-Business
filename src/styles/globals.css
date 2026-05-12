@@ -8,7 +8,7 @@
   }
   
   .glass-card {
-    @apply bg-white/80 dark:bg-[#1C1C24]/80 backdrop-blur-xl border border-white/20 dark:border-white/10 shadow-xl;
+    @apply bg-white/80 dark:bg-[#161430]/80 backdrop-blur-xl border border-white/20 dark:border-white/10 shadow-xl;
   }
 
   .text-gradient {
@@ -16,7 +16,7 @@
   }
 
   .bg-dashboard-gradient {
-    @apply bg-gradient-to-br from-[#F8F9FB] to-[#E2E8F0] dark:from-[#0D0D12] dark:to-[#16161D];
+    @apply bg-gradient-to-br from-[#F8F9FB] to-[#E2E8F0] dark:from-[#0b0a1d] dark:to-[#161430];
   }
 
   .shadow-premium {
@@ -24,7 +24,11 @@
   }
   
   .shadow-glow {
-    @apply shadow-[0_0_20px_rgba(99,102,241,0.3)] dark:shadow-[0_0_20px_rgba(129,140,248,0.2)];
+    @apply shadow-[0_0_20px_rgba(255,107,74,0.3)] dark:shadow-[0_0_20px_rgba(255,107,74,0.2)];
+  }
+
+  .bg-primary-gradient {
+    @apply bg-gradient-to-r from-[#ff6b4a] to-[#d53a81];
   }
 }
 
@@ -46,7 +50,7 @@
 
 /* Custom Sidebar Colors to match HeroUI Theme */
 .bg-sidebar {
-  @apply bg-white/50 dark:bg-[#0D0D12]/50 backdrop-blur-xl;
+  @apply bg-white/50 dark:bg-[#0b0a1d]/50 backdrop-blur-xl;
 }
 
 .text-sidebar-foreground {

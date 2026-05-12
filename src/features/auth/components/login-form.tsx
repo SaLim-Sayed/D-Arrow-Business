@@ -153,7 +153,7 @@ export function LoginForm() {
 
       <p className="text-center text-sm text-default-500">
         {t("login.dontHaveAccount")}{" "}
-        <Link to="/register" className="text-primary font-bold hover:underline">
+        <Link to="/register" className="text-secondary font-bold hover:underline">
           {t("login.createAccountLink")}
         </Link>
       </p>

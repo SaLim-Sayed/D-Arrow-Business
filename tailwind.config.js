@@ -30,36 +30,36 @@ export default {
       themes: {
         light: {
           colors: {
-            background: "#F8F9FB",
-            foreground: "#11181C",
+            background: "#fcfcfd",
+            foreground: "#111116",
             primary: {
-              DEFAULT: "#6366F1",
+              DEFAULT: "#ff6b4a",
               foreground: "#FFFFFF",
             },
             secondary: {
-              DEFAULT: "#2DD4BF",
+              DEFAULT: "#d53a81",
               foreground: "#FFFFFF",
             },
-            focus: "#6366F1",
+            focus: "#ff6b4a",
           },
         },
         dark: {
           colors: {
-            background: "#0D0D12",
-            foreground: "#ECEDEE",
+            background: "#0b0a1d",
+            foreground: "#FFFFFF",
             primary: {
-              DEFAULT: "#818CF8",
+              DEFAULT: "#ff6b4a",
               foreground: "#FFFFFF",
             },
             secondary: {
-              DEFAULT: "#5EEAD4",
-              foreground: "#000000",
+              DEFAULT: "#d53a81",
+              foreground: "#FFFFFF",
             },
-            focus: "#818CF8",
-            content1: "#16161D",
-            content2: "#1C1C24",
-            content3: "#24242D",
-            content4: "#2C2C35",
+            focus: "#ff6b4a",
+            content1: "#161430",
+            content2: "#1e1b3d",
+            content3: "#26234a",
+            content4: "#2e2b57",
           },
         },
       },
