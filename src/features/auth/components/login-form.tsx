@@ -63,72 +63,83 @@ export function LoginForm() {
         </div>
       )}
 
-      <Controller
-        name="email"
-        control={control}
-        render={({ field }) => (
-          <Input
-            {...field}
-            type="email"
-            label={t("login.email")}
-            labelPlacement="outside"
-            placeholder="name@example.com"
-            autoComplete="email"
-            variant="bordered"
-            color="primary"
-            size="lg"
-            radius="lg"
-            isInvalid={!!errors.email}
-            errorMessage={errors.email?.message}
-            className="group"
-            classNames={{
-              inputWrapper:
-                "group-data-[focus=true]:border-primary group-data-[focus=true]:ring-2 group-data-[focus=true]:ring-primary/20 transition-all duration-300",
-              label: "font-bold text-default-700 tracking-tight mb-1",
-            }}
-          />
-        )}
-      />
+      <div className="gap-6 flex w-full flex-col">
+        <Controller
+          name="email"
+          control={control}
+          render={({ field }) => (
+            <Input
+              {...field}
+              type="email"
+              label={t("login.email")}
+              labelPlacement="outside"
+              placeholder="name@example.com"
+              autoComplete="email"
+              variant="bordered"
+              color="primary"
+              size="lg"
+              radius="lg"
+              isInvalid={!!errors.email}
+              errorMessage={errors.email?.message}
+              className="group"
+              classNames={{
+                inputWrapper:
+                  "group-data-[focus=true]:border-primary group-data-[focus=true]:ring-2 group-data-[focus=true]:ring-primary/20 transition-all duration-300",
+                label: "font-bold text-default-700 tracking-tight mb-1",
+              }}
+            />
+          )}
+        />
 
-      <Controller
-        name="password"
-        control={control}
-        render={({ field }) => (
-          <Input
-            {...field}
-            type={showPassword ? "text" : "password"}
-            label={t("login.password")}
-            labelPlacement="outside"
-            placeholder="••••••••"
-            autoComplete="current-password"
-            variant="bordered"
-            color="primary"
-            size="lg"
-            radius="lg"
-            isInvalid={!!errors.password}
-            errorMessage={errors.password?.message}
-            classNames={{
-              inputWrapper:
-                "group-data-[focus=true]:border-primary group-data-[focus=true]:ring-2 group-data-[focus=true]:ring-primary/20 transition-all duration-300",
-              label: "font-bold text-default-700 tracking-tight mb-1",
-            }}
-            endContent={
-              <button
-                className="focus:outline-none p-2 hover:bg-default-100 rounded-xl transition-all active:scale-90"
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                aria-label={showPassword ? "Hide password" : "Show password"}
-              >
-                {showPassword ? (
-                  <EyeOff className="h-5 w-5 text-default-400" />
-                ) : (
-                  <Eye className="h-5 w-5 text-default-400" />
-                )}
-              </button>
-            }
-          />
-        )}
-      />
+        <Controller
+          name="password"
+          control={control}
+          render={({ field }) => (
+            <Input
+              {...field}
+              type={showPassword ? "text" : "password"}
+              label={t("login.password")}
+              labelPlacement="outside"
+              placeholder="••••••••"
+              autoComplete="current-password"
+              variant="bordered"
+              color="primary"
+              size="lg"
+              radius="lg"
+              isInvalid={!!errors.password}
+              errorMessage={errors.password?.message}
+              classNames={{
+                inputWrapper:
+                  "group-data-[focus=true]:border-primary group-data-[focus=true]:ring-2 group-data-[focus=true]:ring-primary/20 transition-all duration-300",
+                label: "font-bold text-default-700 tracking-tight mb-1",
+              }}
+              endContent={
+                <button
+                  className="focus:outline-none p-2 hover:bg-default-100 rounded-xl transition-all active:scale-90"
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                >
+                  {showPassword ? (
+                    <EyeOff className="h-5 w-5 text-default-400" />
+                  ) : (
+                    <Eye className="h-5 w-5 text-default-400" />
+                  )}
+                </button>
+              }
+            />
+          )}
+        />
+      </div>
+
+      <div className="flex justify-end -mt-2">
+        <Link
+          to="/forgot-password"
+          className="text-xs text-primary font-semibold hover:underline"
+        >
+          {t("login.forgotPassword")}
+        </Link>
+      </div>
 
       <Button
         type="submit"
@@ -147,7 +158,7 @@ export function LoginForm() {
         </Link>
       </p>
 
-      <div className="pt-6 border-t  w-full  border-default-100 mt-2">
+      {/* <div className="pt-6 border-t  w-full  border-default-100 mt-2">
         <div className="rounded-2xl bg-default-50 p-4 border border-default-200">
           <p className="text-center text-[10px] font-bold text-default-400 uppercase tracking-wider mb-2">
             {t("login.demoCredentials")}
@@ -170,7 +181,7 @@ export function LoginForm() {
             </div>
           </div>
         </div>
-      </div>
+      </div> */}
     </Form>
   );
 }

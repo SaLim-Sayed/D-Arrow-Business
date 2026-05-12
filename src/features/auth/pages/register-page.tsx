@@ -68,7 +68,7 @@ export function RegisterPage() {
         <CardBody>
           <Form
             onSubmit={handleSubmit(onSubmit)}
-            className="space-y-4"
+            className="space-y-4 flex flex-col gap-6 w-full"
             validationErrors={errors as any}
           >
             {error && (
@@ -181,7 +181,10 @@ export function RegisterPage() {
 
             <p className="text-center text-sm text-default-500 mt-6">
               {t("register.alreadyHaveAccount")}{" "}
-              <Link to="/login" className="text-primary font-bold hover:underline">
+              <Link
+                to="/login"
+                className="text-primary font-bold hover:underline"
+              >
                 {t("register.signIn")}
               </Link>
             </p>

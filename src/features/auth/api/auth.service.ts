@@ -3,7 +3,10 @@ import {
   createUserWithEmailAndPassword,
   signOut, 
   getIdToken,
-  updateProfile
+  updateProfile,
+  sendPasswordResetEmail,
+  verifyPasswordResetCode,
+  confirmPasswordReset,
 } from "firebase/auth";
 import { auth, db } from "@/lib/firebase";
 import { doc, getDoc, setDoc } from "firebase/firestore/lite";
@@ -176,5 +179,31 @@ export const AuthService = {
 
   async logout(): Promise<void> {
     return withLogging(SERVICE_NAME, "logout", signOut(auth));
-  }
+  },
+
+  async sendPasswordReset(email: string): Promise<void> {
+    return withLogging(
+      SERVICE_NAME,
+      "sendPasswordReset",
+      sendPasswordResetEmail(auth, email)
+    );
+  },
+
+  /** Verify an oobCode from the reset email — returns the email it belongs to */
+  async verifyResetCode(oobCode: string): Promise<string> {
+    return withLogging(
+      SERVICE_NAME,
+      "verifyResetCode",
+      verifyPasswordResetCode(auth, oobCode)
+    );
+  },
+
+  /** Apply the new password using the oobCode from the reset email */
+  async confirmReset(oobCode: string, newPassword: string): Promise<void> {
+    return withLogging(
+      SERVICE_NAME,
+      "confirmReset",
+      confirmPasswordReset(auth, oobCode, newPassword)
+    );
+  },
 };
