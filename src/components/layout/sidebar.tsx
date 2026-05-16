@@ -56,6 +56,11 @@ const navItems: NavItem[] = [
     icon: <Briefcase className="h-5 w-5" />,
   },
   {
+    labelKey: "nav.people",
+    path: "/people",
+    icon: <Users className="h-5 w-5" />,
+  },
+  {
     labelKey: "nav.analytics",
     path: "/analytics",
     icon: <BarChart3 className="h-5 w-5" />,

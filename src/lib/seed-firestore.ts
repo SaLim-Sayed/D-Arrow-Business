@@ -4,6 +4,7 @@ import { mockUsers } from "../mocks/data/users.data";
 import { mockTasks } from "../mocks/data/tasks.data";
 import { mockComments } from "../mocks/data/comments.data";
 import { mockSprints } from "../mocks/data/sprints.data";
+import { mockEmployees, mockLeaveRequests } from "../mocks/data/people.data";
 
 export async function seedFirestore() {
   console.log("Starting Firestore seeding...");
@@ -66,6 +67,59 @@ export async function seedFirestore() {
         updatedAt: sprint.updatedAt ? new Date(sprint.updatedAt) : serverTimestamp(),
         startDate: new Date(sprint.startDate),
         endDate: new Date(sprint.endDate),
+      });
+    }
+
+    // 5. Seed Employees
+    console.log(`Seeding employees for company: ${companyId}...`);
+    for (const employee of mockEmployees) {
+      const empRef = doc(db, "companies", companyId, "employees", employee.id);
+      await setDoc(empRef, {
+        ...employee,
+        joiningDate: employee.joiningDate instanceof Date ? employee.joiningDate : new Date(employee.joiningDate as any),
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      });
+    }
+
+    // 6. Seed Leave Requests
+    console.log(`Seeding leave requests for company: ${companyId}...`);
+    const allLeaveRequests = [
+      ...mockLeaveRequests,
+      {
+        id: "leave-seed-1",
+        employeeId: "emp-3",
+        employeeName: "Ahmed Hassan",
+        type: "vacation",
+        startDate: new Date("2024-07-01"),
+        endDate: new Date("2024-07-10"),
+        reason: "Summer vacation",
+        status: "pending",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        id: "leave-seed-2",
+        employeeId: "emp-4",
+        employeeName: "Sarah Al-Farsi",
+        type: "personal",
+        startDate: new Date("2024-06-05"),
+        endDate: new Date("2024-06-06"),
+        reason: "Family emergency",
+        status: "pending",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      }
+    ];
+
+    for (const leave of allLeaveRequests) {
+      const leaveRef = doc(db, "companies", companyId, "leave_requests", leave.id);
+      await setDoc(leaveRef, {
+        ...leave,
+        startDate: leave.startDate instanceof Date ? leave.startDate : new Date(leave.startDate as any),
+        endDate: leave.endDate instanceof Date ? leave.endDate : new Date(leave.endDate as any),
+        createdAt: leave.createdAt instanceof Date ? leave.createdAt : new Date(leave.createdAt as any),
+        updatedAt: leave.updatedAt instanceof Date ? leave.updatedAt : new Date(leave.updatedAt as any),
       });
     }
 
