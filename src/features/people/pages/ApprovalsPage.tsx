@@ -28,6 +28,7 @@ export function ApprovalsPage() {
   const { data: requestsResponse } = useLeaveRequestsQuery();
   
   const pendingRequests = requestsResponse?.data?.filter(r => r.status === "pending") || [];
+  const isManager = user?.role === 'super_admin' || user?.role === 'admin' || user?.role === 'manager';
 
   const handleAction = async (requestId: string, status: 'approved' | 'rejected') => {
     if (!companyId || !user) return;
@@ -47,6 +48,16 @@ export function ApprovalsPage() {
     { name: "REASON", uid: "reason" },
     { name: "ACTIONS", uid: "actions" },
   ];
+
+  if (!isManager) {
+    return (
+      <div className="container mx-auto p-6 flex flex-col items-center justify-center h-[60vh] gap-4">
+        <X size={48} className="text-danger" />
+        <h2 className="text-2xl font-bold">Access Denied</h2>
+        <p className="text-default-500">You do not have permission to view approvals.</p>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto p-6 space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">

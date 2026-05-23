@@ -18,7 +18,9 @@ import type {
   LeaveRequest,
   PerformanceReview,
   Attendance,
-  LeaveStatus
+  LeaveStatus,
+  Asset,
+  Announcement
 } from "../types/people.types";
 
 const SERVICE_NAME = "PeopleService";
@@ -238,6 +240,117 @@ export const PeopleService = {
       return {
         data: reviews,
         message: "Success",
+      };
+    })());
+  },
+
+  async createPerformanceReview(companyId: string, data: Omit<PerformanceReview, 'id'>): Promise<ApiResponse<PerformanceReview>> {
+    return withLogging(SERVICE_NAME, "createPerformanceReview", (async () => {
+      const reviewsRef = collection(db, "companies", companyId, "performance_reviews");
+      const docRef = await addDoc(reviewsRef, {
+        ...data,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      });
+
+      const newDoc = await getDoc(docRef);
+      return {
+        data: { id: newDoc.id, ...newDoc.data() } as PerformanceReview,
+        message: "Performance review created successfully",
+      };
+    })());
+  },
+
+  // Assets Management
+  async getAssets(companyId: string): Promise<ApiResponse<Asset[]>> {
+    return withLogging(SERVICE_NAME, "getAssets", (async () => {
+      const assetsRef = collection(db, "companies", companyId, "assets");
+      const querySnapshot = await getDocs(assetsRef);
+      
+      const assets = querySnapshot.docs.map(docSnap => {
+        const data = docSnap.data();
+        return {
+          id: docSnap.id,
+          ...data,
+          assignedDate: data.assignedDate instanceof Timestamp ? data.assignedDate.toDate().toISOString() : data.assignedDate,
+          returnedDate: data.returnedDate instanceof Timestamp ? data.returnedDate.toDate().toISOString() : data.returnedDate,
+        } as Asset;
+      });
+
+      return {
+        data: assets,
+        message: "Success",
+      };
+    })());
+  },
+
+  async createAsset(companyId: string, data: Omit<Asset, 'id'>): Promise<ApiResponse<Asset>> {
+    return withLogging(SERVICE_NAME, "createAsset", (async () => {
+      const assetsRef = collection(db, "companies", companyId, "assets");
+      const docRef = await addDoc(assetsRef, {
+        ...data,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      });
+
+      const newDoc = await getDoc(docRef);
+      return {
+        data: { id: newDoc.id, ...newDoc.data() } as Asset,
+        message: "Asset created successfully",
+      };
+    })());
+  },
+
+  async updateAsset(companyId: string, assetId: string, data: Partial<Asset>): Promise<ApiResponse<Asset>> {
+    return withLogging(SERVICE_NAME, "updateAsset", (async () => {
+      const docRef = doc(db, "companies", companyId, "assets", assetId);
+      await updateDoc(docRef, {
+        ...data,
+        updatedAt: serverTimestamp(),
+      });
+
+      const updatedDoc = await getDoc(docRef);
+      return {
+        data: { id: updatedDoc.id, ...updatedDoc.data() } as Asset,
+        message: "Asset updated successfully",
+      };
+    })());
+  },
+
+  // Announcements
+  async getAnnouncements(companyId: string): Promise<ApiResponse<Announcement[]>> {
+    return withLogging(SERVICE_NAME, "getAnnouncements", (async () => {
+      const annRef = collection(db, "companies", companyId, "announcements");
+      const querySnapshot = await getDocs(annRef);
+      
+      const announcements = querySnapshot.docs.map(docSnap => {
+        const data = docSnap.data();
+        return {
+          id: docSnap.id,
+          ...data,
+          createdAt: data.createdAt instanceof Timestamp ? data.createdAt.toDate().toISOString() : data.createdAt,
+        } as Announcement;
+      });
+
+      return {
+        data: announcements.sort((a, b) => new Date(b.createdAt as Date | string).getTime() - new Date(a.createdAt as Date | string).getTime()),
+        message: "Success",
+      };
+    })());
+  },
+
+  async createAnnouncement(companyId: string, data: Omit<Announcement, 'id'>): Promise<ApiResponse<Announcement>> {
+    return withLogging(SERVICE_NAME, "createAnnouncement", (async () => {
+      const annRef = collection(db, "companies", companyId, "announcements");
+      const docRef = await addDoc(annRef, {
+        ...data,
+        createdAt: serverTimestamp(),
+      });
+
+      const newDoc = await getDoc(docRef);
+      return {
+        data: { id: newDoc.id, ...newDoc.data() } as Announcement,
+        message: "Announcement created successfully",
       };
     })());
   }

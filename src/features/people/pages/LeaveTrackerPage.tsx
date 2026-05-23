@@ -1,13 +1,15 @@
 
-import { Button, Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Chip } from "@heroui/react";
+import { Button, Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Chip, useDisclosure } from "@heroui/react";
 import { Plus, Calendar, Download } from "lucide-react";
 import { LeaveBalanceCards } from "../components/LeaveBalanceCards";
 import { useLeaveRequestsQuery } from "../hooks/use-people";
+import { ApplyLeaveModal } from "../components/ApplyLeaveModal";
 
 export default function LeaveTrackerPage() {
   
   const { data: requestsResponse, isLoading } = useLeaveRequestsQuery();
   const requests = requestsResponse?.data || [];
+  const { isOpen, onOpen, onOpenChange } = useDisclosure();
 
   const columns = [
     { name: "EMPLOYEE", uid: "employeeName" },
@@ -38,11 +40,13 @@ export default function LeaveTrackerPage() {
           <Button variant="flat" startContent={<Download size={18} />}>
             Export
           </Button>
-          <Button color="primary" variant="shadow" startContent={<Plus size={18} />}>
+          <Button color="primary" variant="shadow" startContent={<Plus size={18} />} onPress={onOpen}>
             Apply Leave
           </Button>
         </div>
       </div>
+
+      <ApplyLeaveModal isOpen={isOpen} onOpenChange={onOpenChange} />
 
       <LeaveBalanceCards />
 

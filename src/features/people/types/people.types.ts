@@ -3,6 +3,14 @@ import { Timestamp } from 'firebase/firestore/lite';
 export type EmployeeStatus = 'active' | 'onboarding' | 'suspended' | 'terminated';
 export type LeaveType = 'vacation' | 'sick' | 'personal' | 'unpaid' | 'maternity' | 'paternity';
 export type LeaveStatus = 'pending' | 'approved' | 'rejected' | 'cancelled';
+export type UserRole = 'super_admin' | 'admin' | 'manager' | 'employee';
+
+export interface ChecklistItem {
+  id: string;
+  task: string;
+  isCompleted: boolean;
+  completedAt?: Date | Timestamp | null;
+}
 
 export interface Employee {
   id: string;
@@ -13,6 +21,8 @@ export interface Employee {
   avatarUrl?: string;
   jobTitle: string;
   department: string;
+  role?: UserRole;
+  permissions?: string[];
   managerId?: string;
   joiningDate: Date | Timestamp;
   status: EmployeeStatus;
@@ -20,6 +30,8 @@ export interface Employee {
   officeLocation?: string;
   salary?: number;
   currency?: string;
+  onboardingTasks?: ChecklistItem[];
+  offboardingTasks?: ChecklistItem[];
 }
 
 export interface LeaveRequest {
@@ -72,3 +84,23 @@ export interface Attendance {
   notes?: string;
 }
 
+export interface Asset {
+  id: string;
+  name: string;
+  serialNumber: string;
+  category: 'laptop' | 'phone' | 'accessory' | 'other';
+  assignedTo: string; // employeeId
+  status: 'assigned' | 'returned' | 'repair' | 'lost';
+  assignedDate: Date | Timestamp;
+  returnedDate?: Date | Timestamp | null;
+  notes?: string;
+}
+
+export interface Announcement {
+  id: string;
+  title: string;
+  content: string;
+  authorId: string;
+  createdAt: Date | Timestamp;
+  priority: 'low' | 'medium' | 'high';
+}

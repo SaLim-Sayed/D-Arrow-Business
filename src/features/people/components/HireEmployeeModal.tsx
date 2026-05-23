@@ -24,6 +24,8 @@ const hireSchema = z.object({
   email: z.string().email("Invalid email"),
   jobTitle: z.string().min(2, "Job title is required"),
   department: z.string().min(2, "Department is required"),
+  role: z.string().min(1, "Role is required"),
+  permissions: z.any().optional(),
   status: z.string().optional(),
   joiningDate: z.string().optional(),
 });
@@ -51,10 +53,11 @@ export function HireEmployeeModal({ isOpen, onOpenChange }: HireEmployeeModalPro
     try {
       await PeopleService.createEmployee(companyId, {
         ...data,
+        permissions: data.permissions ? (typeof data.permissions === 'string' ? data.permissions.split(',') : Array.from(data.permissions)) : [],
         userId: "new-user-" + Math.random().toString(36).substr(2, 9), // Mock user ID
         status: (data.status || "active") as any,
         joiningDate: new Date(data.joiningDate || new Date().toISOString()),
-      });
+      } as any);
       toast.success("Employee hired successfully!");
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.people.employees(companyId) });
       onOpenChange(false);
@@ -112,6 +115,30 @@ export function HireEmployeeModal({ isOpen, onOpenChange }: HireEmployeeModalPro
                   <SelectItem key="Sales">Sales</SelectItem>
                   <SelectItem key="Marketing">Marketing</SelectItem>
                   <SelectItem key="HR">HR</SelectItem>
+                </Select>
+                <Select 
+                  label="Role"
+                  placeholder="Select role"
+                  {...register("role")}
+                  isInvalid={!!errors.role}
+                  errorMessage={errors.role?.message}
+                >
+                  <SelectItem key="super_admin">Super Admin</SelectItem>
+                  <SelectItem key="admin">Admin</SelectItem>
+                  <SelectItem key="manager">Manager</SelectItem>
+                  <SelectItem key="employee">Employee</SelectItem>
+                </Select>
+                <Select 
+                  label="Permissions"
+                  placeholder="Select permissions"
+                  selectionMode="multiple"
+                  {...register("permissions")}
+                  isInvalid={!!errors.permissions}
+                  errorMessage={errors.permissions?.message as string}
+                >
+                  <SelectItem key="view_employees">View Employees</SelectItem>
+                  <SelectItem key="manage_leaves">Manage Leaves</SelectItem>
+                  <SelectItem key="manage_payroll">Manage Payroll</SelectItem>
                 </Select>
                 <Input
                   label="Joining Date"

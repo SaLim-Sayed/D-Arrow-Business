@@ -30,6 +30,39 @@
   .bg-primary-gradient {
     @apply bg-gradient-to-r from-[#ff6b4a] to-[#d53a81];
   }
+
+  .card-hover-lift {
+    @apply hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300;
+  }
+
+  .animate-shimmer {
+    background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.08) 50%, transparent 100%);
+    background-size: 200% 100%;
+    animation: shimmer 2s infinite;
+  }
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Smooth scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-default-300/50 rounded-full;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-default-400/50;
 }
 
 @layer base {
