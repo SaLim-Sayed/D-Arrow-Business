@@ -11,7 +11,7 @@ import {
   limit,
   serverTimestamp,
   Timestamp
-} from "firebase/firestore/lite";
+} from "firebase/firestore";
 import { db, storage, auth } from "@/lib/firebase";
 import type { ApiResponse, PaginatedResponse } from "@/types/api.types";
 import { withLogging } from "@/lib/service-utils";

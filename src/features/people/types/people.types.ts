@@ -1,4 +1,4 @@
-import { Timestamp } from 'firebase/firestore/lite';
+import { Timestamp } from 'firebase/firestore';
 
 export type EmployeeStatus = 'active' | 'onboarding' | 'suspended' | 'terminated';
 export type LeaveType = 'vacation' | 'sick' | 'personal' | 'unpaid' | 'maternity' | 'paternity';

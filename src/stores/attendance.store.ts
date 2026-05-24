@@ -2,7 +2,7 @@ import { create } from "zustand";
 import { PeopleService } from "@/features/people/api/people.service";
 import { toast } from "sonner";
 import { db } from "@/lib/firebase";
-import { collection, query, where, getDocs, getDoc, addDoc, serverTimestamp } from "firebase/firestore/lite";
+import { collection, query, where, getDocs, getDoc, addDoc, serverTimestamp } from "firebase/firestore";
 import { useAuthStore } from "./auth.store";
 
 interface AttendanceState {

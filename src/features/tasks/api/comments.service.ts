@@ -9,7 +9,7 @@ import {
   doc,
   getDoc,
   Timestamp
-} from "firebase/firestore/lite";
+} from "firebase/firestore";
 import { db, auth } from "@/lib/firebase";
 import type { ApiResponse } from "@/types/api.types";
 import { withLogging } from "@/lib/service-utils";

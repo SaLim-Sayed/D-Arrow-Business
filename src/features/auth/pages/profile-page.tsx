@@ -13,7 +13,7 @@ import { Camera, Mail, User, Clock, Shield } from "lucide-react";
 import { toast } from "sonner";
 import type { UserRole } from "@/features/auth/types/auth.types";
 import { updatePassword, EmailAuthProvider, reauthenticateWithCredential } from "firebase/auth";
-import { doc, updateDoc } from "firebase/firestore/lite";
+import { doc, updateDoc } from "firebase/firestore";
 import { auth, db } from "@/lib/firebase";
 import { useEmployeesQuery, useLeaveRequestsQuery } from "@/features/people/hooks/use-people";
 import { motion, AnimatePresence } from "framer-motion";
