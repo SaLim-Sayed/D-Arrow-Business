@@ -3,6 +3,7 @@ import { useAuth } from "@/features/auth/context/auth-context";
 import { useLayoutStore } from "@/stores/layout.store";
 import { useThemeStore } from "@/stores/theme.store";
 import { LanguageSwitcher } from "./language-switcher";
+import { NotificationsDropdown } from "./notifications-dropdown";
 import {
   Button,
   Dropdown,
@@ -104,6 +105,7 @@ export function Header() {
         <div className="hidden sm:block mr-0 sm:mr-2">
           <TimeTrackerWidget />
         </div>
+        <NotificationsDropdown />
         <LanguageSwitcher />
 
         <Button

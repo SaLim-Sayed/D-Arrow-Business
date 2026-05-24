@@ -10,7 +10,7 @@ import {
   orderBy, 
   limit,
   serverTimestamp 
-} from "firebase/firestore/lite";
+} from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import type { ApiResponse } from "@/types/api.types";
 import { withLogging } from "@/lib/service-utils";

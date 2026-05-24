@@ -1,6 +1,6 @@
 import { updateProfile } from "firebase/auth";
 import { auth, db, storage } from "@/lib/firebase";
-import { doc, updateDoc } from "firebase/firestore/lite";
+import { doc, updateDoc } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { withLogging } from "@/lib/service-utils";
 import type { User } from "../types/auth.types";
