@@ -14,76 +14,108 @@ import { TaskDetailPage } from "@/features/tasks/pages/task-detail-page";
 import { SprintsPage } from "@/features/tasks/pages/sprints-page";
 import { LeadsListPage } from "@/features/crm/pages/LeadsListPage";
 import { SeedPage } from "@/features/admin/pages/SeedPage";
+import PeopleDashboardPage from "@/features/people/pages/PeopleDashboardPage";
+import LeaveTrackerPage from "@/features/people/pages/LeaveTrackerPage";
+import EmployeeProfilePage from "@/features/people/pages/EmployeeProfilePage";
+import { ApprovalsPage } from "@/features/people/pages/ApprovalsPage";
+import PerformancePage from "@/features/people/pages/PerformancePage";
 import { NotFoundPage } from "@/components/shared/not-found-page";
+import { ErrorPage } from "@/components/shared/error-page";
 
 export const router = createBrowserRouter([
   {
-    path: "/login",
-    element: <LoginPage />,
-  },
-  {
-    path: "/register",
-    element: <RegisterPage />,
-  },
-  {
-    path: "/forgot-password",
-    element: <ForgotPasswordPage />,
-  },
-  {
-    path: "/reset-password",
-    element: <ResetPasswordPage />,
-  },
-  {
     path: "/",
-    element: (
-      <ProtectedRoute>
-        <AppLayout />
-      </ProtectedRoute>
-    ),
+    errorElement: <ErrorPage />,
     children: [
       {
-        index: true,
-        element: <Navigate to="/tasks/dashboard" replace />,
+        path: "login",
+        element: <LoginPage />,
       },
       {
-        path: "crm/leads",
-        element: <LeadsListPage />,
+        path: "register",
+        element: <RegisterPage />,
       },
       {
-        path: "tasks/dashboard",
-        element: <TasksDashboardPage />,
+        path: "forgot-password",
+        element: <ForgotPasswordPage />,
       },
       {
-        path: "tasks/list",
-        element: <TasksListPage />,
+        path: "reset-password",
+        element: <ResetPasswordPage />,
       },
       {
-        path: "tasks/board",
-        element: <TasksBoardPage />,
-      },
-      {
-        path: "tasks/new",
-        element: <TaskCreatePage />,
-      },
-      {
-        path: "tasks/sprints",
-        element: <SprintsPage />,
-      },
-      {
-        path: "tasks/:taskId",
-        element: <TaskDetailPage />,
-      },
-      {
-        path: "seed",
-        element: <SeedPage />,
-      },
-      {
-        path: "profile",
-        element: <ProfilePage />,
-      },
-      {
-        path: "*",
-        element: <NotFoundPage />,
+        path: "/",
+        element: (
+          <ProtectedRoute>
+            <AppLayout />
+          </ProtectedRoute>
+        ),
+        children: [
+          {
+            index: true,
+            element: <Navigate to="/tasks/dashboard" replace />,
+          },
+          {
+            path: "crm/leads",
+            element: <LeadsListPage />,
+          },
+          {
+            path: "tasks/dashboard",
+            element: <TasksDashboardPage />,
+          },
+          {
+            path: "tasks/list",
+            element: <TasksListPage />,
+          },
+          {
+            path: "tasks/board",
+            element: <TasksBoardPage />,
+          },
+          {
+            path: "tasks/new",
+            element: <TaskCreatePage />,
+          },
+          {
+            path: "tasks/sprints",
+            element: <SprintsPage />,
+          },
+          {
+            path: "tasks/:taskId",
+            element: <TaskDetailPage />,
+          },
+          {
+            path: "people",
+            element: <PeopleDashboardPage />,
+          },
+          {
+            path: "people/leave",
+            element: <LeaveTrackerPage />,
+          },
+          {
+            path: "people/approvals",
+            element: <ApprovalsPage />,
+          },
+          {
+            path: "people/performance",
+            element: <PerformancePage />,
+          },
+          {
+            path: "people/:id",
+            element: <EmployeeProfilePage />,
+          },
+          {
+            path: "seed",
+            element: <SeedPage />,
+          },
+          {
+            path: "profile",
+            element: <ProfilePage />,
+          },
+          {
+            path: "*",
+            element: <NotFoundPage />,
+          },
+        ],
       },
     ],
   },

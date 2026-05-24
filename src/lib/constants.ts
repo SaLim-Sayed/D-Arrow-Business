@@ -21,6 +21,14 @@ export const QUERY_KEYS = {
   users: {
     all: ["users"] as const,
   },
+  people: {
+    all: ["people"] as const,
+    employees: (companyId: string) => ["people", companyId, "employees"] as const,
+    leaveRequests: (companyId: string) => ["people", companyId, "leave-requests"] as const,
+    performanceReviews: (employeeId: string) => ["people", "reviews", employeeId] as const,
+    assets: (companyId: string) => ["people", companyId, "assets"] as const,
+    announcements: (companyId: string) => ["people", companyId, "announcements"] as const,
+  },
 } as const;
 
 export const TASK_STATUSES = ["todo", "in_progress", "in_review", "done"] as const;

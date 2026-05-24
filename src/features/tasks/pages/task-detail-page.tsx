@@ -43,6 +43,7 @@ import {
   Target,
   Flag,
   Activity,
+  Paperclip,
 } from "lucide-react";
 import { TASK_STATUSES, TASK_PRIORITIES } from "@/lib/constants";
 import { formatDate } from "@/lib/utils";
@@ -281,6 +282,39 @@ export function TaskDetailPage() {
                           </p>
                         </div>
                       </div>
+
+                      {task.attachments && task.attachments.length > 0 && (
+                        <>
+                          <Separator className="h-px bg-default-100" />
+                          <div className="flex flex-col gap-3">
+                            <div className="flex items-center gap-2 text-default-500">
+                              <Paperclip className="w-4 h-4" />
+                              <h3 className="text-sm font-semibold uppercase tracking-wider">
+                                Attached Files ({task.attachments.length})
+                              </h3>
+                            </div>
+                            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                              {task.attachments.map((url: string, i: number) => (
+                                <div key={i} className="group relative aspect-video bg-default-100 rounded-xl overflow-hidden border border-default-200/60 shadow-sm hover:shadow-md transition-all duration-300">
+                                  {url.startsWith("data:image/") || url.includes(".png") || url.includes(".jpg") || url.includes(".jpeg") || url.includes("alt=media") ? (
+                                    <img src={url} alt={`Attachment ${i + 1}`} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
+                                  ) : (
+                                    <div className="w-full h-full flex flex-col items-center justify-center text-default-400 bg-default-50">
+                                      <Paperclip className="w-6 h-6 mb-2 text-default-300" />
+                                      <span className="text-[10px] font-medium truncate w-full px-3 text-center">File {i + 1}</span>
+                                    </div>
+                                  )}
+                                  <a href={url} target="_blank" rel="noopener noreferrer" className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors duration-300 flex items-center justify-center opacity-0 group-hover:opacity-100 backdrop-blur-[1px]">
+                                    <span className="bg-white/95 text-black text-[11px] font-bold px-3 py-1.5 rounded-full shadow-sm transform translate-y-2 group-hover:translate-y-0 transition-all duration-300">
+                                      View Full Size
+                                    </span>
+                                  </a>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        </>
+                      )}
 
                       <Separator className="h-px bg-default-100" />
 

@@ -3,10 +3,24 @@ import { useAuth } from "@/features/auth/context/auth-context";
 import { useLayoutStore } from "@/stores/layout.store";
 import { useThemeStore } from "@/stores/theme.store";
 import { LanguageSwitcher } from "./language-switcher";
-import { Button, Dropdown, DropdownTrigger, DropdownMenu, DropdownItem, Avatar, Drawer, DrawerContent } from "@heroui/react";
-import { Menu, Moon, Sun, LogOut, User } from "lucide-react";
+import {
+  Button,
+  Dropdown,
+  DropdownTrigger,
+  DropdownMenu,
+  DropdownItem,
+  Avatar,
+  Drawer,
+  DrawerContent,
+  Popover,
+  PopoverTrigger,
+  PopoverContent,
+} from "@heroui/react";
+import { Menu, Moon, Sun, LogOut, User, Clock } from "lucide-react";
 import { MobileSidebar } from "./mobile-sidebar";
 import { useNavigate } from "react-router-dom";
+import { TimeTrackerWidget } from "@/features/people/components/TimeTrackerWidget";
+import { useAttendanceTimer } from "@/features/people/hooks/use-attendance-timer";
 
 export function Header() {
   const { t, i18n } = useTranslation();
@@ -14,6 +28,15 @@ export function Header() {
   const { mobileSidebarOpen, setMobileSidebarOpen } = useLayoutStore();
   const { mode, toggleMode } = useThemeStore();
   const navigate = useNavigate();
+
+  const {
+    liveSeconds,
+    accumulatedSeconds,
+    formatLiveTime,
+    isCheckedIn,
+    isOnBreak,
+  } = useAttendanceTimer();
+  const totalSeconds = accumulatedSeconds + liveSeconds;
 
   const displayName = i18n.language === "ar" ? user?.nameAr : user?.name;
   const initials = (user?.name ?? "U")
@@ -49,12 +72,43 @@ export function Header() {
       <div className="flex-1" />
 
       {/* Actions */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-1 sm:gap-3">
+        <div className="block sm:hidden">
+          <Popover placement="bottom">
+            <PopoverTrigger>
+              <Button
+                variant="flat"
+                className={`px-3 flex items-center gap-2 ${
+                  isCheckedIn && !isOnBreak
+                    ? "bg-success/10 text-success"
+                    : isOnBreak && isCheckedIn
+                      ? "bg-warning/10 text-warning"
+                      : !isCheckedIn &&
+                        !isOnBreak &&
+                        "bg-default/10 text-primary"
+                }`}
+              >
+                <Clock
+                  className={`w-4 h-4 ${isCheckedIn && !isOnBreak ? "animate-pulse" : ""}`}
+                />
+                <span className="font-mono font-bold tabular-nums">
+                  {formatLiveTime(totalSeconds)}
+                </span>
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="p-0 border-none bg-white dark:bg-black shadow-none">
+              <TimeTrackerWidget />
+            </PopoverContent>
+          </Popover>
+        </div>
+        <div className="hidden sm:block mr-0 sm:mr-2">
+          <TimeTrackerWidget />
+        </div>
         <LanguageSwitcher />
 
-        <Button 
-          isIconOnly 
-          variant="flat" 
+        <Button
+          isIconOnly
+          variant="flat"
           onPress={toggleMode}
           className="bg-default-100/50 hover:bg-default-200/50"
         >
@@ -68,10 +122,10 @@ export function Header() {
         <Dropdown placement="bottom-end">
           <DropdownTrigger>
             <div className="flex items-center gap-2 cursor-pointer p-1 rounded-full hover:bg-default-100/50 transition-colors">
-              <Avatar 
-                size="sm" 
-                src={user?.avatar} 
-                fallback={initials} 
+              <Avatar
+                size="sm"
+                src={user?.avatar}
+                fallback={initials}
                 showFallback
                 className="ring-2 ring-primary/20"
               />
@@ -88,9 +142,9 @@ export function Header() {
             >
               {t("user.profile")}
             </DropdownItem>
-            <DropdownItem 
-              key="logout" 
-              className="text-danger" 
+            <DropdownItem
+              key="logout"
+              className="text-danger"
               color="danger"
               onPress={logout}
               startContent={<LogOut className="h-4 w-4" />}

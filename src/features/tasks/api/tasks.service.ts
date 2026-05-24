@@ -12,7 +12,7 @@ import {
   serverTimestamp,
   Timestamp
 } from "firebase/firestore/lite";
-import { db } from "@/lib/firebase";
+import { db, storage, auth } from "@/lib/firebase";
 import type { ApiResponse, PaginatedResponse } from "@/types/api.types";
 import { withLogging } from "@/lib/service-utils";
 import type {
@@ -64,6 +64,7 @@ export const TaskService = {
           updatedAt: data.updatedAt instanceof Timestamp ? data.updatedAt.toDate().toISOString() : data.updatedAt,
           dueDate: data.dueDate instanceof Timestamp ? data.dueDate.toDate().toISOString() : data.dueDate,
           tags: data.tags || [],
+          attachments: data.attachments || [],
         } as Task;
       });
 
@@ -135,6 +136,7 @@ export const TaskService = {
           updatedAt: data.updatedAt instanceof Timestamp ? data.updatedAt.toDate().toISOString() : data.updatedAt,
           dueDate: data.dueDate instanceof Timestamp ? data.dueDate.toDate().toISOString() : data.dueDate,
           tags: data.tags || [],
+          attachments: data.attachments || [],
         } as Task,
         message: "Success",
       };
@@ -168,6 +170,7 @@ export const TaskService = {
           updatedAt: docData.updatedAt instanceof Timestamp ? docData.updatedAt.toDate().toISOString() : docData.updatedAt,
           dueDate: docData.dueDate instanceof Timestamp ? docData.dueDate.toDate().toISOString() : docData.dueDate,
           tags: docData.tags || [],
+          attachments: docData.attachments || [],
         } as Task,
         message: "Task created successfully",
       };
@@ -201,9 +204,58 @@ export const TaskService = {
           updatedAt: docData.updatedAt instanceof Timestamp ? docData.updatedAt.toDate().toISOString() : docData.updatedAt,
           dueDate: docData.dueDate instanceof Timestamp ? docData.dueDate.toDate().toISOString() : docData.dueDate,
           tags: docData.tags || [],
+          attachments: docData.attachments || [],
         } as Task,
         message: "Task updated successfully",
       };
+    })());
+  },
+
+  async uploadTaskAttachment(companyId: string, file: File): Promise<string> {
+    return withLogging(SERVICE_NAME, "uploadTaskAttachment", (async () => {
+      try {
+        const ext = file.name.split(".").pop() ?? "jpg";
+        const randomId = Math.random().toString(36).substring(2, 15);
+        const path = `tasks/${companyId}/attachments/${randomId}.${ext}`;
+        const bucket = storage.app.options.storageBucket;
+        
+        // Use REST API for upload to bypass SDK multipart issues
+        const token = await auth.currentUser?.getIdToken();
+        const uploadUrl = `https://firebasestorage.googleapis.com/v0/b/${bucket}/o?uploadType=media&name=${encodeURIComponent(path)}`;
+        
+        const response = await fetch(uploadUrl, {
+          method: "POST",
+          headers: {
+            "Content-Type": file.type || "application/octet-stream",
+            ...(token ? { "Authorization": `Bearer ${token}` } : {})
+          },
+          body: file
+        });
+
+        if (!response.ok) {
+          throw new Error(`Upload failed: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        const downloadToken = data.downloadTokens;
+        
+        if (downloadToken) {
+          return `https://firebasestorage.googleapis.com/v0/b/${bucket}/o/${encodeURIComponent(path)}?alt=media&token=${downloadToken}`;
+        } else {
+          // Fallback to SDK getDownloadURL if token is missing
+          const { ref, getDownloadURL } = await import("firebase/storage");
+          const storageRef = ref(storage, path);
+          return await getDownloadURL(storageRef);
+        }
+      } catch (error) {
+        console.warn("Firebase Storage REST upload failed. Falling back to Base64 string.", error);
+        return new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result as string);
+          reader.onerror = reject;
+          reader.readAsDataURL(file);
+        });
+      }
     })());
   },
 

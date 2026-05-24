@@ -1,7 +1,11 @@
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useForm, Controller } from "react-hook-form";
+import { useCompany } from "@/features/companies/context/company-context";
+import { TaskService } from "../api/tasks.service";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { Paperclip } from "lucide-react";
 import {
   Button,
   Input,
@@ -60,6 +64,9 @@ export function TaskForm({
 
   const epics = allTasks?.data?.filter(t => t.type === "epic") || [];
   const sprints = allSprints?.data || [];
+  const { companyId } = useCompany();
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [isUploading, setIsUploading] = useState(false);
 
   const form = useForm<TaskFormValues>({
     resolver: zodResolver(taskSchema),
@@ -86,7 +93,7 @@ export function TaskForm({
 
   const taskType = watch("type");
 
-  function handleSubmit(values: TaskFormValues) {
+  async function handleSubmit(values: TaskFormValues) {
     if (
       !canApprove &&
       values.status === "done" &&
@@ -104,6 +111,24 @@ export function TaskForm({
       }
     }
 
+    let attachmentUrls: string[] = defaultValues?.attachments || [];
+    
+    if (selectedFiles.length > 0 && companyId) {
+      setIsUploading(true);
+      try {
+        const uploadPromises = selectedFiles.map((file) => 
+          TaskService.uploadTaskAttachment(companyId, file)
+        );
+        const uploadedUrls = await Promise.all(uploadPromises);
+        attachmentUrls = [...attachmentUrls, ...uploadedUrls];
+      } catch (error) {
+        toast.error("Failed to upload attachments");
+        setIsUploading(false);
+        return;
+      }
+      setIsUploading(false);
+    }
+
     onSubmit({
       title: values.title,
       description: values.description,
@@ -114,6 +139,7 @@ export function TaskForm({
       sprintId: values.sprintId,
       assigneeId: values.assigneeId,
       dueDate: isoDueDate,
+      attachments: attachmentUrls.length > 0 ? attachmentUrls : undefined,
     });
   }
 
@@ -417,13 +443,62 @@ export function TaskForm({
         )}
       />
 
+      <div className="flex flex-col gap-2">
+        <span className="text-sm font-semibold tracking-tight text-foreground/80">
+          Attachments
+        </span>
+        <input
+          type="file"
+          multiple
+          onChange={(e) => {
+            if (e.target.files) {
+              setSelectedFiles(Array.from(e.target.files));
+            }
+          }}
+          className="block w-full text-sm text-foreground/80
+            file:mr-4 file:py-2 file:px-4
+            file:rounded-full file:border-0
+            file:text-sm file:font-semibold
+            file:bg-primary/10 file:text-primary
+            hover:file:bg-primary/20
+          "
+        />
+        {defaultValues?.attachments && defaultValues.attachments.length > 0 && (
+          <div className="mt-4 space-y-3">
+            <span className="text-xs font-semibold text-default-500 uppercase tracking-wider flex items-center gap-2">
+              <Paperclip className="w-3.5 h-3.5" />
+              Attached Files ({defaultValues.attachments.length})
+            </span>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+              {defaultValues.attachments.map((url, i) => (
+                <div key={i} className="group relative aspect-video bg-default-100 rounded-xl overflow-hidden border border-default-200/60 shadow-sm hover:shadow-md transition-all duration-300">
+                  {url.startsWith("data:image/") || url.includes(".png") || url.includes(".jpg") || url.includes(".jpeg") || url.includes("alt=media") ? (
+                    <img src={url} alt={`Attachment ${i + 1}`} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
+                  ) : (
+                    <div className="w-full h-full flex flex-col items-center justify-center text-default-400 bg-default-50">
+                      <Paperclip className="w-6 h-6 mb-2 text-default-300" />
+                      <span className="text-[10px] font-medium truncate w-full px-3 text-center">File {i + 1}</span>
+                    </div>
+                  )}
+                  <a href={url} target="_blank" rel="noopener noreferrer" className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors duration-300 flex items-center justify-center opacity-0 group-hover:opacity-100 backdrop-blur-[1px]">
+                    <span className="bg-white/95 text-black text-[11px] font-bold px-3 py-1.5 rounded-full shadow-sm transform translate-y-2 group-hover:translate-y-0 transition-all duration-300">
+                      View Full Size
+                    </span>
+                  </a>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
       <div className="flex justify-end gap-2 pt-4">
         {onCancel && (
           <Button
             type="button"
             variant="flat"
             onPress={onCancel}
-            isDisabled={isSubmitting}
+            isDisabled={isSubmitting || isUploading}
             className="h-11 font-semibold px-6"
           >
             {tc("actions.cancel")}
@@ -433,13 +508,13 @@ export function TaskForm({
           type="submit"
           color="primary"
           variant="solid"
-          isDisabled={isSubmitting}
+          isDisabled={isSubmitting || isUploading}
           className={`h-11 font-semibold shadow-lg shadow-primary/20 flex items-center justify-center gap-2 ${!onCancel ? 'w-full' : 'px-8'}`}
         >
-          {isSubmitting ? (
+          {(isSubmitting || isUploading) ? (
             <Spinner size="sm" color="current" className="mr-2" />
           ) : null}
-          {isSubmitting ? tc("actions.loading") : tc("actions.save")}
+          {(isSubmitting || isUploading) ? tc("actions.loading") : tc("actions.save")}
         </Button>
       </div>
     </form>

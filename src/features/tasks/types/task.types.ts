@@ -34,6 +34,7 @@ export interface Task {
   updatedAt: string;
   completedAt: string | null;
   commentsCount: number;
+  attachments?: string[];
 }
 
 export interface CreateTaskDTO {
@@ -47,6 +48,7 @@ export interface CreateTaskDTO {
   assigneeId?: string | null;
   tags?: string[];
   dueDate?: string | null;
+  attachments?: string[];
 }
 
 export interface UpdateTaskDTO {
@@ -60,6 +62,7 @@ export interface UpdateTaskDTO {
   assigneeId?: string | null;
   tags?: string[];
   dueDate?: string | null;
+  attachments?: string[];
 }
 
 export interface TaskFilters {

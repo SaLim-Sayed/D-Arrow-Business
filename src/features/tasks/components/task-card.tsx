@@ -167,9 +167,14 @@ export function TaskCard({
                   </span>
                 </div>
               )}
-              <div className="flex items-center gap-1 text-default-400">
-                <Paperclip className="h-3.5 w-3.5" />
-              </div>
+              {task.attachments && task.attachments.length > 0 && (
+                <div className="flex items-center gap-1 text-default-400">
+                  <Paperclip className="h-3.5 w-3.5" />
+                  <span className="text-[10px] font-bold">
+                    {task.attachments.length}
+                  </span>
+                </div>
+              )}
             </div>
             <button className="text-default-400 hover:text-primary transition-colors">
               <MoreHorizontal className="h-4 w-4" />
