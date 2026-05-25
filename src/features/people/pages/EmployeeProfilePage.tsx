@@ -100,7 +100,7 @@ export default function EmployeeProfilePage() {
     );
   }
 
-  const initials = `${employee.firstName[0]}${employee.lastName[0]}`.toUpperCase();
+  const initials = `${employee.firstName?.charAt(0) || ""}${employee.lastName?.charAt(0) || ""}`.toUpperCase();
   const roleColorMap: Record<string, string> = {
     super_admin: "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300",
     admin: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300",
