@@ -13,7 +13,11 @@ export function useCreateTask() {
   const { user } = useAuth();
 
   return useMutation({
-    mutationFn: (data: CreateTaskDTO) => TaskService.createTask(companyId!, data),
+    mutationFn: (data: CreateTaskDTO) =>
+      TaskService.createTask(companyId!, data, {
+        userId: user?.id ?? "unknown",
+        userName: user?.name,
+      }),
     onSuccess: (response) => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.tasks.all });
       toast.success("Task created successfully");
@@ -35,7 +39,10 @@ export function useUpdateTask() {
 
   return useMutation({
     mutationFn: ({ id, data }: { id: string; data: UpdateTaskDTO }) =>
-      TaskService.updateTask(companyId!, id, data),
+      TaskService.updateTask(companyId!, id, data, {
+        userId: user?.id ?? "unknown",
+        userName: user?.name,
+      }),
     onMutate: async ({ id, data }) => {
       // Cancel any outgoing refetches (so they don't overwrite our optimistic update)
       await queryClient.cancelQueries({ queryKey: QUERY_KEYS.tasks.all });

@@ -42,11 +42,13 @@
     "details": "Details",
     "noDueDate": "No due date",
     "history": "History",
-    "historyPlaceholder": "Activity history will appear here.",
+    "historySubtitle": "Track who changed what and when",
+    "historyPlaceholder": "Changes to this task will appear here.",
     "editTask": "Edit Task",
     "subtasks": "Subtasks",
     "more": "+ {{count}} more",
     "noSubtasks": "No subtasks found.",
+    "addSubtask": "Add Subtask",
     "parentTask": "Parent Task",
     "saveChanges": "Save Changes",
     "createdAt": "Created At",
@@ -90,13 +92,25 @@
       "label": "Task Type"
     },
     "parent": {
-      "label": "Parent Task (Epic)"
+      "label": "Parent Task",
+      "placeholder": "Select parent task",
+      "required": "A parent task is required for subtasks",
+      "linkedTo": "This subtask will be linked to"
     },
+    "createSubtaskFor": "Creating subtask for",
     "sprint": {
       "label": "Sprint",
       "assigned": "Assigned to Sprint",
       "unassigned": "No Sprint"
-    }
+    },
+    "attachments": {
+      "label": "Attachments",
+      "optional": "Optional",
+      "hint": "Add files now or skip and attach later from the task page.",
+      "partialUpload": "Some files could not be uploaded. The task will be saved with the files that succeeded.",
+      "uploadFailed": "File upload failed. The task will be created without those attachments."
+    },
+    "createHint": "Fill in the details below. Only the title is required."
   },
   "type": {
     "task": "Task",
@@ -114,6 +128,38 @@
     "medium": "Medium",
     "high": "High",
     "urgent": "Urgent"
+  },
+  "history": {
+    "unknownUser": "Someone",
+    "emptyValue": "—",
+    "noParent": "No parent",
+    "fileCount": "{{count}} file(s)",
+    "created": "{{user}} created this task",
+    "updated": "{{user}} updated this task",
+    "timeLogged": "{{user}} logged time",
+    "attachmentAdded": "{{user}} updated attachments ({{count}} files)",
+    "changedField": "{{user}} changed {{field}} from {{from}} to {{to}}",
+    "setField": "{{user}} set {{field}} to {{value}}",
+    "actions": {
+      "created": "created",
+      "updated": "updated",
+      "attachment_added": "attachment",
+      "time_logged": "time log"
+    },
+    "fields": {
+      "title": "Title",
+      "description": "Description",
+      "status": "Status",
+      "priority": "Priority",
+      "type": "Type",
+      "parentId": "Parent task",
+      "sprintId": "Sprint",
+      "assigneeId": "Assignee",
+      "dueDate": "Due date",
+      "startDate": "Start date",
+      "attachments": "Attachments",
+      "timeLogs": "Time logs"
+    }
   },
   "delete": {
     "title": "Delete Task",

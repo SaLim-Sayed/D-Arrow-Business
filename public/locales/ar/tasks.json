@@ -42,11 +42,13 @@
     "details": "التفاصيل",
     "noDueDate": "لا يوجد تاريخ استحقاق",
     "history": "السجل",
-    "historyPlaceholder": "سجل النشاط سيظهر هنا.",
+    "historySubtitle": "تتبع من غيّر ماذا ومتى",
+    "historyPlaceholder": "ستظهر تغييرات هذه المهمة هنا.",
     "editTask": "تعديل المهمة",
     "subtasks": "المهام الفرعية",
     "more": "+ {{count}} أخرى",
     "noSubtasks": "لا توجد مهام فرعية.",
+    "addSubtask": "إضافة مهمة فرعية",
     "parentTask": "المهمة الأساسية",
     "saveChanges": "حفظ التغييرات",
     "createdAt": "تاريخ الإنشاء",
@@ -86,11 +88,29 @@
       "label": "الوسوم",
       "placeholder": "أضف وسوماً..."
     },
+    "type": {
+      "label": "نوع المهمة"
+    },
+    "parent": {
+      "label": "المهمة الأساسية",
+      "placeholder": "اختر المهمة الأساسية",
+      "required": "المهمة الأساسية مطلوبة للمهام الفرعية",
+      "linkedTo": "ستُربط هذه المهمة الفرعية بـ"
+    },
+    "createSubtaskFor": "إنشاء مهمة فرعية لـ",
     "sprint": {
       "label": "السبرينت",
       "assigned": "معينة للسبرينت",
       "unassigned": "بدون سبرينت"
-    }
+    },
+    "attachments": {
+      "label": "المرفقات",
+      "optional": "اختياري",
+      "hint": "أضف الملفات الآن أو تخطَّ وأرفق لاحقاً من صفحة المهمة.",
+      "partialUpload": "تعذر رفع بعض الملفات. سيتم حفظ المهمة بالملفات التي نجح رفعها.",
+      "uploadFailed": "فشل رفع الملفات. سيتم إنشاء المهمة بدون تلك المرفقات."
+    },
+    "createHint": "أكمل التفاصيل أدناه. العنوان فقط مطلوب."
   },
   "status": {
     "todo": "للتنفيذ",
@@ -103,6 +123,38 @@
     "medium": "متوسطة",
     "high": "عالية",
     "urgent": "عاجلة"
+  },
+  "history": {
+    "unknownUser": "مستخدم",
+    "emptyValue": "—",
+    "noParent": "بدون مهمة أساسية",
+    "fileCount": "{{count}} ملف",
+    "created": "{{user}} أنشأ هذه المهمة",
+    "updated": "{{user}} حدّث المهمة",
+    "timeLogged": "{{user}} سجّل وقتاً",
+    "attachmentAdded": "{{user}} حدّث المرفقات ({{count}} ملفات)",
+    "changedField": "{{user}} غيّر {{field}} من {{from}} إلى {{to}}",
+    "setField": "{{user}} عيّن {{field}} إلى {{value}}",
+    "actions": {
+      "created": "إنشاء",
+      "updated": "تحديث",
+      "attachment_added": "مرفق",
+      "time_logged": "وقت"
+    },
+    "fields": {
+      "title": "العنوان",
+      "description": "الوصف",
+      "status": "الحالة",
+      "priority": "الأولوية",
+      "type": "النوع",
+      "parentId": "المهمة الأساسية",
+      "sprintId": "السبرينت",
+      "assigneeId": "المسؤول",
+      "dueDate": "تاريخ الاستحقاق",
+      "startDate": "تاريخ البدء",
+      "attachments": "المرفقات",
+      "timeLogs": "سجلات الوقت"
+    }
   },
   "delete": {
     "title": "حذف المهمة",

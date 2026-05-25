@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useForm, Controller } from "react-hook-form";
 import { useCompany } from "@/features/companies/context/company-context";
@@ -6,6 +6,12 @@ import { TaskService } from "../api/tasks.service";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Paperclip } from "lucide-react";
+import {
+  AttachmentThumbnail,
+  AttachmentUploadZone,
+  PendingFileThumbnail,
+  isLikelyImageUrl,
+} from "./attachment-thumbnail";
 import {
   Button,
   Input,
@@ -15,6 +21,10 @@ import {
   Avatar,
   Spinner,
   DatePicker,
+  Modal,
+  ModalContent,
+  ModalBody,
+  Chip,
 } from "@heroui/react";
 import { TASK_PRIORITIES, TASK_STATUSES } from "@/lib/constants";
 import { useAuthStore } from "@/stores/auth.store";
@@ -27,22 +37,34 @@ import { parseDate } from "@internationalized/date";
 /** Roles that can approve tasks (move in_review → done) */
 const APPROVER_ROLES = new Set(["super_admin", "admin", "manager"]);
 
-const taskSchema = z.object({
-  title: z.string().min(3, "Title must be at least 3 characters"),
-  description: z.string(),
-  status: z.enum(["todo", "in_progress", "in_review", "done"]),
-  priority: z.enum(["low", "medium", "high", "urgent"]),
-  type: z.enum(["task", "epic", "subtask"]),
-  assigneeId: z.string().nullable().optional(),
-  parentId: z.string().nullable().optional(),
-  sprintId: z.string().nullable().optional(),
-  dueDate: z.string().nullable().optional(),
-});
+const taskSchema = z
+  .object({
+    title: z.string().min(3, "Title must be at least 3 characters"),
+    description: z.string(),
+    status: z.enum(["todo", "in_progress", "in_review", "done"]),
+    priority: z.enum(["low", "medium", "high", "urgent"]),
+    type: z.enum(["task", "epic", "subtask"]),
+    assigneeId: z.string().nullable().optional(),
+    parentId: z.string().nullable().optional(),
+    sprintId: z.string().nullable().optional(),
+    dueDate: z.string().nullable().optional(),
+  })
+  .superRefine((data, ctx) => {
+    if (data.type === "subtask" && !data.parentId) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Parent task is required for subtasks",
+        path: ["parentId"],
+      });
+    }
+  });
 
 type TaskFormValues = z.infer<typeof taskSchema>;
 
 interface TaskFormProps {
   defaultValues?: Partial<Task>;
+  /** When set, creates a subtask locked to this parent */
+  parentTaskId?: string | null;
   onSubmit: (data: CreateTaskDTO) => void;
   isSubmitting?: boolean;
   onCancel?: () => void;
@@ -50,6 +72,7 @@ interface TaskFormProps {
 
 export function TaskForm({
   defaultValues,
+  parentTaskId,
   onSubmit,
   isSubmitting,
   onCancel,
@@ -62,11 +85,27 @@ export function TaskForm({
   const { user: currentUser } = useAuthStore();
   const canApprove = APPROVER_ROLES.has(currentUser?.role ?? "");
 
-  const epics = allTasks?.data?.filter(t => t.type === "epic") || [];
+  const editingTaskId = defaultValues?.id;
+  const parentCandidates =
+    allTasks?.data?.filter(
+      (t) => t.type !== "subtask" && t.id !== editingTaskId
+    ) || [];
+  const lockedParent = parentTaskId
+    ? allTasks?.data?.find((t) => t.id === parentTaskId)
+    : null;
   const sprints = allSprints?.data || [];
   const { companyId } = useCompany();
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [existingAttachments, setExistingAttachments] = useState<string[]>(
+    defaultValues?.attachments ?? []
+  );
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+
+  const fieldClassNames = {
+    inputWrapper: "bg-default-50/80 border border-default-200 shadow-sm group-data-[focus=true]:border-primary",
+    label: "text-default-600 font-semibold",
+  };
 
   const form = useForm<TaskFormValues>({
     resolver: zodResolver(taskSchema),
@@ -75,9 +114,9 @@ export function TaskForm({
       description: defaultValues?.description ?? "",
       status: defaultValues?.status ?? "todo",
       priority: defaultValues?.priority ?? "medium",
-      type: defaultValues?.type ?? "task",
+      type: parentTaskId ? "subtask" : (defaultValues?.type ?? "task"),
       assigneeId: defaultValues?.assigneeId ?? null,
-      parentId: defaultValues?.parentId ?? null,
+      parentId: parentTaskId ?? defaultValues?.parentId ?? null,
       sprintId: defaultValues?.sprintId ?? null,
       dueDate: defaultValues?.dueDate
         ? defaultValues.dueDate.split("T")[0]
@@ -92,6 +131,22 @@ export function TaskForm({
   } = form;
 
   const taskType = watch("type");
+  const parentIdValue = watch("parentId");
+  const isSubtaskMode = !!parentTaskId || taskType === "subtask";
+
+  useEffect(() => {
+    if (!parentTaskId) return;
+    form.setValue("type", "subtask");
+    form.setValue("parentId", parentTaskId);
+    if (lockedParent?.sprintId) {
+      form.setValue("sprintId", lockedParent.sprintId);
+    }
+  }, [parentTaskId, lockedParent?.sprintId, form]);
+
+  useEffect(() => {
+    if (taskType !== "subtask" || parentIdValue || parentTaskId) return;
+    form.setValue("parentId", null);
+  }, [taskType, parentIdValue, parentTaskId, form]);
 
   async function handleSubmit(values: TaskFormValues) {
     if (
@@ -111,88 +166,110 @@ export function TaskForm({
       }
     }
 
-    let attachmentUrls: string[] = defaultValues?.attachments || [];
-    
+    let attachmentUrls: string[] = [...existingAttachments];
+
     if (selectedFiles.length > 0 && companyId) {
       setIsUploading(true);
-      try {
-        const uploadPromises = selectedFiles.map((file) => 
-          TaskService.uploadTaskAttachment(companyId, file)
-        );
-        const uploadedUrls = await Promise.all(uploadPromises);
-        attachmentUrls = [...attachmentUrls, ...uploadedUrls];
-      } catch (error) {
-        toast.error("Failed to upload attachments");
-        setIsUploading(false);
-        return;
-      }
+      const results = await Promise.allSettled(
+        selectedFiles.map((file) => TaskService.uploadTaskAttachment(companyId, file))
+      );
+      const uploadedUrls = results
+        .filter((r): r is PromiseFulfilledResult<string> => r.status === "fulfilled")
+        .map((r) => r.value);
+      const failedCount = results.filter((r) => r.status === "rejected").length;
+      attachmentUrls = [...attachmentUrls, ...uploadedUrls];
       setIsUploading(false);
+      if (failedCount > 0 && uploadedUrls.length > 0) {
+        toast.warning(t("form.attachments.partialUpload"));
+      } else if (failedCount > 0) {
+        toast.warning(t("form.attachments.uploadFailed"));
+      }
     }
 
-    onSubmit({
+    const payload: CreateTaskDTO = {
       title: values.title,
-      description: values.description,
+      description: values.description ?? "",
       status: values.status,
       priority: values.priority,
       type: values.type,
-      parentId: values.parentId,
-      sprintId: values.sprintId,
-      assigneeId: values.assigneeId,
+      parentId: values.type === "subtask" ? values.parentId : null,
+      sprintId: values.sprintId ?? null,
+      assigneeId: values.assigneeId ?? null,
       dueDate: isoDueDate,
-      attachments: attachmentUrls.length > 0 ? attachmentUrls : undefined,
-    });
+    };
+
+    if (attachmentUrls.length > 0) {
+      payload.attachments = attachmentUrls;
+    }
+
+    onSubmit(payload);
   }
+
+  const totalAttachments = existingAttachments.length + selectedFiles.length;
 
   return (
     <form
       onSubmit={form.handleSubmit(handleSubmit)}
-      className="space-y-6 w-full"
+      className="space-y-8 w-full"
     >
-      <Controller
-        name="title"
-        control={control}
-        render={({ field }: { field: any }) => (
-          <Input
-            {...field}
-            label={t("form.title.label")}
-            placeholder={t("form.title.placeholder")}
-            variant="flat"
-            fullWidth
-            isInvalid={!!errors.title}
-            errorMessage={errors.title?.message}
-          />
-        )}
-      />
+      <div className="space-y-5">
+        <Controller
+          name="title"
+          control={control}
+          render={({ field }: { field: any }) => (
+            <Input
+              {...field}
+              label={t("form.title.label")}
+              placeholder={t("form.title.placeholder")}
+              variant="bordered"
+              size="lg"
+              fullWidth
+              isInvalid={!!errors.title}
+              errorMessage={errors.title?.message}
+              classNames={fieldClassNames}
+            />
+          )}
+        />
 
-      <Controller
-        name="description"
-        control={control}
-        render={({ field }: { field: any }) => (
-          <Textarea
-            {...field}
-            label={t("form.description.label")}
-            placeholder={t("form.description.placeholder")}
-            variant="flat"
-            fullWidth
-            isInvalid={!!errors.description}
-            errorMessage={errors.description?.message}
-          />
-        )}
-      />
+        <Controller
+          name="description"
+          control={control}
+          render={({ field }: { field: any }) => (
+            <Textarea
+              {...field}
+              label={t("form.description.label")}
+              placeholder={t("form.description.placeholder")}
+              variant="bordered"
+              minRows={4}
+              fullWidth
+              isInvalid={!!errors.description}
+              errorMessage={errors.description?.message}
+              classNames={{
+                ...fieldClassNames,
+                input: "text-sm leading-relaxed",
+              }}
+            />
+          )}
+        />
+      </div>
 
+      <div className="rounded-2xl border border-default-200/60 bg-default-50/30 p-5 space-y-5">
+        <p className="text-xs font-bold text-default-500 uppercase tracking-widest">Task settings</p>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <Controller
           name="type"
           control={control}
           render={({ field }: { field: any }) => (
             <div className="flex flex-col gap-2">
-              <span className="text-sm font-semibold tracking-tight text-foreground/80">
+              <span className="text-sm font-semibold text-foreground">
                 {t("form.type.label", "Task Type")}
               </span>
               <Select
                 aria-label="Task Type"
+                variant="bordered"
+                isDisabled={!!parentTaskId}
                 selectedKeys={new Set([field.value])}
-                className="h-11"
+                classNames={{ trigger: "bg-content1 min-h-11" }}
                 onSelectionChange={(keys) =>
                   field.onChange(Array.from(keys)[0] as string)
                 }
@@ -215,8 +292,9 @@ export function TaskForm({
               </span>
               <Select
                 aria-label="Sprint"
+                variant="bordered"
                 selectedKeys={new Set([field.value || "no-sprint"])}
-                className="h-11"
+                classNames={{ trigger: "bg-content1 min-h-11" }}
                 onSelectionChange={(keys) => {
                   const val = Array.from(keys)[0] as string;
                   field.onChange(val === "no-sprint" ? null : val);
@@ -234,31 +312,52 @@ export function TaskForm({
         />
       </div>
 
-      {taskType === "subtask" && (
+      {isSubtaskMode && (
         <Controller
           name="parentId"
           control={control}
           render={({ field }: { field: any }) => (
             <div className="flex flex-col gap-2 animate-in fade-in slide-in-from-top-2 duration-300">
-              <span className="text-sm font-semibold tracking-tight text-foreground/80">
-                {t("form.parent.label", "Parent Task (Epic)")}
+              <span className="text-sm font-semibold text-foreground">
+                {t("form.parent.label")}
               </span>
-              <Select
-                aria-label="Parent Task"
-                selectedKeys={new Set([field.value || "no-parent"])}
-                className="h-11"
-                onSelectionChange={(keys) => {
-                  const val = Array.from(keys)[0] as string;
-                  field.onChange(val === "no-parent" ? null : val);
-                }}
-              >
-                {[
-                  <SelectItem key="no-parent" textValue="No Parent">No Parent</SelectItem>,
-                  ...epics.map((e) => (
-                    <SelectItem key={e.id} textValue={e.title}>{e.title}</SelectItem>
-                  ))
-                ]}
-              </Select>
+              {parentTaskId && lockedParent ? (
+                <div className="rounded-xl border border-primary/20 bg-primary-50/40 p-4">
+                  <p className="text-xs text-default-500 mb-1">{t("form.parent.linkedTo")}</p>
+                  <Chip variant="flat" color="primary" className="font-semibold max-w-full">
+                    <span className="truncate">{lockedParent.title}</span>
+                  </Chip>
+                </div>
+              ) : (
+                <Select
+                  aria-label={t("form.parent.label")}
+                  variant="bordered"
+                  placeholder={t("form.parent.placeholder")}
+                  selectedKeys={field.value ? new Set([field.value]) : new Set()}
+                  isInvalid={!!errors.parentId}
+                  errorMessage={errors.parentId?.message as string | undefined}
+                  classNames={{ trigger: "bg-content1 min-h-11" }}
+                  onSelectionChange={(keys) => {
+                    const val = Array.from(keys)[0] as string;
+                    field.onChange(val || null);
+                    const parent = parentCandidates.find((p) => p.id === val);
+                    if (parent?.sprintId) {
+                      form.setValue("sprintId", parent.sprintId);
+                    }
+                  }}
+                >
+                  {parentCandidates.map((p) => (
+                    <SelectItem key={p.id} textValue={p.title}>
+                      <div className="flex flex-col">
+                        <span>{p.title}</span>
+                        <span className="text-tiny text-default-400 capitalize">
+                          {t(`type.${p.type}`)}
+                        </span>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </Select>
+              )}
             </div>
           )}
         />
@@ -275,8 +374,9 @@ export function TaskForm({
               </span>
               <Select
                 aria-label={t("form.status.label")}
+                variant="bordered"
                 selectedKeys={new Set([field.value])}
-                className="h-11"
+                classNames={{ trigger: "bg-content1 min-h-11" }}
                 onSelectionChange={(keys) =>
                   field.onChange(Array.from(keys)[0] as string)
                 }
@@ -316,8 +416,9 @@ export function TaskForm({
               </span>
               <Select
                 aria-label={t("form.priority.label")}
+                variant="bordered"
                 selectedKeys={new Set([field.value])}
-                className="h-11"
+                classNames={{ trigger: "bg-content1 min-h-11" }}
                 onSelectionChange={(keys) =>
                   field.onChange(Array.from(keys)[0] as string)
                 }
@@ -341,13 +442,14 @@ export function TaskForm({
         control={control}
         render={({ field }: { field: any }) => (
           <div className="flex flex-col gap-2">
-            <span className="text-sm font-semibold tracking-tight text-foreground/80">
+            <span className="text-sm font-semibold text-foreground">
               {t("form.assignee.label")}
             </span>
             <Select
               aria-label={t("form.assignee.label")}
-              color="primary"
-              className="h-11"
+              variant="bordered"
+              placeholder={t("form.assignee.placeholder")}
+              classNames={{ trigger: "bg-content1 min-h-11", value: "text-foreground" }}
               selectedKeys={new Set([field.value || "unassigned"])}
               onSelectionChange={(keys) => {
                 const val = Array.from(keys)[0] as string;
@@ -370,7 +472,9 @@ export function TaskForm({
                     </div>
                   );
                 }
-                return <span>{t("form.assignee.placeholder")}</span>;
+                return (
+                  <span className="text-default-500">{t("form.assignee.placeholder")}</span>
+                );
               }}
             >
               {[
@@ -429,70 +533,103 @@ export function TaskForm({
         name="dueDate"
         control={control}
         render={({ field }: { field: any }) => (
-          <div className="flex flex-col">
-            <DatePicker
-              label={t("form.dueDate.label")}
-              className="max-w-full"
-              variant="flat"
-              value={field.value ? parseDate(field.value) : null}
-              onChange={(date: any) => field.onChange(date?.toString() || null)}
-              isInvalid={!!errors.dueDate}
-              errorMessage={errors.dueDate?.message}
-            />
-          </div>
+          <DatePicker
+            label={t("form.dueDate.label")}
+            className="max-w-full"
+            variant="bordered"
+            value={field.value ? parseDate(field.value) : null}
+            onChange={(date: any) => field.onChange(date?.toString() || null)}
+            isInvalid={!!errors.dueDate}
+            errorMessage={errors.dueDate?.message}
+            classNames={fieldClassNames}
+          />
         )}
       />
+      </div>
 
-      <div className="flex flex-col gap-2">
-        <span className="text-sm font-semibold tracking-tight text-foreground/80">
-          Attachments
-        </span>
-        <input
-          type="file"
-          multiple
-          onChange={(e) => {
-            if (e.target.files) {
-              setSelectedFiles(Array.from(e.target.files));
-            }
-          }}
-          className="block w-full text-sm text-foreground/80
-            file:mr-4 file:py-2 file:px-4
-            file:rounded-full file:border-0
-            file:text-sm file:font-semibold
-            file:bg-primary/10 file:text-primary
-            hover:file:bg-primary/20
-          "
-        />
-        {defaultValues?.attachments && defaultValues.attachments.length > 0 && (
-          <div className="mt-4 space-y-3">
-            <span className="text-xs font-semibold text-default-500 uppercase tracking-wider flex items-center gap-2">
-              <Paperclip className="w-3.5 h-3.5" />
-              Attached Files ({defaultValues.attachments.length})
+      <div className="space-y-4">
+        <div>
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="text-sm font-semibold text-foreground flex items-center gap-2">
+              <Paperclip className="w-4 h-4 text-primary" />
+              {t("form.attachments.label")}
             </span>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-              {defaultValues.attachments.map((url, i) => (
-                <div key={i} className="group relative aspect-video bg-default-100 rounded-xl overflow-hidden border border-default-200/60 shadow-sm hover:shadow-md transition-all duration-300">
-                  {url.startsWith("data:image/") || url.includes(".png") || url.includes(".jpg") || url.includes(".jpeg") || url.includes("alt=media") ? (
-                    <img src={url} alt={`Attachment ${i + 1}`} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
-                  ) : (
-                    <div className="w-full h-full flex flex-col items-center justify-center text-default-400 bg-default-50">
-                      <Paperclip className="w-6 h-6 mb-2 text-default-300" />
-                      <span className="text-[10px] font-medium truncate w-full px-3 text-center">File {i + 1}</span>
-                    </div>
-                  )}
-                  <a href={url} target="_blank" rel="noopener noreferrer" className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors duration-300 flex items-center justify-center opacity-0 group-hover:opacity-100 backdrop-blur-[1px]">
-                    <span className="bg-white/95 text-black text-[11px] font-bold px-3 py-1.5 rounded-full shadow-sm transform translate-y-2 group-hover:translate-y-0 transition-all duration-300">
-                      View Full Size
-                    </span>
-                  </a>
-                </div>
-              ))}
-            </div>
+            <span className="text-[10px] font-bold uppercase tracking-wide text-default-400 bg-default-100 px-2 py-0.5 rounded-full">
+              {t("form.attachments.optional")}
+            </span>
+            {totalAttachments > 0 && (
+              <span className="text-xs font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full">
+                {totalAttachments}
+              </span>
+            )}
+          </div>
+          <p className="text-xs text-default-500 mt-1">{t("form.attachments.hint")}</p>
+        </div>
+
+        <AttachmentUploadZone
+          disabled={isSubmitting || isUploading}
+          fileCount={selectedFiles.length}
+          onFilesSelected={(files) =>
+            setSelectedFiles((prev) => [...prev, ...files])
+          }
+        />
+
+        {totalAttachments > 0 && (
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+            {existingAttachments.map((url, i) => (
+              <AttachmentThumbnail
+                key={`existing-${url}`}
+                url={url}
+                index={i}
+                onPreview={() => setPreviewUrl(url)}
+                onDelete={(e) => {
+                  e.stopPropagation();
+                  setExistingAttachments((prev) => prev.filter((u) => u !== url));
+                }}
+              />
+            ))}
+            {selectedFiles.map((file, i) => (
+              <PendingFileThumbnail
+                key={`pending-${file.name}-${i}`}
+                file={file}
+                onRemove={() =>
+                  setSelectedFiles((prev) => prev.filter((_, idx) => idx !== i))
+                }
+              />
+            ))}
           </div>
         )}
       </div>
 
-      <div className="flex justify-end gap-2 pt-4">
+      <Modal
+        isOpen={!!previewUrl}
+        onOpenChange={(open) => !open && setPreviewUrl(null)}
+        size="4xl"
+        classNames={{ backdrop: "bg-black/80 backdrop-blur-sm" }}
+      >
+        <ModalContent>
+          {() => (
+            <ModalBody className="p-4 flex items-center justify-center min-h-[40vh]">
+              {previewUrl &&
+                (isLikelyImageUrl(previewUrl) ? (
+                  <img
+                    src={previewUrl}
+                    alt="Preview"
+                    className="max-w-full max-h-[80vh] object-contain rounded-xl"
+                  />
+                ) : (
+                  <iframe
+                    src={previewUrl}
+                    title="Preview"
+                    className="w-full h-[80vh] rounded-xl bg-white"
+                  />
+                ))}
+            </ModalBody>
+          )}
+        </ModalContent>
+      </Modal>
+
+      <div className="flex flex-col-reverse sm:flex-row justify-end gap-3 pt-2 border-t border-default-100">
         {onCancel && (
           <Button
             type="button"
@@ -507,9 +644,9 @@ export function TaskForm({
         <Button
           type="submit"
           color="primary"
-          variant="solid"
+          variant="shadow"
           isDisabled={isSubmitting || isUploading}
-          className={`h-11 font-semibold shadow-lg shadow-primary/20 flex items-center justify-center gap-2 ${!onCancel ? 'w-full' : 'px-8'}`}
+          className={`h-12 font-bold shadow-lg shadow-primary/25 ${!onCancel ? "w-full sm:w-auto sm:min-w-[160px]" : "px-8"}`}
         >
           {(isSubmitting || isUploading) ? (
             <Spinner size="sm" color="current" className="mr-2" />

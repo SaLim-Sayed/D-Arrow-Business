@@ -21,9 +21,57 @@ import type {
   CreateTaskDTO,
   UpdateTaskDTO,
   TaskFilters,
+  TaskHistoryEntry,
 } from "../types/task.types";
+import {
+  buildCreatedHistoryEntry,
+  buildHistoryFromChanges,
+} from "../utils/task-history.utils";
 
 const SERVICE_NAME = "TaskService";
+
+export interface TaskActor {
+  userId: string;
+  userName?: string;
+}
+
+function mapHistoryEntry(entry: TaskHistoryEntry & { timestamp?: unknown }): TaskHistoryEntry {
+  const ts = entry.timestamp as unknown;
+  let timestamp = new Date().toISOString();
+  if (ts instanceof Timestamp) {
+    timestamp = ts.toDate().toISOString();
+  } else if (typeof ts === "string") {
+    timestamp = ts;
+  }
+  return { ...entry, timestamp };
+}
+
+function mapTaskDoc(id: string, data: Record<string, unknown>): Task {
+  return {
+    id,
+    ...data,
+    createdAt:
+      data.createdAt instanceof Timestamp
+        ? data.createdAt.toDate().toISOString()
+        : (data.createdAt as string),
+    updatedAt:
+      data.updatedAt instanceof Timestamp
+        ? data.updatedAt.toDate().toISOString()
+        : (data.updatedAt as string),
+    dueDate:
+      data.dueDate instanceof Timestamp
+        ? data.dueDate.toDate().toISOString()
+        : (data.dueDate as string | null),
+    startDate:
+      data.startDate instanceof Timestamp
+        ? data.startDate.toDate().toISOString()
+        : (data.startDate as string | null),
+    tags: (data.tags as string[]) || [],
+    attachments: (data.attachments as string[]) || [],
+    timeLogs: (data.timeLogs as Task["timeLogs"]) || [],
+    history: ((data.history as TaskHistoryEntry[]) || []).map(mapHistoryEntry),
+  } as Task;
+}
 
 /**
  * Task Service (Lite)
@@ -55,18 +103,9 @@ export const TaskService = {
       
       const querySnapshot = await getDocs(q);
       
-      let tasks: Task[] = querySnapshot.docs.map(docSnap => {
-        const data = docSnap.data();
-        return {
-          id: docSnap.id,
-          ...data,
-          createdAt: data.createdAt instanceof Timestamp ? data.createdAt.toDate().toISOString() : data.createdAt,
-          updatedAt: data.updatedAt instanceof Timestamp ? data.updatedAt.toDate().toISOString() : data.updatedAt,
-          dueDate: data.dueDate instanceof Timestamp ? data.dueDate.toDate().toISOString() : data.dueDate,
-          tags: data.tags || [],
-          attachments: data.attachments || [],
-        } as Task;
-      });
+      let tasks: Task[] = querySnapshot.docs.map((docSnap) =>
+        mapTaskDoc(docSnap.id, docSnap.data() as Record<string, unknown>)
+      );
 
       // Remaining Client-side Filtering
       if (filters?.status?.length) {
@@ -129,15 +168,7 @@ export const TaskService = {
 
       const data = docSnap.data();
       return {
-        data: { 
-          id: docSnap.id, 
-          ...data,
-          createdAt: data.createdAt instanceof Timestamp ? data.createdAt.toDate().toISOString() : data.createdAt,
-          updatedAt: data.updatedAt instanceof Timestamp ? data.updatedAt.toDate().toISOString() : data.updatedAt,
-          dueDate: data.dueDate instanceof Timestamp ? data.dueDate.toDate().toISOString() : data.dueDate,
-          tags: data.tags || [],
-          attachments: data.attachments || [],
-        } as Task,
+        data: mapTaskDoc(docSnap.id, data as Record<string, unknown>),
         message: "Success",
       };
     })());
@@ -145,33 +176,35 @@ export const TaskService = {
 
   async createTask(
     companyId: string,
-    data: CreateTaskDTO & { projectId?: string }
+    data: CreateTaskDTO & { projectId?: string },
+    actor?: TaskActor
   ): Promise<ApiResponse<Task>> {
     return withLogging(SERVICE_NAME, "createTask", (async () => {
       const tasksRef = collection(db, "companies", companyId, "tasks");
+      const { attachments, tags, timeLogs, ...rest } = data;
+      const initialHistory = actor?.userId
+        ? [buildCreatedHistoryEntry(actor)]
+        : [];
+
       const docRef = await addDoc(tasksRef, {
-        ...data,
+        ...rest,
         type: data.type || "task",
-        parentId: data.parentId || null,
-        sprintId: data.sprintId || null,
+        parentId: data.parentId ?? null,
+        sprintId: data.sprintId ?? null,
+        description: data.description ?? "",
+        tags: tags ?? [],
+        attachments: attachments?.length ? attachments : [],
+        ...(timeLogs?.length ? { timeLogs } : {}),
+        history: initialHistory,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
         commentsCount: 0,
       });
 
       const newDoc = await getDoc(docRef);
-      const docData = newDoc.data()!;
 
       return {
-        data: { 
-          id: newDoc.id, 
-          ...docData,
-          createdAt: docData.createdAt instanceof Timestamp ? docData.createdAt.toDate().toISOString() : docData.createdAt,
-          updatedAt: docData.updatedAt instanceof Timestamp ? docData.updatedAt.toDate().toISOString() : docData.updatedAt,
-          dueDate: docData.dueDate instanceof Timestamp ? docData.dueDate.toDate().toISOString() : docData.dueDate,
-          tags: docData.tags || [],
-          attachments: docData.attachments || [],
-        } as Task,
+        data: mapTaskDoc(newDoc.id, newDoc.data() as Record<string, unknown>),
         message: "Task created successfully",
       };
     })());
@@ -180,32 +213,39 @@ export const TaskService = {
   async updateTask(
     companyId: string,
     id: string,
-    data: UpdateTaskDTO
+    data: UpdateTaskDTO,
+    actor?: TaskActor
   ): Promise<ApiResponse<Task>> {
     return withLogging(SERVICE_NAME, "updateTask", (async () => {
       const docRef = doc(db, "companies", companyId, "tasks", id);
+      const currentSnap = await getDoc(docRef);
+      if (!currentSnap.exists()) {
+        throw new Error("Task not found");
+      }
+
+      const currentData = currentSnap.data() as Record<string, unknown>;
       const cleanData = Object.fromEntries(
         Object.entries(data).filter(([_, v]) => v !== undefined)
       );
 
+      const existingHistory = (currentData.history as TaskHistoryEntry[]) || [];
+      const newHistory =
+        actor?.userId && Object.keys(cleanData).length > 0
+          ? buildHistoryFromChanges(currentData, data, actor)
+          : [];
+
       await updateDoc(docRef, {
         ...cleanData,
+        ...(newHistory.length > 0
+          ? { history: [...existingHistory, ...newHistory] }
+          : {}),
         updatedAt: serverTimestamp(),
       });
 
       const updatedDoc = await getDoc(docRef);
-      const docData = updatedDoc.data()!;
 
       return {
-        data: { 
-          id: updatedDoc.id, 
-          ...docData,
-          createdAt: docData.createdAt instanceof Timestamp ? docData.createdAt.toDate().toISOString() : docData.createdAt,
-          updatedAt: docData.updatedAt instanceof Timestamp ? docData.updatedAt.toDate().toISOString() : docData.updatedAt,
-          dueDate: docData.dueDate instanceof Timestamp ? docData.dueDate.toDate().toISOString() : docData.dueDate,
-          tags: docData.tags || [],
-          attachments: docData.attachments || [],
-        } as Task,
+        data: mapTaskDoc(updatedDoc.id, updatedDoc.data() as Record<string, unknown>),
         message: "Task updated successfully",
       };
     })());
