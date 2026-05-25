@@ -19,6 +19,7 @@ import LeaveTrackerPage from "@/features/people/pages/LeaveTrackerPage";
 import EmployeeProfilePage from "@/features/people/pages/EmployeeProfilePage";
 import { ApprovalsPage } from "@/features/people/pages/ApprovalsPage";
 import PerformancePage from "@/features/people/pages/PerformancePage";
+import TimesheetsPage from "@/features/people/pages/TimesheetsPage";
 import { NotFoundPage } from "@/components/shared/not-found-page";
 import { ErrorPage } from "@/components/shared/error-page";
 
@@ -98,6 +99,10 @@ export const router = createBrowserRouter([
           {
             path: "people/performance",
             element: <PerformancePage />,
+          },
+          {
+            path: "people/timesheets",
+            element: <TimesheetsPage />,
           },
           {
             path: "people/:id",

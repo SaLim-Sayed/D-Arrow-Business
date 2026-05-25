@@ -59,6 +59,23 @@ export function useOffboardEmployeeMutation() {
   });
 }
 
+export function useUpdateEmployeeMutation() {
+  const { companyId } = useCompany();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ employeeId, data }: { employeeId: string; data: Partial<any> }) => 
+      PeopleService.updateEmployee(companyId!, employeeId, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.people.employees(companyId!) });
+      toast.success("Employee updated successfully");
+    },
+    onError: (error: any) => {
+      toast.error(error.message || "Failed to update employee");
+    }
+  });
+}
+
 export function usePerformanceReviewsQuery(employeeId: string) {
   const { companyId } = useCompany();
   
@@ -76,6 +93,16 @@ export function useAttendanceQuery(employeeId: string) {
     queryKey: ['people', 'attendance', companyId, employeeId],
     queryFn: () => PeopleService.getAttendance(companyId!, employeeId),
     enabled: !!companyId && !!employeeId,
+  });
+}
+
+export function useAllAttendanceQuery() {
+  const { companyId } = useCompany();
+  
+  return useQuery({
+    queryKey: ['people', 'all-attendance', companyId],
+    queryFn: () => PeopleService.getAllAttendance(companyId!),
+    enabled: !!companyId,
   });
 }
 

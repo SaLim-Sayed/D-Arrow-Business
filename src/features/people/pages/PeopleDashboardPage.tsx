@@ -16,6 +16,7 @@ import {
   Palmtree,
   Megaphone,
   Target,
+  FileSpreadsheet,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { EmployeeCard } from "../components/EmployeeCard";
@@ -185,45 +186,64 @@ export default function PeopleDashboardPage() {
       </div>
 
       {/* Quick Navigation Cards — unified strip */}
-      <Card className="border border-default-100/60 shadow-sm">
+      <Card className="border border-default-100/60 shadow-sm overflow-x-auto">
         <CardBody className="p-0">
-          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 divide-y md:divide-y-0 md:divide-x divide-default-100">
-            <NavCard 
-              title="Directory" 
-              desc="Full employee list" 
-              icon={<Users size={20} />}
-              iconBg="bg-blue-50 dark:bg-blue-500/10 text-blue-500"
-              count={employees.length.toString()}
-              onPress={() => {}}
-            />
-            <NavCard 
-              title="Leave Tracker" 
-              desc="Manage absences" 
-              icon={<CalendarDays size={20} />}
-              iconBg="bg-amber-50 dark:bg-amber-500/10 text-amber-500"
-              onPress={() => navigate("/people/leave")}
-            />
-            <NavCard 
-              title="Approvals" 
-              desc="Pending leave requests" 
-              icon={<ShieldCheck size={20} />}
-              iconBg="bg-rose-50 dark:bg-rose-500/10 text-rose-500"
-              onPress={() => navigate("/people/approvals")}
-            />
-            <NavCard 
-              title="Performance" 
-              desc="Appraisals and goals" 
-              icon={<Target size={20} />}
-              iconBg="bg-emerald-50 dark:bg-emerald-500/10 text-emerald-500"
-              onPress={() => navigate("/people/performance")}
-            />
-            <NavCard 
-              title="Organization" 
-              desc="Reporting structure" 
-              icon={<Network size={20} />}
-              iconBg="bg-violet-50 dark:bg-violet-500/10 text-violet-500"
-              onPress={() => {}}
-            />
+          <div className="flex divide-x divide-default-100 min-w-max">
+            <div className="flex-1 min-w-[200px]">
+              <NavCard 
+                title="Directory" 
+                desc="Full employee list" 
+                icon={<Users size={20} />}
+                iconBg="bg-blue-50 dark:bg-blue-500/10 text-blue-500"
+                count={employees.length.toString()}
+                onPress={() => {}}
+              />
+            </div>
+            <div className="flex-1 min-w-[200px]">
+              <NavCard 
+                title="Leave Tracker" 
+                desc="Manage absences" 
+                icon={<CalendarDays size={20} />}
+                iconBg="bg-amber-50 dark:bg-amber-500/10 text-amber-500"
+                onPress={() => navigate("/people/leave")}
+              />
+            </div>
+            <div className="flex-1 min-w-[200px]">
+              <NavCard 
+                title="Approvals" 
+                desc="Pending leave requests" 
+                icon={<ShieldCheck size={20} />}
+                iconBg="bg-rose-50 dark:bg-rose-500/10 text-rose-500"
+                onPress={() => navigate("/people/approvals")}
+              />
+            </div>
+            <div className="flex-1 min-w-[200px]">
+              <NavCard 
+                title="Performance" 
+                desc="Appraisals and goals" 
+                icon={<Target size={20} />}
+                iconBg="bg-emerald-50 dark:bg-emerald-500/10 text-emerald-500"
+                onPress={() => navigate("/people/performance")}
+              />
+            </div>
+            <div className="flex-1 min-w-[200px]">
+              <NavCard 
+                title="Timesheets" 
+                desc="Company time logs" 
+                icon={<FileSpreadsheet size={20} />}
+                iconBg="bg-indigo-50 dark:bg-indigo-500/10 text-indigo-500"
+                onPress={() => navigate("/people/timesheets")}
+              />
+            </div>
+            <div className="flex-1 min-w-[200px]">
+              <NavCard 
+                title="Organization" 
+                desc="Reporting structure" 
+                icon={<Network size={20} />}
+                iconBg="bg-violet-50 dark:bg-violet-500/10 text-violet-500"
+                onPress={() => {}}
+              />
+            </div>
           </div>
         </CardBody>
       </Card>

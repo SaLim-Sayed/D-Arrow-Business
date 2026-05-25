@@ -14,6 +14,12 @@ import {
   Progress,
   Tooltip,
   Checkbox,
+  Table,
+  TableHeader,
+  TableColumn,
+  TableBody,
+  TableRow,
+  TableCell,
 } from "@heroui/react";
 import {
   ChevronLeft,
@@ -30,7 +36,6 @@ import {
   Star,
   Package,
   Target,
-  Award,
   GraduationCap,
   Laptop,
   Smartphone,
@@ -39,16 +44,13 @@ import {
   TrendingUp,
 } from "lucide-react";
 import { motion } from "framer-motion";
-import { useEmployeesQuery, useLeaveRequestsQuery, useAssetsQuery, usePerformanceReviewsQuery } from "../hooks/use-people";
+import { useEmployeesQuery, useLeaveRequestsQuery, useAssetsQuery, useUpdateEmployeeMutation, useAttendanceQuery } from "../hooks/use-people";
 import { ApplyLeaveModal } from "../components/ApplyLeaveModal";
-
-// --- Mock data for Skills ---
-const SKILLS_DATA = [
-  { name: "React & TypeScript", level: 92 },
-  { name: "Firebase / Backend", level: 78 },
-  { name: "Product Design", level: 65 },
-  { name: "Team Leadership", level: 85 },
-];
+import { ManageSkillsModal } from "../components/ManageSkillsModal";
+import { db } from "@/lib/firebase";
+import { collection, query, orderBy, getDocs, getDoc, doc } from "firebase/firestore";
+import { useEffect } from "react";
+import { Input, Select, SelectItem, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter } from "@heroui/react";
 
 const statusColorMap: Record<string, "success" | "warning" | "danger" | "primary" | "default"> = {
   active: "success",
@@ -62,9 +64,13 @@ export default function EmployeeProfilePage() {
   const navigate = useNavigate();
   const { user } = useAuthStore();
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
+  const { isOpen: isEditOpen, onOpen: onEditOpen, onOpenChange: onEditOpenChange } = useDisclosure();
+  const { isOpen: isSkillsOpen, onOpen: onSkillsOpen, onOpenChange: onSkillsOpenChange } = useDisclosure();
   const { data: employeesResponse } = useEmployeesQuery();
   const { data: leaveRequestsResponse } = useLeaveRequestsQuery();
   const [activeTab, setActiveTab] = useState("work");
+  const updateMutation = useUpdateEmployeeMutation();
+  const [editData, setEditData] = useState({ department: "", role: "", jobTitle: "", salary: "", officeLocation: "", phoneNumber: "" });
 
   const employee = employeesResponse?.data?.find((e) => e.id === id || e.userId === id);
   const employeeRequests = leaveRequestsResponse?.data?.filter((r) => r.employeeId === employee?.userId) || [];
@@ -72,9 +78,49 @@ export default function EmployeeProfilePage() {
   const isManager = user?.role === "super_admin" || user?.role === "admin" || user?.role === "manager";
 
   const { data: assetsResponse } = useAssetsQuery();
-  const { data: performanceResponse } = usePerformanceReviewsQuery(employee?.id || "");
   const employeeAssets = assetsResponse?.data?.filter(a => a.assignedTo === employee?.id) || [];
-  const employeeReviews = performanceResponse?.data || [];
+
+  const { data: attendanceResponse, isLoading: isLoadingAttendance } = useAttendanceQuery(employee?.id || "");
+  const attendanceLogs = attendanceResponse?.data || [];
+
+  const [appraisals, setAppraisals] = useState<any[]>([]);
+  const [isLoadingAppraisals, setIsLoadingAppraisals] = useState(true);
+
+  useEffect(() => {
+    if (!employee?.userId) return;
+    const fetchAppraisals = async () => {
+      setIsLoadingAppraisals(true);
+      try {
+        const q = query(collection(db, "performance_cycles"), orderBy("createdAt", "desc"));
+        const snapshot = await getDocs(q);
+        const cyclesData = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+
+        const promises = cyclesData.map(async (cycle: any) => {
+          const docSnap = await getDoc(doc(db, "performance_cycles", cycle.id, "appraisals", employee.userId));
+          if (docSnap.exists()) {
+            return { cycleName: cycle.name, cycleType: cycle.type, cycleDate: cycle.start, id: cycle.id, ...docSnap.data() };
+          }
+          return null;
+        });
+        const results = await Promise.all(promises);
+        setAppraisals(results.filter(Boolean));
+      } catch (error) {
+        console.error("Error fetching appraisals:", error);
+      } finally {
+        setIsLoadingAppraisals(false);
+      }
+    };
+    fetchAppraisals();
+  }, [employee?.userId]);
+
+  const formatHoursToHoursMinutes = (decimalHours: number) => {
+    if (!decimalHours) return "-";
+    const hours = Math.floor(decimalHours);
+    const minutes = Math.round((decimalHours - hours) * 60);
+    if (hours === 0) return `${minutes}m`;
+    if (minutes === 0) return `${hours}h`;
+    return `${hours}h ${minutes}m`;
+  };
 
   const leaveStats = {
     total: employeeRequests.length,
@@ -106,6 +152,34 @@ export default function EmployeeProfilePage() {
     admin: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300",
     manager: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300",
     employee: "bg-default-100 text-default-700",
+  };
+
+  const handleOpenEdit = () => {
+    setEditData({
+      department: employee.department || "",
+      role: employee.role || "employee",
+      jobTitle: employee.jobTitle || "",
+      salary: employee.salary ? employee.salary.toString() : "",
+      officeLocation: employee.officeLocation || "",
+      phoneNumber: employee.phoneNumber || ""
+    });
+    onEditOpen();
+  };
+
+  const handleSaveEdit = (onClose: () => void) => {
+    updateMutation.mutate({
+      employeeId: employee.id,
+      data: {
+        department: editData.department,
+        role: editData.role,
+        jobTitle: editData.jobTitle,
+        salary: editData.salary ? Number(editData.salary) : null,
+        officeLocation: editData.officeLocation,
+        phoneNumber: editData.phoneNumber,
+      }
+    }, {
+      onSuccess: () => onClose()
+    });
   };
 
   return (
@@ -185,7 +259,7 @@ export default function EmployeeProfilePage() {
                         </Button>
                       )}
                       {isManager && (
-                        <Button color="default" variant="flat" size="sm" startContent={<ShieldCheck size={15} />} className="font-bold">
+                        <Button color="default" variant="flat" size="sm" startContent={<ShieldCheck size={15} />} className="font-bold" onPress={handleOpenEdit}>
                           Edit / Manage
                         </Button>
                       )}
@@ -223,6 +297,73 @@ export default function EmployeeProfilePage() {
       </motion.div>
 
       <ApplyLeaveModal isOpen={isOpen} onOpenChange={onOpenChange} />
+
+      {/* Edit / Manage Modal */}
+      <Modal isOpen={isEditOpen} onOpenChange={onEditOpenChange} placement="top-center">
+        <ModalContent>
+          {(onClose) => (
+            <>
+              <ModalHeader className="flex flex-col gap-1">Edit Employee Details</ModalHeader>
+              <ModalBody>
+                <div className="space-y-4 py-2">
+                  <Input
+                    label="Job Title"
+                    variant="bordered"
+                    value={editData.jobTitle}
+                    onValueChange={(val) => setEditData({ ...editData, jobTitle: val })}
+                  />
+                  <Input
+                    label="Department"
+                    variant="bordered"
+                    value={editData.department}
+                    onValueChange={(val) => setEditData({ ...editData, department: val })}
+                  />
+                  <Select
+                    label="System Role"
+                    variant="bordered"
+                    selectedKeys={[editData.role]}
+                    onSelectionChange={(keys) => setEditData({ ...editData, role: Array.from(keys)[0] as string })}
+                  >
+                    <SelectItem key="employee">Employee</SelectItem>
+                    <SelectItem key="manager">Manager</SelectItem>
+                    <SelectItem key="admin">Admin</SelectItem>
+                  </Select>
+                  <Input
+                    label="Office Location"
+                    variant="bordered"
+                    value={editData.officeLocation}
+                    onValueChange={(val) => setEditData({ ...editData, officeLocation: val })}
+                  />
+                  <Input
+                    label="Phone Number"
+                    variant="bordered"
+                    value={editData.phoneNumber}
+                    onValueChange={(val) => setEditData({ ...editData, phoneNumber: val })}
+                  />
+                  <Input
+                    type="number"
+                    label="Salary"
+                    variant="bordered"
+                    value={editData.salary}
+                    onValueChange={(val) => setEditData({ ...editData, salary: val })}
+                    startContent={<div className="pointer-events-none flex items-center"><span className="text-default-400 text-small">$</span></div>}
+                  />
+                </div>
+              </ModalBody>
+              <ModalFooter>
+                <Button color="danger" variant="flat" onPress={onClose} isDisabled={updateMutation.isPending}>
+                  Cancel
+                </Button>
+                <Button color="primary" onPress={() => handleSaveEdit(onClose)} isLoading={updateMutation.isPending}>
+                  Save Changes
+                </Button>
+              </ModalFooter>
+            </>
+          )}
+        </ModalContent>
+      </Modal>
+
+      <ManageSkillsModal isOpen={isSkillsOpen} onOpenChange={onSkillsOpenChange} employee={employee as any} />
 
       {/* === MAIN CONTENT + SIDEBAR === */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -298,28 +439,39 @@ export default function EmployeeProfilePage() {
 
                 <Tab key="skills" title={<span className="flex items-center gap-1.5"><Star size={15} />Skills</span>}>
                   <div className="p-6 space-y-5">
-                    <h4 className="font-bold text-sm flex items-center gap-2">
-                      <GraduationCap size={16} className="text-primary" />
-                      Skill Proficiency
-                    </h4>
-                    <div className="space-y-4">
-                      {SKILLS_DATA.map((skill) => (
-                        <div key={skill.name} className="space-y-1.5">
-                          <div className="flex justify-between items-center">
-                            <span className="text-sm font-bold">{skill.name}</span>
-                            <span className="text-xs font-black text-primary">{skill.level}%</span>
-                          </div>
-                          <Progress
-                            value={skill.level}
-                            color="primary"
-                            size="sm"
-                            className="w-full"
-                            aria-label={skill.name}
-                          />
-                        </div>
-                      ))}
+                    <div className="flex items-center justify-between">
+                      <h4 className="font-bold text-sm flex items-center gap-2">
+                        <GraduationCap size={16} className="text-primary" />
+                        Skill Proficiency
+                      </h4>
+                      {(isManager || isOwnProfile) && (
+                        <Button size="sm" variant="flat" onPress={onSkillsOpen} className="font-bold">
+                          Manage Skills
+                        </Button>
+                      )}
                     </div>
-                    <Divider />
+                    <div className="space-y-4">
+                      {(!employee.skills || employee.skills.length === 0) ? (
+                        <p className="text-sm text-default-500">No skills added yet.</p>
+                      ) : (
+                        employee.skills.map((skill) => (
+                          <div key={skill.name} className="space-y-1.5">
+                            <div className="flex justify-between items-center">
+                              <span className="text-sm font-bold">{skill.name}</span>
+                              <span className="text-xs font-black text-primary">{skill.level}%</span>
+                            </div>
+                            <Progress
+                              value={skill.level}
+                              color="primary"
+                              size="sm"
+                              className="w-full"
+                              aria-label={skill.name}
+                            />
+                          </div>
+                        ))
+                      )}
+                    </div>
+                    {/* <Divider />
                     <h4 className="font-bold text-sm flex items-center gap-2">
                       <Award size={16} className="text-amber-500" />
                       Education
@@ -332,7 +484,7 @@ export default function EmployeeProfilePage() {
                           <p className="text-xs text-default-500">Cairo University • 2018 – 2022</p>
                         </div>
                       </div>
-                    </div>
+                    </div> */}
                   </div>
                 </Tab>
 
@@ -369,37 +521,70 @@ export default function EmployeeProfilePage() {
                       <TrendingUp size={16} className="text-primary" />
                       Appraisal History
                     </h4>
-                    {employeeReviews.length === 0 ? (
+                    {isLoadingAppraisals ? (
+                      <p className="text-sm text-default-500 animate-pulse">Loading appraisals...</p>
+                    ) : appraisals.length === 0 ? (
                       <p className="text-sm text-default-500">No performance reviews yet.</p>
                     ) : (
-                      employeeReviews.map((review) => (
-                        <div key={review.id} className="p-4 bg-default-50 rounded-xl border border-default-100 space-y-3">
+                      appraisals.map((appraisal, idx) => (
+                        <div key={idx} className="p-4 bg-default-50 rounded-xl border border-default-100 space-y-3">
                           <div className="flex items-center justify-between">
-                            <span className="font-black text-sm">{new Date(review.date as Date | string).toLocaleDateString()}</span>
-                            <div className="flex items-center gap-1">
-                              {[1, 2, 3, 4, 5].map((s) => (
-                                <Star
-                                  key={s}
-                                  size={14}
-                                  className={s <= Math.round(review.rating) ? "text-amber-400" : "text-default-200"}
-                                  fill={s <= Math.round(review.rating) ? "currentColor" : "none"}
-                                />
-                              ))}
-                              <span className="text-xs font-black text-amber-500 ml-1">{review.rating}</span>
+                            <div>
+                              <p className="font-black text-sm">{appraisal.cycleName}</p>
+                              <p className="text-xs text-default-500">{appraisal.cycleDate ? new Date(appraisal.cycleDate).toLocaleDateString() : ''}</p>
                             </div>
-                          </div>
-                          <div className="space-y-2 mt-2">
-                            <p className="text-sm font-medium">Strengths:</p>
-                            <div className="flex flex-wrap gap-1">
-                               {review.feedback.strengths.map(s => <Chip key={s} size="sm" variant="flat" color="success">{s}</Chip>)}
+                            <div className="flex flex-col items-end">
+                              <p className="text-xl font-black text-primary">Grade {appraisal.grade || '?'}</p>
+                              <p className="text-xs font-bold text-default-600">{appraisal.points || 0} Points</p>
                             </div>
-                            <p className="text-sm font-medium mt-2">Goals:</p>
-                            <ul className="list-disc list-inside text-sm text-default-600">
-                               {review.goals.map(g => <li key={g}>{g}</li>)}
-                            </ul>
                           </div>
                         </div>
                       ))
+                    )}
+                  </div>
+                </Tab>
+
+                <Tab key="attendance" title={<span className="flex items-center gap-1.5"><Clock size={15} />Attendance</span>}>
+                  <div className="p-6 space-y-4">
+                    <h4 className="font-bold text-sm flex items-center gap-2">
+                      <Clock size={16} className="text-primary" />
+                      Daily Time Logs
+                    </h4>
+                    {isLoadingAttendance ? (
+                      <p className="text-sm text-default-500 animate-pulse">Loading attendance logs...</p>
+                    ) : attendanceLogs.length === 0 ? (
+                      <p className="text-sm text-default-500">No time logs available.</p>
+                    ) : (
+                      <Table aria-label="Attendance time logs" classNames={{ wrapper: "shadow-none border border-default-100" }}>
+                        <TableHeader>
+                          <TableColumn>DATE</TableColumn>
+                          <TableColumn>CHECK IN</TableColumn>
+                          <TableColumn>CHECK OUT</TableColumn>
+                          <TableColumn>HOURS</TableColumn>
+                          <TableColumn>STATUS</TableColumn>
+                        </TableHeader>
+                        <TableBody>
+                          {attendanceLogs.map((log) => (
+                            <TableRow key={log.id}>
+                              <TableCell className="font-medium text-sm">{new Date(log.date).toLocaleDateString()}</TableCell>
+                              <TableCell className="text-sm">
+                                {log.checkIn ? new Date(log.checkIn as any).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "-"}
+                              </TableCell>
+                              <TableCell className="text-sm">
+                                {log.checkOut ? new Date(log.checkOut as any).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "-"}
+                              </TableCell>
+                              <TableCell className="font-bold text-sm">
+                                {log.totalHours ? formatHoursToHoursMinutes(log.totalHours) : "-"}
+                              </TableCell>
+                              <TableCell>
+                                <Chip size="sm" variant="flat" color={log.status === 'present' ? 'success' : log.status === 'late' ? 'warning' : 'danger'} className="capitalize font-bold">
+                                  {log.status.replace('-', ' ')}
+                                </Chip>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
                     )}
                   </div>
                 </Tab>
