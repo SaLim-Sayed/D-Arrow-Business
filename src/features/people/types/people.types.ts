@@ -32,6 +32,7 @@ export interface Employee {
   currency?: string;
   onboardingTasks?: ChecklistItem[];
   offboardingTasks?: ChecklistItem[];
+  skills?: { name: string; level: number }[];
 }
 
 export interface LeaveRequest {

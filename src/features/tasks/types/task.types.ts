@@ -4,6 +4,32 @@ export type TaskStatus = "todo" | "in_progress" | "in_review" | "done";
 export type TaskPriority = "low" | "medium" | "high" | "urgent";
 export type TaskType = "task" | "epic" | "subtask";
 
+export interface TaskTimeLog {
+  id: string;
+  userId: string;
+  hours: number;
+  minutes: number;
+  description: string;
+  date: string;
+}
+
+export type TaskHistoryAction =
+  | "created"
+  | "updated"
+  | "attachment_added"
+  | "time_logged";
+
+export interface TaskHistoryEntry {
+  id: string;
+  action: TaskHistoryAction;
+  field?: string;
+  oldValue?: string | null;
+  newValue?: string | null;
+  userId: string;
+  userName?: string;
+  timestamp: string;
+}
+
 export interface Sprint {
   id: string;
   name: string;
@@ -30,11 +56,14 @@ export interface Task {
   reporter?: User | null;
   tags: string[];
   dueDate: string | null;
+  startDate?: string | null;
   createdAt: string;
   updatedAt: string;
   completedAt: string | null;
   commentsCount: number;
   attachments?: string[];
+  timeLogs?: TaskTimeLog[];
+  history?: TaskHistoryEntry[];
 }
 
 export interface CreateTaskDTO {
@@ -48,7 +77,9 @@ export interface CreateTaskDTO {
   assigneeId?: string | null;
   tags?: string[];
   dueDate?: string | null;
+  startDate?: string | null;
   attachments?: string[];
+  timeLogs?: TaskTimeLog[];
 }
 
 export interface UpdateTaskDTO {
@@ -62,7 +93,9 @@ export interface UpdateTaskDTO {
   assigneeId?: string | null;
   tags?: string[];
   dueDate?: string | null;
+  startDate?: string | null;
   attachments?: string[];
+  timeLogs?: TaskTimeLog[];
 }
 
 export interface TaskFilters {

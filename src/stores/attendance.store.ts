@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { db } from "@/lib/firebase";
 import { collection, query, where, getDocs, getDoc, addDoc, serverTimestamp } from "firebase/firestore";
 import { useAuthStore } from "./auth.store";
+import { AttendanceNotificationService } from "@/features/people/api/attendance-notifications.service";
 
 interface AttendanceState {
   liveSeconds: number;
@@ -78,6 +79,7 @@ export const useAttendanceStore = create<AttendanceState>((set, get) => ({
     
     set({ isShiftLoading: true });
     try {
+      const wasOnBreak = get().isOnBreak;
       const res = await PeopleService.checkIn(companyId, finalEmployeeId);
       set({ 
         isOnBreak: false, 
@@ -87,6 +89,15 @@ export const useAttendanceStore = create<AttendanceState>((set, get) => ({
       get().startTimer();
       await get().syncWithDb(companyId, userId);
       toast.success("Shift started!");
+
+      const authUser = useAuthStore.getState().user;
+      if (authUser) {
+        if (wasOnBreak) {
+          AttendanceNotificationService.notifyWorkResumed(companyId, authUser.name);
+        } else {
+          AttendanceNotificationService.notifyWorkStarted(companyId, authUser.name);
+        }
+      }
     } catch (error) {
       console.error("Check-in error:", error);
       toast.error("Failed to check in.");
@@ -116,10 +127,16 @@ export const useAttendanceStore = create<AttendanceState>((set, get) => ({
     if (!companyId || !finalEmployeeId || !attendanceId) return;
     set({ isShiftLoading: true });
     try {
+      const totalSeconds = get().accumulatedSeconds + get().liveSeconds;
       await PeopleService.checkOut(companyId, attendanceId, finalEmployeeId, "off-duty");
       get().stopTimer();
       await get().syncWithDb(companyId, userId);
       toast.success("Shift completed.");
+
+      const authUser = useAuthStore.getState().user;
+      if (authUser) {
+        AttendanceNotificationService.notifyShiftCompleted(companyId, authUser.name, totalSeconds);
+      }
     } catch (error) {
       toast.error("Failed to check out");
     } finally {

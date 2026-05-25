@@ -41,7 +41,7 @@ export function SecuritySection({
           isDisabled={!currentPassword || !newPassword || newPassword !== confirmPassword || isChangingPassword}
           className="font-bold rounded-2xl"
         >
-          Update Password
+          {tp("updatePassword")}
         </Button>
       </div>
       <CardBody className="p-8 space-y-6">

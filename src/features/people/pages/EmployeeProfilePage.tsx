@@ -14,6 +14,12 @@ import {
   Progress,
   Tooltip,
   Checkbox,
+  Table,
+  TableHeader,
+  TableColumn,
+  TableBody,
+  TableRow,
+  TableCell,
 } from "@heroui/react";
 import {
   ChevronLeft,
@@ -30,7 +36,6 @@ import {
   Star,
   Package,
   Target,
-  Award,
   GraduationCap,
   Laptop,
   Smartphone,
@@ -39,16 +44,14 @@ import {
   TrendingUp,
 } from "lucide-react";
 import { motion } from "framer-motion";
-import { useEmployeesQuery, useLeaveRequestsQuery, useAssetsQuery, usePerformanceReviewsQuery } from "../hooks/use-people";
+import { useEmployeesQuery, useLeaveRequestsQuery, useAssetsQuery, useUpdateEmployeeMutation, useAttendanceQuery } from "../hooks/use-people";
 import { ApplyLeaveModal } from "../components/ApplyLeaveModal";
-
-// --- Mock data for Skills ---
-const SKILLS_DATA = [
-  { name: "React & TypeScript", level: 92 },
-  { name: "Firebase / Backend", level: 78 },
-  { name: "Product Design", level: 65 },
-  { name: "Team Leadership", level: 85 },
-];
+import { ManageSkillsModal } from "../components/ManageSkillsModal";
+import { db } from "@/lib/firebase";
+import { collection, query, orderBy, getDocs, getDoc, doc } from "firebase/firestore";
+import { useEffect } from "react";
+import { Input, Select, SelectItem, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter } from "@heroui/react";
+import { useTranslation } from "react-i18next";
 
 const statusColorMap: Record<string, "success" | "warning" | "danger" | "primary" | "default"> = {
   active: "success",
@@ -58,13 +61,18 @@ const statusColorMap: Record<string, "success" | "warning" | "danger" | "primary
 };
 
 export default function EmployeeProfilePage() {
+  const { t } = useTranslation("people");
   const { id } = useParams();
   const navigate = useNavigate();
   const { user } = useAuthStore();
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
+  const { isOpen: isEditOpen, onOpen: onEditOpen, onOpenChange: onEditOpenChange } = useDisclosure();
+  const { isOpen: isSkillsOpen, onOpen: onSkillsOpen, onOpenChange: onSkillsOpenChange } = useDisclosure();
   const { data: employeesResponse } = useEmployeesQuery();
   const { data: leaveRequestsResponse } = useLeaveRequestsQuery();
   const [activeTab, setActiveTab] = useState("work");
+  const updateMutation = useUpdateEmployeeMutation();
+  const [editData, setEditData] = useState({ department: "", role: "", jobTitle: "", salary: "", officeLocation: "", phoneNumber: "" });
 
   const employee = employeesResponse?.data?.find((e) => e.id === id || e.userId === id);
   const employeeRequests = leaveRequestsResponse?.data?.filter((r) => r.employeeId === employee?.userId) || [];
@@ -72,9 +80,49 @@ export default function EmployeeProfilePage() {
   const isManager = user?.role === "super_admin" || user?.role === "admin" || user?.role === "manager";
 
   const { data: assetsResponse } = useAssetsQuery();
-  const { data: performanceResponse } = usePerformanceReviewsQuery(employee?.id || "");
   const employeeAssets = assetsResponse?.data?.filter(a => a.assignedTo === employee?.id) || [];
-  const employeeReviews = performanceResponse?.data || [];
+
+  const { data: attendanceResponse, isLoading: isLoadingAttendance } = useAttendanceQuery(employee?.id || "");
+  const attendanceLogs = attendanceResponse?.data || [];
+
+  const [appraisals, setAppraisals] = useState<any[]>([]);
+  const [isLoadingAppraisals, setIsLoadingAppraisals] = useState(true);
+
+  useEffect(() => {
+    if (!employee?.userId) return;
+    const fetchAppraisals = async () => {
+      setIsLoadingAppraisals(true);
+      try {
+        const q = query(collection(db, "performance_cycles"), orderBy("createdAt", "desc"));
+        const snapshot = await getDocs(q);
+        const cyclesData = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+
+        const promises = cyclesData.map(async (cycle: any) => {
+          const docSnap = await getDoc(doc(db, "performance_cycles", cycle.id, "appraisals", employee.userId));
+          if (docSnap.exists()) {
+            return { cycleName: cycle.name, cycleType: cycle.type, cycleDate: cycle.start, id: cycle.id, ...docSnap.data() };
+          }
+          return null;
+        });
+        const results = await Promise.all(promises);
+        setAppraisals(results.filter(Boolean));
+      } catch (error) {
+        console.error("Error fetching appraisals:", error);
+      } finally {
+        setIsLoadingAppraisals(false);
+      }
+    };
+    fetchAppraisals();
+  }, [employee?.userId]);
+
+  const formatHoursToHoursMinutes = (decimalHours: number) => {
+    if (!decimalHours) return "-";
+    const hours = Math.floor(decimalHours);
+    const minutes = Math.round((decimalHours - hours) * 60);
+    if (hours === 0) return `${minutes}m`;
+    if (minutes === 0) return `${hours}h`;
+    return `${hours}h ${minutes}m`;
+  };
 
   const leaveStats = {
     total: employeeRequests.length,
@@ -90,22 +138,50 @@ export default function EmployeeProfilePage() {
           <UserIcon size={48} className="text-primary/50" />
         </div>
         <div className="text-center space-y-2">
-          <h2 className="text-xl font-black text-foreground">Employee Not Found</h2>
-          <p className="text-default-400 font-medium text-sm max-w-xs">The employee you're looking for doesn't exist or may have been removed.</p>
+          <h2 className="text-xl font-black text-foreground">{t("profile.not_found")}</h2>
+          <p className="text-default-400 font-medium text-sm max-w-xs">{t("profile.not_found_desc")}</p>
         </div>
         <Button variant="shadow" color="primary" onPress={() => navigate("/people")} className="font-bold rounded-xl">
-          Back to Directory
+          {t("profile.back_to_directory")}
         </Button>
       </div>
     );
   }
 
-  const initials = `${employee.firstName[0]}${employee.lastName[0]}`.toUpperCase();
+  const initials = `${employee.firstName?.charAt(0) || ""}${employee.lastName?.charAt(0) || ""}`.toUpperCase();
   const roleColorMap: Record<string, string> = {
     super_admin: "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300",
     admin: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300",
     manager: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300",
     employee: "bg-default-100 text-default-700",
+  };
+
+  const handleOpenEdit = () => {
+    setEditData({
+      department: employee.department || "",
+      role: employee.role || "employee",
+      jobTitle: employee.jobTitle || "",
+      salary: employee.salary ? employee.salary.toString() : "",
+      officeLocation: employee.officeLocation || "",
+      phoneNumber: employee.phoneNumber || ""
+    });
+    onEditOpen();
+  };
+
+  const handleSaveEdit = (onClose: () => void) => {
+    updateMutation.mutate({
+      employeeId: employee.id,
+      data: {
+        department: editData.department,
+        role: editData.role,
+        jobTitle: editData.jobTitle,
+        salary: editData.salary ? Number(editData.salary) : null,
+        officeLocation: editData.officeLocation,
+        phoneNumber: editData.phoneNumber,
+      }
+    }, {
+      onSuccess: () => onClose()
+    });
   };
 
   return (
@@ -116,7 +192,7 @@ export default function EmployeeProfilePage() {
         onPress={() => navigate("/people")}
         className="font-bold text-default-500"
       >
-        Back to Directory
+        {t("profile.back_to_directory")}
       </Button>
 
       {/* === PROFILE HEADER === */}
@@ -181,15 +257,15 @@ export default function EmployeeProfilePage() {
                     <div className="flex flex-wrap gap-2">
                       {isOwnProfile && (
                         <Button color="primary" variant="shadow" size="sm" startContent={<CalendarDays size={15} />} onPress={onOpen} className="font-bold shadow-lg shadow-primary/25">
-                          Apply Leave
+                          {t("profile.apply_leave")}
                         </Button>
                       )}
                       {isManager && (
-                        <Button color="default" variant="flat" size="sm" startContent={<ShieldCheck size={15} />} className="font-bold">
-                          Edit / Manage
+                        <Button color="default" variant="flat" size="sm" startContent={<ShieldCheck size={15} />} className="font-bold" onPress={handleOpenEdit}>
+                          {t("profile.edit_manage")}
                         </Button>
                       )}
-                      <Tooltip content="Send Email">
+                      <Tooltip content={t("profile.send_email")}>
                         <Button isIconOnly variant="flat" size="sm">
                           <Mail size={15} />
                         </Button>
@@ -202,10 +278,10 @@ export default function EmployeeProfilePage() {
               {/* Quick Stats Bar */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 {[
-                  { label: "Total Leaves", value: leaveStats.total, color: "text-foreground", bg: "bg-default-50" },
-                  { label: "Approved", value: leaveStats.approved, color: "text-success", bg: "bg-success/5" },
-                  { label: "Pending", value: leaveStats.pending, color: "text-warning", bg: "bg-warning/5" },
-                  { label: "Rejected", value: leaveStats.rejected, color: "text-danger", bg: "bg-danger/5" },
+                  { label: t("profile.total_leaves"), value: leaveStats.total, color: "text-foreground", bg: "bg-default-50" },
+                  { label: t("profile.approved"), value: leaveStats.approved, color: "text-success", bg: "bg-success/5" },
+                  { label: t("profile.pending"), value: leaveStats.pending, color: "text-warning", bg: "bg-warning/5" },
+                  { label: t("profile.rejected"), value: leaveStats.rejected, color: "text-danger", bg: "bg-danger/5" },
                 ].map((stat) => (
                   <motion.div 
                     key={stat.label} 
@@ -223,6 +299,73 @@ export default function EmployeeProfilePage() {
       </motion.div>
 
       <ApplyLeaveModal isOpen={isOpen} onOpenChange={onOpenChange} />
+
+      {/* Edit / Manage Modal */}
+      <Modal isOpen={isEditOpen} onOpenChange={onEditOpenChange} placement="top-center">
+        <ModalContent>
+          {(onClose) => (
+            <>
+              <ModalHeader className="flex flex-col gap-1">Edit Employee Details</ModalHeader>
+              <ModalBody>
+                <div className="space-y-4 py-2">
+                  <Input
+                    label="Job Title"
+                    variant="bordered"
+                    value={editData.jobTitle}
+                    onValueChange={(val) => setEditData({ ...editData, jobTitle: val })}
+                  />
+                  <Input
+                    label="Department"
+                    variant="bordered"
+                    value={editData.department}
+                    onValueChange={(val) => setEditData({ ...editData, department: val })}
+                  />
+                  <Select
+                    label="System Role"
+                    variant="bordered"
+                    selectedKeys={[editData.role]}
+                    onSelectionChange={(keys) => setEditData({ ...editData, role: Array.from(keys)[0] as string })}
+                  >
+                    <SelectItem key="employee">Employee</SelectItem>
+                    <SelectItem key="manager">Manager</SelectItem>
+                    <SelectItem key="admin">Admin</SelectItem>
+                  </Select>
+                  <Input
+                    label="Office Location"
+                    variant="bordered"
+                    value={editData.officeLocation}
+                    onValueChange={(val) => setEditData({ ...editData, officeLocation: val })}
+                  />
+                  <Input
+                    label="Phone Number"
+                    variant="bordered"
+                    value={editData.phoneNumber}
+                    onValueChange={(val) => setEditData({ ...editData, phoneNumber: val })}
+                  />
+                  <Input
+                    type="number"
+                    label="Salary"
+                    variant="bordered"
+                    value={editData.salary}
+                    onValueChange={(val) => setEditData({ ...editData, salary: val })}
+                    startContent={<div className="pointer-events-none flex items-center"><span className="text-default-400 text-small">$</span></div>}
+                  />
+                </div>
+              </ModalBody>
+              <ModalFooter>
+                <Button color="danger" variant="flat" onPress={onClose} isDisabled={updateMutation.isPending}>
+                  Cancel
+                </Button>
+                <Button color="primary" onPress={() => handleSaveEdit(onClose)} isLoading={updateMutation.isPending}>
+                  Save Changes
+                </Button>
+              </ModalFooter>
+            </>
+          )}
+        </ModalContent>
+      </Modal>
+
+      <ManageSkillsModal isOpen={isSkillsOpen} onOpenChange={onSkillsOpenChange} employee={employee as any} />
 
       {/* === MAIN CONTENT + SIDEBAR === */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -242,27 +385,25 @@ export default function EmployeeProfilePage() {
                   tabContent: "group-data-[selected=true]:text-primary font-bold text-sm",
                 }}
               >
-                <Tab key="work" title={<span className="flex items-center gap-1.5"><Briefcase size={15} />Work</span>}>
+                <Tab key="work" title={<span className="flex items-center gap-1.5"><Briefcase size={15} />{t("profile.tab_work")}</span>}>
                   <div className="p-6 space-y-6">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                      <InfoItem icon={<Calendar size={16} />} label="Joining Date" value={new Date(employee.joiningDate as any).toLocaleDateString()} />
-                      <InfoItem icon={<Briefcase size={16} />} label="Employment Type" value="Full-time" />
-                      <InfoItem icon={<ShieldCheck size={16} />} label="System Role" value={employee.role ? employee.role.replace("_", " ") : "Employee"} />
-                      <InfoItem icon={<UserIcon size={16} />} label="Reporting To" value="Sarah (CEO)" />
+                      <InfoItem icon={<Calendar size={16} />} label={t("profile.joined")} value={new Date(employee.joiningDate as any).toLocaleDateString()} />
+                      <InfoItem icon={<Briefcase size={16} />} label={t("profile.employment_type")} value={t("profile.full_time")} />
+                      <InfoItem icon={<ShieldCheck size={16} />} label={t("profile.role")} value={employee.role ? employee.role.replace("_", " ") : "Employee"} />
+                      <InfoItem icon={<UserIcon size={16} />} label={t("profile.reporting_to")} value="Sarah (CEO)" />
                       {employee.salary && (
-                        <InfoItem icon={<TrendingUp size={16} />} label="Salary" value={`${employee.currency || "USD"} ${employee.salary.toLocaleString()}`} />
+                        <InfoItem icon={<TrendingUp size={16} />} label={t("profile.salary")} value={`${employee.currency || "USD"} ${employee.salary.toLocaleString()}`} />
                       )}
                     </div>
                     <Divider />
                     <div className="space-y-3">
                       <h4 className="font-bold flex items-center gap-2 text-sm">
                         <FileText size={16} className="text-primary" />
-                        Experience Summary
+                        {t("profile.experience_summary")}
                       </h4>
                       <p className="text-sm text-default-600 leading-relaxed">
-                        Currently serving as <strong>{employee.jobTitle}</strong> in the <strong>{employee.department}</strong> department.
-                        Responsible for leading key initiatives and collaborating across teams to deliver high-quality business outcomes.
-                        Demonstrates strong ownership and consistently delivers results under tight timelines.
+                        {t("profile.experience_desc", { jobTitle: employee.jobTitle, department: employee.department })}
                       </p>
                     </div>
                     {employee.permissions && employee.permissions.length > 0 && (
@@ -271,7 +412,7 @@ export default function EmployeeProfilePage() {
                         <div className="space-y-3">
                           <h4 className="font-bold text-sm flex items-center gap-2">
                             <ShieldCheck size={16} className="text-violet-500" />
-                            Permissions
+                            {t("profile.permissions")}
                           </h4>
                           <div className="flex flex-wrap gap-2">
                             {employee.permissions.map((p) => (
@@ -286,7 +427,7 @@ export default function EmployeeProfilePage() {
                   </div>
                 </Tab>
 
-                <Tab key="personal" title={<span className="flex items-center gap-1.5"><UserIcon size={15} />Personal</span>}>
+                <Tab key="personal" title={<span className="flex items-center gap-1.5"><UserIcon size={15} />{t("profile.tab_personal")}</span>}>
                   <div className="p-6 space-y-5">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                       <InfoItem icon={<Mail size={16} />} label="Email Address" value={employee.email} />
@@ -296,30 +437,41 @@ export default function EmployeeProfilePage() {
                   </div>
                 </Tab>
 
-                <Tab key="skills" title={<span className="flex items-center gap-1.5"><Star size={15} />Skills</span>}>
+                <Tab key="skills" title={<span className="flex items-center gap-1.5"><Star size={15} />{t("profile.tab_skills")}</span>}>
                   <div className="p-6 space-y-5">
-                    <h4 className="font-bold text-sm flex items-center gap-2">
-                      <GraduationCap size={16} className="text-primary" />
-                      Skill Proficiency
-                    </h4>
-                    <div className="space-y-4">
-                      {SKILLS_DATA.map((skill) => (
-                        <div key={skill.name} className="space-y-1.5">
-                          <div className="flex justify-between items-center">
-                            <span className="text-sm font-bold">{skill.name}</span>
-                            <span className="text-xs font-black text-primary">{skill.level}%</span>
-                          </div>
-                          <Progress
-                            value={skill.level}
-                            color="primary"
-                            size="sm"
-                            className="w-full"
-                            aria-label={skill.name}
-                          />
-                        </div>
-                      ))}
+                    <div className="flex items-center justify-between">
+                      <h4 className="font-bold text-sm flex items-center gap-2">
+                        <GraduationCap size={16} className="text-primary" />
+                        Skill Proficiency
+                      </h4>
+                      {(isManager || isOwnProfile) && (
+                        <Button size="sm" variant="flat" onPress={onSkillsOpen} className="font-bold">
+                          Manage Skills
+                        </Button>
+                      )}
                     </div>
-                    <Divider />
+                    <div className="space-y-4">
+                      {(!employee.skills || employee.skills.length === 0) ? (
+                        <p className="text-sm text-default-500">No skills added yet.</p>
+                      ) : (
+                        employee.skills.map((skill) => (
+                          <div key={skill.name} className="space-y-1.5">
+                            <div className="flex justify-between items-center">
+                              <span className="text-sm font-bold">{skill.name}</span>
+                              <span className="text-xs font-black text-primary">{skill.level}%</span>
+                            </div>
+                            <Progress
+                              value={skill.level}
+                              color="primary"
+                              size="sm"
+                              className="w-full"
+                              aria-label={skill.name}
+                            />
+                          </div>
+                        ))
+                      )}
+                    </div>
+                    {/* <Divider />
                     <h4 className="font-bold text-sm flex items-center gap-2">
                       <Award size={16} className="text-amber-500" />
                       Education
@@ -332,11 +484,11 @@ export default function EmployeeProfilePage() {
                           <p className="text-xs text-default-500">Cairo University • 2018 – 2022</p>
                         </div>
                       </div>
-                    </div>
+                    </div> */}
                   </div>
                 </Tab>
 
-                <Tab key="assets" title={<span className="flex items-center gap-1.5"><Package size={15} />Assets</span>}>
+                <Tab key="assets" title={<span className="flex items-center gap-1.5"><Package size={15} />{t("profile.tab_assets")}</span>}>
                   <div className="p-6 space-y-4">
                     <h4 className="font-bold text-sm flex items-center gap-2">
                       <Package size={16} className="text-primary" />
@@ -363,40 +515,28 @@ export default function EmployeeProfilePage() {
                   </div>
                 </Tab>
 
-                <Tab key="performance" title={<span className="flex items-center gap-1.5"><Target size={15} />Performance</span>}>
+                <Tab key="performance" title={<span className="flex items-center gap-1.5"><Target size={15} />{t("profile.tab_performance")}</span>}>
                   <div className="p-6 space-y-4">
                     <h4 className="font-bold text-sm flex items-center gap-2">
                       <TrendingUp size={16} className="text-primary" />
                       Appraisal History
                     </h4>
-                    {employeeReviews.length === 0 ? (
+                    {isLoadingAppraisals ? (
+                      <p className="text-sm text-default-500 animate-pulse">Loading appraisals...</p>
+                    ) : appraisals.length === 0 ? (
                       <p className="text-sm text-default-500">No performance reviews yet.</p>
                     ) : (
-                      employeeReviews.map((review) => (
-                        <div key={review.id} className="p-4 bg-default-50 rounded-xl border border-default-100 space-y-3">
+                      appraisals.map((appraisal, idx) => (
+                        <div key={idx} className="p-4 bg-default-50 rounded-xl border border-default-100 space-y-3">
                           <div className="flex items-center justify-between">
-                            <span className="font-black text-sm">{new Date(review.date as Date | string).toLocaleDateString()}</span>
-                            <div className="flex items-center gap-1">
-                              {[1, 2, 3, 4, 5].map((s) => (
-                                <Star
-                                  key={s}
-                                  size={14}
-                                  className={s <= Math.round(review.rating) ? "text-amber-400" : "text-default-200"}
-                                  fill={s <= Math.round(review.rating) ? "currentColor" : "none"}
-                                />
-                              ))}
-                              <span className="text-xs font-black text-amber-500 ml-1">{review.rating}</span>
+                            <div>
+                              <p className="font-black text-sm">{appraisal.cycleName}</p>
+                              <p className="text-xs text-default-500">{appraisal.cycleDate ? new Date(appraisal.cycleDate).toLocaleDateString() : ''}</p>
                             </div>
-                          </div>
-                          <div className="space-y-2 mt-2">
-                            <p className="text-sm font-medium">Strengths:</p>
-                            <div className="flex flex-wrap gap-1">
-                               {review.feedback.strengths.map(s => <Chip key={s} size="sm" variant="flat" color="success">{s}</Chip>)}
+                            <div className="flex flex-col items-end">
+                              <p className="text-xl font-black text-primary">Grade {appraisal.grade || '?'}</p>
+                              <p className="text-xs font-bold text-default-600">{appraisal.points || 0} Points</p>
                             </div>
-                            <p className="text-sm font-medium mt-2">Goals:</p>
-                            <ul className="list-disc list-inside text-sm text-default-600">
-                               {review.goals.map(g => <li key={g}>{g}</li>)}
-                            </ul>
                           </div>
                         </div>
                       ))
@@ -404,7 +544,52 @@ export default function EmployeeProfilePage() {
                   </div>
                 </Tab>
 
-                <Tab key="leaves" title={<span className="flex items-center gap-1.5"><CalendarDays size={15} />Leaves</span>}>
+                <Tab key="attendance" title={<span className="flex items-center gap-1.5"><Clock size={15} />{t("profile.tab_attendance")}</span>}>
+                  <div className="p-6 space-y-4">
+                    <h4 className="font-bold text-sm flex items-center gap-2">
+                      <Clock size={16} className="text-primary" />
+                      Daily Time Logs
+                    </h4>
+                    {isLoadingAttendance ? (
+                      <p className="text-sm text-default-500 animate-pulse">Loading attendance logs...</p>
+                    ) : attendanceLogs.length === 0 ? (
+                      <p className="text-sm text-default-500">No time logs available.</p>
+                    ) : (
+                      <Table aria-label="Attendance time logs" classNames={{ wrapper: "shadow-none border border-default-100" }}>
+                        <TableHeader>
+                          <TableColumn>DATE</TableColumn>
+                          <TableColumn>CHECK IN</TableColumn>
+                          <TableColumn>CHECK OUT</TableColumn>
+                          <TableColumn>HOURS</TableColumn>
+                          <TableColumn>STATUS</TableColumn>
+                        </TableHeader>
+                        <TableBody>
+                          {attendanceLogs.map((log) => (
+                            <TableRow key={log.id}>
+                              <TableCell className="font-medium text-sm">{new Date(log.date).toLocaleDateString()}</TableCell>
+                              <TableCell className="text-sm">
+                                {log.checkIn ? new Date(log.checkIn as any).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "-"}
+                              </TableCell>
+                              <TableCell className="text-sm">
+                                {log.checkOut ? new Date(log.checkOut as any).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "-"}
+                              </TableCell>
+                              <TableCell className="font-bold text-sm">
+                                {log.totalHours ? formatHoursToHoursMinutes(log.totalHours) : "-"}
+                              </TableCell>
+                              <TableCell>
+                                <Chip size="sm" variant="flat" color={log.status === 'present' ? 'success' : log.status === 'late' ? 'warning' : 'danger'} className="capitalize font-bold">
+                                  {log.status.replace('-', ' ')}
+                                </Chip>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    )}
+                  </div>
+                </Tab>
+
+                <Tab key="leaves" title={<span className="flex items-center gap-1.5"><CalendarDays size={15} />{t("profile.tab_leaves")}</span>}>
                   <div className="p-6 space-y-4">
                     {employeeRequests.length === 0 ? (
                       <div className="flex flex-col items-center justify-center py-10 gap-3">
@@ -459,7 +644,7 @@ export default function EmployeeProfilePage() {
           <Card className="border border-default-100/60 shadow-sm rounded-2xl overflow-hidden">
             <div className="h-1 bg-gradient-to-r from-primary/30 to-violet-500/10" />
             <CardBody className="p-5 space-y-4">
-              <h4 className="font-black text-[10px] text-default-400 uppercase tracking-[0.15em]">Employee Status</h4>
+              <h4 className="font-black text-[10px] text-default-400 uppercase tracking-[0.15em]">{t("profile.status")}</h4>
               <Chip
                 color={statusColorMap[employee.status] || "default"}
                 variant="flat"
@@ -470,15 +655,15 @@ export default function EmployeeProfilePage() {
               <Divider />
               <div className="space-y-4">
                 <div>
-                  <p className="text-[10px] font-bold text-default-400 uppercase tracking-widest mb-1">Employee ID</p>
+                  <p className="text-[10px] font-bold text-default-400 uppercase tracking-widest mb-1">{t("profile.employee_id")}</p>
                   <p className="font-mono text-sm font-black bg-default-50 inline-block px-2.5 py-1 rounded-lg">EMP-{employee.id.slice(0, 8).toUpperCase()}</p>
                 </div>
                 <div>
-                  <p className="text-[10px] font-bold text-default-400 uppercase tracking-widest mb-1">Department</p>
+                  <p className="text-[10px] font-bold text-default-400 uppercase tracking-widest mb-1">{t("profile.department")}</p>
                   <p className="text-sm font-bold">{employee.department}</p>
                 </div>
                 <div>
-                  <p className="text-[10px] font-bold text-default-400 uppercase tracking-widest mb-1">System Role</p>
+                  <p className="text-[10px] font-bold text-default-400 uppercase tracking-widest mb-1">{t("profile.role")}</p>
                   <p className="text-sm font-bold capitalize">{(employee.role || "employee").replace("_", " ")}</p>
                 </div>
               </div>
@@ -505,7 +690,7 @@ export default function EmployeeProfilePage() {
           {/* Contact Card */}
           <Card className="border border-default-100/60 shadow-sm rounded-2xl">
             <CardBody className="p-5 space-y-3">
-              <h4 className="font-black text-[10px] text-default-400 uppercase tracking-[0.15em]">Contact</h4>
+              <h4 className="font-black text-[10px] text-default-400 uppercase tracking-[0.15em]">{t("profile.contact")}</h4>
               <a href={`mailto:${employee.email}`} className="flex items-center gap-2.5 text-sm text-primary font-bold hover:underline group">
                 <div className="p-1.5 bg-primary/10 rounded-lg group-hover:bg-primary/15 transition-colors">
                   <Mail size={13} />
@@ -534,12 +719,12 @@ export default function EmployeeProfilePage() {
           {/* Quick Stats */}
           <Card className="border border-default-100/60 shadow-sm rounded-2xl">
             <CardBody className="p-5 space-y-3">
-              <h4 className="font-black text-[10px] text-default-400 uppercase tracking-[0.15em]">Leave Summary</h4>
+              <h4 className="font-black text-[10px] text-default-400 uppercase tracking-[0.15em]">{t("profile.leave_summary")}</h4>
               {[
-                { label: "Total Requests", value: leaveStats.total, color: "text-foreground" },
-                { label: "Approved", value: leaveStats.approved, color: "text-success" },
-                { label: "Pending", value: leaveStats.pending, color: "text-warning" },
-                { label: "Rejected", value: leaveStats.rejected, color: "text-danger" },
+                { label: t("profile.total_requests"), value: leaveStats.total, color: "text-foreground" },
+                { label: t("profile.approved"), value: leaveStats.approved, color: "text-success" },
+                { label: t("profile.pending"), value: leaveStats.pending, color: "text-warning" },
+                { label: t("profile.rejected"), value: leaveStats.rejected, color: "text-danger" },
               ].map((s) => (
                 <div key={s.label} className="flex items-center justify-between">
                   <span className="text-xs font-bold text-default-500">{s.label}</span>

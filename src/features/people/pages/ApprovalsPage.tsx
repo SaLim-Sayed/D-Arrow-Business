@@ -19,8 +19,10 @@ import { useAuthStore } from "@/stores/auth.store";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
 import { QUERY_KEYS } from "@/lib/constants";
+import { useTranslation } from "react-i18next";
 
 export function ApprovalsPage() {
+  const { t } = useTranslation("people");
   
   const { companyId } = useCompany();
   const { user } = useAuthStore();
@@ -34,27 +36,27 @@ export function ApprovalsPage() {
     if (!companyId || !user) return;
     try {
       await PeopleService.updateLeaveRequestStatus(companyId, requestId, status, user.id);
-      toast.success(`Request ${status} successfully`);
+      toast.success(t(`approvals.msg_${status}_success`));
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.people.leaveRequests(companyId) });
     } catch (error) {
-      toast.error("Failed to update request");
+      toast.error(t("approvals.msg_update_error"));
     }
   };
 
   const columns = [
-    { name: "EMPLOYEE", uid: "employee" },
-    { name: "LEAVE TYPE", uid: "type" },
-    { name: "DURATION", uid: "duration" },
-    { name: "REASON", uid: "reason" },
-    { name: "ACTIONS", uid: "actions" },
+    { name: t("approvals.col_employee") || "EMPLOYEE", uid: "employee" },
+    { name: t("approvals.col_type") || "LEAVE TYPE", uid: "type" },
+    { name: t("approvals.col_duration") || "DURATION", uid: "duration" },
+    { name: t("approvals.col_reason") || "REASON", uid: "reason" },
+    { name: t("approvals.col_actions") || "ACTIONS", uid: "actions" },
   ];
 
   if (!isManager) {
     return (
       <div className="container mx-auto p-6 flex flex-col items-center justify-center h-[60vh] gap-4">
         <X size={48} className="text-danger" />
-        <h2 className="text-2xl font-bold">Access Denied</h2>
-        <p className="text-default-500">You do not have permission to view approvals.</p>
+        <h2 className="text-2xl font-bold">{t("approvals.access_denied")}</h2>
+        <p className="text-default-500">{t("approvals.no_permission")}</p>
       </div>
     );
   }
@@ -64,10 +66,10 @@ export function ApprovalsPage() {
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <h1 className="text-3xl font-black tracking-tight text-foreground">
-            Approvals
+            {t("approvals.title")}
           </h1>
           <p className="text-default-500 font-medium">
-            Review and manage pending requests from your team.
+            {t("approvals.subtitle")}
           </p>
         </div>
       </div>
@@ -75,7 +77,7 @@ export function ApprovalsPage() {
       <div className="space-y-4">
         <h2 className="text-xl font-bold flex items-center gap-2">
           <Bell size={20} className="text-primary" />
-          Pending Leave Requests
+          {t("approvals.pending_requests")}
         </h2>
 
         <Table 
@@ -94,7 +96,7 @@ export function ApprovalsPage() {
               </TableColumn>
             )}
           </TableHeader>
-          <TableBody items={pendingRequests} emptyContent="No pending requests to approve">
+          <TableBody items={pendingRequests} emptyContent={t("approvals.no_pending")}>
             {(item) => (
               <TableRow key={item.id} className="border-b border-default-50 last:border-0 hover:bg-default-50/50 transition-colors">
                 {(columnKey) => (
@@ -124,7 +126,7 @@ export function ApprovalsPage() {
                       </p>
                     ) : (
                       <div className="flex items-center justify-center gap-2">
-                        <Tooltip content="Approve" color="success">
+                        <Tooltip content={t("approvals.approve")} color="success">
                           <Button 
                             isIconOnly 
                             size="sm" 
@@ -135,7 +137,7 @@ export function ApprovalsPage() {
                             <Check size={18} />
                           </Button>
                         </Tooltip>
-                        <Tooltip content="Reject" color="danger">
+                        <Tooltip content={t("approvals.reject")} color="danger">
                           <Button 
                             isIconOnly 
                             size="sm" 

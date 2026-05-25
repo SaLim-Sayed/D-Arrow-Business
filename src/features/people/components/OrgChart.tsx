@@ -36,7 +36,7 @@ export function OrgChart({ employees }: OrgChartProps) {
 
 function OrgNode({ employee, allEmployees, level }: { employee: Employee, allEmployees: Employee[], level: number }) {
   const directReports = allEmployees.filter(e => e.managerId === employee.id);
-  const initials = `${employee.firstName[0]}${employee.lastName[0]}`.toUpperCase();
+  const initials = `${employee.firstName?.charAt(0) || ""}${employee.lastName?.charAt(0) || ""}`.toUpperCase();
 
   return (
     <div className="space-y-2">

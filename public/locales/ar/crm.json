@@ -4,6 +4,7 @@
     "description": "إدارة خط مبيعاتك وتتبع العملاء المحتملين.",
     "addLead": "إضافة عميل",
     "searchPlaceholder": "البحث في العملاء...",
+    "filter": "تصفية",
     "columns": {
       "name": "الاسم",
       "company": "الشركة",

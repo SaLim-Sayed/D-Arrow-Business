@@ -4,19 +4,22 @@ import { Plus, Calendar, Download } from "lucide-react";
 import { LeaveBalanceCards } from "../components/LeaveBalanceCards";
 import { useLeaveRequestsQuery } from "../hooks/use-people";
 import { ApplyLeaveModal } from "../components/ApplyLeaveModal";
+import { useTranslation } from "react-i18next";
 
 export default function LeaveTrackerPage() {
+  const { t } = useTranslation("people");
+  const { t: tc } = useTranslation("common");
   
   const { data: requestsResponse, isLoading } = useLeaveRequestsQuery();
   const requests = requestsResponse?.data || [];
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
 
   const columns = [
-    { name: "EMPLOYEE", uid: "employeeName" },
-    { name: "TYPE", uid: "type" },
-    { name: "START DATE", uid: "startDate" },
-    { name: "END DATE", uid: "endDate" },
-    { name: "STATUS", uid: "status" },
+    { name: t("leave_tracker.col_employee") || "EMPLOYEE", uid: "employeeName" },
+    { name: t("leave_tracker.col_type") || "TYPE", uid: "type" },
+    { name: t("leave_tracker.start_date") || "START DATE", uid: "startDate" },
+    { name: t("leave_tracker.end_date") || "END DATE", uid: "endDate" },
+    { name: t("leave_tracker.col_status") || "STATUS", uid: "status" },
   ];
 
   const statusColors: Record<string, string> = {
@@ -30,18 +33,18 @@ export default function LeaveTrackerPage() {
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <h1 className="text-3xl font-black tracking-tight text-foreground">
-            Leave Tracker
+            {t("leave_tracker.title")}
           </h1>
           <p className="text-default-500 font-medium">
-            Manage time off, vacations, and attendance.
+            {t("leave_tracker.subtitle")}
           </p>
         </div>
         <div className="flex gap-2">
           <Button variant="flat" startContent={<Download size={18} />}>
-            Export
+            {tc("actions.export")}
           </Button>
           <Button color="primary" variant="shadow" startContent={<Plus size={18} />} onPress={onOpen}>
-            Apply Leave
+            {t("leave_tracker.apply_leave")}
           </Button>
         </div>
       </div>
@@ -54,7 +57,7 @@ export default function LeaveTrackerPage() {
         <div className="flex items-center justify-between">
           <h2 className="text-xl font-bold flex items-center gap-2">
             <Calendar size={20} className="text-primary" />
-            Leave History
+            {t("profile.leave_history")}
           </h2>
         </div>
 
@@ -70,7 +73,7 @@ export default function LeaveTrackerPage() {
               </TableColumn>
             )}
           </TableHeader>
-          <TableBody items={requests} loadingContent={<div>Loading...</div>} isLoading={isLoading}>
+          <TableBody items={requests} loadingContent={<div>{tc("actions.loading")}</div>} isLoading={isLoading}>
             {(item) => (
               <TableRow key={item.id} className="border-b border-default-50 last:border-0 hover:bg-default-50/50 transition-colors">
                 {(columnKey) => (

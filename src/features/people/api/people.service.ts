@@ -203,6 +203,28 @@ export const PeopleService = {
     })());
   },
 
+  async getAllAttendance(companyId: string): Promise<ApiResponse<Attendance[]>> {
+    return withLogging(SERVICE_NAME, "getAllAttendance", (async () => {
+      const attendanceRef = collection(db, "companies", companyId, "attendance");
+      
+      const querySnapshot = await getDocs(attendanceRef);
+      const records = querySnapshot.docs.map(docSnap => {
+        const data = docSnap.data();
+        return {
+          id: docSnap.id,
+          ...data,
+          checkIn: data.checkIn instanceof Timestamp ? data.checkIn.toDate().toISOString() : data.checkIn,
+          checkOut: data.checkOut instanceof Timestamp ? data.checkOut.toDate().toISOString() : data.checkOut,
+        } as Attendance;
+      });
+
+      return {
+        data: records.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()),
+        message: "Success",
+      };
+    })());
+  },
+
   // Hiring
   async createEmployee(companyId: string, employeeData: Omit<Employee, 'id'>): Promise<ApiResponse<Employee>> {
     return withLogging(SERVICE_NAME, "createEmployee", (async () => {

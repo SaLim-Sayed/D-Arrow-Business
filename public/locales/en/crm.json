@@ -4,6 +4,7 @@
     "description": "Manage your sales pipeline and track potential customers.",
     "addLead": "Add Lead",
     "searchPlaceholder": "Search leads...",
+    "filter": "Filter",
     "columns": {
       "name": "NAME",
       "company": "COMPANY",

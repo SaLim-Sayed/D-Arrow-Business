@@ -90,7 +90,7 @@ export function EmployeeTable({ employees, onView, onEdit, onDelete, onHire }: E
               avatarProps={{
                 radius: "full",
                 src: employee.avatarUrl,
-                name: `${employee.firstName[0]}${employee.lastName[0]}`,
+                name: `${employee.firstName?.charAt(0) || ""}${employee.lastName?.charAt(0) || ""}`,
                 size: "sm",
                 className: "shrink-0",
               }}
