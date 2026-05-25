@@ -14,8 +14,10 @@ import {
 } from "@heroui/react";
 import { Download, Clock, Search, FileSpreadsheet, ChevronLeft, ChevronRight } from "lucide-react";
 import { useEmployeesQuery, useAllAttendanceQuery } from "../hooks/use-people";
+import { useTranslation } from "react-i18next";
 
 export default function TimesheetsPage() {
+  const { t } = useTranslation("people");
   const { data: employeesResponse, isLoading: isEmployeesLoading } = useEmployeesQuery();
   const { data: attendanceResponse, isLoading: isAttendanceLoading } = useAllAttendanceQuery();
   
@@ -148,15 +150,15 @@ export default function TimesheetsPage() {
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <h1 className="text-3xl font-black tracking-tight text-foreground flex items-center gap-3">
-            Company Timesheets
+            {t("timesheets.title")}
             <Chip size="sm" variant="flat" color="primary" className="font-bold">
               <span className="flex items-center gap-1">
-                <FileSpreadsheet size={12} /> Exportable
+                <FileSpreadsheet size={12} /> {t("timesheets.exportable")}
               </span>
             </Chip>
           </h1>
           <p className="text-default-500 font-medium">
-            View and download time logs for all employees across the organization.
+            {t("timesheets.subtitle")}
           </p>
         </div>
         <div className="flex gap-2 w-full md:w-auto">
@@ -168,7 +170,7 @@ export default function TimesheetsPage() {
             isDisabled={filteredLogs.length === 0}
             className="font-bold shadow-lg shadow-primary/25 hover:shadow-primary/40 transition-shadow w-full md:w-auto"
           >
-            Download CSV
+            {t("timesheets.download_csv")}
           </Button>
         </div>
       </div>
@@ -177,7 +179,7 @@ export default function TimesheetsPage() {
         <CardBody className="p-0">
           <div className="flex flex-col sm:flex-row p-4 border-b border-default-100 bg-default-50/50 gap-4 justify-between items-center">
             <Input
-              placeholder="Search by employee name..."
+              placeholder={t("timesheets.search_placeholder")}
               startContent={<Search size={16} className="text-default-400" />}
               value={searchQuery}
               onValueChange={setSearchQuery}
@@ -210,23 +212,23 @@ export default function TimesheetsPage() {
           
           {isEmployeesLoading || isAttendanceLoading ? (
             <div className="p-12 text-center text-default-500 animate-pulse font-medium">
-              Loading timesheets...
+              {t("timesheets.loading")}
             </div>
           ) : filteredLogs.length === 0 ? (
             <div className="p-12 text-center text-default-500 flex flex-col items-center gap-2">
               <Clock size={32} className="text-default-300" />
-              <p>No time logs found.</p>
+              <p>{t("timesheets.no_logs")}</p>
             </div>
           ) : (
             <Table aria-label="Company timesheets" classNames={{ wrapper: "shadow-none rounded-none" }}>
               <TableHeader>
-                <TableColumn>DATE</TableColumn>
-                <TableColumn>EMPLOYEE</TableColumn>
-                <TableColumn>DEPARTMENT</TableColumn>
-                <TableColumn>CHECK IN</TableColumn>
-                <TableColumn>CHECK OUT</TableColumn>
-                <TableColumn>HOURS</TableColumn>
-                <TableColumn>STATUS</TableColumn>
+                <TableColumn>{t("timesheets.col_date")}</TableColumn>
+                <TableColumn>{t("timesheets.col_employee")}</TableColumn>
+                <TableColumn>{t("timesheets.col_department")}</TableColumn>
+                <TableColumn>{t("timesheets.col_checkin")}</TableColumn>
+                <TableColumn>{t("timesheets.col_checkout")}</TableColumn>
+                <TableColumn>{t("timesheets.col_hours")}</TableColumn>
+                <TableColumn>{t("timesheets.col_status")}</TableColumn>
               </TableHeader>
               <TableBody>
                 {filteredLogs.map((log, idx) => (

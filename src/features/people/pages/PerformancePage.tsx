@@ -6,6 +6,7 @@ import { db } from "@/lib/firebase";
 import { collection, addDoc, getDocs, getDoc, query, orderBy, serverTimestamp, setDoc, doc } from "firebase/firestore";
 import { useEffect } from "react";
 import { useAllUsers } from "@/features/users/hooks/use-users";
+import { useTranslation } from "react-i18next";
 
 interface PerformanceCycle {
   id: string;
@@ -17,6 +18,7 @@ interface PerformanceCycle {
 }
 
 export default function PerformancePage() {
+  const { t } = useTranslation("people");
   const { user } = useAuthStore();
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
   const { isOpen: isManageOpen, onOpen: onManageOpen, onOpenChange: onManageOpenChange } = useDisclosure();
@@ -145,16 +147,16 @@ export default function PerformancePage() {
         <div>
           <div className="flex items-center gap-3 mb-1">
             <h1 className="text-3xl font-black tracking-tight text-foreground">
-              Performance & Goals
+              {t("performance.title")}
             </h1>
             <Chip size="sm" variant="flat" color="primary" className="font-bold">
               <span className="flex items-center gap-1">
-                <Target size={12} /> Appraisals
+                <Target size={12} /> {t("performance.appraisals")}
               </span>
             </Chip>
           </div>
           <p className="text-default-500 font-medium">
-            Manage performance reviews, 360 feedback, and continuous goals.
+            {t("performance.subtitle")}
           </p>
         </div>
         <div className="flex gap-2">
@@ -166,7 +168,7 @@ export default function PerformancePage() {
               startContent={<Plus size={18} />} 
               className="font-bold shadow-lg shadow-primary/25 hover:shadow-primary/40 transition-shadow"
             >
-              Start Review Cycle
+              {t("performance.start_cycle")}
             </Button>
           )}
         </div>
@@ -300,14 +302,14 @@ export default function PerformancePage() {
               <div className="p-4 bg-primary/10 rounded-full text-primary">
                 <Target size={40} />
               </div>
-              <h3 className="text-xl font-black">No Active Review Cycles</h3>
+              <h3 className="text-xl font-black">{t("performance.no_active_cycles")}</h3>
               <p className="text-default-500 max-w-sm">
-                Performance cycles will appear here when HR initiates a new appraisal round.
+                {t("performance.no_active_cycles_desc")}
               </p>
             </CardBody>
           ) : (
             <CardBody className="p-6 space-y-4">
-              <h3 className="font-bold text-lg mb-4">Active Review Cycles</h3>
+              <h3 className="font-bold text-lg mb-4">{t("performance.active_cycles")}</h3>
               <div className="space-y-4">
                 {activeCycles.map((cycle) => (
                   <div key={cycle.id} className="flex flex-col md:flex-row justify-between items-start md:items-center p-4 border border-default-200 rounded-xl hover:border-primary/50 transition-colors">
@@ -332,7 +334,7 @@ export default function PerformancePage() {
           <CardBody className="p-6 space-y-4">
             <h3 className="font-bold flex items-center gap-2">
               <Star size={18} className="text-amber-500" /> 
-              Recent Appraisals
+              {t("performance.recent_appraisals")}
             </h3>
             {isLoadingMyAppraisals ? (
               <div className="flex justify-center p-8"><Loader2 className="animate-spin text-primary" size={24} /></div>

@@ -32,8 +32,10 @@ import { useDisclosure } from "@heroui/react";
 import { useAuthStore } from "@/stores/auth.store";
 import { TimeTrackerWidget } from "../components/TimeTrackerWidget";
 import { motion } from "framer-motion";
+import { useTranslation } from "react-i18next";
 
 export default function PeopleDashboardPage() {
+  const { t } = useTranslation("people");
   
   const navigate = useNavigate();
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
@@ -80,17 +82,17 @@ export default function PeopleDashboardPage() {
         <div>
           <div className="flex items-center gap-3 mb-1">
             <h1 className="text-3xl font-black tracking-tight text-foreground">
-              People & HR
+              {t("dashboard.title")}
             </h1>
             <Chip size="sm" variant="flat" color="primary" className="font-bold">
               <span className="flex items-center gap-1">
                 <Sparkles size={12} />
-                {employees.length} Members
+                {employees.length} {t("dashboard.members")}
               </span>
             </Chip>
           </div>
           <p className="text-default-500 font-medium">
-            Centrally manage your organization and people operations.
+            {t("dashboard.subtitle")}
           </p>
         </div>
         <div className="flex gap-2">
@@ -102,7 +104,7 @@ export default function PeopleDashboardPage() {
               onPress={onOpen}
               className="font-bold shadow-lg shadow-primary/25 hover:shadow-primary/40 transition-shadow"
             >
-              New Hire
+              {t("dashboard.new_hire")}
             </Button>
           )}
         </div>
@@ -129,7 +131,7 @@ export default function PeopleDashboardPage() {
               <div className="p-2 bg-primary/10 rounded-xl">
                 <CalendarDays className="text-primary" size={20} />
               </div>
-              Quick Actions
+              {t("dashboard.quick_actions")}
             </h3>
             <div className="space-y-2.5">
               <motion.div whileHover={{ x: 4 }} transition={{ type: "spring", stiffness: 300 }}>
@@ -145,7 +147,7 @@ export default function PeopleDashboardPage() {
                   }
                   endContent={<ArrowRight size={14} className="text-primary/60" />}
                 >
-                  Apply for Leave
+                  {t("dashboard.apply_leave")}
                 </Button>
               </motion.div>
               <motion.div whileHover={{ x: 4 }} transition={{ type: "spring", stiffness: 300 }}>
@@ -161,7 +163,7 @@ export default function PeopleDashboardPage() {
                   }
                   endContent={<ArrowRight size={14} className="text-secondary/60" />}
                 >
-                  View Approvals
+                  {t("dashboard.view_approvals")}
                 </Button>
               </motion.div>
               <motion.div whileHover={{ x: 4 }} transition={{ type: "spring", stiffness: 300 }}>
@@ -177,7 +179,7 @@ export default function PeopleDashboardPage() {
                   }
                   endContent={<ArrowRight size={14} className="text-default-400" />}
                 >
-                  My Profile
+                  {t("dashboard.my_profile")}
                 </Button>
               </motion.div>
             </div>
@@ -191,8 +193,8 @@ export default function PeopleDashboardPage() {
           <div className="flex divide-x divide-default-100 min-w-max">
             <div className="flex-1 min-w-[200px]">
               <NavCard 
-                title="Directory" 
-                desc="Full employee list" 
+                title={t("dashboard.nav_directory")} 
+                desc={t("dashboard.nav_directory_desc")} 
                 icon={<Users size={20} />}
                 iconBg="bg-blue-50 dark:bg-blue-500/10 text-blue-500"
                 count={employees.length.toString()}
@@ -201,8 +203,8 @@ export default function PeopleDashboardPage() {
             </div>
             <div className="flex-1 min-w-[200px]">
               <NavCard 
-                title="Leave Tracker" 
-                desc="Manage absences" 
+                title={t("dashboard.nav_leave")} 
+                desc={t("dashboard.nav_leave_desc")} 
                 icon={<CalendarDays size={20} />}
                 iconBg="bg-amber-50 dark:bg-amber-500/10 text-amber-500"
                 onPress={() => navigate("/people/leave")}
@@ -210,8 +212,8 @@ export default function PeopleDashboardPage() {
             </div>
             <div className="flex-1 min-w-[200px]">
               <NavCard 
-                title="Approvals" 
-                desc="Pending leave requests" 
+                title={t("dashboard.nav_approvals")} 
+                desc={t("dashboard.nav_approvals_desc")} 
                 icon={<ShieldCheck size={20} />}
                 iconBg="bg-rose-50 dark:bg-rose-500/10 text-rose-500"
                 onPress={() => navigate("/people/approvals")}
@@ -219,8 +221,8 @@ export default function PeopleDashboardPage() {
             </div>
             <div className="flex-1 min-w-[200px]">
               <NavCard 
-                title="Performance" 
-                desc="Appraisals and goals" 
+                title={t("dashboard.nav_performance")} 
+                desc={t("dashboard.nav_performance_desc")} 
                 icon={<Target size={20} />}
                 iconBg="bg-emerald-50 dark:bg-emerald-500/10 text-emerald-500"
                 onPress={() => navigate("/people/performance")}
@@ -228,8 +230,8 @@ export default function PeopleDashboardPage() {
             </div>
             <div className="flex-1 min-w-[200px]">
               <NavCard 
-                title="Timesheets" 
-                desc="Company time logs" 
+                title={t("dashboard.nav_timesheets")} 
+                desc={t("dashboard.nav_timesheets_desc")} 
                 icon={<FileSpreadsheet size={20} />}
                 iconBg="bg-indigo-50 dark:bg-indigo-500/10 text-indigo-500"
                 onPress={() => navigate("/people/timesheets")}
@@ -237,8 +239,8 @@ export default function PeopleDashboardPage() {
             </div>
             <div className="flex-1 min-w-[200px]">
               <NavCard 
-                title="Organization" 
-                desc="Reporting structure" 
+                title={t("dashboard.nav_org")} 
+                desc={t("dashboard.nav_org_desc")} 
                 icon={<Network size={20} />}
                 iconBg="bg-violet-50 dark:bg-violet-500/10 text-violet-500"
                 onPress={() => {}}
@@ -257,13 +259,13 @@ export default function PeopleDashboardPage() {
                 <Megaphone size={24} />
               </div>
               <div>
-                <h3 className="font-black text-[10px] text-primary uppercase tracking-widest mb-1">Company Announcement</h3>
+                <h3 className="font-black text-[10px] text-primary uppercase tracking-widest mb-1">{t("dashboard.announcement")}</h3>
                 <p className="font-bold text-foreground">{announcements[0].title}</p>
                 <p className="text-sm text-default-500 mt-0.5 line-clamp-1">{announcements[0].content}</p>
               </div>
             </div>
             <Button size="sm" variant="shadow" color="primary" className="font-bold shrink-0">
-              View All
+              {t("dashboard.view_all")}
             </Button>
           </CardBody>
         </Card>
@@ -286,7 +288,7 @@ export default function PeopleDashboardPage() {
           title={
             <div className="flex items-center space-x-2">
               <Users size={18} />
-              <span>Directory</span>
+              <span>{t("dashboard.tab_directory")}</span>
               <Chip size="sm" variant="flat" className="font-bold text-[10px] h-5 min-w-0 px-1.5">
                 {activeCount}
               </Chip>
@@ -298,7 +300,7 @@ export default function PeopleDashboardPage() {
               <Input
                 isClearable
                 className="w-full md:max-w-sm"
-                placeholder="Search by name, role or department..."
+                placeholder={t("dashboard.search_placeholder")}
                 startContent={<Search className="text-default-300" size={18} />}
                 value={searchQuery}
                 onValueChange={setSearchQuery}
@@ -329,7 +331,7 @@ export default function PeopleDashboardPage() {
                     <List size={16} />
                   </Button>
                 </div>
-                <Button variant="flat" size="sm" className="font-bold">Filters</Button>
+                <Button variant="flat" size="sm" className="font-bold">{t("dashboard.filters")}</Button>
               </div>
             </div>
 
@@ -369,8 +371,8 @@ export default function PeopleDashboardPage() {
                     <div className="p-4 bg-default-100 rounded-full">
                       <Users size={32} className="text-default-400" />
                     </div>
-                    <p className="text-default-500 font-bold">No employees found</p>
-                    <p className="text-default-400 text-sm">Try adjusting your search or filters</p>
+                    <p className="text-default-500 font-bold">{t("dashboard.no_employees")}</p>
+                    <p className="text-default-400 text-sm">{t("dashboard.try_adjusting")}</p>
                   </div>
                 )}
               </>
@@ -382,7 +384,7 @@ export default function PeopleDashboardPage() {
           title={
             <div className="flex items-center space-x-2">
               <Network size={18} />
-              <span>Org Chart</span>
+              <span>{t("dashboard.tab_org")}</span>
             </div>
           }
         >

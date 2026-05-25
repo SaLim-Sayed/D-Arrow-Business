@@ -51,6 +51,7 @@ import { db } from "@/lib/firebase";
 import { collection, query, orderBy, getDocs, getDoc, doc } from "firebase/firestore";
 import { useEffect } from "react";
 import { Input, Select, SelectItem, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter } from "@heroui/react";
+import { useTranslation } from "react-i18next";
 
 const statusColorMap: Record<string, "success" | "warning" | "danger" | "primary" | "default"> = {
   active: "success",
@@ -60,6 +61,7 @@ const statusColorMap: Record<string, "success" | "warning" | "danger" | "primary
 };
 
 export default function EmployeeProfilePage() {
+  const { t } = useTranslation("people");
   const { id } = useParams();
   const navigate = useNavigate();
   const { user } = useAuthStore();
@@ -136,11 +138,11 @@ export default function EmployeeProfilePage() {
           <UserIcon size={48} className="text-primary/50" />
         </div>
         <div className="text-center space-y-2">
-          <h2 className="text-xl font-black text-foreground">Employee Not Found</h2>
-          <p className="text-default-400 font-medium text-sm max-w-xs">The employee you're looking for doesn't exist or may have been removed.</p>
+          <h2 className="text-xl font-black text-foreground">{t("profile.not_found")}</h2>
+          <p className="text-default-400 font-medium text-sm max-w-xs">{t("profile.not_found_desc")}</p>
         </div>
         <Button variant="shadow" color="primary" onPress={() => navigate("/people")} className="font-bold rounded-xl">
-          Back to Directory
+          {t("profile.back_to_directory")}
         </Button>
       </div>
     );
@@ -190,7 +192,7 @@ export default function EmployeeProfilePage() {
         onPress={() => navigate("/people")}
         className="font-bold text-default-500"
       >
-        Back to Directory
+        {t("profile.back_to_directory")}
       </Button>
 
       {/* === PROFILE HEADER === */}
@@ -255,15 +257,15 @@ export default function EmployeeProfilePage() {
                     <div className="flex flex-wrap gap-2">
                       {isOwnProfile && (
                         <Button color="primary" variant="shadow" size="sm" startContent={<CalendarDays size={15} />} onPress={onOpen} className="font-bold shadow-lg shadow-primary/25">
-                          Apply Leave
+                          {t("profile.apply_leave")}
                         </Button>
                       )}
                       {isManager && (
                         <Button color="default" variant="flat" size="sm" startContent={<ShieldCheck size={15} />} className="font-bold" onPress={handleOpenEdit}>
-                          Edit / Manage
+                          {t("profile.edit_manage")}
                         </Button>
                       )}
-                      <Tooltip content="Send Email">
+                      <Tooltip content={t("profile.send_email")}>
                         <Button isIconOnly variant="flat" size="sm">
                           <Mail size={15} />
                         </Button>
@@ -276,10 +278,10 @@ export default function EmployeeProfilePage() {
               {/* Quick Stats Bar */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 {[
-                  { label: "Total Leaves", value: leaveStats.total, color: "text-foreground", bg: "bg-default-50" },
-                  { label: "Approved", value: leaveStats.approved, color: "text-success", bg: "bg-success/5" },
-                  { label: "Pending", value: leaveStats.pending, color: "text-warning", bg: "bg-warning/5" },
-                  { label: "Rejected", value: leaveStats.rejected, color: "text-danger", bg: "bg-danger/5" },
+                  { label: t("profile.total_leaves"), value: leaveStats.total, color: "text-foreground", bg: "bg-default-50" },
+                  { label: t("profile.approved"), value: leaveStats.approved, color: "text-success", bg: "bg-success/5" },
+                  { label: t("profile.pending"), value: leaveStats.pending, color: "text-warning", bg: "bg-warning/5" },
+                  { label: t("profile.rejected"), value: leaveStats.rejected, color: "text-danger", bg: "bg-danger/5" },
                 ].map((stat) => (
                   <motion.div 
                     key={stat.label} 
@@ -383,27 +385,25 @@ export default function EmployeeProfilePage() {
                   tabContent: "group-data-[selected=true]:text-primary font-bold text-sm",
                 }}
               >
-                <Tab key="work" title={<span className="flex items-center gap-1.5"><Briefcase size={15} />Work</span>}>
+                <Tab key="work" title={<span className="flex items-center gap-1.5"><Briefcase size={15} />{t("profile.tab_work")}</span>}>
                   <div className="p-6 space-y-6">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                      <InfoItem icon={<Calendar size={16} />} label="Joining Date" value={new Date(employee.joiningDate as any).toLocaleDateString()} />
-                      <InfoItem icon={<Briefcase size={16} />} label="Employment Type" value="Full-time" />
-                      <InfoItem icon={<ShieldCheck size={16} />} label="System Role" value={employee.role ? employee.role.replace("_", " ") : "Employee"} />
-                      <InfoItem icon={<UserIcon size={16} />} label="Reporting To" value="Sarah (CEO)" />
+                      <InfoItem icon={<Calendar size={16} />} label={t("profile.joined")} value={new Date(employee.joiningDate as any).toLocaleDateString()} />
+                      <InfoItem icon={<Briefcase size={16} />} label={t("profile.employment_type")} value={t("profile.full_time")} />
+                      <InfoItem icon={<ShieldCheck size={16} />} label={t("profile.role")} value={employee.role ? employee.role.replace("_", " ") : "Employee"} />
+                      <InfoItem icon={<UserIcon size={16} />} label={t("profile.reporting_to")} value="Sarah (CEO)" />
                       {employee.salary && (
-                        <InfoItem icon={<TrendingUp size={16} />} label="Salary" value={`${employee.currency || "USD"} ${employee.salary.toLocaleString()}`} />
+                        <InfoItem icon={<TrendingUp size={16} />} label={t("profile.salary")} value={`${employee.currency || "USD"} ${employee.salary.toLocaleString()}`} />
                       )}
                     </div>
                     <Divider />
                     <div className="space-y-3">
                       <h4 className="font-bold flex items-center gap-2 text-sm">
                         <FileText size={16} className="text-primary" />
-                        Experience Summary
+                        {t("profile.experience_summary")}
                       </h4>
                       <p className="text-sm text-default-600 leading-relaxed">
-                        Currently serving as <strong>{employee.jobTitle}</strong> in the <strong>{employee.department}</strong> department.
-                        Responsible for leading key initiatives and collaborating across teams to deliver high-quality business outcomes.
-                        Demonstrates strong ownership and consistently delivers results under tight timelines.
+                        {t("profile.experience_desc", { jobTitle: employee.jobTitle, department: employee.department })}
                       </p>
                     </div>
                     {employee.permissions && employee.permissions.length > 0 && (
@@ -412,7 +412,7 @@ export default function EmployeeProfilePage() {
                         <div className="space-y-3">
                           <h4 className="font-bold text-sm flex items-center gap-2">
                             <ShieldCheck size={16} className="text-violet-500" />
-                            Permissions
+                            {t("profile.permissions")}
                           </h4>
                           <div className="flex flex-wrap gap-2">
                             {employee.permissions.map((p) => (
@@ -427,7 +427,7 @@ export default function EmployeeProfilePage() {
                   </div>
                 </Tab>
 
-                <Tab key="personal" title={<span className="flex items-center gap-1.5"><UserIcon size={15} />Personal</span>}>
+                <Tab key="personal" title={<span className="flex items-center gap-1.5"><UserIcon size={15} />{t("profile.tab_personal")}</span>}>
                   <div className="p-6 space-y-5">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                       <InfoItem icon={<Mail size={16} />} label="Email Address" value={employee.email} />
@@ -437,7 +437,7 @@ export default function EmployeeProfilePage() {
                   </div>
                 </Tab>
 
-                <Tab key="skills" title={<span className="flex items-center gap-1.5"><Star size={15} />Skills</span>}>
+                <Tab key="skills" title={<span className="flex items-center gap-1.5"><Star size={15} />{t("profile.tab_skills")}</span>}>
                   <div className="p-6 space-y-5">
                     <div className="flex items-center justify-between">
                       <h4 className="font-bold text-sm flex items-center gap-2">
@@ -488,7 +488,7 @@ export default function EmployeeProfilePage() {
                   </div>
                 </Tab>
 
-                <Tab key="assets" title={<span className="flex items-center gap-1.5"><Package size={15} />Assets</span>}>
+                <Tab key="assets" title={<span className="flex items-center gap-1.5"><Package size={15} />{t("profile.tab_assets")}</span>}>
                   <div className="p-6 space-y-4">
                     <h4 className="font-bold text-sm flex items-center gap-2">
                       <Package size={16} className="text-primary" />
@@ -515,7 +515,7 @@ export default function EmployeeProfilePage() {
                   </div>
                 </Tab>
 
-                <Tab key="performance" title={<span className="flex items-center gap-1.5"><Target size={15} />Performance</span>}>
+                <Tab key="performance" title={<span className="flex items-center gap-1.5"><Target size={15} />{t("profile.tab_performance")}</span>}>
                   <div className="p-6 space-y-4">
                     <h4 className="font-bold text-sm flex items-center gap-2">
                       <TrendingUp size={16} className="text-primary" />
@@ -544,7 +544,7 @@ export default function EmployeeProfilePage() {
                   </div>
                 </Tab>
 
-                <Tab key="attendance" title={<span className="flex items-center gap-1.5"><Clock size={15} />Attendance</span>}>
+                <Tab key="attendance" title={<span className="flex items-center gap-1.5"><Clock size={15} />{t("profile.tab_attendance")}</span>}>
                   <div className="p-6 space-y-4">
                     <h4 className="font-bold text-sm flex items-center gap-2">
                       <Clock size={16} className="text-primary" />
@@ -589,7 +589,7 @@ export default function EmployeeProfilePage() {
                   </div>
                 </Tab>
 
-                <Tab key="leaves" title={<span className="flex items-center gap-1.5"><CalendarDays size={15} />Leaves</span>}>
+                <Tab key="leaves" title={<span className="flex items-center gap-1.5"><CalendarDays size={15} />{t("profile.tab_leaves")}</span>}>
                   <div className="p-6 space-y-4">
                     {employeeRequests.length === 0 ? (
                       <div className="flex flex-col items-center justify-center py-10 gap-3">
@@ -644,7 +644,7 @@ export default function EmployeeProfilePage() {
           <Card className="border border-default-100/60 shadow-sm rounded-2xl overflow-hidden">
             <div className="h-1 bg-gradient-to-r from-primary/30 to-violet-500/10" />
             <CardBody className="p-5 space-y-4">
-              <h4 className="font-black text-[10px] text-default-400 uppercase tracking-[0.15em]">Employee Status</h4>
+              <h4 className="font-black text-[10px] text-default-400 uppercase tracking-[0.15em]">{t("profile.status")}</h4>
               <Chip
                 color={statusColorMap[employee.status] || "default"}
                 variant="flat"
@@ -655,15 +655,15 @@ export default function EmployeeProfilePage() {
               <Divider />
               <div className="space-y-4">
                 <div>
-                  <p className="text-[10px] font-bold text-default-400 uppercase tracking-widest mb-1">Employee ID</p>
+                  <p className="text-[10px] font-bold text-default-400 uppercase tracking-widest mb-1">{t("profile.employee_id")}</p>
                   <p className="font-mono text-sm font-black bg-default-50 inline-block px-2.5 py-1 rounded-lg">EMP-{employee.id.slice(0, 8).toUpperCase()}</p>
                 </div>
                 <div>
-                  <p className="text-[10px] font-bold text-default-400 uppercase tracking-widest mb-1">Department</p>
+                  <p className="text-[10px] font-bold text-default-400 uppercase tracking-widest mb-1">{t("profile.department")}</p>
                   <p className="text-sm font-bold">{employee.department}</p>
                 </div>
                 <div>
-                  <p className="text-[10px] font-bold text-default-400 uppercase tracking-widest mb-1">System Role</p>
+                  <p className="text-[10px] font-bold text-default-400 uppercase tracking-widest mb-1">{t("profile.role")}</p>
                   <p className="text-sm font-bold capitalize">{(employee.role || "employee").replace("_", " ")}</p>
                 </div>
               </div>
@@ -690,7 +690,7 @@ export default function EmployeeProfilePage() {
           {/* Contact Card */}
           <Card className="border border-default-100/60 shadow-sm rounded-2xl">
             <CardBody className="p-5 space-y-3">
-              <h4 className="font-black text-[10px] text-default-400 uppercase tracking-[0.15em]">Contact</h4>
+              <h4 className="font-black text-[10px] text-default-400 uppercase tracking-[0.15em]">{t("profile.contact")}</h4>
               <a href={`mailto:${employee.email}`} className="flex items-center gap-2.5 text-sm text-primary font-bold hover:underline group">
                 <div className="p-1.5 bg-primary/10 rounded-lg group-hover:bg-primary/15 transition-colors">
                   <Mail size={13} />
@@ -719,12 +719,12 @@ export default function EmployeeProfilePage() {
           {/* Quick Stats */}
           <Card className="border border-default-100/60 shadow-sm rounded-2xl">
             <CardBody className="p-5 space-y-3">
-              <h4 className="font-black text-[10px] text-default-400 uppercase tracking-[0.15em]">Leave Summary</h4>
+              <h4 className="font-black text-[10px] text-default-400 uppercase tracking-[0.15em]">{t("profile.leave_summary")}</h4>
               {[
-                { label: "Total Requests", value: leaveStats.total, color: "text-foreground" },
-                { label: "Approved", value: leaveStats.approved, color: "text-success" },
-                { label: "Pending", value: leaveStats.pending, color: "text-warning" },
-                { label: "Rejected", value: leaveStats.rejected, color: "text-danger" },
+                { label: t("profile.total_requests"), value: leaveStats.total, color: "text-foreground" },
+                { label: t("profile.approved"), value: leaveStats.approved, color: "text-success" },
+                { label: t("profile.pending"), value: leaveStats.pending, color: "text-warning" },
+                { label: t("profile.rejected"), value: leaveStats.rejected, color: "text-danger" },
               ].map((s) => (
                 <div key={s.label} className="flex items-center justify-between">
                   <span className="text-xs font-bold text-default-500">{s.label}</span>
