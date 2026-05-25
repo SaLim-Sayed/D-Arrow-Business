@@ -31,8 +31,10 @@ import { toast } from "sonner";
 import { format } from "date-fns";
 import { useNavigate } from "react-router-dom";
 import { parseDate } from "@internationalized/date";
+import { useTranslation } from "react-i18next";
 
 export function SprintsPage() {
+  const { t } = useTranslation("tasks");
   const { companyId } = useCompany();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
@@ -53,7 +55,7 @@ export function SprintsPage() {
 
   const handleSaveSprint = async () => {
     if (!newSprint.name || !newSprint.startDate || !newSprint.endDate) {
-      toast.error("Please fill all required fields");
+      toast.error(t("sprints.msgFillRequired"));
       return;
     }
 
@@ -61,20 +63,20 @@ export function SprintsPage() {
     try {
       if (editingSprintId) {
         await TaskService.updateSprint(companyId!, editingSprintId, newSprint);
-        toast.success("Sprint updated successfully");
+        toast.success(t("sprints.msgUpdateSuccess"));
       } else {
         await TaskService.createSprint(companyId!, {
           ...newSprint,
           status: "planned",
         });
-        toast.success("Sprint created successfully");
+        toast.success(t("sprints.msgCreateSuccess"));
       }
       queryClient.invalidateQueries({ queryKey: ["sprints", companyId] });
       onOpenChange();
       setNewSprint({ name: "", startDate: "", endDate: "", goal: "" });
       setEditingSprintId(null);
     } catch (error) {
-      toast.error(editingSprintId ? "Failed to update sprint" : "Failed to create sprint");
+      toast.error(editingSprintId ? t("sprints.msgUpdateError") : t("sprints.msgCreateError"));
     } finally {
       setIsSubmitting(false);
     }
@@ -95,11 +97,11 @@ export function SprintsPage() {
   const getStatusChip = (status: string) => {
     switch (status) {
       case "active":
-        return <Chip color="primary" variant="flat" startContent={<Clock className="w-3 h-3" />}>Active</Chip>;
+        return <Chip color="primary" variant="flat" startContent={<Clock className="w-3 h-3" />}>{t("sprints.statusActive")}</Chip>;
       case "completed":
-        return <Chip color="success" variant="flat" startContent={<CheckCircle2 className="w-3 h-3" />}>Completed</Chip>;
+        return <Chip color="success" variant="flat" startContent={<CheckCircle2 className="w-3 h-3" />}>{t("sprints.statusCompleted")}</Chip>;
       default:
-        return <Chip color="default" variant="flat" startContent={<Flag className="w-3 h-3" />}>Planned</Chip>;
+        return <Chip color="default" variant="flat" startContent={<Flag className="w-3 h-3" />}>{t("sprints.statusPlanned")}</Chip>;
     }
   };
 
@@ -108,9 +110,9 @@ export function SprintsPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-black tracking-tight text-default-900 dark:text-white">
-            Sprints
+            {t("sprints.title")}
           </h1>
-          <p className="text-default-500 mt-1">Manage your team iteration cycles and goals.</p>
+          <p className="text-default-500 mt-1">{t("sprints.subtitle")}</p>
         </div>
         <Button 
           color="primary" 
@@ -122,7 +124,7 @@ export function SprintsPage() {
           }}
           className="font-bold shadow-lg shadow-primary/20"
         >
-          New Sprint
+          {t("sprints.newSprint")}
         </Button>
       </div>
 
@@ -180,33 +182,33 @@ export function SprintsPage() {
           {(onClose) => (
             <>
               <ModalHeader className="flex flex-col gap-1">
-                {editingSprintId ? "Edit Sprint" : "Create New Sprint"}
+                {editingSprintId ? t("sprints.editSprint") : t("sprints.createSprint")}
               </ModalHeader>
               <ModalBody className="space-y-4">
                 <Input
-                  label="Sprint Name"
-                  placeholder="e.g. Sprint 24: Core Features"
+                  label={t("sprints.nameLabel")}
+                  placeholder={t("sprints.namePlaceholder")}
                   variant="flat"
                   value={newSprint.name}
                   onChange={(e) => setNewSprint({ ...newSprint, name: e.target.value })}
                 />
                 <div className="grid grid-cols-2 gap-4">
                   <DatePicker
-                    label="Start Date"
+                    label={t("sprints.startDate")}
                     variant="flat"
                     value={newSprint.startDate ? parseDate(newSprint.startDate.split('T')[0]) : null}
                     onChange={(date: any) => setNewSprint({ ...newSprint, startDate: date?.toString() || "" })}
                   />
                   <DatePicker
-                    label="End Date"
+                    label={t("sprints.endDate")}
                     variant="flat"
                     value={newSprint.endDate ? parseDate(newSprint.endDate.split('T')[0]) : null}
                     onChange={(date: any) => setNewSprint({ ...newSprint, endDate: date?.toString() || "" })}
                   />
                 </div>
                 <Input
-                  label="Goal"
-                  placeholder="What do you want to achieve?"
+                  label={t("sprints.goalLabel")}
+                  placeholder={t("sprints.goalPlaceholder")}
                   variant="flat"
                   value={newSprint.goal}
                   onChange={(e) => setNewSprint({ ...newSprint, goal: e.target.value })}
@@ -214,10 +216,10 @@ export function SprintsPage() {
               </ModalBody>
               <ModalFooter>
                 <Button variant="light" onPress={onClose}>
-                  Cancel
+                  {t("sprints.cancel")}
                 </Button>
                 <Button color="primary" onPress={handleSaveSprint} isLoading={isSubmitting}>
-                  {editingSprintId ? "Save Changes" : "Create Sprint"}
+                  {editingSprintId ? t("sprints.saveChanges") : t("sprints.createBtn")}
                 </Button>
               </ModalFooter>
             </>

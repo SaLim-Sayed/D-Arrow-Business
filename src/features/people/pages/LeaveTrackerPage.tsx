@@ -8,6 +8,7 @@ import { useTranslation } from "react-i18next";
 
 export default function LeaveTrackerPage() {
   const { t } = useTranslation("people");
+  const { t: tc } = useTranslation("common");
   
   const { data: requestsResponse, isLoading } = useLeaveRequestsQuery();
   const requests = requestsResponse?.data || [];
@@ -40,7 +41,7 @@ export default function LeaveTrackerPage() {
         </div>
         <div className="flex gap-2">
           <Button variant="flat" startContent={<Download size={18} />}>
-            Export
+            {tc("actions.export")}
           </Button>
           <Button color="primary" variant="shadow" startContent={<Plus size={18} />} onPress={onOpen}>
             {t("leave_tracker.apply_leave")}
@@ -72,7 +73,7 @@ export default function LeaveTrackerPage() {
               </TableColumn>
             )}
           </TableHeader>
-          <TableBody items={requests} loadingContent={<div>Loading...</div>} isLoading={isLoading}>
+          <TableBody items={requests} loadingContent={<div>{tc("actions.loading")}</div>} isLoading={isLoading}>
             {(item) => (
               <TableRow key={item.id} className="border-b border-default-50 last:border-0 hover:bg-default-50/50 transition-colors">
                 {(columnKey) => (

@@ -25,7 +25,8 @@
     "back": "Back",
     "loading": "Loading...",
     "noResults": "No results found",
-    "viewAll": "View All"
+    "viewAll": "View All",
+    "export": "Export"
   },
   "language": {
     "en": "English",
@@ -70,5 +71,13 @@
       "projects": "Project Assignments",
       "stats": "Status & Priority Stats"
     }
+  },
+  "errors": {
+    "somethingWentWrong": "Something went wrong",
+    "tryAgain": "Try Again",
+    "goBack": "Go Back",
+    "home": "Home",
+    "errorRecovery": "D-Arrow Business HRMS • Error Recovery System",
+    "unexpected": "An unexpected error occurred."
   }
 }

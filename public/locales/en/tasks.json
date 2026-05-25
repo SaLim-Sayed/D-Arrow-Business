@@ -49,7 +49,10 @@
     "noSubtasks": "No subtasks found.",
     "parentTask": "Parent Task",
     "saveChanges": "Save Changes",
-    "createdAt": "Created At"
+    "createdAt": "Created At",
+    "attachedFiles": "Attached Files ({{count}})",
+    "fileIndex": "File {{index}}",
+    "viewFullSize": "View Full Size"
   },
   "form": {
     "createTitle": "Create Task",
@@ -119,5 +122,29 @@
   "errors": {
     "approvePermission": "Only managers and admins can mark a task as Done.",
     "approveOnly": "managers only"
+  },
+  "sprints": {
+    "title": "Sprints",
+    "subtitle": "Manage your team iteration cycles and goals.",
+    "newSprint": "New Sprint",
+    "editSprint": "Edit Sprint",
+    "createSprint": "Create New Sprint",
+    "nameLabel": "Sprint Name",
+    "namePlaceholder": "e.g. Sprint 24: Core Features",
+    "startDate": "Start Date",
+    "endDate": "End Date",
+    "goalLabel": "Goal",
+    "goalPlaceholder": "What do you want to achieve?",
+    "cancel": "Cancel",
+    "saveChanges": "Save Changes",
+    "createBtn": "Create Sprint",
+    "statusActive": "Active",
+    "statusCompleted": "Completed",
+    "statusPlanned": "Planned",
+    "msgFillRequired": "Please fill all required fields",
+    "msgUpdateSuccess": "Sprint updated successfully",
+    "msgCreateSuccess": "Sprint created successfully",
+    "msgUpdateError": "Failed to update sprint",
+    "msgCreateError": "Failed to create sprint"
   }
 }

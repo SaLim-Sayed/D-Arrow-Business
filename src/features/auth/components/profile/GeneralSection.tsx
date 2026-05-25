@@ -14,12 +14,12 @@ interface GeneralSectionProps {
   tp: (key: string) => string;
 }
 
-const USER_ROLES: { value: UserRole; label: string }[] = [
-  { value: "super_admin", label: "Super Admin" },
-  { value: "admin",       label: "Admin" },
-  { value: "manager",     label: "Manager" },
-  { value: "employee",    label: "Employee" },
-  { value: "viewer",      label: "Viewer" },
+const USER_ROLES = [
+  { value: "super_admin", labelKey: "role_super_admin" },
+  { value: "admin",       labelKey: "role_admin" },
+  { value: "manager",     labelKey: "role_manager" },
+  { value: "employee",    labelKey: "role_employee" },
+  { value: "viewer",      labelKey: "role_viewer" },
 ];
 
 export function GeneralSection({
@@ -36,7 +36,7 @@ export function GeneralSection({
   return (
     <Card className="rounded-3xl shadow-premium border-default-100/50 bg-background/60 backdrop-blur-xl overflow-hidden">
       <div className="bg-primary/5 p-6 border-b border-default-100/50 flex justify-between items-center">
-        <h2 className="text-xl font-black tracking-tight">Personal Details</h2>
+        <h2 className="text-xl font-black tracking-tight">{tp("personalDetails")}</h2>
         <Button
           color="primary"
           onPress={onSave}
@@ -44,7 +44,7 @@ export function GeneralSection({
           startContent={<Check size={18} />}
           className="font-bold shadow-lg shadow-primary/20 rounded-2xl"
         >
-          Save Changes
+          {tp("saveChanges")}
         </Button>
       </div>
       <CardBody className="p-8 space-y-6">
@@ -77,7 +77,7 @@ export function GeneralSection({
             className="font-bold"
           >
             {USER_ROLES.map((r) => (
-              <SelectItem key={r.value}>{r.label}</SelectItem>
+              <SelectItem key={r.value}>{tp(r.labelKey)}</SelectItem>
             ))}
           </Select>
         </div>

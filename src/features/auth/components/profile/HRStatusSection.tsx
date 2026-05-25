@@ -7,12 +7,14 @@ interface HRStatusSectionProps {
   approvedLeaves: any[];
   myLeaves: any[];
   onOpenLeave: () => void;
+  tp: (key: string) => string;
 }
 
 export function HRStatusSection({
   approvedLeaves,
   myLeaves,
-  onOpenLeave
+  onOpenLeave,
+  tp
 }: HRStatusSectionProps) {
   return (
     <div className="space-y-6">
@@ -25,7 +27,7 @@ export function HRStatusSection({
             <div className="space-y-8">
                <h3 className="text-xl font-black flex items-center gap-3">
                  <Zap size={24} className="text-primary" />
-                 HR Statistics
+                 {tp("hrStatistics")}
                </h3>
                <div className="grid grid-cols-2 gap-6">
                   <motion.div 
@@ -33,14 +35,14 @@ export function HRStatusSection({
                     className="p-6 rounded-[2rem] bg-success/5 border border-success/20 flex flex-col items-center justify-center text-center space-y-2"
                   >
                      <span className="text-4xl font-black text-success tracking-tighter">{approvedLeaves.length}</span>
-                     <span className="text-[10px] font-black text-success/60 uppercase tracking-widest leading-none">Approved<br/>Leaves</span>
+                     <span className="text-[10px] font-black text-success/60 uppercase tracking-widest leading-none" dangerouslySetInnerHTML={{ __html: tp("approvedLeaves").replace(" ", "<br/>") }}></span>
                   </motion.div>
                   <motion.div 
                     whileHover={{ y: -5 }}
                     className="p-6 rounded-[2rem] bg-primary/5 border border-primary/20 flex flex-col items-center justify-center text-center space-y-2"
                   >
                      <span className="text-4xl font-black text-primary tracking-tighter">{myLeaves.filter(l => l.status === 'pending').length}</span>
-                     <span className="text-[10px] font-black text-primary/60 uppercase tracking-widest leading-none">Pending<br/>Review</span>
+                     <span className="text-[10px] font-black text-primary/60 uppercase tracking-widest leading-none" dangerouslySetInnerHTML={{ __html: tp("pendingReview").replace(" ", "<br/>") }}></span>
                   </motion.div>
                </div>
                <Button 
@@ -51,14 +53,14 @@ export function HRStatusSection({
                  onPress={onOpenLeave}
                  startContent={<Coffee size={24} />}
                >
-                 Request Time Off
+                 {tp("requestTimeOff")}
                </Button>
             </div>
 
             <div className="space-y-6">
                <h3 className="text-lg font-black flex items-center gap-3">
                  <History size={20} className="text-primary" />
-                 Leave History
+                 {tp("leaveHistory")}
                </h3>
                <div className="space-y-3">
                  {myLeaves.length > 0 ? myLeaves.slice(0, 3).map(leave => (
@@ -78,7 +80,7 @@ export function HRStatusSection({
                    </div>
                  )) : (
                    <div className="p-8 border-2 border-dashed border-default-100 rounded-3xl text-center">
-                     <p className="text-sm text-default-400 italic">No leave history found</p>
+                     <p className="text-sm text-default-400 italic">{tp("noLeaveHistory")}</p>
                    </div>
                  )}
                </div>

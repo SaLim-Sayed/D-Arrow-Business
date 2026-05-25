@@ -36,10 +36,10 @@ export function ApprovalsPage() {
     if (!companyId || !user) return;
     try {
       await PeopleService.updateLeaveRequestStatus(companyId, requestId, status, user.id);
-      toast.success(`Request ${status} successfully`);
+      toast.success(t(`approvals.msg_${status}_success`));
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.people.leaveRequests(companyId) });
     } catch (error) {
-      toast.error("Failed to update request");
+      toast.error(t("approvals.msg_update_error"));
     }
   };
 
@@ -55,8 +55,8 @@ export function ApprovalsPage() {
     return (
       <div className="container mx-auto p-6 flex flex-col items-center justify-center h-[60vh] gap-4">
         <X size={48} className="text-danger" />
-        <h2 className="text-2xl font-bold">Access Denied</h2>
-        <p className="text-default-500">You do not have permission to view approvals.</p>
+        <h2 className="text-2xl font-bold">{t("approvals.access_denied")}</h2>
+        <p className="text-default-500">{t("approvals.no_permission")}</p>
       </div>
     );
   }

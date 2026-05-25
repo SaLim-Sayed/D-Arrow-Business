@@ -98,7 +98,15 @@
     "col_rating": "RATING",
     "col_status": "STATUS",
     "col_actions": "ACTIONS",
-    "view_details": "View Details"
+    "view_details": "View Details",
+    "start_cycle": "Start Cycle",
+    "appraisals": "Appraisals",
+    "recent_appraisals": "Recent Appraisals",
+    "manage_cycle": "Manage Cycle",
+    "grade": "Grade",
+    "points": "Points",
+    "manager_review": "Manager Review",
+    "to": "to"
   },
   "profile": {
     "not_found": "Employee Not Found",

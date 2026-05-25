@@ -49,7 +49,10 @@
     "noSubtasks": "لا توجد مهام فرعية.",
     "parentTask": "المهمة الأساسية",
     "saveChanges": "حفظ التغييرات",
-    "createdAt": "تاريخ الإنشاء"
+    "createdAt": "تاريخ الإنشاء",
+    "attachedFiles": "الملفات المرفقة ({{count}})",
+    "fileIndex": "ملف {{index}}",
+    "viewFullSize": "عرض بالحجم الكامل"
   },
   "form": {
     "createTitle": "إنشاء مهمة",
@@ -108,5 +111,29 @@
   "errors": {
     "approvePermission": "فقط المديرون والمشرفون يمكنهم نقل المهمة إلى حالة 'مكتمل'.",
     "approveOnly": "للمديرين فقط"
+  },
+  "sprints": {
+    "title": "مراحل العمل (Sprints)",
+    "subtitle": "إدارة دورات عمل فريقك والأهداف.",
+    "newSprint": "مرحلة جديدة",
+    "editSprint": "تعديل المرحلة",
+    "createSprint": "إنشاء مرحلة جديدة",
+    "nameLabel": "اسم المرحلة",
+    "namePlaceholder": "مثال: المرحلة ٢٤: الميزات الأساسية",
+    "startDate": "تاريخ البدء",
+    "endDate": "تاريخ الانتهاء",
+    "goalLabel": "الهدف",
+    "goalPlaceholder": "ما الذي تريد تحقيقه؟",
+    "cancel": "إلغاء",
+    "saveChanges": "حفظ التغييرات",
+    "createBtn": "إنشاء مرحلة",
+    "statusActive": "نشط",
+    "statusCompleted": "مكتمل",
+    "statusPlanned": "مخطط",
+    "msgFillRequired": "يرجى تعبئة جميع الحقول المطلوبة",
+    "msgUpdateSuccess": "تم تحديث المرحلة بنجاح",
+    "msgCreateSuccess": "تم إنشاء المرحلة بنجاح",
+    "msgUpdateError": "فشل تحديث المرحلة",
+    "msgCreateError": "فشل إنشاء المرحلة"
   }
 }

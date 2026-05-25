@@ -25,5 +25,21 @@
   "passwordSuccess": "تم تحديث كلمة المرور بنجاح",
   "passwordError": "فشل تحديث كلمة المرور",
   "invalidCurrentPassword": "كلمة المرور الحالية غير صحيحة",
-  "requiresRecentLogin": "يرجى تسجيل الخروج ثم تسجيل الدخول مرة أخرى لتغيير كلمة المرور لأسباب أمنية."
+  "requiresRecentLogin": "يرجى تسجيل الخروج ثم تسجيل الدخول مرة أخرى لتغيير كلمة المرور لأسباب أمنية.",
+  "personalDetails": "التفاصيل الشخصية",
+  "saveChanges": "حفظ التغييرات",
+  "updatePassword": "تحديث كلمة المرور",
+  "generalInfo": "معلومات عامة",
+  "hrStatus": "حالة الموارد البشرية",
+  "hrStatistics": "إحصائيات الموارد البشرية",
+  "approvedLeaves": "الإجازات المعتمدة",
+  "pendingReview": "قيد المراجعة",
+  "requestTimeOff": "طلب إجازة",
+  "leaveHistory": "سجل الإجازات",
+  "noLeaveHistory": "لا يوجد سجل إجازات",
+  "role_super_admin": "مدير عام",
+  "role_admin": "مسؤول",
+  "role_manager": "مدير",
+  "role_employee": "موظف",
+  "role_viewer": "مشاهد"
 }

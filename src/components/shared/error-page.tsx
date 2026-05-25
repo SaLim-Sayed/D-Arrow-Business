@@ -3,11 +3,14 @@ import { Button, Card, CardBody } from "@heroui/react";
 import { AlertTriangle, Home, RefreshCw, ChevronLeft } from "lucide-react";
 import { motion } from "framer-motion";
 
+import { useTranslation } from "react-i18next";
+
 export function ErrorPage() {
+  const { t } = useTranslation("common");
   const error = useRouteError();
   const navigate = useNavigate();
 
-  let errorMessage = "An unexpected error occurred.";
+  let errorMessage = t("errors.unexpected");
   let errorStatus = 500;
 
   if (isRouteErrorResponse(error)) {
@@ -45,7 +48,7 @@ export function ErrorPage() {
 
             <div className="space-y-3">
               <h1 className="text-3xl font-black tracking-tight text-foreground">
-                Something went wrong
+                {t("errors.somethingWentWrong")}
               </h1>
               <p className="text-default-500 font-medium leading-relaxed">
                 {errorMessage}
@@ -61,7 +64,7 @@ export function ErrorPage() {
                 startContent={<RefreshCw size={18} />}
                 onPress={() => window.location.reload()}
               >
-                Try Again
+                {t("errors.tryAgain")}
               </Button>
               
               <div className="grid grid-cols-2 gap-3">
@@ -72,7 +75,7 @@ export function ErrorPage() {
                   startContent={<ChevronLeft size={18} />}
                   onPress={() => navigate(-1)}
                 >
-                  Go Back
+                  {t("errors.goBack")}
                 </Button>
                 <Button
                   variant="flat"
@@ -81,13 +84,13 @@ export function ErrorPage() {
                   startContent={<Home size={18} />}
                   onPress={() => navigate("/")}
                 >
-                  Home
+                  {t("errors.home")}
                 </Button>
               </div>
             </div>
 
             <p className="text-[10px] text-default-400 font-black uppercase tracking-widest pt-4">
-              D-Arrow Business HRMS • Error Recovery System
+              {t("errors.errorRecovery")}
             </p>
           </CardBody>
         </Card>

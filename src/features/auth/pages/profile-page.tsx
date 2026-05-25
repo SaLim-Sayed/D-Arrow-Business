@@ -207,7 +207,7 @@ export function ProfilePage() {
         <Card className="lg:col-span-3 rounded-3xl shadow-premium border-default-100/50 bg-background/60 backdrop-blur-xl p-2 h-fit sticky top-24">
           <div className="flex flex-col gap-1">
             {[
-              { id: "general", label: "General Info", icon: <User size={18} /> },
+              { id: "general", label: tp("generalInfo"), icon: <User size={18} /> },
               { id: "hr", label: tp("hrStatus", "HR Status"), icon: <Clock size={18} /> },
               { id: "security", label: tp("security"), icon: <Shield size={18} /> },
             ].map((tab) => (
@@ -254,6 +254,7 @@ export function ProfilePage() {
                   approvedLeaves={approvedLeaves}
                   myLeaves={myLeaves}
                   onOpenLeave={onOpenLeave}
+                  tp={tp}
                 />
               )}
 

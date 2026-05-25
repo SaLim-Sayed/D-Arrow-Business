@@ -98,7 +98,15 @@
     "col_rating": "التقييم",
     "col_status": "الحالة",
     "col_actions": "الإجراءات",
-    "view_details": "عرض التفاصيل"
+    "view_details": "عرض التفاصيل",
+    "start_cycle": "بدء الدورة",
+    "appraisals": "التقييمات",
+    "recent_appraisals": "التقييمات الأخيرة",
+    "manage_cycle": "إدارة الدورة",
+    "grade": "الدرجة",
+    "points": "النقاط",
+    "manager_review": "مراجعة المدير",
+    "to": "إلى"
   },
   "profile": {
     "not_found": "الموظف غير موجود",

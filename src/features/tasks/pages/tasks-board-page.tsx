@@ -33,7 +33,7 @@ export function TasksBoardPage() {
     }
   }, [searchParams, setFilter]);
 
-  const tabs = [{ label: "Board", path: "/tasks/board", active: true }];
+  const tabs = [{ label: tc("nav.taskBoard"), path: "/tasks/board", active: true }];
 
   const priorities = ["low", "medium", "high", "urgent"];
 
