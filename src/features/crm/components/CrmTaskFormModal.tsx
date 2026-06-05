@@ -217,7 +217,9 @@ export function CrmTaskFormModal({ isOpen, onOpenChange, task }: CrmTaskFormModa
                           )
                         : null
                     }
-                    onChange={(date) => field.onChange(date?.toString() ?? null)}
+                    onChange={(date: { toString(): string } | null) =>
+                      field.onChange(date?.toString() ?? null)
+                    }
                   />
                 )}
               />

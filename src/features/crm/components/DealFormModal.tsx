@@ -194,7 +194,9 @@ export function DealFormModal({ isOpen, onOpenChange, deal }: DealFormModalProps
                           )
                         : null
                     }
-                    onChange={(date) => field.onChange(date?.toString() ?? null)}
+                    onChange={(date: { toString(): string } | null) =>
+                      field.onChange(date?.toString() ?? null)
+                    }
                   />
                 )}
               />
