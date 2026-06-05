@@ -51,7 +51,7 @@ import { CrmNotesSection } from "../components/shared/CrmNotesSection";
 import { CrmAttachmentsSection } from "../components/shared/CrmAttachmentsSection";
 import { CrmTimeline } from "../components/shared/CrmTimeline";
 import { contactDisplayName } from "../utils/contacts-list.utils";
-import { formatDate } from "@/lib/utils";
+import { formatDate, formatCurrency } from "@/lib/utils";
 import { normalizeCrmTaskStatus } from "../constants/crm-task.constants";
 
 export function ContactDetailPage() {
@@ -210,7 +210,7 @@ export function ContactDetailPage() {
                       <TableCell>{deal.title}</TableCell>
                       <TableCell>{t(`deals.stage.${deal.stage}`)}</TableCell>
                       <TableCell>
-                        {deal.amount} {deal.currency}
+                        {formatCurrency(deal.amount, deal.currency)}
                       </TableCell>
                       <TableCell>
                         <Button

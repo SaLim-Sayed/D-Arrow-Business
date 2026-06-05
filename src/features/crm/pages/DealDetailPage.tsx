@@ -37,17 +37,13 @@ import { contactDisplayName } from "../utils/contacts-list.utils";
 import { CrmRecordLayout, CrmRecordHeader } from "../components/CrmRecordLayout";
 import { CrmStageBar } from "../components/CrmStageBar";
 import { CrmSmartButtons } from "../components/CrmSmartButtons";
-import { formatDate } from "@/lib/utils";
+import { formatDate, formatCurrency } from "@/lib/utils";
 import { normalizeCrmTaskStatus } from "../constants/crm-task.constants";
 import type { DealStage } from "../types/deals.types";
 import type { ActivityType } from "../types/activities.types";
 
 function formatAmount(amount: number, currency: string) {
-  return new Intl.NumberFormat(undefined, {
-    style: "currency",
-    currency: currency || "USD",
-    maximumFractionDigits: 0,
-  }).format(amount);
+  return formatCurrency(amount, currency);
 }
 
 export function DealDetailPage() {

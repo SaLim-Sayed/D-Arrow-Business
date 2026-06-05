@@ -20,6 +20,7 @@ import { dealFormSchema, toCreateDealDTO, type DealFormValues } from "../schemas
 import { useCreateDealMutation, useUpdateDealMutation } from "../hooks/use-deals";
 import { useContactsQuery } from "../hooks/use-contacts";
 import { DEAL_STAGES, normalizeDealStage } from "../constants/deal-workflow";
+import { normalizeCurrencyCode } from "@/lib/utils";
 import type { Deal } from "../types/deals.types";
 
 interface DealFormModalProps {
@@ -68,7 +69,7 @@ export function DealFormModal({ isOpen, onOpenChange, deal }: DealFormModalProps
         title: deal.title,
         contactId: deal.contactId ?? null,
         amount: deal.amount,
-        currency: deal.currency,
+        currency: normalizeCurrencyCode(deal.currency),
         stage: normalizeDealStage(deal.stage),
         probability: deal.probability,
         expectedCloseDate: deal.expectedCloseDate ?? null,

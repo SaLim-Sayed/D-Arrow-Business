@@ -1,11 +1,16 @@
 import { z } from "zod";
+import { normalizeCurrencyCode } from "@/lib/utils";
 import type { CreateDealDTO } from "../types/deals.types";
 
 export const dealFormSchema = z.object({
   title: z.string().min(2, "Title is required"),
   contactId: z.string().nullable().optional(),
   amount: z.number().min(0, "Amount must be positive"),
-  currency: z.string().min(1),
+  currency: z
+    .string()
+    .min(1)
+    .transform((v) => normalizeCurrencyCode(v))
+    .refine((v) => /^[A-Z]{3}$/.test(v), "Use a 3-letter currency code (e.g. USD)"),
   stage: z.enum([
     "lead",
     "contacted",
@@ -27,7 +32,7 @@ export function toCreateDealDTO(values: DealFormValues): CreateDealDTO {
     title: values.title.trim(),
     contactId: values.contactId ?? null,
     amount: values.amount,
-    currency: values.currency || "USD",
+    currency: normalizeCurrencyCode(values.currency),
     stage: values.stage,
     probability: values.probability ?? 0,
     expectedCloseDate: values.expectedCloseDate ?? null,

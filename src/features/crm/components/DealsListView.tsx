@@ -17,13 +17,10 @@ import { LoadingSpinner } from "@/components/shared/loading-spinner";
 import { DEAL_STAGE_COLORS, normalizeDealStage } from "../constants/deal-workflow";
 import type { DealStage } from "../types/deals.types";
 import { contactDisplayName } from "../utils/contacts-list.utils";
+import { formatCurrency } from "@/lib/utils";
 
 function formatAmount(amount: number, currency: string) {
-  return new Intl.NumberFormat(undefined, {
-    style: "currency",
-    currency: currency || "USD",
-    maximumFractionDigits: 0,
-  }).format(amount);
+  return formatCurrency(amount, currency);
 }
 
 export function DealsListView() {

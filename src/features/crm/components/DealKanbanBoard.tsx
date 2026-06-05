@@ -8,7 +8,7 @@ import {
 } from "@hello-pangea/dnd";
 import { Card, CardBody } from "@heroui/react";
 import { LoadingSpinner } from "@/components/shared/loading-spinner";
-import { cn } from "@/lib/utils";
+import { cn, formatCurrency } from "@/lib/utils";
 import { useDealsQuery, useUpdateDealStageMutation } from "../hooks/use-deals";
 import { useContactsQuery } from "../hooks/use-contacts";
 import { DEAL_STAGES, normalizeDealStage } from "../constants/deal-workflow";
@@ -16,11 +16,7 @@ import type { Deal, DealStage } from "../types/deals.types";
 import type { Contact } from "../types/contacts.types";
 
 function formatDealAmount(amount: number, currency: string) {
-  return new Intl.NumberFormat(undefined, {
-    style: "currency",
-    currency: currency || "USD",
-    maximumFractionDigits: 0,
-  }).format(amount);
+  return formatCurrency(amount, currency);
 }
 
 function contactDisplayName(contact: Contact | undefined) {
