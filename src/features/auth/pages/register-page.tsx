@@ -45,7 +45,7 @@ export function RegisterPage() {
     try {
       await AuthService.register(data);
       initialize(); // Re-initialize store to pick up new user
-      navigate("/tasks/dashboard", { replace: true });
+      navigate("/", { replace: true });
     } catch (err: any) {
       setError(err?.message || t("register.error"));
     }

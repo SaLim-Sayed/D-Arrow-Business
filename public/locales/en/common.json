@@ -10,7 +10,40 @@
     "analytics": "Analytics",
     "seed": "Seed Data",
     "people": "People & HR",
-    "settings": "Settings"
+    "settings": "Settings",
+    "leave": "Leave",
+    "approvals": "Approvals",
+    "timesheets": "Timesheets",
+    "performance": "Performance"
+  },
+  "portals": {
+    "pickerTitle": "Choose your workspace",
+    "pickerSubtitle": "Select a portal to get started",
+    "allApps": "All apps",
+    "switchPortal": "Switch portal",
+    "active": "Active",
+    "deniedTitle": "Access denied",
+    "tasks": {
+      "title": "Tasks",
+      "short": "Tasks",
+      "description": "Delivery, projects, and sprint planning",
+      "stat": "{{count}} open tasks",
+      "denied": "You do not have access to the Tasks portal."
+    },
+    "crm": {
+      "title": "CRM",
+      "short": "CRM",
+      "description": "Leads, contacts, deals, and sales pipeline",
+      "stat": "{{count}} leads",
+      "denied": "You do not have access to the CRM portal."
+    },
+    "people": {
+      "title": "People & HR",
+      "short": "People",
+      "description": "Employees, leave, approvals, and performance",
+      "stat": "{{count}} pending approvals",
+      "denied": "You do not have access to the People portal."
+    }
   },
   "actions": {
     "save": "Save",

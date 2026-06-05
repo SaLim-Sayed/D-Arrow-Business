@@ -1,4 +1,4 @@
-
+import { PageHeader } from "@/components/shared/page-header";
 import { Button, Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Chip, useDisclosure } from "@heroui/react";
 import { Plus, Calendar, Download } from "lucide-react";
 import { LeaveBalanceCards } from "../components/LeaveBalanceCards";
@@ -29,25 +29,22 @@ export default function LeaveTrackerPage() {
   };
 
   return (
-    <div className="container mx-auto p-6 space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <div>
-          <h1 className="text-3xl font-black tracking-tight text-foreground">
-            {t("leave_tracker.title")}
-          </h1>
-          <p className="text-default-500 font-medium">
-            {t("leave_tracker.subtitle")}
-          </p>
-        </div>
-        <div className="flex gap-2">
-          <Button variant="flat" startContent={<Download size={18} />}>
-            {tc("actions.export")}
-          </Button>
-          <Button color="primary" variant="shadow" startContent={<Plus size={18} />} onPress={onOpen}>
-            {t("leave_tracker.apply_leave")}
-          </Button>
-        </div>
-      </div>
+    <div className="space-y-8">
+      <PageHeader
+        title={t("leave_tracker.title")}
+        description={t("leave_tracker.subtitle")}
+        eyebrow={tc("portals.people.short")}
+        actions={
+          <>
+            <Button variant="flat" startContent={<Download size={18} />}>
+              {tc("actions.export")}
+            </Button>
+            <Button color="primary" variant="shadow" className="rounded-full font-bold" startContent={<Plus size={18} />} onPress={onOpen}>
+              {t("leave_tracker.apply_leave")}
+            </Button>
+          </>
+        }
+      />
 
       <ApplyLeaveModal isOpen={isOpen} onOpenChange={onOpenChange} />
 

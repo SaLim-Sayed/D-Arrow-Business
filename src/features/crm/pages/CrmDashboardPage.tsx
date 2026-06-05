@@ -1,10 +1,10 @@
 import { useTranslation } from "react-i18next";
 import { Card, CardBody, CardHeader } from "@heroui/react";
 import { PageHeader } from "@/components/shared/page-header";
+import { StatCard, StatCardGrid } from "@/components/shared/stat-card";
 import { useCrmAnalytics } from "../hooks/use-crm-analytics";
 import { Target, Users, Handshake, Trophy, XCircle, DollarSign, TrendingUp } from "lucide-react";
-import { Link } from "react-router-dom";
-import { Button } from "@heroui/react";
+import { PrimaryActionButton } from "@/components/shared/primary-action-button";
 
 function BarChart({
   data,
@@ -68,57 +68,50 @@ export function CrmDashboardPage() {
   const { kpis, funnel, leadsBySource, dealsByStage, revenueByMonth } = useCrmAnalytics();
 
   const statCards = [
-    { label: t("dashboard.stats.leads"), value: kpis.totalLeads, icon: Target, color: "text-primary" },
-    { label: t("dashboard.stats.contacts"), value: kpis.totalContacts, icon: Users, color: "text-success" },
-    { label: t("dashboard.stats.activeDeals"), value: kpis.activeDeals, icon: Handshake, color: "text-warning" },
-    { label: t("dashboard.stats.wonDeals"), value: kpis.wonDeals, icon: Trophy, color: "text-success" },
-    { label: t("dashboard.stats.lostDeals"), value: kpis.lostDeals, icon: XCircle, color: "text-danger" },
+    { label: t("dashboard.stats.leads"), value: kpis.totalLeads, icon: Target, color: "text-primary", bg: "bg-primary/10", gradient: "from-primary/20 to-orange-500/20" },
+    { label: t("dashboard.stats.contacts"), value: kpis.totalContacts, icon: Users, color: "text-success", bg: "bg-success/10", gradient: "from-success/20 to-emerald-500/20" },
+    { label: t("dashboard.stats.activeDeals"), value: kpis.activeDeals, icon: Handshake, color: "text-warning", bg: "bg-warning/10", gradient: "from-warning/20 to-amber-500/20" },
+    { label: t("dashboard.stats.wonDeals"), value: kpis.wonDeals, icon: Trophy, color: "text-success", bg: "bg-success/10", gradient: "from-emerald-500/20 to-teal-500/20" },
+    { label: t("dashboard.stats.lostDeals"), value: kpis.lostDeals, icon: XCircle, color: "text-danger", bg: "bg-danger/10", gradient: "from-danger/20 to-rose-500/20" },
     {
       label: t("dashboard.stats.expectedRevenue"),
       value: `$${kpis.expectedRevenue.toLocaleString(undefined, { maximumFractionDigits: 0 })}`,
       icon: DollarSign,
       color: "text-secondary",
+      bg: "bg-secondary/10",
+      gradient: "from-secondary/20 to-pink-500/20",
     },
     {
       label: t("dashboard.stats.conversionRate"),
       value: `${kpis.conversionRate}%`,
       icon: TrendingUp,
       color: "text-primary",
+      bg: "bg-primary/10",
+      gradient: "from-primary/20 to-secondary/20",
     },
   ];
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-500">
+    <div className="space-y-6">
       <PageHeader
         title={t("dashboard.title")}
         description={t("dashboard.description")}
+        eyebrow={t("nav.dashboard")}
         actions={
-          <Button as={Link} to="/crm/reports" variant="flat" color="primary" className="rounded-full font-bold">
+          <PrimaryActionButton to="/crm/reports" variant="flat">
             {t("nav.reports")}
-          </Button>
+          </PrimaryActionButton>
         }
       />
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7 gap-3">
+      <StatCardGrid columns="grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7">
         {statCards.map((s) => (
-          <Card key={s.label} className="border border-default-100 shadow-sm">
-            <CardBody className="p-4 flex items-center gap-3">
-              <div className={`p-2.5 rounded-xl bg-default-100 ${s.color}`}>
-                <s.icon className="w-5 h-5" />
-              </div>
-              <div className="min-w-0">
-                <p className="text-[10px] font-bold text-default-500 uppercase tracking-wide truncate">
-                  {s.label}
-                </p>
-                <p className="text-xl font-black">{s.value}</p>
-              </div>
-            </CardBody>
-          </Card>
+          <StatCard key={s.label} {...s} />
         ))}
-      </div>
+      </StatCardGrid>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <Card className="border border-default-100">
+        <Card className="glass-card border-none">
           <CardHeader className="pb-0">
             <h3 className="font-bold">{t("dashboard.funnel.title")}</h3>
           </CardHeader>
@@ -127,7 +120,7 @@ export function CrmDashboardPage() {
           </CardBody>
         </Card>
 
-        <Card className="border border-default-100">
+        <Card className="glass-card border-none">
           <CardHeader className="pb-0">
             <h3 className="font-bold">{t("dashboard.charts.leadsBySource")}</h3>
           </CardHeader>
@@ -139,7 +132,7 @@ export function CrmDashboardPage() {
           </CardBody>
         </Card>
 
-        <Card className="border border-default-100">
+        <Card className="glass-card border-none">
           <CardHeader className="pb-0">
             <h3 className="font-bold">{t("dashboard.charts.dealsByStage")}</h3>
           </CardHeader>
@@ -151,7 +144,7 @@ export function CrmDashboardPage() {
           </CardBody>
         </Card>
 
-        <Card className="border border-default-100">
+        <Card className="glass-card border-none">
           <CardHeader className="pb-0">
             <h3 className="font-bold">{t("dashboard.charts.revenueByMonth")}</h3>
           </CardHeader>

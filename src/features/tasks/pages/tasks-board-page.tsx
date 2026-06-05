@@ -46,7 +46,7 @@ export function TasksBoardPage() {
   const hasActiveFilters = !!filters.search || filters.priority.length > 0 || !!filters.assigneeId || !!filters.sprintId;
 
   return (
-    <div className="h-[calc(100vh-4rem)] flex flex-col -m-6 animate-in fade-in duration-700 bg-background">
+    <div className="h-[calc(100dvh-var(--header-height))] flex flex-col animate-in fade-in duration-700 bg-background">
       {/* Integrated Header - Jira Style */}
       <div className="px-8 pt-8 pb-4 flex flex-col gap-6 border-b border-default-100 dark:border-default-50/20">
         <div className="flex items-center justify-between">

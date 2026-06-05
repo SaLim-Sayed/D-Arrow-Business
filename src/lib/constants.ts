@@ -8,6 +8,7 @@ export const STORAGE_KEYS = {
   REFRESH_TOKEN: "d-arrow-refresh-token",
   AUTH_STORE: "d-arrow-auth-store",
   TASKS_STORE: "d-arrow-tasks-store",
+  LAST_PORTAL: "d-arrow-last-portal",
 } as const;
 
 export const QUERY_KEYS = {

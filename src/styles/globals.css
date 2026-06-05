@@ -35,6 +35,15 @@
     @apply hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300;
   }
 
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
   .animate-shimmer {
     background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.08) 50%, transparent 100%);
     background-size: 200% 100%;
@@ -69,6 +78,13 @@
   :root {
     --radius: 1rem;
     --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+    --header-height: 3.5rem;
+  }
+
+  @media (min-width: 640px) {
+    :root {
+      --header-height: 4rem;
+    }
   }
 
   * {

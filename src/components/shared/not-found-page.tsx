@@ -47,7 +47,7 @@ export function NotFoundPage() {
               variant="flat"
               size="lg"
               className="font-bold rounded-2xl h-14"
-              onPress={() => navigate("/tasks/dashboard")}
+              onPress={() => navigate("/")}
             >
               {t("notFound.returnToDashboard")}
             </Button>

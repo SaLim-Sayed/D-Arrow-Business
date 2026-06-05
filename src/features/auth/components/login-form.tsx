@@ -25,7 +25,7 @@ export function LoginForm() {
 
   const from =
     (location.state as { from?: { pathname: string } })?.from?.pathname ||
-    "/tasks/dashboard";
+    "/";
 
   const {
     control,

@@ -6,6 +6,8 @@ import { ForgotPasswordPage } from "@/features/auth/pages/forgot-password-page";
 import { ResetPasswordPage } from "@/features/auth/pages/reset-password-page";
 import { ProtectedRoute } from "@/features/auth/components/protected-route";
 import { AppLayout } from "@/components/layout/app-layout";
+import { PortalPickerPage } from "@/features/portals/pages/PortalPickerPage";
+import { TasksLayout } from "@/features/tasks/components/TasksLayout";
 import { TasksDashboardPage } from "@/features/tasks/pages/tasks-dashboard-page";
 import { TasksListPage } from "@/features/tasks/pages/tasks-list-page";
 import { TasksBoardPage } from "@/features/tasks/pages/tasks-board-page";
@@ -22,6 +24,7 @@ import { DealsPipelinePage } from "@/features/crm/pages/DealsPipelinePage";
 import { DealDetailPage } from "@/features/crm/pages/DealDetailPage";
 import { CrmTasksPage } from "@/features/crm/pages/CrmTasksPage";
 import { CrmReportsPage } from "@/features/crm/pages/CrmReportsPage";
+import { PeopleLayout } from "@/features/people/components/PeopleLayout";
 import { SeedPage } from "@/features/admin/pages/SeedPage";
 import PeopleDashboardPage from "@/features/people/pages/PeopleDashboardPage";
 import LeaveTrackerPage from "@/features/people/pages/LeaveTrackerPage";
@@ -63,7 +66,23 @@ export const router = createBrowserRouter([
         children: [
           {
             index: true,
-            element: <Navigate to="/tasks/dashboard" replace />,
+            element: <PortalPickerPage />,
+          },
+          {
+            path: "tasks",
+            element: <TasksLayout />,
+            children: [
+              { index: true, element: <TasksDashboardPage /> },
+              { path: "list", element: <TasksListPage /> },
+              { path: "board", element: <TasksBoardPage /> },
+              { path: "sprints", element: <SprintsPage /> },
+              { path: "new", element: <TaskCreatePage /> },
+              { path: ":taskId", element: <TaskDetailPage /> },
+            ],
+          },
+          {
+            path: "tasks/dashboard",
+            element: <Navigate to="/tasks" replace />,
           },
           {
             path: "crm",
@@ -81,52 +100,16 @@ export const router = createBrowserRouter([
             ],
           },
           {
-            path: "tasks/dashboard",
-            element: <TasksDashboardPage />,
-          },
-          {
-            path: "tasks/list",
-            element: <TasksListPage />,
-          },
-          {
-            path: "tasks/board",
-            element: <TasksBoardPage />,
-          },
-          {
-            path: "tasks/new",
-            element: <TaskCreatePage />,
-          },
-          {
-            path: "tasks/sprints",
-            element: <SprintsPage />,
-          },
-          {
-            path: "tasks/:taskId",
-            element: <TaskDetailPage />,
-          },
-          {
             path: "people",
-            element: <PeopleDashboardPage />,
-          },
-          {
-            path: "people/leave",
-            element: <LeaveTrackerPage />,
-          },
-          {
-            path: "people/approvals",
-            element: <ApprovalsPage />,
-          },
-          {
-            path: "people/performance",
-            element: <PerformancePage />,
-          },
-          {
-            path: "people/timesheets",
-            element: <TimesheetsPage />,
-          },
-          {
-            path: "people/:id",
-            element: <EmployeeProfilePage />,
+            element: <PeopleLayout />,
+            children: [
+              { index: true, element: <PeopleDashboardPage /> },
+              { path: "leave", element: <LeaveTrackerPage /> },
+              { path: "approvals", element: <ApprovalsPage /> },
+              { path: "performance", element: <PerformancePage /> },
+              { path: "timesheets", element: <TimesheetsPage /> },
+              { path: ":id", element: <EmployeeProfilePage /> },
+            ],
           },
           {
             path: "seed",

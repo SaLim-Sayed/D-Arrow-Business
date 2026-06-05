@@ -1,0 +1,35 @@
+import type { PortalId } from "@/lib/portal-permissions";
+import { CheckSquare, Handshake, ListTodo } from "lucide-react";
+
+export const PORTAL_META: Record<
+  PortalId,
+  {
+    icon: typeof ListTodo;
+    titleKey: string;
+    descKey: string;
+    shortKey: string;
+    statKey: string;
+  }
+> = {
+  tasks: {
+    icon: ListTodo,
+    titleKey: "portals.tasks.title",
+    descKey: "portals.tasks.description",
+    shortKey: "portals.tasks.short",
+    statKey: "portals.tasks.stat",
+  },
+  crm: {
+    icon: Handshake,
+    titleKey: "portals.crm.title",
+    descKey: "portals.crm.description",
+    shortKey: "portals.crm.short",
+    statKey: "portals.crm.stat",
+  },
+  people: {
+    icon: CheckSquare,
+    titleKey: "portals.people.title",
+    descKey: "portals.people.description",
+    shortKey: "portals.people.short",
+    statKey: "portals.people.stat",
+  },
+};

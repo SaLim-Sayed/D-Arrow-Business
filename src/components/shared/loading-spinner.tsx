@@ -6,13 +6,18 @@ interface LoadingSpinnerProps {
   size?: "sm" | "md" | "lg";
 }
 
-export function LoadingSpinner({ 
+export function LoadingSpinner({
   className,
-  size = "md" 
+  size = "md",
 }: LoadingSpinnerProps) {
   return (
-    <div className={cn("flex items-center justify-center p-4", className)}>
-      <Spinner color="secondary" size={size} />
+    <div
+      className={cn(
+        "flex min-h-[40vh] items-center justify-center p-8",
+        className
+      )}
+    >
+      <Spinner color="primary" size={size} label="Loading..." />
     </div>
   );
 }

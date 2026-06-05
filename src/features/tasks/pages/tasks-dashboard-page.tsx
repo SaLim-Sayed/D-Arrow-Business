@@ -1,11 +1,12 @@
-import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { useAllTasksQuery } from "../hooks/use-tasks";
 import { TaskStatsCards } from "../components/task-stats-cards";
 import { TaskCharts } from "../components/task-chart";
 import { PageHeader } from "@/components/shared/page-header";
 import { LoadingSpinner } from "@/components/shared/loading-spinner";
 import { Card, CardHeader, CardBody, Avatar } from "@heroui/react";
+import { PrimaryActionButton } from "@/components/shared/primary-action-button";
 import { Plus } from "lucide-react";
 import { formatDate } from "@/lib/utils";
 import { StatusBadge } from "@/components/shared/status-badge";
@@ -28,25 +29,17 @@ export function TasksDashboardPage() {
     .slice(0, 8);
 
   return (
-    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-      <div className="flex flex-col gap-2">
-        <h2 className="text-[10px] font-black text-primary uppercase tracking-[0.3em] opacity-70">
-          {tc("nav.dashboard")}
-        </h2>
-        <PageHeader
-          title={t("dashboard.title")}
-          description={t("dashboard.subtitle")}
-          actions={
-            <Link 
-              to="/tasks/new" 
-              className="inline-flex items-center justify-center rounded-full bg-primary px-6 py-3 text-sm font-black text-white shadow-xl shadow-primary/40 hover:bg-primary/90 hover:scale-105 active:scale-95 transition-all gap-2"
-            >
-              <Plus className="h-4 w-4 stroke-[4px]" />
-              {t("list.newTask")}
-            </Link>
-          }
-        />
-      </div>
+    <div className="space-y-8">
+      <PageHeader
+        eyebrow={tc("nav.dashboard")}
+        title={t("dashboard.title")}
+        description={t("dashboard.subtitle")}
+        actions={
+          <PrimaryActionButton to="/tasks/new" startContent={<Plus className="h-4 w-4" />}>
+            {t("list.newTask")}
+          </PrimaryActionButton>
+        }
+      />
 
       <TaskStatsCards tasks={tasks} />
       

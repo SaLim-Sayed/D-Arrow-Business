@@ -185,7 +185,7 @@ export default function EmployeeProfilePage() {
   };
 
   return (
-    <div className="container mx-auto p-6 space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 max-w-7xl">
+    <div className="space-y-6 max-w-7xl mx-auto w-full">
       <Button
         variant="light"
         startContent={<ChevronLeft size={18} />}
