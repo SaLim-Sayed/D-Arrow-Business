@@ -1,25 +1,380 @@
 {
+  "nav": {
+    "dashboard": "لوحة التحكم",
+    "leads": "العملاء المحتملون",
+    "contacts": "جهات الاتصال",
+    "deals": "الصفقات",
+    "crmTasks": "مهام CRM",
+    "reports": "التقارير"
+  },
+  "permissions": {
+    "deniedTitle": "الوصول مرفوض",
+    "deniedMessage": "ليس لديك صلاحية لعرض وحدة CRM."
+  },
+  "dashboard": {
+    "title": "لوحة CRM",
+    "description": "نظرة عامة على مسار المبيعات وعلاقات العملاء.",
+    "stats": {
+      "leads": "العملاء المحتملون",
+      "contacts": "جهات الاتصال",
+      "deals": "الصفقات",
+      "tasks": "مهام CRM"
+    }
+  },
+  "ui": {
+    "views": { "list": "قائمة", "pipeline": "مسار" },
+    "stageBar": "مراحل",
+    "search": { "placeholder": "بحث CRM…", "results": "نتائج البحث" },
+    "chatter": {
+      "title": "المحادثة",
+      "subtitle": "سجّل ملاحظات وأنشطة",
+      "logNote": "اكتب ملاحظة…",
+      "post": "نشر",
+      "attach": "ملفات",
+      "note": "ملاحظة",
+      "empty": "لا نشاط بعد."
+    }
+  },
   "leads": {
-    "title": "عملاء CRM",
-    "description": "إدارة خط مبيعاتك وتتبع العملاء المحتملين.",
-    "addLead": "إضافة عميل",
-    "searchPlaceholder": "البحث في العملاء...",
+    "title": "العملاء المحتملون",
+    "description": "إدارة مسار المبيعات وتتبع العملاء المحتملين.",
+    "pipelineDescription": "اسحب العملاء بين المراحل لتحديث المسار.",
+    "addLead": "إضافة عميل محتمل",
+    "searchPlaceholder": "بحث بالاسم، الشركة، البريد، الهاتف…",
     "filter": "تصفية",
     "columns": {
       "name": "الاسم",
       "company": "الشركة",
       "status": "الحالة",
+      "assigned": "المسؤول",
       "phone": "الهاتف",
-      "actions": "الإجراءات"
+      "created": "تاريخ الإنشاء",
+      "actions": "إجراءات"
     },
-    "empty": "لم يتم العثور على عملاء.",
+    "empty": "لا يوجد عملاء محتملون.",
     "details": "التفاصيل",
+    "filters": {
+      "status": "الحالة",
+      "source": "المصدر",
+      "assignedTo": "مسند إلى",
+      "allAssignees": "جميع المسؤولين",
+      "unassigned": "غير مسند",
+      "from": "من",
+      "to": "إلى",
+      "clear": "مسح التصفية"
+    },
+    "form": {
+      "createTitle": "إنشاء عميل محتمل",
+      "editTitle": "تعديل العميل المحتمل",
+      "name": "الاسم",
+      "phone": "الهاتف",
+      "email": "البريد",
+      "company": "الشركة",
+      "source": "المصدر",
+      "priority": "الأولوية",
+      "status": "الحالة",
+      "assignedTo": "المستخدم المسند",
+      "notes": "ملاحظات",
+      "cancel": "إلغاء",
+      "create": "إنشاء",
+      "save": "حفظ"
+    },
     "status": {
       "new": "جديد",
       "contacted": "تم التواصل",
       "qualified": "مؤهل",
-      "lost": "خاسر",
-      "won": "رابح"
+      "proposal_sent": "عرض مُرسل",
+      "negotiation": "تفاوض",
+      "won": "فوز",
+      "lost": "خسارة"
+    },
+    "source": {
+      "website": "الموقع",
+      "referral": "إحالة",
+      "social": "تواصل اجتماعي",
+      "cold_call": "اتصال بارد",
+      "event": "فعالية",
+      "other": "أخرى"
+    },
+    "priority": {
+      "low": "منخفضة",
+      "medium": "متوسطة",
+      "high": "عالية"
+    },
+    "toast": {
+      "created": "تم إنشاء العميل المحتمل",
+      "createFailed": "فشل الإنشاء",
+      "updated": "تم التحديث",
+      "updateFailed": "فشل التحديث"
+    }
+  },
+  "leadDetail": {
+    "back": "العودة للقائمة",
+    "edit": "تعديل",
+    "noCompany": "بدون شركة",
+    "changeStatus": "تغيير الحالة",
+    "tabs": {
+      "overview": "نظرة عامة",
+      "notes": "ملاحظات",
+      "activities": "الأنشطة",
+      "tasks": "المهام",
+      "attachments": "مرفقات"
+    },
+    "notes": {
+      "placeholder": "اكتب ملاحظة…",
+      "add": "إضافة ملاحظة",
+      "empty": "لا توجد ملاحظات.",
+      "saved": "تمت الإضافة",
+      "failed": "فشلت الإضافة"
+    },
+    "activities": {
+      "subject": "موضوع النشاط",
+      "description": "تفاصيل (اختياري)",
+      "log": "تسجيل نشاط",
+      "empty": "لا توجد أنشطة.",
+      "saved": "تم التسجيل",
+      "failed": "فشل التسجيل",
+      "types": {
+        "call": "مكالمة",
+        "email": "بريد",
+        "meeting": "اجتماع",
+        "note": "ملاحظة",
+        "other": "أخرى"
+      }
+    },
+    "tasks": {
+      "placeholder": "عنوان المهمة…",
+      "add": "إضافة مهمة",
+      "empty": "لا مهام مرتبطة.",
+      "saved": "تم إنشاء المهمة",
+      "failed": "فشل الإنشاء"
+    },
+    "attachments": {
+      "fileName": "اسم الملف",
+      "url": "رابط الملف",
+      "add": "إضافة مرفق",
+      "empty": "لا مرفقات.",
+      "saved": "تمت الإضافة",
+      "failed": "فشلت الإضافة"
+    }
+  },
+  "contacts": {
+    "title": "جهات الاتصال",
+    "description": "إدارة جهات الاتصال وعلاقات العملاء.",
+    "addContact": "إضافة جهة اتصال",
+    "searchPlaceholder": "بحث بالاسم، البريد، الهاتف، الحساب…",
+    "details": "التفاصيل",
+    "empty": "لا توجد جهات اتصال.",
+    "columns": {
+      "name": "الاسم",
+      "email": "البريد",
+      "phone": "الهاتف",
+      "account": "الحساب",
+      "assigned": "المسؤول",
+      "created": "تاريخ الإنشاء",
+      "actions": "إجراءات"
+    },
+    "filters": {
+      "assignedTo": "مسند إلى",
+      "unassigned": "غير مسند",
+      "clear": "مسح التصفية"
+    },
+    "form": {
+      "createTitle": "إنشاء جهة اتصال",
+      "editTitle": "تعديل جهة الاتصال",
+      "firstName": "الاسم الأول",
+      "lastName": "اسم العائلة",
+      "email": "البريد",
+      "phone": "الهاتف",
+      "jobTitle": "المسمى الوظيفي",
+      "department": "القسم",
+      "accountName": "الحساب",
+      "assignedTo": "المستخدم المسند",
+      "cancel": "إلغاء",
+      "create": "إنشاء",
+      "save": "حفظ"
+    },
+    "toast": {
+      "created": "تم إنشاء جهة الاتصال",
+      "createFailed": "فشل الإنشاء",
+      "updated": "تم التحديث",
+      "updateFailed": "فشل التحديث"
+    }
+  },
+  "contactDetail": {
+    "back": "العودة لجهات الاتصال",
+    "edit": "تعديل",
+    "noAccount": "بدون حساب",
+    "tabs": {
+      "overview": "نظرة عامة",
+      "deals": "الصفقات",
+      "tasks": "المهام",
+      "notes": "ملاحظات",
+      "attachments": "مرفقات",
+      "timeline": "الجدول الزمني"
+    },
+    "deals": {
+      "empty": "لا صفقات مرتبطة."
+    },
+    "tasks": {
+      "empty": "لا مهام مرتبطة."
+    }
+  },
+  "deals": {
+    "title": "الصفقات",
+    "description": "تتبع مسار المبيعات.",
+    "pipelineDescription": "لوحة كانبان — اسحب الصفقات بين المراحل.",
+    "searchPlaceholder": "بحث الصفقات…",
+    "empty": "لا صفقات.",
+    "addDeal": "إضافة صفقة",
+    "description": "تتبع مسار المبيعات ومراحل الصفقات.",
+    "addDeal": "إضافة صفقة",
+    "stage": {
+      "lead": "عميل محتمل",
+      "contacted": "تم التواصل",
+      "qualified": "مؤهل",
+      "proposal_sent": "عرض مُرسل",
+      "negotiation": "تفاوض",
+      "won": "فوز",
+      "lost": "خسارة"
+    },
+    "form": {
+      "createTitle": "إنشاء صفقة",
+      "editTitle": "تعديل الصفقة",
+      "title": "العنوان",
+      "contact": "جهة الاتصال",
+      "amount": "المبلغ",
+      "currency": "العملة",
+      "stage": "المرحلة",
+      "probability": "الاحتمالية",
+      "expectedCloseDate": "تاريخ الإغلاق المتوقع",
+      "assignedTo": "المستخدم المسند",
+      "cancel": "إلغاء",
+      "create": "إنشاء",
+      "save": "حفظ"
+    },
+    "toast": {
+      "created": "تم إنشاء الصفقة",
+      "createFailed": "فشل الإنشاء",
+      "updated": "تم التحديث",
+      "updateFailed": "فشل التحديث"
+    }
+  },
+  "dealDetail": {
+    "back": "العودة للصفقات",
+    "edit": "تعديل",
+    "changeStage": "تغيير المرحلة",
+    "probability": "الاحتمالية",
+    "tabs": {
+      "overview": "نظرة عامة",
+      "tasks": "المهام",
+      "notes": "ملاحظات",
+      "attachments": "مرفقات",
+      "timeline": "الجدول الزمني"
+    },
+    "tasks": {
+      "empty": "لا مهام مرتبطة."
+    }
+  },
+  "crmTasks": {
+    "title": "مهام CRM",
+    "description": "متابعات ومكالمات وأنشطة عبر CRM.",
+    "addTask": "إضافة مهمة",
+    "edit": "تعديل",
+    "empty": "لا توجد مهام.",
+    "columns": {
+      "title": "العنوان",
+      "type": "النوع",
+      "status": "الحالة",
+      "priority": "الأولوية",
+      "dueDate": "تاريخ الاستحقاق",
+      "assignee": "المسند إليه",
+      "actions": "إجراءات"
+    },
+    "filters": {
+      "status": "الحالة",
+      "allStatuses": "جميع الحالات"
+    },
+    "widgets": {
+      "overdue": "متأخرة",
+      "today": "مستحقة اليوم",
+      "upcoming": "قادمة"
+    },
+    "form": {
+      "createTitle": "إنشاء مهمة CRM",
+      "editTitle": "تعديل المهمة",
+      "title": "العنوان",
+      "taskType": "نوع المهمة",
+      "status": "الحالة",
+      "priority": "الأولوية",
+      "assignee": "المسند إليه",
+      "dueDate": "تاريخ الاستحقاق",
+      "description": "الوصف",
+      "cancel": "إلغاء",
+      "create": "إنشاء",
+      "save": "حفظ"
+    },
+    "taskType": {
+      "call": "مكالمة",
+      "meeting": "اجتماع",
+      "email": "بريد",
+      "follow_up": "متابعة",
+      "proposal": "عرض"
+    },
+    "status": {
+      "pending": "معلقة",
+      "in_progress": "قيد التنفيذ",
+      "completed": "مكتملة",
+      "cancelled": "ملغاة"
+    },
+    "priority": {
+      "low": "منخفضة",
+      "medium": "متوسطة",
+      "high": "عالية"
+    },
+    "toast": {
+      "created": "تم إنشاء المهمة",
+      "createFailed": "فشل الإنشاء",
+      "updated": "تم التحديث",
+      "updateFailed": "فشل التحديث"
+    }
+  },
+  "timeline": {
+    "empty": "لا نشاط بعد."
+  },
+  "attachments": {
+    "upload": "رفع ملف",
+    "download": "تحميل",
+    "unsupported": "نوع الملف غير مدعوم."
+  },
+  "notifications": {
+    "title": "الإشعارات",
+    "empty": "لا إشعارات",
+    "markAllRead": "تعليم الكل كمقروء"
+  },
+  "reports": {
+    "title": "تقارير CRM",
+    "description": "مقاييس العملاء المحتملين والمبيعات والفريق.",
+    "leads": {
+      "title": "تقارير العملاء المحتملين",
+      "newLeads": "إجمالي العملاء",
+      "conversionRate": "معدل التحويل",
+      "sources": "مصادر العملاء"
+    },
+    "sales": {
+      "title": "تقارير المبيعات",
+      "won": "صفقات فائزة",
+      "lost": "صفقات خاسرة",
+      "revenue": "إيرادات الفوز"
+    },
+    "team": {
+      "title": "أداء الفريق",
+      "empty": "لا بيانات فريق بعد.",
+      "employee": "الموظف",
+      "dealsWon": "صفقات فائزة",
+      "revenue": "الإيرادات",
+      "tasksDone": "مهام مكتملة",
+      "conversion": "تحويل العملاء"
     }
   }
 }

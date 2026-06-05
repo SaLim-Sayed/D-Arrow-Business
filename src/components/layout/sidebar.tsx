@@ -47,7 +47,7 @@ const navItems: NavItem[] = [
   },
   {
     labelKey: "nav.crm",
-    path: "/crm/leads",
+    path: "/crm",
     icon: <Users className="h-5 w-5" />,
   },
   {

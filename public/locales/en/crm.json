@@ -1,25 +1,411 @@
 {
+  "nav": {
+    "dashboard": "Dashboard",
+    "leads": "Leads",
+    "contacts": "Contacts",
+    "deals": "Deals",
+    "crmTasks": "CRM Tasks",
+    "reports": "Reports"
+  },
+  "permissions": {
+    "deniedTitle": "Access denied",
+    "deniedMessage": "You do not have permission to view the CRM module."
+  },
+  "dashboard": {
+    "title": "CRM Dashboard",
+    "description": "Overview of your sales pipeline and customer relationships.",
+    "stats": {
+      "leads": "Leads",
+      "contacts": "Contacts",
+      "deals": "Deals",
+      "tasks": "CRM Tasks",
+      "activeDeals": "Active Deals",
+      "wonDeals": "Won Deals",
+      "lostDeals": "Lost Deals",
+      "expectedRevenue": "Expected Revenue",
+      "conversionRate": "Conversion Rate"
+    },
+    "funnel": {
+      "title": "Sales Funnel",
+      "leads": "Leads",
+      "qualified": "Qualified",
+      "proposal": "Proposal",
+      "negotiation": "Negotiation",
+      "won": "Won"
+    },
+    "charts": {
+      "leadsBySource": "Leads by Source",
+      "dealsByStage": "Deals by Stage",
+      "revenueByMonth": "Revenue by Month",
+      "noData": "No revenue data yet"
+    }
+  },
+  "ui": {
+    "views": {
+      "list": "List",
+      "pipeline": "Pipeline"
+    },
+    "stageBar": "Pipeline",
+    "search": {
+      "placeholder": "Search CRM…",
+      "results": "Search results"
+    },
+    "chatter": {
+      "title": "Chatter",
+      "subtitle": "Log notes, schedule activities, and track history",
+      "logNote": "Log an internal note…",
+      "post": "Log",
+      "attach": "Files",
+      "note": "Note",
+      "empty": "No activity yet. Log a note or schedule a call."
+    }
+  },
   "leads": {
-    "title": "CRM Leads",
+    "title": "Leads",
     "description": "Manage your sales pipeline and track potential customers.",
+    "pipelineDescription": "Drag leads across stages to update your pipeline — like Odoo & Zoho.",
     "addLead": "Add Lead",
-    "searchPlaceholder": "Search leads...",
+    "searchPlaceholder": "Search by name, company, email, phone…",
     "filter": "Filter",
     "columns": {
       "name": "NAME",
       "company": "COMPANY",
       "status": "STATUS",
+      "assigned": "ASSIGNED",
       "phone": "PHONE",
+      "created": "CREATED",
       "actions": "ACTIONS"
     },
     "empty": "No leads found.",
     "details": "Details",
+    "filters": {
+      "status": "Status",
+      "source": "Source",
+      "assignedTo": "Assigned to",
+      "allAssignees": "All assignees",
+      "unassigned": "Unassigned",
+      "from": "From",
+      "to": "To",
+      "clear": "Clear filters"
+    },
+    "form": {
+      "createTitle": "Create lead",
+      "editTitle": "Edit lead",
+      "name": "Name",
+      "phone": "Phone",
+      "email": "Email",
+      "company": "Company",
+      "source": "Source",
+      "priority": "Priority",
+      "status": "Status",
+      "assignedTo": "Assigned user",
+      "notes": "Notes",
+      "cancel": "Cancel",
+      "create": "Create lead",
+      "save": "Save changes"
+    },
     "status": {
       "new": "New",
       "contacted": "Contacted",
       "qualified": "Qualified",
-      "lost": "Lost",
-      "won": "Won"
+      "proposal_sent": "Proposal sent",
+      "negotiation": "Negotiation",
+      "won": "Won",
+      "lost": "Lost"
+    },
+    "source": {
+      "website": "Website",
+      "referral": "Referral",
+      "social": "Social",
+      "cold_call": "Cold call",
+      "event": "Event",
+      "other": "Other"
+    },
+    "priority": {
+      "low": "Low",
+      "medium": "Medium",
+      "high": "High"
+    },
+    "toast": {
+      "created": "Lead created",
+      "createFailed": "Failed to create lead",
+      "updated": "Lead updated",
+      "updateFailed": "Failed to update lead"
+    },
+    "convert": {
+      "action": "Convert to contact",
+      "viewContact": "View contact",
+      "success": "Lead converted to contact",
+      "failed": "Failed to convert lead"
+    }
+  },
+  "leadDetail": {
+    "back": "Back to leads",
+    "edit": "Edit lead",
+    "noCompany": "No company",
+    "changeStatus": "Change status",
+    "tabs": {
+      "overview": "Overview",
+      "notes": "Notes",
+      "activities": "Activities",
+      "tasks": "Tasks",
+      "attachments": "Attachments"
+    },
+    "notes": {
+      "placeholder": "Write a note…",
+      "add": "Add note",
+      "empty": "No notes yet.",
+      "saved": "Note added",
+      "failed": "Failed to add note"
+    },
+    "activities": {
+      "subject": "Activity subject",
+      "description": "Details (optional)",
+      "log": "Log activity",
+      "empty": "No activities yet.",
+      "saved": "Activity logged",
+      "failed": "Failed to log activity",
+      "types": {
+        "call": "Call",
+        "email": "Email",
+        "meeting": "Meeting",
+        "note": "Note",
+        "other": "Other"
+      }
+    },
+    "tasks": {
+      "placeholder": "Task title…",
+      "add": "Add task",
+      "empty": "No CRM tasks linked to this lead.",
+      "saved": "Task created",
+      "failed": "Failed to create task"
+    },
+    "attachments": {
+      "fileName": "File name",
+      "url": "File URL",
+      "add": "Add attachment",
+      "empty": "No attachments yet.",
+      "saved": "Attachment added",
+      "failed": "Failed to add attachment"
+    }
+  },
+  "contacts": {
+    "title": "Contacts",
+    "description": "Manage customer contacts and relationships.",
+    "addContact": "Add contact",
+    "searchPlaceholder": "Search by name, email, phone, account…",
+    "details": "Details",
+    "empty": "No contacts found.",
+    "columns": {
+      "name": "NAME",
+      "email": "EMAIL",
+      "phone": "PHONE",
+      "account": "ACCOUNT",
+      "assigned": "ASSIGNED",
+      "created": "CREATED",
+      "actions": "ACTIONS"
+    },
+    "filters": {
+      "assignedTo": "Assigned to",
+      "unassigned": "Unassigned",
+      "clear": "Clear filters"
+    },
+    "form": {
+      "createTitle": "Create contact",
+      "editTitle": "Edit contact",
+      "firstName": "First name",
+      "lastName": "Last name",
+      "email": "Email",
+      "phone": "Phone",
+      "jobTitle": "Job title",
+      "department": "Department",
+      "accountName": "Account",
+      "assignedTo": "Assigned user",
+      "cancel": "Cancel",
+      "create": "Create contact",
+      "save": "Save changes"
+    },
+    "toast": {
+      "created": "Contact created",
+      "createFailed": "Failed to create contact",
+      "updated": "Contact updated",
+      "updateFailed": "Failed to update contact"
+    }
+  },
+  "contactDetail": {
+    "back": "Back to contacts",
+    "edit": "Edit contact",
+    "noAccount": "No account",
+    "tabs": {
+      "overview": "Overview",
+      "deals": "Deals",
+      "tasks": "Tasks",
+      "notes": "Notes",
+      "attachments": "Attachments",
+      "timeline": "Timeline"
+    },
+    "deals": {
+      "empty": "No deals linked to this contact."
+    },
+    "tasks": {
+      "empty": "No CRM tasks linked to this contact."
+    }
+  },
+  "deals": {
+    "title": "Deals",
+    "description": "Track your sales pipeline and move deals through stages.",
+    "pipelineDescription": "Kanban pipeline — drag deals between stages to update.",
+    "searchPlaceholder": "Search deals…",
+    "empty": "No deals found.",
+    "addDeal": "Add deal",
+    "stage": {
+      "lead": "Lead",
+      "contacted": "Contacted",
+      "qualified": "Qualified",
+      "proposal_sent": "Proposal sent",
+      "negotiation": "Negotiation",
+      "won": "Won",
+      "lost": "Lost"
+    },
+    "form": {
+      "createTitle": "Create deal",
+      "editTitle": "Edit deal",
+      "title": "Title",
+      "contact": "Contact",
+      "amount": "Amount",
+      "currency": "Currency",
+      "stage": "Stage",
+      "probability": "Probability",
+      "expectedCloseDate": "Expected close date",
+      "assignedTo": "Assigned user",
+      "cancel": "Cancel",
+      "create": "Create deal",
+      "save": "Save changes"
+    },
+    "toast": {
+      "created": "Deal created",
+      "createFailed": "Failed to create deal",
+      "updated": "Deal updated",
+      "updateFailed": "Failed to update deal"
+    }
+  },
+  "dealDetail": {
+    "back": "Back to deals",
+    "edit": "Edit deal",
+    "changeStage": "Change stage",
+    "probability": "Probability",
+    "tabs": {
+      "overview": "Overview",
+      "tasks": "Tasks",
+      "notes": "Notes",
+      "attachments": "Attachments",
+      "timeline": "Timeline"
+    },
+    "tasks": {
+      "placeholder": "Task title…",
+      "add": "Add task",
+      "empty": "No CRM tasks linked to this deal."
+    }
+  },
+  "crmTasks": {
+    "title": "CRM Tasks",
+    "description": "Follow-ups, calls, and activities across your CRM.",
+    "addTask": "Add task",
+    "edit": "Edit",
+    "empty": "No CRM tasks found.",
+    "columns": {
+      "title": "TITLE",
+      "type": "TYPE",
+      "status": "STATUS",
+      "priority": "PRIORITY",
+      "dueDate": "DUE DATE",
+      "assignee": "ASSIGNEE",
+      "actions": "ACTIONS"
+    },
+    "filters": {
+      "status": "Status",
+      "allStatuses": "All statuses"
+    },
+    "widgets": {
+      "overdue": "Overdue",
+      "today": "Due today",
+      "upcoming": "Upcoming"
+    },
+    "form": {
+      "createTitle": "Create CRM task",
+      "editTitle": "Edit CRM task",
+      "title": "Title",
+      "taskType": "Task type",
+      "status": "Status",
+      "priority": "Priority",
+      "assignee": "Assignee",
+      "dueDate": "Due date",
+      "description": "Description",
+      "cancel": "Cancel",
+      "create": "Create task",
+      "save": "Save changes"
+    },
+    "taskType": {
+      "call": "Call",
+      "meeting": "Meeting",
+      "email": "Email",
+      "follow_up": "Follow up",
+      "proposal": "Proposal"
+    },
+    "status": {
+      "pending": "Pending",
+      "in_progress": "In progress",
+      "completed": "Completed",
+      "cancelled": "Cancelled"
+    },
+    "priority": {
+      "low": "Low",
+      "medium": "Medium",
+      "high": "High"
+    },
+    "toast": {
+      "created": "CRM task created",
+      "createFailed": "Failed to create task",
+      "updated": "CRM task updated",
+      "updateFailed": "Failed to update task"
+    }
+  },
+  "timeline": {
+    "empty": "No activity yet."
+  },
+  "attachments": {
+    "upload": "Upload file",
+    "download": "Download",
+    "unsupported": "File type not supported."
+  },
+  "notifications": {
+    "title": "Notifications",
+    "empty": "No notifications",
+    "markAllRead": "Mark all as read"
+  },
+  "reports": {
+    "title": "CRM Reports",
+    "description": "Lead, sales, and team performance metrics.",
+    "leads": {
+      "title": "Lead Reports",
+      "newLeads": "Total Leads",
+      "conversionRate": "Conversion Rate",
+      "sources": "Lead Sources"
+    },
+    "sales": {
+      "title": "Sales Reports",
+      "won": "Won Deals",
+      "lost": "Lost Deals",
+      "revenue": "Won Revenue"
+    },
+    "team": {
+      "title": "Team Performance",
+      "empty": "No team data yet.",
+      "employee": "Employee",
+      "dealsWon": "Deals Won",
+      "revenue": "Revenue",
+      "tasksDone": "Tasks Completed",
+      "conversion": "Lead Conversion"
     }
   }
 }

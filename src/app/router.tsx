@@ -12,7 +12,16 @@ import { TasksBoardPage } from "@/features/tasks/pages/tasks-board-page";
 import { TaskCreatePage } from "@/features/tasks/pages/task-create-page";
 import { TaskDetailPage } from "@/features/tasks/pages/task-detail-page";
 import { SprintsPage } from "@/features/tasks/pages/sprints-page";
+import { CrmLayout } from "@/features/crm/components/CrmLayout";
+import { CrmDashboardPage } from "@/features/crm/pages/CrmDashboardPage";
 import { LeadsListPage } from "@/features/crm/pages/LeadsListPage";
+import { LeadDetailPage } from "@/features/crm/pages/LeadDetailPage";
+import { ContactsListPage } from "@/features/crm/pages/ContactsListPage";
+import { ContactDetailPage } from "@/features/crm/pages/ContactDetailPage";
+import { DealsPipelinePage } from "@/features/crm/pages/DealsPipelinePage";
+import { DealDetailPage } from "@/features/crm/pages/DealDetailPage";
+import { CrmTasksPage } from "@/features/crm/pages/CrmTasksPage";
+import { CrmReportsPage } from "@/features/crm/pages/CrmReportsPage";
 import { SeedPage } from "@/features/admin/pages/SeedPage";
 import PeopleDashboardPage from "@/features/people/pages/PeopleDashboardPage";
 import LeaveTrackerPage from "@/features/people/pages/LeaveTrackerPage";
@@ -57,8 +66,19 @@ export const router = createBrowserRouter([
             element: <Navigate to="/tasks/dashboard" replace />,
           },
           {
-            path: "crm/leads",
-            element: <LeadsListPage />,
+            path: "crm",
+            element: <CrmLayout />,
+            children: [
+              { index: true, element: <CrmDashboardPage /> },
+              { path: "leads", element: <LeadsListPage /> },
+              { path: "leads/:leadId", element: <LeadDetailPage /> },
+              { path: "contacts", element: <ContactsListPage /> },
+              { path: "contacts/:contactId", element: <ContactDetailPage /> },
+              { path: "deals", element: <DealsPipelinePage /> },
+              { path: "deals/:dealId", element: <DealDetailPage /> },
+              { path: "tasks", element: <CrmTasksPage /> },
+              { path: "reports", element: <CrmReportsPage /> },
+            ],
           },
           {
             path: "tasks/dashboard",
