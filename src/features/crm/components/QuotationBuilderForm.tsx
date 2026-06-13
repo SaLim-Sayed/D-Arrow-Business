@@ -336,7 +336,7 @@ export function QuotationBuilderForm() {
             <DatePicker
               label={t("quotation.quoteDate")}
               value={parseDate(quoteDateIso)}
-              onChange={(date) => {
+              onChange={(date: { toString(): string } | null) => {
                 if (date) setQuoteDateIso(date.toString());
               }}
               showMonthAndYearPickers
