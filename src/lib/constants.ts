@@ -31,6 +31,8 @@ export const QUERY_KEYS = {
     crmTasks: (companyId: string) => ["crm", companyId, "crm_tasks"] as const,
     activities: (companyId: string) => ["crm", companyId, "activities"] as const,
     notes: (companyId: string) => ["crm", companyId, "notes"] as const,
+    quotations: (companyId: string) => ["crm", companyId, "quotations"] as const,
+    quotation: (id: string) => ["crm", "quotation", id] as const,
   },
   people: {
     all: ["people"] as const,

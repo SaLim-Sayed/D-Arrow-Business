@@ -102,26 +102,27 @@ export function QuotationLetterheadFooter({
     : company.districtEn || company.addressEn;
 
   return (
-    <footer style={{ marginTop: "auto" }}>
+    <footer style={{ marginTop: "auto", paddingTop: "4px" }}>
       <div style={GRADIENT_BAR} />
       <div
         style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "flex-start",
-          gap: "12px",
+          display: "grid",
+          gridTemplateColumns: "1fr 1fr 1fr",
+          alignItems: "center",
+          gap: "16px",
           fontSize: "9.5px",
           color: "#333",
-          paddingTop: "4px",
-          direction: isAr ? "rtl" : "ltr",
+          paddingTop: "6px",
+          lineHeight: 1.55,
         }}
       >
-        <div style={{ textAlign: "left", direction: "ltr", flex: 1 }}>
+        <div style={{ textAlign: "left", direction: "ltr" }}>
           <div style={{ fontWeight: 600 }}>{company.website}</div>
           <div>
             {isAr ? (
               <>
-                <span dir="rtl">{L.email}:</span> {company.email}
+                <span dir="rtl">{L.email}:</span>{" "}
+                <span dir="ltr">{company.email}</span>
               </>
             ) : (
               <>
@@ -131,7 +132,7 @@ export function QuotationLetterheadFooter({
           </div>
         </div>
 
-        <div style={{ textAlign: "center", flex: 1, direction: "ltr" }}>
+        <div style={{ textAlign: "center", direction: "ltr" }}>
           <div>
             {L.crShort}: {company.commercialRegister}
           </div>
@@ -144,7 +145,6 @@ export function QuotationLetterheadFooter({
           style={{
             textAlign: isAr ? "right" : "left",
             direction: isAr ? "rtl" : "ltr",
-            flex: 1,
           }}
         >
           <div style={{ fontWeight: 600 }}>{L.companyShort}</div>
