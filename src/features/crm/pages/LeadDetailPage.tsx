@@ -12,6 +12,7 @@ import {
   Paperclip,
   User,
   UserCheck,
+  MessageCircle,
 } from "lucide-react";
 import { LoadingSpinner } from "@/components/shared/loading-spinner";
 import { FieldBox } from "@/components/shared/field-box";
@@ -37,6 +38,8 @@ import { LEAD_STATUSES, normalizeLeadStatus } from "../constants/lead-workflow";
 import { CrmRecordLayout, CrmRecordHeader } from "../components/CrmRecordLayout";
 import { CrmStageBar } from "../components/CrmStageBar";
 import { CrmSmartButtons } from "../components/CrmSmartButtons";
+import { CrmWhatsAppPanel } from "../components/CrmWhatsAppPanel";
+import { buildWhatsAppUrl, isValidWhatsAppPhone } from "../utils/phone.utils";
 import { formatDate } from "@/lib/utils";
 import type { LeadStatus } from "../types/leads.types";
 import type { ActivityType } from "../types/activities.types";
@@ -137,6 +140,15 @@ export function LeadDetailPage() {
                   { key: "tasks", label: t("leadDetail.tabs.tasks"), count: tasks.length, icon: ListTodo },
                   { key: "notes", label: t("leadDetail.tabs.notes"), count: notes.length, icon: StickyNote },
                   { key: "files", label: t("leadDetail.tabs.attachments"), count: attachments.length, icon: Paperclip },
+                  ...(isValidWhatsAppPhone(lead.phone)
+                    ? [{
+                        key: "whatsapp",
+                        label: t("whatsapp.short"),
+                        count: activities.filter((a) => a.type === "whatsapp").length,
+                        icon: MessageCircle,
+                        href: buildWhatsAppUrl(lead.phone) ?? undefined,
+                      }]
+                    : []),
                 ]}
               />
             }
@@ -158,7 +170,18 @@ export function LeadDetailPage() {
                   ) : "—"}
                 </FieldBox>
                 <FieldBox label={t("leads.form.phone")} icon={<Phone className="h-3.5 w-3.5" />}>
-                  {lead.phone || "—"}
+                  {isValidWhatsAppPhone(lead.phone) ? (
+                    <a
+                      href={buildWhatsAppUrl(lead.phone)!}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-success hover:underline font-mono text-sm"
+                    >
+                      {lead.phone}
+                    </a>
+                  ) : (
+                    lead.phone || "—"
+                  )}
                 </FieldBox>
                 <FieldBox label={t("leads.form.assignedTo")}>{assignee?.name ?? t("leads.filters.unassigned")}</FieldBox>
                 <FieldBox label={t("leads.columns.created")}>{formatDate(lead.createdAt)}</FieldBox>
@@ -175,6 +198,14 @@ export function LeadDetailPage() {
                 </FieldBox>
               </CardBody>
             </Card>
+
+            <CrmWhatsAppPanel
+              phone={lead.phone}
+              entityType="lead"
+              entityId={lead.id}
+              entityLabel={lead.name}
+              canManage={canManageLeads}
+            />
 
             <Card className="border border-default-200">
               <CardBody className="p-5 space-y-3">

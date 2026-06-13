@@ -15,6 +15,7 @@ export type LeadSource =
   | "website"
   | "referral"
   | "social"
+  | "whatsapp"
   | "cold_call"
   | "event"
   | "other";

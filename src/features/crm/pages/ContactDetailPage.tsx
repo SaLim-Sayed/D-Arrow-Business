@@ -52,6 +52,8 @@ import { CrmAttachmentsSection } from "../components/shared/CrmAttachmentsSectio
 import { CrmTimeline } from "../components/shared/CrmTimeline";
 import { contactDisplayName } from "../utils/contacts-list.utils";
 import { formatDate, formatCurrency } from "@/lib/utils";
+import { CrmWhatsAppPanel } from "../components/CrmWhatsAppPanel";
+import { buildWhatsAppUrl, isValidWhatsAppPhone } from "../utils/phone.utils";
 import { normalizeCrmTaskStatus } from "../constants/crm-task.constants";
 
 export function ContactDetailPage() {
@@ -170,7 +172,18 @@ export function ContactDetailPage() {
               )}
             </FieldBox>
             <FieldBox label={t("contacts.form.phone")} icon={<Phone className="h-3.5 w-3.5" />}>
-              {contact.phone || "—"}
+              {isValidWhatsAppPhone(contact.phone) ? (
+                <a
+                  href={buildWhatsAppUrl(contact.phone)!}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-success hover:underline font-mono text-sm"
+                >
+                  {contact.phone}
+                </a>
+              ) : (
+                contact.phone || "—"
+              )}
             </FieldBox>
             <FieldBox label={t("contacts.form.jobTitle")}>{contact.jobTitle || "—"}</FieldBox>
             <FieldBox label={t("contacts.form.department")}>{contact.department || "—"}</FieldBox>
@@ -181,6 +194,15 @@ export function ContactDetailPage() {
               {assignee?.name ?? t("contacts.filters.unassigned")}
             </FieldBox>
             <FieldBox label={t("contacts.columns.created")}>{formatDate(contact.createdAt)}</FieldBox>
+          </div>
+          <div className="pt-4">
+            <CrmWhatsAppPanel
+              phone={contact.phone}
+              entityType="contact"
+              entityId={contact.id}
+              entityLabel={name}
+              canManage={canManageContacts}
+            />
           </div>
         </Tab>
 
