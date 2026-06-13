@@ -20,7 +20,8 @@ export function QuotationSavedMenu({
   onSelect,
   onNew,
 }: QuotationSavedMenuProps) {
-  const { t } = useTranslation("crm");
+  const { t, i18n } = useTranslation("crm");
+  const priceDirection = i18n.language.startsWith("ar") ? "rtl" : "ltr";
 
   return (
     <Card className="border border-default-100 lg:sticky lg:top-4">
@@ -79,6 +80,7 @@ export function QuotationSavedMenu({
                         currency={q.currency}
                         symbolSize={10}
                         className="text-xs"
+                        priceDirection={priceDirection}
                       />
                     ) : null}
                   </div>
