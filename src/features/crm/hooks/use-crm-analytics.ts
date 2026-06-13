@@ -4,7 +4,7 @@ import { useContactsQuery } from "./use-contacts";
 import { useDealsQuery } from "./use-deals";
 import { useCrmTasksQuery } from "./use-crm-tasks";
 import { normalizeLeadStatus } from "../constants/lead-workflow";
-import { normalizeDealStage } from "../constants/deal-workflow";
+import { normalizeDealStage, normalizeDealProbability } from "../constants/deal-workflow";
 import type { LeadSource } from "../types/leads.types";
 
 export function useCrmAnalytics() {
@@ -22,7 +22,10 @@ export function useCrmAnalytics() {
     const activeDeals = deals.filter((d) => !["won", "lost"].includes(normalizeDealStage(d.stage)));
     const wonDeals = deals.filter((d) => normalizeDealStage(d.stage) === "won");
     const lostDeals = deals.filter((d) => normalizeDealStage(d.stage) === "lost");
-    const expectedRevenue = activeDeals.reduce((s, d) => s + d.amount * (d.probability / 100), 0);
+    const expectedRevenue = activeDeals.reduce(
+      (s, d) => s + d.amount * (normalizeDealProbability(d.probability) / 10),
+      0
+    );
     const wonRevenue = wonDeals.reduce((s, d) => s + d.amount, 0);
 
     const funnel = {

@@ -8,6 +8,8 @@ export interface Contact extends CrmBaseFields {
   jobTitle?: string;
   department?: string;
   accountName?: string;
+  /** Commercial register (السجل التجاري) for future account linking */
+  commercialRegister?: string;
   leadId?: string | null;
   assignedTo?: string | null;
 }

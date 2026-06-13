@@ -8,7 +8,7 @@ const base = createCrmCollectionService<Deal, CreateDealDTO, UpdateDealDTO>(
   {
     currency: "USD",
     stage: "lead",
-    probability: 10,
+    probability: 1,
     amount: 0,
     ownerId: null,
     assignedTo: null,

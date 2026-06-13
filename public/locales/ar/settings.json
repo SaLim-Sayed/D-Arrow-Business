@@ -1,0 +1,139 @@
+{
+  "title": "الإعدادات",
+  "subtitle": "ملف الشركة والأسعار والصلاحيات",
+  "nav": {
+    "company": "الشركة",
+    "pricing": "الأسعار",
+    "team": "الفريق والأدوار",
+    "roles": "مصفوفة الصلاحيات"
+  },
+  "permissions": {
+    "deniedTitle": "الوصول مرفوض",
+    "denied": "ليس لديك صلاحية للوصول إلى هذه الصفحة."
+  },
+  "company": {
+    "title": "ملف الشركة",
+    "subtitle": "البيانات القانونية والتجارية المرتبطة بمؤسستك",
+    "pageTitle": "إعدادات الشركة",
+    "pageSubtitle": "إدارة السجل التجاري وبيانات النشاط",
+    "save": "حفظ ملف الشركة",
+    "saveSuccess": "تم حفظ ملف الشركة",
+    "saveError": "فشل حفظ ملف الشركة",
+    "fields": {
+      "name": "اسم الشركة",
+      "nameAr": "اسم الشركة (عربي)",
+      "commercialRegister": "السجل التجاري",
+      "commercialRegisterHint": "رقم السجل التجاري الرسمي",
+      "taxNumber": "الرقم الضريبي",
+      "legalName": "الاسم القانوني",
+      "email": "البريد التجاري",
+      "phone": "هاتف الشركة",
+      "address": "العنوان",
+      "city": "المدينة",
+      "country": "الدولة",
+      "defaultCurrency": "العملة الافتراضية"
+    }
+  },
+  "pricing": {
+    "pageTitle": "قائمة الأسعار",
+    "pageSubtitle": "إدارة أسعار المنتجات والخدمات",
+    "createTitle": "إضافة سعر",
+    "editTitle": "تعديل سعر",
+    "add": "إضافة سعر",
+    "save": "حفظ السعر",
+    "empty": "لا توجد أسعار بعد. أضف أول منتج أو خدمة.",
+    "saveSuccess": "تم حفظ السعر",
+    "saveError": "فشل حفظ السعر",
+    "deleteSuccess": "تم حذف السعر",
+    "deleteError": "فشل حذف السعر",
+    "actions": "إجراءات",
+    "crRef": "مرتبط بالسجل التجاري: {{cr}}",
+    "linkedCr": "سيُربط هذا السعر بالسجل التجاري {{cr}}",
+    "fields": {
+      "name": "المنتج / الخدمة",
+      "nameAr": "الاسم (عربي)",
+      "sku": "رمز SKU",
+      "description": "الوصف",
+      "unitPrice": "سعر الوحدة",
+      "currency": "العملة",
+      "taxRate": "نسبة الضريبة",
+      "status": "الحالة"
+    },
+    "status": {
+      "active": "نشط",
+      "inactive": "غير نشط"
+    }
+  },
+  "team": {
+    "pageTitle": "أعضاء الفريق",
+    "pageSubtitle": "تعيين الأدوار والأدوار الفرعية لكل بوابة. المدير العام يمكنه ضبط صلاحية البوابات لكل عضو.",
+    "member": "العضو",
+    "email": "البريد",
+    "currentRole": "الدور الحالي",
+    "assignRole": "تعيين دور",
+    "you": "أنت",
+    "cannotEdit": "—",
+    "empty": "لا يوجد أعضاء في شركتك.",
+    "roleUpdated": "تم تحديث الدور بنجاح",
+    "roleUpdateError": "فشل تحديث الدور",
+    "globalRoles": {
+      "super_admin": "مدير عام",
+      "admin": "مسؤول",
+      "manager": "مدير",
+      "employee": "موظف",
+      "viewer": "مشاهد"
+    },
+    "portalAccess": "البوابات والأدوار الفرعية",
+    "subRoleFor": "الدور الفرعي لـ {{portal}}",
+    "subRoles": {
+      "admin": "مسؤول",
+      "manager": "مدير",
+      "member": "عضو",
+      "viewer": "مشاهد",
+      "sales": "مبيعات",
+      "hr": "موارد بشرية",
+      "employee": "موظف"
+    },
+    "portalsUpdated": "تم تحديث البوابات والأدوار الفرعية",
+    "portalsUpdateError": "فشل تحديث صلاحية البوابات"
+  },
+  "roles": {
+    "pageTitle": "الأدوار والصلاحيات",
+    "pageSubtitle": "مراجعة صلاحيات كل دور في النظام",
+    "permissionsCount": "صلاحية",
+    "groups": {
+      "portals": "البوابات",
+      "company": "الشركة والأسعار",
+      "people": "الموارد البشرية",
+      "crm": "إدارة العملاء",
+      "tasks": "المهام",
+      "admin": "الإدارة"
+    },
+    "permissions": {
+      "portals.tasks": "بوابة المهام",
+      "portals.crm": "بوابة CRM",
+      "portals.people": "بوابة الموظفين",
+      "company.view": "عرض الشركة",
+      "company.manage": "إدارة الشركة",
+      "pricing.view": "عرض الأسعار",
+      "pricing.manage": "إدارة الأسعار",
+      "users.manage_roles": "إدارة الأدوار",
+      "people.view": "عرض الموظفين",
+      "people.manage_employees": "إدارة الموظفين",
+      "people.approve_leave": "اعتماد الإجازات",
+      "people.view_performance": "عرض الأداء",
+      "crm.view": "عرض CRM",
+      "crm.manage_leads": "إدارة العملاء المحتملين",
+      "crm.manage_contacts": "إدارة جهات الاتصال",
+      "crm.manage_deals": "إدارة الصفقات",
+      "crm.manage_tasks": "إدارة مهام CRM",
+      "crm.delete": "حذف سجلات CRM",
+      "tasks.view": "عرض المهام",
+      "tasks.create": "إنشاء مهام",
+      "tasks.edit": "تعديل المهام",
+      "tasks.delete": "حذف المهام",
+      "tasks.approve": "اعتماد المهام",
+      "admin.seed": "بيانات تجريبية"
+    }
+  }
+}

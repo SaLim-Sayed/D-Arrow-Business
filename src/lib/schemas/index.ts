@@ -6,7 +6,7 @@ export const baseUserSchema = z.object({
   email: z.string().email(),
   name: z.string().min(1),
   avatar: z.string().url().optional(),
-  role: z.enum(["admin", "user", "manager"]),
+  role: z.enum(["super_admin", "admin", "manager", "employee", "viewer"]),
   createdAt: z.string(),
   updatedAt: z.string(),
 });

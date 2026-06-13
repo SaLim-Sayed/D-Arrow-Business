@@ -52,6 +52,7 @@ import { collection, query, orderBy, getDocs, getDoc, doc } from "firebase/fires
 import { useEffect } from "react";
 import { Input, Select, SelectItem, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter } from "@heroui/react";
 import { useTranslation } from "react-i18next";
+import { useAppPermissions } from "@/features/companies/hooks/use-app-permissions";
 
 const statusColorMap: Record<string, "success" | "warning" | "danger" | "primary" | "default"> = {
   active: "success",
@@ -77,7 +78,7 @@ export default function EmployeeProfilePage() {
   const employee = employeesResponse?.data?.find((e) => e.id === id || e.userId === id);
   const employeeRequests = leaveRequestsResponse?.data?.filter((r) => r.employeeId === employee?.userId) || [];
   const isOwnProfile = user?.id === employee?.userId;
-  const isManager = user?.role === "super_admin" || user?.role === "admin" || user?.role === "manager";
+  const { canManageEmployees } = useAppPermissions();
 
   const { data: assetsResponse } = useAssetsQuery();
   const employeeAssets = assetsResponse?.data?.filter(a => a.assignedTo === employee?.id) || [];
@@ -260,7 +261,7 @@ export default function EmployeeProfilePage() {
                           {t("profile.apply_leave")}
                         </Button>
                       )}
-                      {isManager && (
+                      {canManageEmployees && (
                         <Button color="default" variant="flat" size="sm" startContent={<ShieldCheck size={15} />} className="font-bold" onPress={handleOpenEdit}>
                           {t("profile.edit_manage")}
                         </Button>
@@ -444,7 +445,7 @@ export default function EmployeeProfilePage() {
                         <GraduationCap size={16} className="text-primary" />
                         Skill Proficiency
                       </h4>
-                      {(isManager || isOwnProfile) && (
+                      {(canManageEmployees || isOwnProfile) && (
                         <Button size="sm" variant="flat" onPress={onSkillsOpen} className="font-bold">
                           Manage Skills
                         </Button>

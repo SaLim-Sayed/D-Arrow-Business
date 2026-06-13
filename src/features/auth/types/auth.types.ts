@@ -1,3 +1,6 @@
+import type { PortalId } from "@/lib/portal-permissions";
+import type { PortalSubRoles } from "@/lib/permissions/sub-roles";
+
 export type UserRole = "super_admin" | "admin" | "manager" | "employee" | "viewer";
 
 export interface User {
@@ -9,6 +12,10 @@ export interface User {
   role: UserRole;
   companyId: string;
   companyName: string;
+  /** Custom portal subset assigned by super admin; falls back to role defaults when empty. */
+  portalAccess?: PortalId[];
+  /** Per-portal sub-roles (Tasks / CRM / People). */
+  portalSubRoles?: PortalSubRoles;
 }
 
 export interface LoginRequest {
@@ -27,6 +34,7 @@ export interface RegisterRequest {
   password: string;
   name: string;
   companyName: string;
+  commercialRegister?: string;
 }
 
 export interface AuthState {

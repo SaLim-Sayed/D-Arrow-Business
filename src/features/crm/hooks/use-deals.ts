@@ -7,7 +7,7 @@ import { ActivitiesService } from "../api/activities.service";
 import { CrmNotificationsService } from "../api/notifications.service";
 import type { CreateDealDTO, Deal, UpdateDealDTO } from "../types/deals.types";
 import { filterCrmRecordsByAccess } from "../utils/crm-access.utils";
-import { normalizeDealStage, DEAL_STAGE_PROBABILITY } from "../constants/deal-workflow";
+import { normalizeDealStage, DEAL_STAGE_PROBABILITY, normalizeDealProbability } from "../constants/deal-workflow";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 
@@ -68,7 +68,9 @@ export function useCreateDealMutation() {
     mutationFn: async (data: CreateDealDTO) => {
       const payload = {
         ...data,
-        probability: data.probability || DEAL_STAGE_PROBABILITY[data.stage],
+        probability: normalizeDealProbability(
+          data.probability ?? DEAL_STAGE_PROBABILITY[data.stage]
+        ),
       };
       const res = await DealsService.createDeal(companyId!, payload);
       if (userId) {

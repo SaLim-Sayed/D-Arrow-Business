@@ -51,6 +51,7 @@ export function ContactFormModal({ isOpen, onOpenChange, contact }: ContactFormM
       jobTitle: "",
       department: "",
       accountName: "",
+      commercialRegister: "",
       assignedTo: null,
     },
   });
@@ -66,6 +67,7 @@ export function ContactFormModal({ isOpen, onOpenChange, contact }: ContactFormM
         jobTitle: contact.jobTitle ?? "",
         department: contact.department ?? "",
         accountName: contact.accountName ?? "",
+        commercialRegister: contact.commercialRegister ?? "",
         assignedTo: contact.assignedTo ?? null,
       });
     } else {
@@ -77,6 +79,7 @@ export function ContactFormModal({ isOpen, onOpenChange, contact }: ContactFormM
         jobTitle: "",
         department: "",
         accountName: "",
+        commercialRegister: "",
         assignedTo: null,
       });
     }
@@ -138,6 +141,14 @@ export function ContactFormModal({ isOpen, onOpenChange, contact }: ContactFormM
                 <Input label={t("contacts.form.department")} {...register("department")} />
               </div>
               <Input label={t("contacts.form.accountName")} {...register("accountName")} />
+              <Input
+                label={t("contacts.form.commercialRegister")}
+                placeholder={t("contacts.form.commercialRegisterPlaceholder")}
+                description={t("contacts.form.commercialRegisterHint")}
+                {...register("commercialRegister")}
+                isInvalid={!!errors.commercialRegister}
+                errorMessage={errors.commercialRegister?.message}
+              />
               <Controller
                 name="assignedTo"
                 control={control}

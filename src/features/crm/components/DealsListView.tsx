@@ -14,7 +14,7 @@ import {
 import { useDealsQuery } from "../hooks/use-deals";
 import { useContactsQuery } from "../hooks/use-contacts";
 import { LoadingSpinner } from "@/components/shared/loading-spinner";
-import { DEAL_STAGE_COLORS, normalizeDealStage } from "../constants/deal-workflow";
+import { DEAL_STAGE_COLORS, normalizeDealStage, normalizeDealProbability } from "../constants/deal-workflow";
 import type { DealStage } from "../types/deals.types";
 import { contactDisplayName } from "../utils/contacts-list.utils";
 import { formatCurrency } from "@/lib/utils";
@@ -76,7 +76,7 @@ export function DealsListView() {
                 </Chip>
               </TableCell>
               <TableCell>{formatAmount(deal.amount, deal.currency)}</TableCell>
-              <TableCell>{deal.probability}%</TableCell>
+              <TableCell>{normalizeDealProbability(deal.probability)}/10</TableCell>
               <TableCell>
                 <Button as={Link} to={`/crm/deals/${deal.id}`} size="sm" variant="light" color="primary">
                   {t("leads.details")}

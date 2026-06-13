@@ -4,7 +4,7 @@ import { AlertCircle, Eye, EyeOff } from "lucide-react";
 import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import * as z from "zod";
 import { useAuth } from "../context/auth-context";
 
@@ -19,13 +19,8 @@ export function LoginForm() {
   const { t } = useTranslation("auth");
   const { login } = useAuth();
   const navigate = useNavigate();
-  const location = useLocation();
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-
-  const from =
-    (location.state as { from?: { pathname: string } })?.from?.pathname ||
-    "/";
 
   const {
     control,
@@ -44,7 +39,7 @@ export function LoginForm() {
 
     try {
       await login(data.email, data.password);
-      navigate(from, { replace: true });
+      navigate("/", { replace: true, state: { choosePortal: true } });
     } catch {
       setError(t("login.error"));
     }

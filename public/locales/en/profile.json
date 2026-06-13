@@ -8,6 +8,7 @@
   "nameAr": "Arabic Name",
   "nameArPlaceholder": "أدخل اسمك بالعربية",
   "role": "Role",
+  "roleReadOnly": "Only administrators can change roles",
   "nameRequired": "Name is required",
   "avatarTooLarge": "Image must be smaller than 5 MB",
   "saveSuccess": "Profile updated successfully",

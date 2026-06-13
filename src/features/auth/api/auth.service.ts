@@ -18,6 +18,7 @@ import type {
   RegisterRequest,
   User,
 } from "../types/auth.types";
+import { mapFirestoreUser } from "../utils/map-user";
 
 const SERVICE_NAME = "AuthService";
 
@@ -62,16 +63,12 @@ export const AuthService = {
         userData = defaultUserData as User;
       }
 
-      const user: User = {
-        id: firebaseUser.uid,
+      const user: User = mapFirestoreUser(firebaseUser.uid, userData, {
         email: firebaseUser.email || "",
-        name: userData?.name || firebaseUser.displayName || "",
-        nameAr: userData?.nameAr || "",
-        avatar: userData?.avatar || firebaseUser.photoURL || "",
-        role: userData?.role || "employee",
-        companyId: userData?.companyId || "default-company",
-        companyName: userData?.companyName || "D-Arrow Business",
-      };
+        name: firebaseUser.displayName || "",
+        avatar: firebaseUser.photoURL || "",
+        companyName: "D-Arrow Business",
+      });
 
       return {
         data: {
@@ -120,6 +117,14 @@ export const AuthService = {
         updatedAt: new Date().toISOString(),
       });
 
+      await setDoc(doc(db, "companies", userData.companyId), {
+        name: data.companyName,
+        commercialRegister: data.commercialRegister?.trim() || "",
+        defaultCurrency: "EGP",
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      });
+
       return {
         data: {
           user: userData,
@@ -159,16 +164,11 @@ export const AuthService = {
       const userDoc = await getDoc(doc(db, "users", firebaseUser.uid));
       const userData = userDoc.data() as any;
       
-      const user: User = {
-        id: firebaseUser.uid,
+      const user = mapFirestoreUser(firebaseUser.uid, userData, {
         email: firebaseUser.email || "",
-        name: userData?.name || firebaseUser.displayName || firebaseUser.email?.split("@")[0] || "User",
-        nameAr: userData?.nameAr || "",
-        avatar: userData?.avatar || firebaseUser.photoURL || `https://avatar.vercel.sh/${firebaseUser.uid}`,
-        role: userData?.role || "employee",
-        companyId: userData?.companyId || "default-company",
-        companyName: userData?.companyName || "D-Arrow Business",
-      };
+        name: firebaseUser.displayName || firebaseUser.email?.split("@")[0] || "User",
+        avatar: firebaseUser.photoURL || `https://avatar.vercel.sh/${firebaseUser.uid}`,
+      });
 
       return {
         data: user,

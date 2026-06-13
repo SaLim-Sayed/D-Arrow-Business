@@ -29,10 +29,10 @@ import { useEmployeesQuery, useOffboardEmployeeMutation, useAnnouncementsQuery }
 import type { Employee } from "../types/people.types";
 import { useState } from "react";
 import { useDisclosure } from "@heroui/react";
-import { useAuthStore } from "@/stores/auth.store";
 import { TimeTrackerWidget } from "../components/TimeTrackerWidget";
 import { motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
+import { useAppPermissions } from "@/features/companies/hooks/use-app-permissions";
 
 export default function PeopleDashboardPage() {
   const { t } = useTranslation("people");
@@ -41,7 +41,6 @@ export default function PeopleDashboardPage() {
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
   const { data: employeesResponse, isLoading } = useEmployeesQuery();
   const offboardMutation = useOffboardEmployeeMutation();
-  const { user } = useAuthStore();
   const [searchQuery, setSearchQuery] = useState("");
   const [viewMode, setViewMode] = useState<"grid" | "table">("grid");
   const { data: announcementsResponse } = useAnnouncementsQuery();
@@ -65,7 +64,7 @@ export default function PeopleDashboardPage() {
     });
   };
 
-  const isManager = user?.role === 'super_admin' || user?.role === 'admin' || user?.role === 'manager';
+  const { canManageEmployees } = useAppPermissions();
   const employees = employeesResponse?.data || [];
   const filteredEmployees = employees.filter(e => 
     `${e.firstName} ${e.lastName}`.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -96,7 +95,7 @@ export default function PeopleDashboardPage() {
           </p>
         </div>
         <div className="flex gap-2">
-          {isManager && (
+          {canManageEmployees && (
             <Button 
               color="primary" 
               variant="shadow" 

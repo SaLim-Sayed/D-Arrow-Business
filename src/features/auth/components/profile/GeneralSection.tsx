@@ -9,6 +9,7 @@ interface GeneralSectionProps {
   setNameAr: (v: string) => void;
   role: UserRole;
   setRole: (v: UserRole) => void;
+  canEditRole?: boolean;
   isSaving: boolean;
   onSave: () => void;
   tp: (key: string) => string;
@@ -29,6 +30,7 @@ export function GeneralSection({
   setNameAr,
   role,
   setRole,
+  canEditRole = false,
   isSaving,
   onSave,
   tp
@@ -70,6 +72,8 @@ export function GeneralSection({
             label={tp("role")}
             variant="bordered"
             selectedKeys={new Set([role])}
+            isDisabled={!canEditRole}
+            description={!canEditRole ? tp("roleReadOnly") : undefined}
             onSelectionChange={(keys) => {
               const selected = Array.from(keys)[0] as UserRole;
               if (selected) setRole(selected);

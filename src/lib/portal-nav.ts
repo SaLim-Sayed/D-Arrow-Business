@@ -55,5 +55,7 @@ export function getNavForPortal(portal: PortalId): PortalNavItem[] {
       return CRM_NAV;
     case "people":
       return PEOPLE_NAV;
+    default:
+      return [];
   }
 }

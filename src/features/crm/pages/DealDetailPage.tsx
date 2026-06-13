@@ -32,7 +32,7 @@ import {
 import { useAllUsers } from "@/features/users/hooks/use-users";
 import { DealFormModal } from "../components/DealFormModal";
 import { CrmChatter } from "../components/shared/CrmChatter";
-import { DEAL_STAGES, DEAL_STAGE_COLORS } from "../constants/deal-workflow";
+import { DEAL_STAGES, DEAL_STAGE_COLORS, normalizeDealProbability } from "../constants/deal-workflow";
 import { contactDisplayName } from "../utils/contacts-list.utils";
 import { CrmRecordLayout, CrmRecordHeader } from "../components/CrmRecordLayout";
 import { CrmStageBar } from "../components/CrmStageBar";
@@ -146,7 +146,9 @@ export function DealDetailPage() {
                 <FieldBox label={t("deals.form.assignedTo")}>
                   {assignee?.name ?? t("contacts.filters.unassigned")}
                 </FieldBox>
-                <FieldBox label={t("dealDetail.probability")}>{deal.probability}%</FieldBox>
+                <FieldBox label={t("dealDetail.probability")}>
+                  {normalizeDealProbability(deal.probability)}/10
+                </FieldBox>
                 <FieldBox label={t("deals.form.expectedCloseDate")} icon={<Calendar className="h-3.5 w-3.5" />}>
                   {deal.expectedCloseDate ? formatDate(deal.expectedCloseDate) : "—"}
                 </FieldBox>

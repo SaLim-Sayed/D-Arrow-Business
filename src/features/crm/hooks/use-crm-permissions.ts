@@ -1,16 +1,20 @@
 import { useAuthStore } from "@/stores/auth.store";
 import type { UserRole } from "@/features/auth/types/auth.types";
-import { CRM_PERMISSIONS, crmRoleAllowed } from "../constants/crm-permissions";
+import { hasEffectivePermission } from "@/lib/permissions/effective-permissions";
 
 export function useCrmPermissions() {
-  const role = useAuthStore((s) => s.user?.role) as UserRole | undefined;
+  const user = useAuthStore((s) => s.user);
+  const ctx = {
+    role: user?.role as UserRole | undefined,
+    portalSubRoles: user?.portalSubRoles,
+  };
 
   return {
-    canViewCrm: crmRoleAllowed(role, CRM_PERMISSIONS.view),
-    canManageLeads: crmRoleAllowed(role, CRM_PERMISSIONS.manageLeads),
-    canManageContacts: crmRoleAllowed(role, CRM_PERMISSIONS.manageContacts),
-    canManageDeals: crmRoleAllowed(role, CRM_PERMISSIONS.manageDeals),
-    canManageCrmTasks: crmRoleAllowed(role, CRM_PERMISSIONS.manageCrmTasks),
-    canDeleteCrm: crmRoleAllowed(role, CRM_PERMISSIONS.delete),
+    canViewCrm: hasEffectivePermission(ctx, "crm.view"),
+    canManageLeads: hasEffectivePermission(ctx, "crm.manage_leads"),
+    canManageContacts: hasEffectivePermission(ctx, "crm.manage_contacts"),
+    canManageDeals: hasEffectivePermission(ctx, "crm.manage_deals"),
+    canManageCrmTasks: hasEffectivePermission(ctx, "crm.manage_tasks"),
+    canDeleteCrm: hasEffectivePermission(ctx, "crm.delete"),
   };
 }

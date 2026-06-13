@@ -27,15 +27,13 @@ import {
   Chip,
 } from "@heroui/react";
 import { TASK_PRIORITIES, TASK_STATUSES } from "@/lib/constants";
-import { useAuthStore } from "@/stores/auth.store";
 import { useAllUsers } from "@/features/users/hooks/use-users";
+import { useAuthStore } from "@/stores/auth.store";
+import { useTasksPermissions } from "../hooks/use-tasks-permissions";
 import { useAllTasksQuery, useSprintsQuery } from "../hooks/use-tasks";
 import type { CreateTaskDTO, Task } from "../types/task.types";
 import { toast } from "sonner";
 import { parseDate } from "@internationalized/date";
-
-/** Roles that can approve tasks (move in_review → done) */
-const APPROVER_ROLES = new Set(["super_admin", "admin", "manager"]);
 
 const taskSchema = z
   .object({
@@ -83,7 +81,7 @@ export function TaskForm({
   const { data: allTasks } = useAllTasksQuery();
   const { data: allSprints } = useSprintsQuery();
   const { user: currentUser } = useAuthStore();
-  const canApprove = APPROVER_ROLES.has(currentUser?.role ?? "");
+  const { canApproveTasks: canApprove } = useTasksPermissions();
 
   const editingTaskId = defaultValues?.id;
   const parentCandidates =

@@ -5,12 +5,10 @@ import { Card, CardBody } from "@heroui/react";
 import { ArrowRight } from "lucide-react";
 import {
   useAccessiblePortals,
-  getLastPortalPath,
   setLastPortal,
+  useLastPortalPath,
 } from "../hooks/use-portals";
 import { PORTAL_PATHS, type PortalId } from "@/lib/portal-permissions";
-import { useAuthStore } from "@/stores/auth.store";
-import type { UserRole } from "@/features/auth/types/auth.types";
 import { PORTAL_META } from "../constants/portal-meta";
 import { usePortalStat } from "../hooks/use-portal-stats";
 
@@ -56,25 +54,36 @@ export function PortalPickerPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const portals = useAccessiblePortals();
-  const role = useAuthStore((s) => s.user?.role) as UserRole | undefined;
+  const lastPath = useLastPortalPath();
   const choosePortal = Boolean(
     (location.state as { choosePortal?: boolean } | null)?.choosePortal
   );
 
   useEffect(() => {
+    if (choosePortal) return;
+
     if (portals.length === 1) {
       setLastPortal(portals[0]);
       navigate(PORTAL_PATHS[portals[0]], { replace: true });
       return;
     }
-    if (choosePortal) return;
-    const lastPath = getLastPortalPath(role);
-    if (lastPath) {
+
+    if (portals.length > 1 && lastPath) {
       navigate(lastPath, { replace: true });
     }
-  }, [portals, navigate, role, choosePortal]);
+  }, [portals, navigate, choosePortal, lastPath]);
 
-  if (portals.length <= 1) return null;
+  if (!choosePortal && portals.length === 1) return null;
+  if (!choosePortal && portals.length > 1 && lastPath) return null;
+
+  if (portals.length === 0) {
+    return (
+      <div className="max-w-lg mx-auto py-16 text-center space-y-3">
+        <h1 className="text-2xl font-black">{t("portals.pickerTitle")}</h1>
+        <p className="text-default-500">{t("portals.noPortals")}</p>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-5xl mx-auto py-8 md:py-16 space-y-10 animate-in fade-in duration-500">

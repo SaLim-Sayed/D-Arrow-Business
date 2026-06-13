@@ -32,6 +32,11 @@ import EmployeeProfilePage from "@/features/people/pages/EmployeeProfilePage";
 import { ApprovalsPage } from "@/features/people/pages/ApprovalsPage";
 import PerformancePage from "@/features/people/pages/PerformancePage";
 import TimesheetsPage from "@/features/people/pages/TimesheetsPage";
+import { SettingsLayout } from "@/features/companies/components/SettingsLayout";
+import { CompanySettingsPage } from "@/features/companies/pages/CompanySettingsPage";
+import { PricingPage } from "@/features/companies/pages/PricingPage";
+import { RolesPermissionsPage } from "@/features/companies/pages/RolesPermissionsPage";
+import { TeamMembersPage } from "@/features/companies/pages/TeamMembersPage";
 import { NotFoundPage } from "@/components/shared/not-found-page";
 import { ErrorPage } from "@/components/shared/error-page";
 
@@ -109,6 +114,17 @@ export const router = createBrowserRouter([
               { path: "performance", element: <PerformancePage /> },
               { path: "timesheets", element: <TimesheetsPage /> },
               { path: ":id", element: <EmployeeProfilePage /> },
+            ],
+          },
+          {
+            path: "settings",
+            element: <SettingsLayout />,
+            children: [
+              { index: true, element: <Navigate to="/settings/company" replace /> },
+              { path: "company", element: <CompanySettingsPage /> },
+              { path: "pricing", element: <PricingPage /> },
+              { path: "team", element: <TeamMembersPage /> },
+              { path: "roles", element: <RolesPermissionsPage /> },
             ],
           },
           {

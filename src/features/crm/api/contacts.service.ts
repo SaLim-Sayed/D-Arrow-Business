@@ -12,6 +12,7 @@ const base = createCrmCollectionService<Contact, CreateContactDTO, UpdateContact
     phone: "",
     firstName: "",
     lastName: "",
+    commercialRegister: "",
     assignedTo: null,
   }
 );

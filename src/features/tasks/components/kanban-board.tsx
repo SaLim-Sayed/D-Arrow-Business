@@ -14,19 +14,15 @@ import { TASK_STATUSES } from "@/lib/constants";
 import type { Task, TaskStatus } from "../types/task.types";
 import { cn } from "@/lib/utils";
 import { useTasksUIStore } from "../store/tasks-ui.store";
-import { useAuthStore } from "@/stores/auth.store";
+import { useTasksPermissions } from "../hooks/use-tasks-permissions";
 import { toast } from "sonner";
-
-/** Roles that can approve tasks (move in_review → done) */
-const APPROVER_ROLES = new Set(["super_admin", "admin", "manager"]);
 
 export function KanbanBoard() {
   const { t } = useTranslation("tasks");
   const { data: allUsers } = useAllUsers();
   const { filters } = useTasksUIStore();
-  const { user } = useAuthStore();
-  const canApprove = APPROVER_ROLES.has(user?.role ?? "");
-  
+  const { canApproveTasks: canApprove } = useTasksPermissions();
+
   const { data, isLoading: isTasksLoading } = useTasksQuery({
     search: filters.search || undefined,
     priority: filters.priority.length ? filters.priority : undefined,

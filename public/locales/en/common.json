@@ -43,7 +43,8 @@
       "description": "Employees, leave, approvals, and performance",
       "stat": "{{count}} pending approvals",
       "denied": "You do not have access to the People portal."
-    }
+    },
+    "noPortals": "No portals are assigned to your account. Contact your super admin."
   },
   "actions": {
     "save": "Save",

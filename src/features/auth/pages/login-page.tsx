@@ -20,7 +20,7 @@ export function LoginPage() {
   }
 
   if (isAuthenticated) {
-    return <Navigate to="/" replace />;
+    return <Navigate to="/" replace state={{ choosePortal: true }} />;
   }
 
   return (

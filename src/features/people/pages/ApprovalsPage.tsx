@@ -20,6 +20,7 @@ import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
 import { QUERY_KEYS } from "@/lib/constants";
 import { useTranslation } from "react-i18next";
+import { useAppPermissions } from "@/features/companies/hooks/use-app-permissions";
 
 export function ApprovalsPage() {
   const { t } = useTranslation("people");
@@ -28,9 +29,9 @@ export function ApprovalsPage() {
   const { user } = useAuthStore();
   const queryClient = useQueryClient();
   const { data: requestsResponse } = useLeaveRequestsQuery();
+  const { canApproveLeave } = useAppPermissions();
   
   const pendingRequests = requestsResponse?.data?.filter(r => r.status === "pending") || [];
-  const isManager = user?.role === 'super_admin' || user?.role === 'admin' || user?.role === 'manager';
 
   const handleAction = async (requestId: string, status: 'approved' | 'rejected') => {
     if (!companyId || !user) return;
@@ -51,7 +52,7 @@ export function ApprovalsPage() {
     { name: t("approvals.col_actions") || "ACTIONS", uid: "actions" },
   ];
 
-  if (!isManager) {
+  if (!canApproveLeave) {
     return (
       <div className="flex flex-col items-center justify-center h-[60vh] gap-4">
         <X size={48} className="text-danger" />

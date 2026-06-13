@@ -1,0 +1,139 @@
+{
+  "title": "Settings",
+  "subtitle": "Company profile, pricing, and access control",
+  "nav": {
+    "company": "Company",
+    "pricing": "Pricing",
+    "team": "Team & Roles",
+    "roles": "Permissions matrix"
+  },
+  "permissions": {
+    "deniedTitle": "Access denied",
+    "denied": "You do not have permission to access this page."
+  },
+  "company": {
+    "title": "Company profile",
+    "subtitle": "Legal and business information linked to your organization",
+    "pageTitle": "Company settings",
+    "pageSubtitle": "Manage commercial register and business details",
+    "save": "Save company profile",
+    "saveSuccess": "Company profile saved",
+    "saveError": "Failed to save company profile",
+    "fields": {
+      "name": "Company name",
+      "nameAr": "Company name (Arabic)",
+      "commercialRegister": "Commercial register",
+      "commercialRegisterHint": "Official commercial registration number (السجل التجاري)",
+      "taxNumber": "Tax number",
+      "legalName": "Legal entity name",
+      "email": "Business email",
+      "phone": "Business phone",
+      "address": "Address",
+      "city": "City",
+      "country": "Country",
+      "defaultCurrency": "Default currency"
+    }
+  },
+  "pricing": {
+    "pageTitle": "Price list",
+    "pageSubtitle": "Manage products and service prices",
+    "createTitle": "Add price",
+    "editTitle": "Edit price",
+    "add": "Add price",
+    "save": "Save price",
+    "empty": "No prices yet. Add your first product or service.",
+    "saveSuccess": "Price saved",
+    "saveError": "Failed to save price",
+    "deleteSuccess": "Price deleted",
+    "deleteError": "Failed to delete price",
+    "actions": "Actions",
+    "crRef": "Linked to commercial register: {{cr}}",
+    "linkedCr": "This price will be linked to commercial register {{cr}}",
+    "fields": {
+      "name": "Product / service",
+      "nameAr": "Name (Arabic)",
+      "sku": "SKU / code",
+      "description": "Description",
+      "unitPrice": "Unit price",
+      "currency": "Currency",
+      "taxRate": "Tax rate",
+      "status": "Status"
+    },
+    "status": {
+      "active": "Active",
+      "inactive": "Inactive"
+    }
+  },
+  "team": {
+    "pageTitle": "Team members",
+    "pageSubtitle": "Assign roles and per-portal sub-roles. Super admins can configure portal access for each member.",
+    "member": "Member",
+    "email": "Email",
+    "currentRole": "Current role",
+    "assignRole": "Assign role",
+    "you": "You",
+    "cannotEdit": "—",
+    "empty": "No team members found in your company.",
+    "roleUpdated": "Role updated successfully",
+    "roleUpdateError": "Failed to update role",
+    "globalRoles": {
+      "super_admin": "Super Admin",
+      "admin": "Admin",
+      "manager": "Manager",
+      "employee": "Employee",
+      "viewer": "Viewer"
+    },
+    "portalAccess": "Portals & sub-roles",
+    "subRoleFor": "Sub-role for {{portal}}",
+    "subRoles": {
+      "admin": "Admin",
+      "manager": "Manager",
+      "member": "Member",
+      "viewer": "Viewer",
+      "sales": "Sales",
+      "hr": "HR",
+      "employee": "Employee"
+    },
+    "portalsUpdated": "Portal access and sub-roles updated",
+    "portalsUpdateError": "Failed to update portal access"
+  },
+  "roles": {
+    "pageTitle": "Roles & permissions",
+    "pageSubtitle": "Review what each role can access across the system",
+    "permissionsCount": "permissions",
+    "groups": {
+      "portals": "Portals",
+      "company": "Company & pricing",
+      "people": "People & HR",
+      "crm": "CRM",
+      "tasks": "Tasks",
+      "admin": "Administration"
+    },
+    "permissions": {
+      "portals.tasks": "Tasks portal",
+      "portals.crm": "CRM portal",
+      "portals.people": "People portal",
+      "company.view": "View company",
+      "company.manage": "Manage company",
+      "pricing.view": "View prices",
+      "pricing.manage": "Manage prices",
+      "users.manage_roles": "Manage roles",
+      "people.view": "View people",
+      "people.manage_employees": "Manage employees",
+      "people.approve_leave": "Approve leave",
+      "people.view_performance": "View performance",
+      "crm.view": "View CRM",
+      "crm.manage_leads": "Manage leads",
+      "crm.manage_contacts": "Manage contacts",
+      "crm.manage_deals": "Manage deals",
+      "crm.manage_tasks": "Manage CRM tasks",
+      "crm.delete": "Delete CRM records",
+      "tasks.view": "View tasks",
+      "tasks.create": "Create tasks",
+      "tasks.edit": "Edit tasks",
+      "tasks.delete": "Delete tasks",
+      "tasks.approve": "Approve tasks",
+      "admin.seed": "Seed data"
+    }
+  }
+}

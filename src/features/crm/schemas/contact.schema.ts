@@ -12,6 +12,14 @@ export const contactFormSchema = z.object({
   jobTitle: z.string().optional(),
   department: z.string().optional(),
   accountName: z.string().optional(),
+  commercialRegister: z
+    .string()
+    .max(30, "Commercial register is too long")
+    .optional()
+    .refine(
+      (v) => !v?.trim() || v.trim().length >= 5,
+      "Commercial register must be at least 5 characters"
+    ),
   assignedTo: z.string().nullable().optional(),
 });
 
@@ -26,6 +34,7 @@ export function toCreateContactDTO(values: ContactFormValues): CreateContactDTO 
     jobTitle: values.jobTitle?.trim(),
     department: values.department?.trim(),
     accountName: values.accountName?.trim(),
+    commercialRegister: values.commercialRegister?.trim() || undefined,
     assignedTo: values.assignedTo ?? null,
     leadId: null,
     ownerId: values.assignedTo ?? null,

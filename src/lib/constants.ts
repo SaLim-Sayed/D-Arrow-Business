@@ -40,6 +40,10 @@ export const QUERY_KEYS = {
     assets: (companyId: string) => ["people", companyId, "assets"] as const,
     announcements: (companyId: string) => ["people", companyId, "announcements"] as const,
   },
+  company: {
+    profile: (companyId: string) => ["company", companyId, "profile"] as const,
+    prices: (companyId: string) => ["company", companyId, "prices"] as const,
+  },
 } as const;
 
 export const TASK_STATUSES = ["todo", "in_progress", "in_review", "done"] as const;

@@ -19,7 +19,7 @@ import { useAllUsers } from "@/features/users/hooks/use-users";
 import { dealFormSchema, toCreateDealDTO, type DealFormValues } from "../schemas/deal.schema";
 import { useCreateDealMutation, useUpdateDealMutation } from "../hooks/use-deals";
 import { useContactsQuery } from "../hooks/use-contacts";
-import { DEAL_STAGES, normalizeDealStage } from "../constants/deal-workflow";
+import { DEAL_STAGES, normalizeDealStage, normalizeDealProbability } from "../constants/deal-workflow";
 import { normalizeCurrencyCode } from "@/lib/utils";
 import type { Deal } from "../types/deals.types";
 
@@ -56,7 +56,7 @@ export function DealFormModal({ isOpen, onOpenChange, deal }: DealFormModalProps
       amount: 0,
       currency: "USD",
       stage: "lead",
-      probability: 10,
+      probability: 1,
       expectedCloseDate: null,
       assignedTo: null,
     },
@@ -71,7 +71,7 @@ export function DealFormModal({ isOpen, onOpenChange, deal }: DealFormModalProps
         amount: deal.amount,
         currency: normalizeCurrencyCode(deal.currency),
         stage: normalizeDealStage(deal.stage),
-        probability: deal.probability,
+        probability: normalizeDealProbability(deal.probability),
         expectedCloseDate: deal.expectedCloseDate ?? null,
         assignedTo: deal.assignedTo ?? null,
       });
@@ -82,7 +82,7 @@ export function DealFormModal({ isOpen, onOpenChange, deal }: DealFormModalProps
         amount: 0,
         currency: "USD",
         stage: "lead",
-        probability: 10,
+        probability: 1,
         expectedCloseDate: null,
         assignedTo: null,
       });
@@ -155,6 +155,9 @@ export function DealFormModal({ isOpen, onOpenChange, deal }: DealFormModalProps
                 <Input
                   label={t("deals.form.probability")}
                   type="number"
+                  min={0}
+                  max={10}
+                  step={1}
                   {...register("probability", { valueAsNumber: true })}
                   isInvalid={!!errors.probability}
                   errorMessage={errors.probability?.message}

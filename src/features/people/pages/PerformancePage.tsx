@@ -7,6 +7,7 @@ import { collection, addDoc, getDocs, getDoc, query, orderBy, serverTimestamp, s
 import { useEffect } from "react";
 import { useAllUsers } from "@/features/users/hooks/use-users";
 import { useTranslation } from "react-i18next";
+import { useAppPermissions } from "@/features/companies/hooks/use-app-permissions";
 
 interface PerformanceCycle {
   id: string;
@@ -37,7 +38,7 @@ export default function PerformancePage() {
   
   const { data: users, isLoading: isLoadingUsers } = useAllUsers();
 
-  const isManager = user?.role === 'super_admin' || user?.role === 'admin' || user?.role === 'manager';
+  const { canViewPerformance } = useAppPermissions();
 
   const fetchCycles = async () => {
     try {
@@ -160,7 +161,7 @@ export default function PerformancePage() {
           </p>
         </div>
         <div className="flex gap-2">
-          {isManager && (
+          {canViewPerformance && (
             <Button 
               color="primary" 
               variant="shadow" 

@@ -17,7 +17,7 @@ import {
   PopoverTrigger,
   PopoverContent,
 } from "@heroui/react";
-import { Menu, Moon, Sun, LogOut, User, Clock } from "lucide-react";
+import { Menu, Moon, Sun, LogOut, User, Clock, Settings } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { MobileSidebar } from "./mobile-sidebar";
 import { Logo } from "../shared/logo";
@@ -163,6 +163,13 @@ export function Header({
               onPress={() => navigate("/profile")}
             >
               {t("user.profile")}
+            </DropdownItem>
+            <DropdownItem
+              key="settings"
+              startContent={<Settings className="h-4 w-4" />}
+              onPress={() => navigate("/settings/company")}
+            >
+              {t("user.settings")}
             </DropdownItem>
             <DropdownItem
               key="logout"

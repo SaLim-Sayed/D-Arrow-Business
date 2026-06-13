@@ -17,9 +17,10 @@ export function RegisterPage() {
   const { initialize } = useAuthStore();
 
   const registerSchema = z.object({
-    name: z.string().min(2, t("register.error")), // Simplified error handling for localization
+    name: z.string().min(2, t("register.error")),
     email: z.string().email(),
     companyName: z.string().min(2),
+    commercialRegister: z.string().min(5, t("register.commercialRegisterError")).optional().or(z.literal("")),
     password: z.string().min(6),
   });
 
@@ -35,6 +36,7 @@ export function RegisterPage() {
       name: "",
       email: "",
       companyName: "",
+      commercialRegister: "",
       password: "",
     },
   });
@@ -45,7 +47,7 @@ export function RegisterPage() {
     try {
       await AuthService.register(data);
       initialize(); // Re-initialize store to pick up new user
-      navigate("/", { replace: true });
+      navigate("/", { replace: true, state: { choosePortal: true } });
     } catch (err: any) {
       setError(err?.message || t("register.error"));
     }
@@ -132,6 +134,26 @@ export function RegisterPage() {
                   radius="lg"
                   isInvalid={!!errors.companyName}
                   errorMessage={errors.companyName?.message}
+                />
+              )}
+            />
+
+            <Controller
+              name="commercialRegister"
+              control={control}
+              render={({ field }) => (
+                <Input
+                  {...field}
+                  label={t("register.commercialRegister")}
+                  labelPlacement="outside"
+                  placeholder={t("register.commercialRegisterPlaceholder")}
+                  variant="bordered"
+                  color="primary"
+                  size="lg"
+                  radius="lg"
+                  description={t("register.commercialRegisterHint")}
+                  isInvalid={!!errors.commercialRegister}
+                  errorMessage={errors.commercialRegister?.message}
                 />
               )}
             />

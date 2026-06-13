@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { normalizeCurrencyCode } from "@/lib/utils";
+import { DEAL_PROBABILITY_MAX } from "../constants/deal-workflow";
 import type { CreateDealDTO } from "../types/deals.types";
 
 export const dealFormSchema = z.object({
@@ -20,7 +21,11 @@ export const dealFormSchema = z.object({
     "won",
     "lost",
   ]),
-  probability: z.number().min(0).max(100).optional(),
+  probability: z
+    .number()
+    .min(0, `Probability must be between 0 and ${DEAL_PROBABILITY_MAX}`)
+    .max(DEAL_PROBABILITY_MAX, `Probability must be between 0 and ${DEAL_PROBABILITY_MAX}`)
+    .optional(),
   expectedCloseDate: z.string().nullable().optional(),
   assignedTo: z.string().nullable().optional(),
 });

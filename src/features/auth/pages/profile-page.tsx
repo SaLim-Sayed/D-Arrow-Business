@@ -13,8 +13,7 @@ import { Camera, Mail, User, Clock, Shield } from "lucide-react";
 import { toast } from "sonner";
 import type { UserRole } from "@/features/auth/types/auth.types";
 import { updatePassword, EmailAuthProvider, reauthenticateWithCredential } from "firebase/auth";
-import { doc, updateDoc } from "firebase/firestore";
-import { auth, db } from "@/lib/firebase";
+import { auth } from "@/lib/firebase";
 import { useEmployeesQuery, useLeaveRequestsQuery } from "@/features/people/hooks/use-people";
 import { motion, AnimatePresence } from "framer-motion";
 import { ApplyLeaveModal } from "@/features/people/components/ApplyLeaveModal";
@@ -87,18 +86,9 @@ export function ProfilePage() {
         avatarFile,
       });
 
-      const firebaseUser = auth.currentUser;
-      if (firebaseUser && role !== user?.role) {
-        await updateDoc(doc(db, "users", firebaseUser.uid), {
-          role,
-          updatedAt: new Date().toISOString(),
-        });
-      }
-
       updateUser({
         name: updated.name,
         nameAr: updated.nameAr,
-        role,
         ...(avatarFile ? { avatar: updated.avatar } : {}),
       });
 
@@ -243,6 +233,7 @@ export function ProfilePage() {
                   setNameAr={setNameAr}
                   role={role}
                   setRole={setRole}
+                  canEditRole={false}
                   isSaving={isSaving}
                   onSave={handleSave}
                   tp={tp}

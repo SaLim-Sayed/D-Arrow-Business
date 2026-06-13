@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import type { User } from "@/features/auth/types/auth.types";
+import { mapFirestoreUser } from "@/features/auth/utils/map-user";
 import { AuthService } from "@/features/auth/api/auth.service";
 import { STORAGE_KEYS } from "@/lib/constants";
 import { onAuthStateChanged, getIdToken } from "firebase/auth";
@@ -78,16 +79,11 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           const userDoc = await getDoc(doc(db, "users", firebaseUser.uid));
           const userData = userDoc.data() as any;
 
-          const user: User = {
-            id: firebaseUser.uid,
+          const user = mapFirestoreUser(firebaseUser.uid, userData, {
             email: firebaseUser.email || "",
-            name: userData?.name || firebaseUser.displayName || firebaseUser.email?.split("@")[0] || "User",
-            nameAr: userData?.nameAr || "",
-            avatar: userData?.avatar || firebaseUser.photoURL || `https://avatar.vercel.sh/${firebaseUser.uid}`,
-            role: (userData?.role as any) || "employee",
-            companyId: userData?.companyId || "default-company",
-            companyName: userData?.companyName || "D-Arrow Business",
-          };
+            name: firebaseUser.displayName || firebaseUser.email?.split("@")[0] || "User",
+            avatar: firebaseUser.photoURL || `https://avatar.vercel.sh/${firebaseUser.uid}`,
+          });
 
           set({
             user,

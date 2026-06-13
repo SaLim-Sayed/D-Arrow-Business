@@ -139,6 +139,11 @@ export function ContactDetailPage() {
               {contact.accountName}
             </Chip>
           )}
+          {contact.commercialRegister && (
+            <Chip variant="flat" size="sm" color="primary">
+              {t("contacts.form.commercialRegister")}: {contact.commercialRegister}
+            </Chip>
+          )}
         </CardBody>
       </Card>
 
@@ -176,6 +181,9 @@ export function ContactDetailPage() {
             <FieldBox label={t("contacts.form.department")}>{contact.department || "—"}</FieldBox>
             <FieldBox label={t("contacts.form.accountName")} icon={<Building2 className="h-3.5 w-3.5" />}>
               {contact.accountName || "—"}
+            </FieldBox>
+            <FieldBox label={t("contacts.form.commercialRegister")}>
+              {contact.commercialRegister || "—"}
             </FieldBox>
             <FieldBox label={t("contacts.form.assignedTo")}>
               {assignee?.name ?? t("contacts.filters.unassigned")}

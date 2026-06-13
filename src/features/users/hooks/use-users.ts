@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useTasksStore } from "@/stores/tasks.store";
 import { toast } from "sonner";
 import type { User } from "@/features/auth/types/auth.types";
+import { mapFirestoreUser } from "@/features/auth/utils/map-user";
 import { collection, getDocs, query, where } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useCompany } from "@/features/companies/context/company-context";
@@ -23,10 +24,9 @@ export function useAllUsers() {
         );
         const querySnapshot = await getDocs(q);
         
-        let users: User[] = querySnapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data()
-        } as User));
+        let users: User[] = querySnapshot.docs.map((docSnap) =>
+          mapFirestoreUser(docSnap.id, docSnap.data() as Record<string, unknown>)
+        );
 
         // Client-side sorting to avoid index requirement during development
         users.sort((a, b) => (a.name || "").localeCompare(b.name || ""));

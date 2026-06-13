@@ -5,6 +5,8 @@ import { Database, CheckCircle2, AlertCircle } from "lucide-react";
 import { PageHeader } from "@/components/shared/page-header";
 import { useTranslation } from "react-i18next";
 
+import { PermissionGuard } from "@/features/companies/components/PermissionGuard";
+
 export function SeedPage() {
   const { t } = useTranslation("common");
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
@@ -24,6 +26,7 @@ export function SeedPage() {
   }
 
   return (
+    <PermissionGuard permission="admin.seed">
     <div className="max-w-2xl mx-auto space-y-6 animate-in fade-in duration-500">
       <PageHeader 
         title={t("seed.title")} 
@@ -131,5 +134,6 @@ export function SeedPage() {
         </ul>
       </div>
     </div>
+    </PermissionGuard>
   );
 }

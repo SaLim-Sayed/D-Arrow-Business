@@ -26,6 +26,7 @@ function contactMatchesSearch(contact: Contact, search: string): boolean {
     contact.email,
     contact.phone,
     contact.accountName,
+    contact.commercialRegister,
     contact.jobTitle,
     contact.department,
   ]
