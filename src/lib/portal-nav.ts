@@ -8,6 +8,7 @@ import {
   Users,
   Handshake,
   BarChart3,
+  FileText,
   Calendar,
   CheckSquare,
   Timer,
@@ -36,6 +37,7 @@ export const CRM_NAV: PortalNavItem[] = [
   { labelKey: "nav.contacts", path: "/crm/contacts", icon: Users, namespace: "crm" },
   { labelKey: "nav.deals", path: "/crm/deals", icon: Handshake, namespace: "crm" },
   { labelKey: "nav.crmTasks", path: "/crm/tasks", icon: ListTodo, namespace: "crm" },
+  { labelKey: "nav.quotations", path: "/crm/quotations", icon: FileText, namespace: "crm" },
   { labelKey: "nav.reports", path: "/crm/reports", icon: BarChart3, namespace: "crm" },
 ];
 

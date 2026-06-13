@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import {
   Button,
@@ -12,7 +13,7 @@ import {
   Card,
   CardBody,
 } from "@heroui/react";
-import { Plus, Pencil, Trash2 } from "lucide-react";
+import { Plus, Pencil, Trash2, FileText } from "lucide-react";
 import { PermissionGuard } from "../components/PermissionGuard";
 import { PricingFormModal } from "../components/PricingFormModal";
 import {
@@ -27,6 +28,7 @@ import type { ProductPrice } from "../types/pricing.types";
 
 export function PricingPage() {
   const { t } = useTranslation("settings");
+  const { t: tCrm } = useTranslation("crm");
   const { data: prices = [], isLoading } = usePricingList();
   const { data: company } = useCompanyProfile();
   const deletePrice = useDeletePriceMutation();
@@ -57,16 +59,28 @@ export function PricingPage() {
               </p>
             )}
           </div>
-          {canManagePricing && (
+          <div className="flex gap-2">
             <Button
+              as={Link}
+              to="/crm/quotations"
+              variant="flat"
               color="primary"
               className="rounded-full font-bold"
-              startContent={<Plus className="h-4 w-4" />}
-              onPress={openCreate}
+              startContent={<FileText className="h-4 w-4" />}
             >
-              {t("pricing.add")}
+              {tCrm("quotation.createQuote")}
             </Button>
-          )}
+            {canManagePricing && (
+              <Button
+                color="primary"
+                className="rounded-full font-bold"
+                startContent={<Plus className="h-4 w-4" />}
+                onPress={openCreate}
+              >
+                {t("pricing.add")}
+              </Button>
+            )}
+          </div>
         </div>
 
         <Card className="border border-default-100">

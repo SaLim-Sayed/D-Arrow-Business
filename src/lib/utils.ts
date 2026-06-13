@@ -24,6 +24,11 @@ export function generateId(): string {
 
 const ISO_CURRENCY_CODE = /^[A-Z]{3}$/;
 
+export function isSarCurrency(currency?: string | null) {
+  const code = (currency ?? "").trim().toUpperCase();
+  return code === "SAR" || code === "ريال";
+}
+
 /** Returns a valid ISO 4217 code, defaulting to USD when invalid. */
 export function normalizeCurrencyCode(currency: string | null | undefined): string {
   const code = (currency ?? "").trim().toUpperCase();
@@ -43,6 +48,14 @@ export function formatCurrency(
   options?: Intl.NumberFormatOptions
 ): string {
   const code = normalizeCurrencyCode(currency);
+
+  if (isSarCurrency(code)) {
+    const formatted = amount.toLocaleString(undefined, {
+      maximumFractionDigits: 0,
+      ...options,
+    });
+    return `${formatted} \u20C1`;
+  }
 
   try {
     return new Intl.NumberFormat(undefined, {
