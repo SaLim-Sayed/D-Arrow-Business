@@ -117,6 +117,7 @@
       "website": "Website",
       "referral": "Referral",
       "social": "Social",
+      "whatsapp": "WhatsApp",
       "cold_call": "Cold call",
       "event": "Event",
       "other": "Other"
@@ -169,6 +170,7 @@
         "call": "Call",
         "email": "Email",
         "meeting": "Meeting",
+        "whatsapp": "WhatsApp",
         "note": "Note",
         "other": "Other"
       }
@@ -406,6 +408,38 @@
       "revenue": "Revenue",
       "tasksDone": "Tasks Completed",
       "conversion": "Lead Conversion"
+    }
+  },
+  "whatsapp": {
+    "title": "WhatsApp",
+    "short": "WhatsApp",
+    "subtitle": "Open a chat with this customer and log messages in the CRM timeline.",
+    "subtitleDirect": "Send messages directly from your business WhatsApp number.",
+    "fromLine": "From {{phone}}",
+    "to": "To",
+    "apiConnected": "Direct send",
+    "testMode": "Test mode",
+    "mockHint": "WHATSAPP_MOCK_SEND=true — messages are simulated and logged in CRM only. No real WhatsApp is sent. Remove this flag and add Meta credentials for real delivery.",
+    "setupRequired": "Setup required",
+    "setupHint": "Add WHATSAPP_ACCESS_TOKEN and WHATSAPP_PHONE_NUMBER_ID to .env (local) or Vercel to send directly from 01062913674 via Meta Cloud API.",
+    "sendMessage": "Send directly",
+    "messageSent": "WhatsApp message sent",
+    "statusSent": "Sent",
+    "phase1": "Manual",
+    "openChat": "Open in WhatsApp",
+    "sendAndOpen": "Open with message",
+    "logMessage": "Log message",
+    "messagePlaceholder": "Type the message you sent or plan to send…",
+    "noPhone": "Add a valid phone number to use WhatsApp.",
+    "empty": "No WhatsApp messages logged yet.",
+    "loading": "Loading messages…",
+    "openedChat": "Opened WhatsApp chat",
+    "activitySubject": "WhatsApp — {{name}}",
+    "messageLogged": "WhatsApp message logged",
+    "messageFailed": "Failed to log WhatsApp message",
+    "direction": {
+      "inbound": "Received",
+      "outbound": "Sent"
     }
   }
 }

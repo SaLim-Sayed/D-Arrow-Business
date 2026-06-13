@@ -92,6 +92,7 @@
       "website": "الموقع",
       "referral": "إحالة",
       "social": "تواصل اجتماعي",
+      "whatsapp": "واتساب",
       "cold_call": "اتصال بارد",
       "event": "فعالية",
       "other": "أخرى"
@@ -138,6 +139,7 @@
         "call": "مكالمة",
         "email": "بريد",
         "meeting": "اجتماع",
+        "whatsapp": "واتساب",
         "note": "ملاحظة",
         "other": "أخرى"
       }
@@ -375,6 +377,38 @@
       "revenue": "الإيرادات",
       "tasksDone": "مهام مكتملة",
       "conversion": "تحويل العملاء"
+    }
+  },
+  "whatsapp": {
+    "title": "واتساب",
+    "short": "واتساب",
+    "subtitle": "افتح محادثة مع العميل وسجّل الرسائل في الجدول الزمني للـ CRM.",
+    "subtitleDirect": "أرسل الرسائل مباشرة من رقم واتساب الأعمال.",
+    "fromLine": "من {{phone}}",
+    "to": "إلى",
+    "apiConnected": "إرسال مباشر",
+    "testMode": "وضع تجريبي",
+    "mockHint": "WHATSAPP_MOCK_SEND=true — الرسائل محاكاة وتُسجّل في الـ CRM فقط. لا يُرسل واتساب حقيقي. أزل هذا الخيار وأضف بيانات Meta للإرسال الفعلي.",
+    "setupRequired": "إعداد مطلوب",
+    "setupHint": "أضف WHATSAPP_ACCESS_TOKEN و WHATSAPP_PHONE_NUMBER_ID في .env (محلياً) أو Vercel للإرسال المباشر من 01062913674 عبر Meta Cloud API.",
+    "sendMessage": "إرسال مباشر",
+    "messageSent": "تم إرسال رسالة واتساب",
+    "statusSent": "مُرسلة",
+    "phase1": "يدوي",
+    "openChat": "فتح في واتساب",
+    "sendAndOpen": "فتح مع رسالة",
+    "logMessage": "تسجيل رسالة",
+    "messagePlaceholder": "اكتب الرسالة التي أرسلتها أو تنوي إرسالها…",
+    "noPhone": "أضف رقم هاتف صالحاً لاستخدام واتساب.",
+    "empty": "لا توجد رسائل واتساب مسجّلة بعد.",
+    "loading": "جاري تحميل الرسائل…",
+    "openedChat": "تم فتح محادثة واتساب",
+    "activitySubject": "واتساب — {{name}}",
+    "messageLogged": "تم تسجيل رسالة واتساب",
+    "messageFailed": "فشل تسجيل رسالة واتساب",
+    "direction": {
+      "inbound": "واردة",
+      "outbound": "صادرة"
     }
   }
 }

@@ -8,6 +8,7 @@ export const CRM_COLLECTIONS = {
   notes: "notes",
   attachments: "crm_attachments",
   notifications: "crm_notifications",
+  whatsappMessages: "whatsapp_messages",
 } as const;
 
 export type CrmCollectionName = (typeof CRM_COLLECTIONS)[keyof typeof CRM_COLLECTIONS];

@@ -14,6 +14,7 @@ export const LEAD_SOURCES: LeadSource[] = [
   "website",
   "referral",
   "social",
+  "whatsapp",
   "cold_call",
   "event",
   "other",

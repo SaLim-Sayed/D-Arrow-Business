@@ -9,7 +9,7 @@ import {
   Input,
   Chip,
 } from "@heroui/react";
-import { MessageSquare, Phone, Mail, Calendar, Paperclip, Send } from "lucide-react";
+import { MessageSquare, Phone, Mail, Calendar, Paperclip, Send, MessageCircle } from "lucide-react";
 import { formatDate } from "@/lib/utils";
 import type { Activity, ActivityType } from "../../types/activities.types";
 import type { CrmNote } from "../../types/notes.types";
@@ -31,6 +31,7 @@ function mergeChatterFeed(notes: CrmNote[], activities: Activity[]): ChatterItem
 const QUICK_ACTIVITIES: { type: ActivityType; icon: typeof Phone; labelKey: string }[] = [
   { type: "call", icon: Phone, labelKey: "call" },
   { type: "email", icon: Mail, labelKey: "email" },
+  { type: "whatsapp", icon: MessageCircle, labelKey: "whatsapp" },
   { type: "meeting", icon: Calendar, labelKey: "meeting" },
 ];
 

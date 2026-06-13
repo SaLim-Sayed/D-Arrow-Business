@@ -1,6 +1,6 @@
 import type { CrmEntityType } from "./crm.common.types";
 
-export type ActivityType = "call" | "email" | "meeting" | "note" | "other";
+export type ActivityType = "call" | "email" | "meeting" | "whatsapp" | "note" | "other";
 
 export interface Activity {
   id: string;
