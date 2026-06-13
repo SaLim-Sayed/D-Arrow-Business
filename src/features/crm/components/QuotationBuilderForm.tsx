@@ -430,24 +430,25 @@ export function QuotationBuilderForm() {
       return;
     }
 
-    setShowPreview(true);
     setExporting(true);
 
-    requestAnimationFrame(async () => {
-      try {
-        const el = printRef.current;
-        if (!el) throw new Error("Print element not found");
-        await generateQuotationPdf(
-          el,
-          `quotation-${quoteNumber}-${quoteDateIso}.pdf`
-        );
-        toast.success(t("quotation.exportSuccess"));
-      } catch {
-        toast.error(t("quotation.exportError"));
-      } finally {
-        setExporting(false);
-      }
-    });
+    try {
+      await new Promise((resolve) => requestAnimationFrame(() => resolve(undefined)));
+      await new Promise((resolve) => requestAnimationFrame(() => resolve(undefined)));
+
+      const el = printRef.current;
+      if (!el) throw new Error("Print element not found");
+
+      await generateQuotationPdf(
+        el,
+        `quotation-${quoteNumber}-${quoteDateIso}.pdf`
+      );
+      toast.success(t("quotation.exportSuccess"));
+    } catch {
+      toast.error(t("quotation.exportError"));
+    } finally {
+      setExporting(false);
+    }
   };
 
   return (
@@ -553,7 +554,7 @@ export function QuotationBuilderForm() {
                 <SelectItem key={c.id}>{contactDisplayName(c)}</SelectItem>
               ))}
             </Select>
-            <div className="flex gap-2 items-end sm:col-span-2 lg:col-span-2">
+            <div className="flex gap-2 items-center sm:col-span-2 lg:col-span-2">
               <Select
                 label={t("quotation.recipientTitle.label")}
                 className="w-[140px] shrink-0"
@@ -644,6 +645,7 @@ export function QuotationBuilderForm() {
                             amount={price.unitPrice}
                             currency={price.currency}
                             symbolSize={12}
+                            priceDirection={quoteLocale === "ar" ? "rtl" : "ltr"}
                           />
                         </span>
                       </Checkbox>
@@ -749,6 +751,7 @@ export function QuotationBuilderForm() {
                   <MoneyAmount
                     amount={totals.total}
                     currency={quotationData.currency}
+                    priceDirection={quoteLocale === "ar" ? "rtl" : "ltr"}
                     suffix={
                       pricesIncludeVat ? t("quotation.includingVat") : undefined
                     }
@@ -800,7 +803,7 @@ export function QuotationBuilderForm() {
         aria-hidden
         style={{
           position: "fixed",
-          left: "-9999px",
+          left: "-12000px",
           top: 0,
           width: "210mm",
           pointerEvents: "none",

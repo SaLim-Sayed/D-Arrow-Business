@@ -36,19 +36,19 @@ function PriceCell({
   return (
     <div
       style={{
-        display: "inline-flex",
+        display: "flex",
         alignItems: "center",
         justifyContent: "center",
         whiteSpace: "nowrap",
-        minWidth: "64px",
         width: "100%",
+        lineHeight: 1,
         unicodeBidi: "isolate",
       }}
     >
       <MoneyAmount
         amount={amount}
         currency={currency}
-        symbolSize={12}
+        symbolSize={14}
         locale={numberLocale}
         priceDirection={priceDirection}
       />
@@ -148,6 +148,7 @@ export function QuotationPrintDocument({ data }: QuotationPrintDocumentProps) {
   const priceCellStyle = {
     ...tdStyle,
     textAlign: "center" as const,
+    direction: priceDirection as "ltr" | "rtl",
     fontWeight: 600,
     verticalAlign: "middle" as const,
     whiteSpace: "nowrap" as const,
@@ -156,6 +157,7 @@ export function QuotationPrintDocument({ data }: QuotationPrintDocumentProps) {
 
   return (
     <div
+      data-quotation-print
       dir={dir}
       style={{
         width: "210mm",
@@ -196,9 +198,9 @@ export function QuotationPrintDocument({ data }: QuotationPrintDocumentProps) {
             textAlign: "center",
             fontSize: "24px",
             fontWeight: 700,
-            letterSpacing: "1px",
             position: "relative",
             zIndex: 1,
+            whiteSpace: "nowrap",
           }}
         >
           {tPdf("title")}
@@ -284,7 +286,7 @@ export function QuotationPrintDocument({ data }: QuotationPrintDocumentProps) {
                 >
                   {itemServiceName(item, locale)}
                 </td>
-                <td style={{ ...tdStyle, textAlign: "center" }}>
+                <td style={{ ...tdStyle, textAlign: "center", verticalAlign: "middle" }}>
                   {item.quantity > 0 ? item.quantity : ""}
                 </td>
                 <td style={tdStyle}>
@@ -314,6 +316,7 @@ export function QuotationPrintDocument({ data }: QuotationPrintDocumentProps) {
                   fontSize: "12px",
                   textAlign: align,
                   direction: dir,
+                  verticalAlign: "middle",
                 }}
               >
                 {tPdf("total")}
@@ -326,6 +329,7 @@ export function QuotationPrintDocument({ data }: QuotationPrintDocumentProps) {
                   fontWeight: 700,
                   fontSize: "11px",
                   textAlign: "center",
+                  direction: priceDirection,
                   verticalAlign: "middle",
                 }}
               >
@@ -334,7 +338,8 @@ export function QuotationPrintDocument({ data }: QuotationPrintDocumentProps) {
                     display: "flex",
                     flexDirection: "column",
                     alignItems: "center",
-                    gap: "2px",
+                    justifyContent: "center",
+                    gap: "3px",
                     whiteSpace: "nowrap",
                     unicodeBidi: "isolate",
                   }}
@@ -342,7 +347,7 @@ export function QuotationPrintDocument({ data }: QuotationPrintDocumentProps) {
                   <MoneyAmount
                     amount={totals.total}
                     currency={data.currency}
-                    symbolSize={13}
+                    symbolSize={15}
                     locale="en-US"
                     priceDirection={priceDirection}
                   />
