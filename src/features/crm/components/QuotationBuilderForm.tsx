@@ -13,7 +13,7 @@ import {
   Textarea,
 } from "@heroui/react";
 import { parseDate } from "@internationalized/date";
-import { FileDown, Eye } from "lucide-react";
+import { FileDown, Eye, Save, Trash2 } from "lucide-react";
 import { useCompanyProfile } from "@/features/companies/hooks/use-company-profile";
 import { usePricingList } from "@/features/companies/hooks/use-pricing";
 import { useContactsQuery } from "@/features/crm/hooks/use-contacts";
@@ -24,6 +24,7 @@ import {
 } from "../constants/quotation-templates";
 import { QuotationPrintDocument } from "./QuotationPrintDocument";
 import { QuotationPriceInput } from "./QuotationPriceInput";
+import { QuotationSavedMenu } from "./QuotationSavedMenu";
 import { generateQuotationPdf } from "../utils/generate-quotation-pdf";
 import {
   calculateQuotationTotals,
@@ -33,7 +34,18 @@ import {
 } from "../utils/quotation-calculations";
 import { resolveQuotationLocale, itemDescription, itemServiceName, catalogItemName } from "../utils/quotation-direction";
 import type { QuotationLocale } from "../utils/quotation-direction";
-import type { QuotationData, QuotationLineItem } from "../types/quotation.types";
+import type { QuotationData, QuotationLineItem, QuotationFormDraft, QuotationRecipientTitle } from "../types/quotation.types";
+import { QUOTATION_RECIPIENT_TITLES } from "../utils/quotation-recipient-title";
+import {
+  createDefaultQuotationFormDraft,
+  buildQuotationTitle,
+} from "../utils/quotation-form-state";
+import {
+  useQuotationsQuery,
+  useCreateQuotationMutation,
+  useUpdateQuotationMutation,
+  useDeleteQuotationMutation,
+} from "../hooks/use-quotations";
 import { MoneyAmount } from "@/components/shared/riyal-symbol";
 import { toast } from "sonner";
 
@@ -81,6 +93,7 @@ export function QuotationBuilderForm() {
   const [validityMonths, setValidityMonths] = useState(3);
   const [clientName, setClientName] = useState("");
   const [clientCr, setClientCr] = useState("");
+  const [recipientTitle, setRecipientTitle] = useState<QuotationRecipientTitle>("mr");
   const [selectedContactId, setSelectedContactId] = useState<string>("");
   const [includeBase, setIncludeBase] = useState(true);
   const [basePrice, setBasePrice] = useState(9000);
@@ -98,6 +111,14 @@ export function QuotationBuilderForm() {
   const [pricesIncludeVat, setPricesIncludeVat] = useState(true);
   const [showPreview, setShowPreview] = useState(false);
   const [exporting, setExporting] = useState(false);
+  const [savedQuotationId, setSavedQuotationId] = useState<string | null>(null);
+
+  const { data: savedQuotationsRes, isLoading: isLoadingSaved } = useQuotationsQuery();
+  const savedQuotations = savedQuotationsRes?.data ?? [];
+  const createQuotation = useCreateQuotationMutation();
+  const updateQuotation = useUpdateQuotationMutation();
+  const deleteQuotation = useDeleteQuotationMutation();
+  const isSaving = createQuotation.isPending || updateQuotation.isPending;
 
   const defaultNotes = useMemo(
     () =>
@@ -232,7 +253,11 @@ export function QuotationBuilderForm() {
       quoteDate: formatQuotationDateFromIso(quoteDateIso),
       validityMonths,
       company: buildCompanyInfo(company),
-      client: { name: clientName, commercialRegister: clientCr || undefined },
+      client: {
+        name: clientName,
+        commercialRegister: clientCr || undefined,
+        recipientTitle,
+      },
       items,
       currency: company?.defaultCurrency || "SAR",
       vatRate,
@@ -256,6 +281,7 @@ export function QuotationBuilderForm() {
     company,
     clientName,
     clientCr,
+    recipientTitle,
     vatRate,
     pricesIncludeVat,
     quoteLocale,
@@ -293,6 +319,107 @@ export function QuotationBuilderForm() {
     });
   };
 
+  const applyDraft = (draft: QuotationFormDraft) => {
+    setQuoteNumber(draft.quoteNumber);
+    setQuoteDateIso(draft.quoteDateIso);
+    setValidityMonths(draft.validityMonths);
+    setClientName(draft.clientName);
+    setClientCr(draft.clientCr);
+    setRecipientTitle(draft.recipientTitle ?? "mr");
+    setSelectedContactId(draft.selectedContactId);
+    setIncludeBase(draft.includeBase);
+    setBasePrice(draft.basePrice);
+    setSelectedPriceIds(new Set(draft.selectedPriceIds));
+    setSelectedAddonIds(new Set(draft.selectedAddonIds));
+    setAddonPrices(draft.addonPrices);
+    setItemDescriptions(draft.itemDescriptions);
+    setNotesByLocale(draft.notesByLocale);
+    setVatRate(draft.vatRate);
+    setPricesIncludeVat(draft.pricesIncludeVat);
+    notesTouchedByLocale.current = {
+      ar: !!draft.notesByLocale?.ar,
+      en: !!draft.notesByLocale?.en,
+    };
+  };
+
+  const buildDraft = (): QuotationFormDraft => ({
+    quoteNumber,
+    quoteDateIso,
+    validityMonths,
+    clientName,
+    clientCr,
+    recipientTitle,
+    selectedContactId,
+    includeBase,
+    basePrice,
+    selectedPriceIds: [...selectedPriceIds],
+    selectedAddonIds: [...selectedAddonIds],
+    addonPrices,
+    itemDescriptions,
+    notesByLocale,
+    vatRate,
+    pricesIncludeVat,
+  });
+
+  const handleNewQuotation = () => {
+    setSavedQuotationId(null);
+    applyDraft(createDefaultQuotationFormDraft());
+    setShowPreview(false);
+  };
+
+  const handleLoadQuotation = (id: string) => {
+    const saved = savedQuotations.find((q) => q.id === id);
+    if (!saved) return;
+    setSavedQuotationId(saved.id);
+    applyDraft(saved.form);
+    setShowPreview(false);
+  };
+
+  const handleSave = async () => {
+    if (!clientName.trim()) {
+      toast.error(t("quotation.clientRequired"));
+      return;
+    }
+
+    const form = buildDraft();
+    const payload = {
+      title: buildQuotationTitle(
+        clientName,
+        quoteNumber,
+        t("quotation.untitled")
+      ),
+      status: "draft" as const,
+      form,
+      total: totals.total,
+      currency: quotationData.currency,
+      contactId: selectedContactId || undefined,
+    };
+
+    try {
+      if (savedQuotationId) {
+        await updateQuotation.mutateAsync({
+          id: savedQuotationId,
+          data: payload,
+        });
+      } else {
+        const res = await createQuotation.mutateAsync(payload);
+        setSavedQuotationId(res.data.id);
+      }
+    } catch {
+      // toast handled in mutation
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!savedQuotationId) return;
+    try {
+      await deleteQuotation.mutateAsync(savedQuotationId);
+      handleNewQuotation();
+    } catch {
+      // toast handled in mutation
+    }
+  };
+
   const handleExport = async () => {
     if (!clientName.trim()) {
       toast.error(t("quotation.clientRequired"));
@@ -324,7 +451,58 @@ export function QuotationBuilderForm() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="grid grid-cols-1 lg:grid-cols-[minmax(260px,300px)_1fr] gap-4 items-start">
+      <QuotationSavedMenu
+        quotations={savedQuotations}
+        activeId={savedQuotationId}
+        isLoading={isLoadingSaved}
+        onSelect={handleLoadQuotation}
+        onNew={handleNewQuotation}
+      />
+
+      <div className="space-y-6 min-w-0">
+      <Card className="border border-default-100">
+        <CardBody className="gap-4 p-4">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="min-w-0">
+              <p className="text-sm font-bold">
+                {savedQuotationId
+                  ? savedQuotations.find((q) => q.id === savedQuotationId)?.title ??
+                    t("quotation.newQuote")
+                  : t("quotation.newQuote")}
+              </p>
+              <p className="text-xs text-default-400">
+                {savedQuotationId
+                  ? t("quotation.editingSaved")
+                  : t("quotation.unsavedDraft")}
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+            <Button
+              color="primary"
+              variant="flat"
+              startContent={<Save className="h-4 w-4" />}
+              isLoading={isSaving}
+              onPress={handleSave}
+            >
+              {t("quotation.save")}
+            </Button>
+            {savedQuotationId && (
+              <Button
+                color="danger"
+                variant="light"
+                startContent={<Trash2 className="h-4 w-4" />}
+                isLoading={deleteQuotation.isPending}
+                onPress={handleDelete}
+              >
+                {t("quotation.delete")}
+              </Button>
+            )}
+            </div>
+          </div>
+        </CardBody>
+      </Card>
+
       <Card className="border border-default-100">
         <CardBody className="gap-5 p-6">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -362,7 +540,7 @@ export function QuotationBuilderForm() {
 
           <Divider />
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             <Select
               label={t("quotation.selectContact")}
               selectedKeys={selectedContactId ? [selectedContactId] : []}
@@ -375,12 +553,30 @@ export function QuotationBuilderForm() {
                 <SelectItem key={c.id}>{contactDisplayName(c)}</SelectItem>
               ))}
             </Select>
-            <Input
-              label={t("quotation.clientName")}
-              value={clientName}
-              onValueChange={setClientName}
-              isRequired
-            />
+            <div className="flex gap-2 items-end sm:col-span-2 lg:col-span-2">
+              <Select
+                label={t("quotation.recipientTitle.label")}
+                className="w-[140px] shrink-0"
+                selectedKeys={[recipientTitle]}
+                onSelectionChange={(keys) => {
+                  const value = Array.from(keys)[0] as QuotationRecipientTitle;
+                  if (value) setRecipientTitle(value);
+                }}
+              >
+                {QUOTATION_RECIPIENT_TITLES.map((title) => (
+                  <SelectItem key={title}>
+                    {t(`quotation.pdf.recipientTitle.${title}`)}
+                  </SelectItem>
+                ))}
+              </Select>
+              <Input
+                label={t("quotation.clientName")}
+                className="flex-1 min-w-0"
+                value={clientName}
+                onValueChange={setClientName}
+                isRequired
+              />
+            </div>
             <Input
               label={t("quotation.clientCr")}
               value={clientCr}
@@ -611,6 +807,7 @@ export function QuotationBuilderForm() {
         }}
       >
         <QuotationPrintDocument data={quotationData} />
+      </div>
       </div>
     </div>
   );

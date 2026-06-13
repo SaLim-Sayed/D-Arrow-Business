@@ -31,6 +31,8 @@ interface MoneyAmountProps {
   className?: string;
   symbolSize?: number;
   locale?: string;
+  /** Bidi direction for SAR amount + symbol (use rtl in Arabic PDF so the icon reads after the number) */
+  priceDirection?: "ltr" | "rtl";
 }
 
 /** Amount with official Saudi Riyal icon when currency is SAR */
@@ -41,18 +43,26 @@ export function MoneyAmount({
   className,
   symbolSize = 14,
   locale = "en-US",
+  priceDirection = "ltr",
 }: MoneyAmountProps) {
   const formatted = amount.toLocaleString(locale, { maximumFractionDigits: 0 });
 
   if (isSarCurrency(currency)) {
     return (
       <span
-        className={cn("inline-flex items-center gap-1.5 tabular-nums", className)}
-        dir="ltr"
+        className={cn("tabular-nums", className)}
+        style={{
+          display: "inline-flex",
+          flexDirection: "row",
+          direction: priceDirection,
+          unicodeBidi: "isolate",
+          alignItems: "center",
+          gap: symbolSize <= 11 ? 3 : 5,
+        }}
       >
         <span>{formatted}</span>
         <RiyalSymbol size={symbolSize} />
-        {suffix ? <span className="text-inherit">{suffix}</span> : null}
+        {suffix ? <span>{suffix}</span> : null}
       </span>
     );
   }

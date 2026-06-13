@@ -2,6 +2,7 @@ import type { QuotationData, QuotationLineItem } from "../types/quotation.types"
 import { QUOTATION_THEME } from "../constants/quotation-theme";
 import { calculateQuotationTotals } from "../utils/quotation-calculations";
 import { itemServiceName, itemDescription, useQuotationLayout } from "../utils/quotation-direction";
+import { recipientTitleLabel } from "../utils/quotation-recipient-title";
 import { MoneyAmount } from "@/components/shared/riyal-symbol";
 import {
   QuotationLetterheadHeader,
@@ -18,11 +19,11 @@ const cellBorder = `1px solid ${QUOTATION_THEME.tableBorder}`;
 function PriceCell({
   amount,
   currency,
-  locale,
+  priceDirection,
 }: {
   amount: number;
   currency: string;
-  locale: "ar" | "en";
+  priceDirection: "ltr" | "rtl";
 }) {
   if (amount <= 0) {
     return (
@@ -30,7 +31,7 @@ function PriceCell({
     );
   }
 
-  const numberLocale = locale === "ar" ? "ar-SA" : "en-US";
+  const numberLocale = "en-US";
 
   return (
     <div
@@ -41,6 +42,7 @@ function PriceCell({
         whiteSpace: "nowrap",
         minWidth: "64px",
         width: "100%",
+        unicodeBidi: "isolate",
       }}
     >
       <MoneyAmount
@@ -48,6 +50,7 @@ function PriceCell({
         currency={currency}
         symbolSize={12}
         locale={numberLocale}
+        priceDirection={priceDirection}
       />
     </div>
   );
@@ -109,6 +112,7 @@ export function QuotationPrintDocument({ data }: QuotationPrintDocumentProps) {
   const { locale, isAr, dir, align, bulletPad, tPdf } = useQuotationLayout();
   const totals = calculateQuotationTotals(data);
   const { client } = data;
+  const priceDirection = isAr ? "rtl" : "ltr";
 
   const validityNote = tPdf("validityNote", {
     months: data.validityMonths,
@@ -144,7 +148,6 @@ export function QuotationPrintDocument({ data }: QuotationPrintDocumentProps) {
   const priceCellStyle = {
     ...tdStyle,
     textAlign: "center" as const,
-    direction: "ltr" as const,
     fontWeight: 600,
     verticalAlign: "middle" as const,
     whiteSpace: "nowrap" as const,
@@ -230,10 +233,7 @@ export function QuotationPrintDocument({ data }: QuotationPrintDocumentProps) {
               direction: dir,
             }}
           >
-            {tPdf("recipientPrefix")} {client.name}
-          </div>
-          <div style={{ textAlign: "center", fontSize: "11px", marginBottom: "8px" }}>
-            {tPdf("recipientSuffix")}
+            {recipientTitleLabel(client.recipientTitle, tPdf)} {client.name}
           </div>
         </div>
 
@@ -298,7 +298,7 @@ export function QuotationPrintDocument({ data }: QuotationPrintDocumentProps) {
                   <PriceCell
                     amount={item.unitPrice * item.quantity}
                     currency={data.currency}
-                    locale={locale}
+                    priceDirection={priceDirection}
                   />
                 </td>
               </tr>
@@ -326,7 +326,6 @@ export function QuotationPrintDocument({ data }: QuotationPrintDocumentProps) {
                   fontWeight: 700,
                   fontSize: "11px",
                   textAlign: "center",
-                  direction: "ltr",
                   verticalAlign: "middle",
                 }}
               >
@@ -337,13 +336,15 @@ export function QuotationPrintDocument({ data }: QuotationPrintDocumentProps) {
                     alignItems: "center",
                     gap: "2px",
                     whiteSpace: "nowrap",
+                    unicodeBidi: "isolate",
                   }}
                 >
                   <MoneyAmount
                     amount={totals.total}
                     currency={data.currency}
                     symbolSize={13}
-                    locale={locale === "ar" ? "ar-SA" : "en-US"}
+                    locale="en-US"
+                    priceDirection={priceDirection}
                   />
                   {data.pricesIncludeVat ? (
                     <span
@@ -351,6 +352,8 @@ export function QuotationPrintDocument({ data }: QuotationPrintDocumentProps) {
                         fontSize: "9px",
                         fontWeight: 600,
                         color: "#444",
+                        direction: locale === "ar" ? "rtl" : "ltr",
+                        unicodeBidi: "isolate",
                       }}
                     >
                       {tPdf("includingVat")}

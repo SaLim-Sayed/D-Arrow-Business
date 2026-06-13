@@ -29,7 +29,10 @@ export interface QuotationCompanyInfo {
 export interface QuotationClientInfo {
   name: string;
   commercialRegister?: string;
+  recipientTitle?: QuotationRecipientTitle;
 }
+
+export type QuotationRecipientTitle = "mr" | "mrs" | "professor";
 
 export interface QuotationData {
   quoteNumber: string;
@@ -49,3 +52,47 @@ export interface QuotationTotals {
   vatAmount: number;
   total: number;
 }
+
+/** Serializable quotation form state for persistence */
+export interface QuotationFormDraft {
+  quoteNumber: string;
+  quoteDateIso: string;
+  validityMonths: number;
+  clientName: string;
+  clientCr: string;
+  recipientTitle: QuotationRecipientTitle;
+  selectedContactId: string;
+  includeBase: boolean;
+  basePrice: number;
+  selectedPriceIds: string[];
+  selectedAddonIds: string[];
+  addonPrices: Record<string, number>;
+  itemDescriptions: Record<string, Partial<Record<"ar" | "en", string>>>;
+  notesByLocale: Partial<Record<"ar" | "en", string>>;
+  vatRate: number;
+  pricesIncludeVat: boolean;
+}
+
+export type QuotationStatus = "draft" | "sent";
+
+export interface SavedQuotation {
+  id: string;
+  title: string;
+  status: QuotationStatus;
+  form: QuotationFormDraft;
+  total: number;
+  currency: string;
+  contactId?: string;
+  createdBy?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type CreateQuotationDTO = Omit<
+  SavedQuotation,
+  "id" | "createdAt" | "updatedAt"
+>;
+
+export type UpdateQuotationDTO = Partial<
+  Omit<SavedQuotation, "id" | "createdAt" | "updatedAt" | "createdBy">
+>;
