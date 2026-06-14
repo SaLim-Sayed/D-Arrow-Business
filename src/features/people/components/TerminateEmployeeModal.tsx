@@ -13,6 +13,7 @@ import {
   Chip
 } from "@heroui/react";
 import { AlertTriangle, UserMinus } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import type { Employee } from "../types/people.types";
 
 export type TerminateAction = "resigned" | "terminated";
@@ -25,6 +26,7 @@ interface TerminateEmployeeModalProps {
 }
 
 export function TerminateEmployeeModal({ isOpen, onOpenChange, employee, onConfirm }: TerminateEmployeeModalProps) {
+  const { t } = useTranslation("people");
   const [actionType, setActionType] = useState<TerminateAction>("terminated");
   const [reason, setReason] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -57,8 +59,8 @@ export function TerminateEmployeeModal({ isOpen, onOpenChange, employee, onConfi
                   <UserMinus size={24} />
                 </div>
                 <div>
-                  <h2 className="text-xl font-black text-foreground tracking-tight">Offboard Employee</h2>
-                  <p className="text-xs font-medium text-default-500 mt-1">Process resignation or termination</p>
+                  <h2 className="text-xl font-black text-foreground tracking-tight">{t("terminate_modal.title")}</h2>
+                  <p className="text-xs font-medium text-default-500 mt-1">{t("terminate_modal.subtitle")}</p>
                 </div>
               </div>
             </ModalHeader>
@@ -76,48 +78,48 @@ export function TerminateEmployeeModal({ isOpen, onOpenChange, employee, onConfi
                   <p className="text-xs text-default-500">{employee.jobTitle}</p>
                 </div>
                 <Chip size="sm" variant="flat" color="danger" className="font-bold">
-                  {employee.status}
+                  {t(`statuses.${employee.status}`, employee.status)}
                 </Chip>
               </div>
 
               <div className="space-y-4 mt-2">
                 <Select
-                  label="Action Type"
-                  placeholder="Select action type"
+                  label={t("terminate_modal.action_type")}
+                  placeholder={t("terminate_modal.action_type")}
                   selectedKeys={[actionType]}
                   onSelectionChange={(keys) => setActionType(Array.from(keys)[0] as TerminateAction)}
                   isRequired
                 >
-                  <SelectItem key="resigned" description="Voluntary departure by the employee">
-                    Resignation
+                  <SelectItem key="resigned" description={t("extra.resignation_desc")}>
+                    {t("terminate_modal.resign")}
                   </SelectItem>
-                  <SelectItem key="terminated" description="Involuntary departure initiated by the company" className="text-danger">
-                    Termination
+                  <SelectItem key="terminated" description={t("extra.termination_desc")} className="text-danger">
+                    {t("terminate_modal.terminate")}
                   </SelectItem>
                 </Select>
 
                 <Textarea
-                  label="Reason / Notes"
-                  placeholder="Please provide details about this decision..."
+                  label={t("terminate_modal.reason")}
+                  placeholder={t("terminate_modal.reason")}
                   value={reason}
                   onValueChange={setReason}
                   isRequired
                   minRows={3}
-                  errorMessage={!reason.trim() ? "Reason is required" : undefined}
+                  errorMessage={!reason.trim() ? t("errors.somethingWentWrong", "Required") : undefined}
                 />
 
                 <div className="flex gap-3 p-4 bg-danger/5 rounded-xl border border-danger/10 text-danger-600">
                   <AlertTriangle size={20} className="shrink-0 mt-0.5" />
                   <div className="text-xs font-medium">
-                    <strong className="font-bold block mb-1">Warning</strong>
-                    This action will revoke the employee's access to the system immediately. This cannot be easily undone.
+                    <strong className="font-bold block mb-1">{t("extra.warning")}</strong>
+                    {t("extra.revoke_warning")}
                   </div>
                 </div>
               </div>
             </ModalBody>
             <ModalFooter className="border-t border-default-100">
               <Button variant="light" onPress={onClose} isDisabled={isSubmitting}>
-                Cancel
+                {t("terminate_modal.cancel")}
               </Button>
               <Button 
                 color="danger" 
@@ -127,7 +129,7 @@ export function TerminateEmployeeModal({ isOpen, onOpenChange, employee, onConfi
                 isDisabled={!reason.trim()}
                 className="font-bold shadow-lg shadow-danger/25"
               >
-                Confirm {actionType === "resigned" ? "Resignation" : "Termination"}
+                {actionType === "resigned" ? t("extra.confirm_resignation") : t("extra.confirm_termination")}
               </Button>
             </ModalFooter>
           </>

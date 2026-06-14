@@ -1,4 +1,5 @@
 import { Avatar } from "@heroui/react";
+import { useTranslation } from "react-i18next";
 import type { Employee } from "../types/people.types";
 import { Users } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -8,6 +9,7 @@ interface OrgChartProps {
 }
 
 export function OrgChart({ employees }: OrgChartProps) {
+  const { t } = useTranslation("people");
   // Find top level managers (those who don't have a managerId or their manager isn't in the list)
   const rootEmployees = employees.filter(e => 
     !e.managerId || !employees.find(m => m.id === e.managerId)
@@ -17,7 +19,7 @@ export function OrgChart({ employees }: OrgChartProps) {
     <div className="space-y-6">
       <div className="flex items-center gap-2 mb-4">
         <Users className="text-primary" size={24} />
-        <h2 className="text-xl font-bold">Organization Structure</h2>
+        <h2 className="text-xl font-bold">{t("extra.org_structure")}</h2>
       </div>
       
       <div className="grid gap-4">
@@ -35,6 +37,7 @@ export function OrgChart({ employees }: OrgChartProps) {
 }
 
 function OrgNode({ employee, allEmployees, level }: { employee: Employee, allEmployees: Employee[], level: number }) {
+  const { t } = useTranslation("people");
   const directReports = allEmployees.filter(e => e.managerId === employee.id);
   const initials = `${employee.firstName?.charAt(0) || ""}${employee.lastName?.charAt(0) || ""}`.toUpperCase();
 
@@ -60,7 +63,7 @@ function OrgNode({ employee, allEmployees, level }: { employee: Employee, allEmp
         </div>
         {directReports.length > 0 && (
           <div className="px-2 py-1 bg-primary/10 text-primary text-[10px] font-bold rounded-full">
-            {directReports.length} reports
+            {directReports.length === 1 ? t("extra.reports_one") : t("extra.reports_other", { count: directReports.length })}
           </div>
         )}
       </div>

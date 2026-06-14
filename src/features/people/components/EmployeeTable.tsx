@@ -16,6 +16,8 @@ import {
   Pagination,
 } from "@heroui/react";
 import { Eye, Edit, Trash2, Search, Filter, Download, UserPlus } from "lucide-react";
+import { useTranslation } from "react-i18next";
+import { formatDate } from "@/lib/utils";
 import type { Employee } from "../types/people.types";
 
 interface EmployeeTableProps {
@@ -47,6 +49,7 @@ const roleColorMap: Record<string, "default" | "primary" | "secondary" | "succes
 const ROWS_PER_PAGE = 8;
 
 export function EmployeeTable({ employees, onView, onEdit, onDelete, onHire }: EmployeeTableProps) {
+  const { t } = useTranslation("people");
   const [search, setSearch] = useState("");
   const [departmentFilter, setDepartmentFilter] = useState<string>("");
   const [statusFilter, setStatusFilter] = useState<string>("");
@@ -109,7 +112,7 @@ export function EmployeeTable({ employees, onView, onEdit, onDelete, onHire }: E
           return (
             <div className="flex flex-col gap-0.5">
               <span className="font-bold text-sm">{employee.jobTitle}</span>
-              <span className="text-xs text-default-400 font-medium">{employee.department}</span>
+              <span className="text-xs text-default-400 font-medium">{t(`departments.${employee.department}`, employee.department)}</span>
             </div>
           );
 
@@ -121,11 +124,11 @@ export function EmployeeTable({ employees, onView, onEdit, onDelete, onHire }: E
               color={roleColorMap[employee.role] || "default"}
               className="capitalize font-bold text-xs"
             >
-              {employee.role.replace("_", " ")}
+              {t(`roles.${employee.role}`, employee.role.replace("_", " "))}
             </Chip>
           ) : (
             <Chip size="sm" variant="flat" color="default" className="font-bold text-xs">
-              employee
+              {t("roles.employee")}
             </Chip>
           );
 
@@ -137,25 +140,21 @@ export function EmployeeTable({ employees, onView, onEdit, onDelete, onHire }: E
               color={statusColorMap[employee.status] || "default"}
               className="capitalize font-bold"
             >
-              {employee.status}
+              {t(`statuses.${employee.status}`, employee.status)}
             </Chip>
           );
 
         case "joiningDate":
           return (
             <span className="text-sm text-default-600 font-medium">
-              {new Date(employee.joiningDate as any).toLocaleDateString("en-US", {
-                day: "numeric",
-                month: "short",
-                year: "numeric",
-              })}
+              {formatDate(employee.joiningDate)}
             </span>
           );
 
         case "actions":
           return (
             <div className="flex items-center gap-1.5 justify-center">
-              <Tooltip content="View Profile" placement="top">
+              <Tooltip content={t("extra.view_profile")} placement="top">
                 <Button
                   isIconOnly
                   size="sm"
@@ -166,7 +165,7 @@ export function EmployeeTable({ employees, onView, onEdit, onDelete, onHire }: E
                   <Eye size={16} />
                 </Button>
               </Tooltip>
-              <Tooltip content="Edit Employee" placement="top">
+              <Tooltip content={t("extra.edit_employee")} placement="top">
                 <Button
                   isIconOnly
                   size="sm"
@@ -177,7 +176,7 @@ export function EmployeeTable({ employees, onView, onEdit, onDelete, onHire }: E
                   <Edit size={16} />
                 </Button>
               </Tooltip>
-              <Tooltip content="Remove Employee" color="danger" placement="top">
+              <Tooltip content={t("extra.remove_employee")} color="danger" placement="top">
                 <Button
                   isIconOnly
                   size="sm"
@@ -195,16 +194,16 @@ export function EmployeeTable({ employees, onView, onEdit, onDelete, onHire }: E
           return null;
       }
     },
-    [onView, onEdit, onDelete]
+    [onView, onEdit, onDelete, t]
   );
 
   const columns = [
-    { name: "EMPLOYEE", uid: "name" },
-    { name: "JOB / DEPARTMENT", uid: "role" },
-    { name: "SYSTEM ROLE", uid: "systemRole" },
-    { name: "STATUS", uid: "status" },
-    { name: "JOINING DATE", uid: "joiningDate" },
-    { name: "ACTIONS", uid: "actions" },
+    { name: t("timesheets.col_employee"), uid: "name" },
+    { name: `${t("profile.job_title")} / ${t("profile.department")}`, uid: "role" },
+    { name: t("profile.role"), uid: "systemRole" },
+    { name: t("timesheets.col_status"), uid: "status" },
+    { name: t("profile.joined"), uid: "joiningDate" },
+    { name: t("approvals.col_actions"), uid: "actions" },
   ];
 
   return (
@@ -214,7 +213,7 @@ export function EmployeeTable({ employees, onView, onEdit, onDelete, onHire }: E
         <Input
           isClearable
           className="w-full md:max-w-xs"
-          placeholder="Search name, email, job..."
+          placeholder={t("extra.search_placeholder")}
           startContent={<Search className="text-default-400" size={16} />}
           value={search}
           onValueChange={(v) => { setSearch(v); setPage(1); }}
@@ -223,7 +222,7 @@ export function EmployeeTable({ employees, onView, onEdit, onDelete, onHire }: E
 
         <div className="flex flex-wrap gap-2 flex-1">
           <Select
-            placeholder="Department"
+            placeholder={t("profile.department")}
             size="sm"
             className="w-36"
             selectedKeys={departmentFilter ? [departmentFilter] : []}
@@ -234,12 +233,12 @@ export function EmployeeTable({ employees, onView, onEdit, onDelete, onHire }: E
             startContent={<Filter size={14} className="text-default-400" />}
           >
             {DEPARTMENTS.map((d) => (
-              <SelectItem key={d}>{d}</SelectItem>
+              <SelectItem key={d}>{t(`departments.${d}`)}</SelectItem>
             ))}
           </Select>
 
           <Select
-            placeholder="Status"
+            placeholder={t("timesheets.col_status")}
             size="sm"
             className="w-32"
             selectedKeys={statusFilter ? [statusFilter] : []}
@@ -249,12 +248,12 @@ export function EmployeeTable({ employees, onView, onEdit, onDelete, onHire }: E
             }}
           >
             {STATUSES.map((s) => (
-              <SelectItem key={s} className="capitalize">{s}</SelectItem>
+              <SelectItem key={s} className="capitalize">{t(`statuses.${s}`)}</SelectItem>
             ))}
           </Select>
 
           <Select
-            placeholder="Role"
+            placeholder={t("profile.role")}
             size="sm"
             className="w-32"
             selectedKeys={roleFilter ? [roleFilter] : []}
@@ -264,26 +263,26 @@ export function EmployeeTable({ employees, onView, onEdit, onDelete, onHire }: E
             }}
           >
             {ROLES.map((r) => (
-              <SelectItem key={r} className="capitalize">{r.replace("_", " ")}</SelectItem>
+              <SelectItem key={r} className="capitalize">{t(`roles.${r}`)}</SelectItem>
             ))}
           </Select>
 
           {hasFilters && (
             <Button size="sm" variant="light" color="danger" onPress={clearFilters} className="font-bold">
-              Clear Filters
+              {t("extra.clear_filters")}
             </Button>
           )}
         </div>
 
         <div className="flex gap-2 ml-auto shrink-0">
-          <Tooltip content="Export CSV">
+          <Tooltip content={t("common.actions.export", "Export")}>
             <Button isIconOnly size="sm" variant="flat">
               <Download size={16} />
             </Button>
           </Tooltip>
           {onHire && (
             <Button size="sm" color="primary" variant="flat" startContent={<UserPlus size={14} />} onPress={onHire} className="font-bold">
-              New Hire
+              {t("dashboard.new_hire")}
             </Button>
           )}
         </div>
@@ -292,16 +291,16 @@ export function EmployeeTable({ employees, onView, onEdit, onDelete, onHire }: E
       {/* Results count */}
       <div className="flex items-center justify-between text-xs text-default-400 font-medium px-1">
         <span>
-          Showing <strong className="text-foreground">{paginated.length}</strong> of{" "}
-          <strong className="text-foreground">{filtered.length}</strong> employees
-          {hasFilters && " (filtered)"}
+          {t("extra.showing")} <strong className="text-foreground">{paginated.length}</strong> {t("extra.of")}{" "}
+          <strong className="text-foreground">{filtered.length}</strong> {t("extra.employees")}
+          {hasFilters && ` ${t("extra.filtered")}`}
         </span>
-        <span>{employees.length} total</span>
+        <span>{employees.length} {t("extra.total")}</span>
       </div>
 
       {/* Table */}
       <Table
-        aria-label="Employee directory table"
+        aria-label={t("extra.org_structure")}
         className="rounded-2xl shadow-sm border border-default-100"
         removeWrapper
         bottomContent={
@@ -335,10 +334,10 @@ export function EmployeeTable({ employees, onView, onEdit, onDelete, onHire }: E
           emptyContent={
             <div className="flex flex-col items-center justify-center py-12 gap-3">
               <Search size={36} className="text-default-300" />
-              <p className="text-default-500 font-medium">No employees match your filters.</p>
+              <p className="text-default-500 font-medium">{t("extra.no_matching_employees")}</p>
               {hasFilters && (
                 <Button size="sm" variant="flat" color="primary" onPress={clearFilters}>
-                  Clear Filters
+                  {t("extra.clear_filters")}
                 </Button>
               )}
             </div>

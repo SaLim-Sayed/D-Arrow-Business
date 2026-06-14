@@ -113,5 +113,36 @@
     "home": "Home",
     "errorRecovery": "D-Arrow Business HRMS • Error Recovery System",
     "unexpected": "An unexpected error occurred."
+  },
+  "notifications": {
+    "title": "Notifications",
+    "markAllAsRead": "Mark all as read",
+    "empty": "No notifications yet.",
+    "types": {
+      "task_created": {
+        "title": "Task Created",
+        "message": "The task \"{{taskTitle}}\" was created by {{actionBy}}."
+      },
+      "task_updated": {
+        "title": "Task Updated",
+        "message": "The task \"{{taskTitle}}\" was updated by {{actionBy}}."
+      },
+      "task_assigned": {
+        "title": "Task Assigned",
+        "message": "The task \"{{taskTitle}}\" was assigned by {{actionBy}}."
+      },
+      "attendance_started": {
+        "title": "Attendance Started",
+        "message": "{{employeeName}} has started work."
+      },
+      "attendance_resumed": {
+        "title": "Attendance Resumed",
+        "message": "{{employeeName}} has resumed work."
+      },
+      "attendance_completed": {
+        "title": "Attendance Completed",
+        "message": "{{employeeName}} has checked out. Total time: {{totalTime}}."
+      }
+    }
   }
 }

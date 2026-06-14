@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { FileText, ImageIcon, Download, X, Eye, Upload } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 export function getAttachmentFileName(url: string, index?: number): string {
   if (url.startsWith("data:image/")) return `Image ${(index ?? 0) + 1}`;
@@ -43,6 +44,7 @@ interface AttachmentThumbnailProps {
 }
 
 export function AttachmentThumbnail({ url, index, onPreview, onDelete }: AttachmentThumbnailProps) {
+  const { t } = useTranslation("tasks");
   const [imgError, setImgError] = useState(false);
   const fileName = getAttachmentFileName(url, index);
   const showCover = isLikelyImageUrl(url) && !imgError;
@@ -69,7 +71,7 @@ export function AttachmentThumbnail({ url, index, onPreview, onDelete }: Attachm
             <div className="p-3 rounded-xl bg-content1 shadow-sm border border-default-200/60">
               <FileText className="w-8 h-8 text-default-400" strokeWidth={1.5} />
             </div>
-            <span className="text-[10px] font-semibold text-default-400 uppercase tracking-wide">Document</span>
+            <span className="text-[10px] font-semibold text-default-400 uppercase tracking-wide">{t("form.attachments.document")}</span>
           </div>
         )}
 
@@ -77,7 +79,7 @@ export function AttachmentThumbnail({ url, index, onPreview, onDelete }: Attachm
         <div className="absolute bottom-2 left-2 right-2 flex justify-center opacity-0 group-hover:opacity-100 transition-opacity">
           <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/95 text-foreground text-[11px] font-bold shadow-sm">
             <Eye className="w-3.5 h-3.5" />
-            View
+            {t("form.attachments.view")}
           </span>
         </div>
 
@@ -129,6 +131,7 @@ export function PendingFileThumbnail({
   file: File;
   onRemove: () => void;
 }) {
+  const { t } = useTranslation("tasks");
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [imgError, setImgError] = useState(false);
   const isImage = file.type.startsWith("image/");
@@ -155,11 +158,11 @@ export function PendingFileThumbnail({
         ) : (
           <div className="w-full h-full flex flex-col items-center justify-center gap-2 bg-gradient-to-br from-default-100 to-default-50 p-3">
             <FileText className="w-8 h-8 text-default-400" strokeWidth={1.5} />
-            <span className="text-[10px] font-semibold text-default-500 uppercase">Pending</span>
+            <span className="text-[10px] font-semibold text-default-500 uppercase">{t("form.attachments.pending")}</span>
           </div>
         )}
         <span className="absolute top-2 left-2 px-2 py-0.5 rounded-md bg-primary text-white text-[10px] font-bold">
-          New
+          {t("form.attachments.new")}
         </span>
       </div>
       <div className="px-3 py-2 border-t border-primary/20 bg-content1/90">
@@ -191,6 +194,7 @@ export function AttachmentUploadZone({
   disabled,
   fileCount = 0,
 }: AttachmentUploadZoneProps) {
+  const { t } = useTranslation("tasks");
   const inputId = "task-attachment-input";
 
   const handleFiles = (fileList: FileList | null) => {
@@ -230,10 +234,14 @@ export function AttachmentUploadZone({
       <div className="p-3 rounded-full bg-primary/10 text-primary">
         <Upload className="w-6 h-6" />
       </div>
-      <p className="text-sm font-semibold text-foreground">Click or drag files to upload</p>
-      <p className="text-xs text-default-400">Optional — images, PDFs, and documents</p>
+      <p className="text-sm font-semibold text-foreground">{t("form.attachments.clickOrDrag")}</p>
+      <p className="text-xs text-default-400">{t("form.attachments.optionalHint")}</p>
       {fileCount > 0 && (
-        <p className="text-xs font-bold text-primary mt-1">{fileCount} file{fileCount !== 1 ? "s" : ""} selected</p>
+        <p className="text-xs font-bold text-primary mt-1">
+          {fileCount === 1 
+            ? t("form.attachments.filesSelected_one", { count: 1 })
+            : t("form.attachments.filesSelected_other", { count: fileCount })}
+        </p>
       )}
     </label>
   );

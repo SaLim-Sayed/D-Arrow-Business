@@ -5,6 +5,7 @@ import { LeaveBalanceCards } from "../components/LeaveBalanceCards";
 import { useLeaveRequestsQuery } from "../hooks/use-people";
 import { ApplyLeaveModal } from "../components/ApplyLeaveModal";
 import { useTranslation } from "react-i18next";
+import { formatDate } from "@/lib/utils";
 
 export default function LeaveTrackerPage() {
   const { t } = useTranslation("people");
@@ -59,7 +60,7 @@ export default function LeaveTrackerPage() {
         </div>
 
         <Table 
-          aria-label="Leave history table"
+          aria-label={t("profile.leave_history")}
           className="bg-white dark:bg-content1 rounded-2xl shadow-sm border border-default-100"
           removeWrapper
         >
@@ -82,10 +83,12 @@ export default function LeaveTrackerPage() {
                         color={statusColors[item.status] as any}
                         className="capitalize font-semibold"
                       >
-                        {item.status}
+                        {t(`profile.${item.status}`, item.status)}
                       </Chip>
+                    ) : columnKey === "type" ? (
+                      t(`leave_modal.type_${item.type}`, item.type)
                     ) : columnKey === "startDate" || columnKey === "endDate" ? (
-                      new Date(item[columnKey as keyof typeof item] as any).toLocaleDateString()
+                      formatDate(item[columnKey as keyof typeof item] as any)
                     ) : (
                       item[columnKey as keyof typeof item]?.toString()
                     )}

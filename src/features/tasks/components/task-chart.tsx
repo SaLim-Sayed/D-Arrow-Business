@@ -48,7 +48,7 @@ export function TaskCharts({ tasks }: { tasks: Task[] }) {
     <div className="grid gap-6 md:grid-cols-2 animate-in fade-in zoom-in duration-500 delay-200">
       <Card className="glass-card border-none overflow-hidden">
         <CardHeader className="pb-0 pt-6 px-6 flex-col items-start">
-          <p className="text-[10px] font-black uppercase tracking-[0.2em] text-primary mb-1">Overview</p>
+          <p className="text-[10px] font-black uppercase tracking-[0.2em] text-primary mb-1">{t("dashboard.overview")}</p>
           <h4 className="text-xl font-black">
             {t("dashboard.tasksByStatus")}
           </h4>
@@ -94,7 +94,7 @@ export function TaskCharts({ tasks }: { tasks: Task[] }) {
 
       <Card className="glass-card border-none overflow-hidden">
         <CardHeader className="pb-0 pt-6 px-6 flex-col items-start">
-          <p className="text-[10px] font-black uppercase tracking-[0.2em] text-secondary mb-1">Distribution</p>
+          <p className="text-[10px] font-black uppercase tracking-[0.2em] text-secondary mb-1">{t("dashboard.distribution")}</p>
           <h4 className="text-xl font-black">
             {t("dashboard.tasksByPriority")}
           </h4>

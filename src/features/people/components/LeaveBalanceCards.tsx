@@ -1,12 +1,14 @@
 import { Card, CardBody } from "@heroui/react";
 import { Umbrella, Thermometer, UserMinus, Clock } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 export function LeaveBalanceCards() {
+  const { t } = useTranslation("people");
   const balances = [
-    { label: "Annual Leave", value: "15", total: "22", icon: <Umbrella size={24} />, color: "text-blue-500", bg: "bg-blue-500/10" },
-    { label: "Sick Leave", value: "4", total: "10", icon: <Thermometer size={24} />, color: "text-red-500", bg: "bg-red-500/10" },
-    { label: "Personal Leave", value: "2", total: "5", icon: <UserMinus size={24} />, color: "text-purple-500", bg: "bg-purple-500/10" },
-    { label: "Pending Requests", value: "1", total: null, icon: <Clock size={24} />, color: "text-orange-500", bg: "bg-orange-500/10" },
+    { label: t("leave_tracker.annual_leave"), value: "15", total: "22", icon: <Umbrella size={24} />, color: "text-blue-500", bg: "bg-blue-500/10" },
+    { label: t("leave_tracker.sick_leave"), value: "4", total: "10", icon: <Thermometer size={24} />, color: "text-red-500", bg: "bg-red-500/10" },
+    { label: t("leave_tracker.personal_leave"), value: "2", total: "5", icon: <UserMinus size={24} />, color: "text-purple-500", bg: "bg-purple-500/10" },
+    { label: t("leave_tracker.pending_requests"), value: "1", total: null, icon: <Clock size={24} />, color: "text-orange-500", bg: "bg-orange-500/10" },
   ];
 
   return (

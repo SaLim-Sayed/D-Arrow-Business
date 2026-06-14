@@ -1,14 +1,16 @@
 {
   "dashboard": {
     "title": "Task Dashboard",
-    "subtitle": "Overview of your team's performance and recent activities.",
+    "subtitle": "Overview of your team's performance and activities.",
     "totalTasks": "Total Tasks",
     "inProgress": "In Progress",
     "overdue": "Overdue",
     "completedThisWeek": "Completed This Week",
     "recentTasks": "Recent Tasks",
     "tasksByStatus": "Tasks by Status",
-    "tasksByPriority": "Tasks by Priority"
+    "tasksByPriority": "Tasks by Priority",
+    "overview": "Overview",
+    "distribution": "Distribution"
   },
   "list": {
     "title": "Tasks",
@@ -54,7 +56,59 @@
     "createdAt": "Created At",
     "attachedFiles": "Attached Files ({{count}})",
     "fileIndex": "File {{index}}",
-    "viewFullSize": "View Full Size"
+    "viewFullSize": "View Full Size",
+    "tabs": {
+      "details": "Details",
+      "description": "Description",
+      "comments": "Comments",
+      "history": "History",
+      "attachments": "Attachments",
+      "log-hours": "Log Hours",
+      "subitems": "Subitems"
+    },
+    "sections": {
+      "detailsTitle": "Task Details",
+      "detailsSubtitle": "Sprint, assignee, status, and scheduling",
+      "primary": "Primary",
+      "associatedSprint": "Associated Sprint",
+      "properties": "Properties",
+      "assignedTo": "Assigned to",
+      "status": "Status",
+      "epic": "Epic",
+      "itemType": "Item Type",
+      "priority": "Priority",
+      "startDate": "Start Date",
+      "endDate": "End Date",
+      "descriptionTitle": "Description",
+      "descriptionSubtitle": "Add context, acceptance criteria, or notes",
+      "descriptionPlaceholder": "No description provided. Type to add one.",
+      "commentsTitle": "Comments",
+      "commentsSubtitle_one": "{{count}} discussion",
+      "commentsSubtitle_other": "{{count}} discussions",
+      "attachmentsTitle": "Attachments",
+      "attachmentsSubtitle": "Files linked to this task",
+      "upload": "Upload",
+      "clickToUpload": "Click to upload files",
+      "logHoursTitle": "Log Hours",
+      "logHoursSubtitle": "Track time spent on this task",
+      "totalLogged": "Total logged: {{hours}}h {{minutes}}m",
+      "hours": "Hours",
+      "minutes": "Minutes",
+      "logDescPlaceholder": "What did you work on?",
+      "saveLog": "Save Log",
+      "noTimeLogged": "No time logged yet.",
+      "subitemsTitle": "Subitems",
+      "subitemsSubtitle": "Child tasks linked to this item",
+      "delete": "Delete",
+      "unsavedChanges": "Unsaved changes",
+      "createdBy": "Created by {{name}} on {{date}}",
+      "noActiveSprint": "No Active Sprint",
+      "notAssigned": "Not Assigned",
+      "noTags": "No tags",
+      "none": "None",
+      "taskId": "Task ID",
+      "progress": "Progress"
+    }
   },
   "form": {
     "createTitle": "Create Task",
@@ -78,7 +132,8 @@
     "assignee": {
       "label": "Assignee",
       "placeholder": "Select assignee",
-      "unassigned": "Unassigned"
+      "unassigned": "Unassigned",
+      "me": "Me"
     },
     "dueDate": {
       "label": "Due Date",
@@ -108,7 +163,15 @@
       "optional": "Optional",
       "hint": "Add files now or skip and attach later from the task page.",
       "partialUpload": "Some files could not be uploaded. The task will be saved with the files that succeeded.",
-      "uploadFailed": "File upload failed. The task will be created without those attachments."
+      "uploadFailed": "File upload failed. The task will be created without those attachments.",
+      "document": "Document",
+      "view": "View",
+      "pending": "Pending",
+      "new": "New",
+      "clickOrDrag": "Click or drag files to upload",
+      "optionalHint": "Optional — images, PDFs, and documents",
+      "filesSelected_one": "{{count}} file selected",
+      "filesSelected_other": "{{count}} files selected"
     },
     "createHint": "Fill in the details below. Only the title is required."
   },

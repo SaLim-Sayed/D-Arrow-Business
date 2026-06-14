@@ -252,7 +252,7 @@ export function TaskForm({
       </div>
 
       <div className="rounded-2xl border border-default-200/60 bg-default-50/30 p-5 space-y-5">
-        <p className="text-xs font-bold text-default-500 uppercase tracking-widest">Task settings</p>
+        <p className="text-xs font-bold text-default-500 uppercase tracking-widest">{t("detail.details")}</p>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <Controller
           name="type"
@@ -260,10 +260,10 @@ export function TaskForm({
           render={({ field }: { field: any }) => (
             <div className="flex flex-col gap-2">
               <span className="text-sm font-semibold text-foreground">
-                {t("form.type.label", "Task Type")}
+                {t("form.type.label")}
               </span>
               <Select
-                aria-label="Task Type"
+                aria-label={t("form.type.label")}
                 variant="bordered"
                 isDisabled={!!parentTaskId}
                 selectedKeys={new Set([field.value])}
@@ -272,9 +272,9 @@ export function TaskForm({
                   field.onChange(Array.from(keys)[0] as string)
                 }
               >
-                <SelectItem key="task" textValue="Task">Task</SelectItem>
-                <SelectItem key="epic" textValue="Epic">Epic</SelectItem>
-                <SelectItem key="subtask" textValue="Subtask">Subtask</SelectItem>
+                <SelectItem key="task" textValue={t("type.task")}>{t("type.task")}</SelectItem>
+                <SelectItem key="epic" textValue={t("type.epic")}>{t("type.epic")}</SelectItem>
+                <SelectItem key="subtask" textValue={t("type.subtask")}>{t("type.subtask")}</SelectItem>
               </Select>
             </div>
           )}
@@ -286,10 +286,10 @@ export function TaskForm({
           render={({ field }: { field: any }) => (
             <div className="flex flex-col gap-2">
               <span className="text-sm font-semibold tracking-tight text-foreground/80">
-                {t("form.sprint.label", "Sprint")}
+                {t("form.sprint.label")}
               </span>
               <Select
-                aria-label="Sprint"
+                aria-label={t("form.sprint.label")}
                 variant="bordered"
                 selectedKeys={new Set([field.value || "no-sprint"])}
                 classNames={{ trigger: "bg-content1 min-h-11" }}
@@ -299,7 +299,7 @@ export function TaskForm({
                 }}
               >
                 {[
-                  <SelectItem key="no-sprint" textValue="No Sprint">No Sprint</SelectItem>,
+                  <SelectItem key="no-sprint" textValue={t("form.sprint.unassigned")}>{t("form.sprint.unassigned")}</SelectItem>,
                   ...sprints.map((s) => (
                     <SelectItem key={s.id} textValue={s.name}>{s.name}</SelectItem>
                   ))

@@ -2,12 +2,14 @@ import { Button, Card, CardBody, Tooltip } from "@heroui/react";
 import { Play, Square, Clock, Coffee, Zap } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAttendanceTimer } from "../hooks/use-attendance-timer";
+import { useTranslation } from "react-i18next";
 
 interface TimeTrackerWidgetProps {
   variant?: "compact" | "full";
 }
 
 export function TimeTrackerWidget({ variant = "compact" }: TimeTrackerWidgetProps) {
+  const { t } = useTranslation("people");
   const {
     todayAttendance,
     isOnBreak,
@@ -31,7 +33,7 @@ export function TimeTrackerWidget({ variant = "compact" }: TimeTrackerWidgetProp
           <div className="flex flex-col items-center md:items-start text-center md:text-left">
             <div className="flex items-center gap-2 text-default-400 mb-1">
               <Clock size={16} className={isCheckedIn ? "text-primary animate-pulse" : ""} />
-              <span className="text-[10px] font-black uppercase tracking-[0.2em]">Daily Focus</span>
+              <span className="text-[10px] font-black uppercase tracking-[0.2em]">{t("time_tracker.daily_focus")}</span>
             </div>
             <span className={`text-4xl md:text-5xl font-mono font-black tabular-nums tracking-tighter ${isCheckedIn ? 'text-primary drop-shadow-[0_0_15px_rgba(var(--heroui-primary-rgb),0.4)]' : 'text-foreground'}`}>
               {formatLiveTime(totalDisplaySeconds)}
@@ -121,14 +123,14 @@ export function TimeTrackerWidget({ variant = "compact" }: TimeTrackerWidgetProp
           </div>
 
           <div className="flex flex-row md:flex-col items-center md:items-start justify-between w-full md:w-auto px-4 md:px-0">
-            <span className="text-[10px] font-black uppercase text-default-400 tracking-[0.2em] mb-0 md:mb-1">System</span>
+            <span className="text-[10px] font-black uppercase text-default-400 tracking-[0.2em] mb-0 md:mb-1">{t("time_tracker.system")}</span>
             <div className="flex items-center gap-3">
               <div className="relative flex h-3 w-3">
                 <span className={`absolute inline-flex h-full w-full rounded-full opacity-75 ${isCheckedIn ? 'bg-success animate-ping' : isOnBreak ? 'bg-orange-400 animate-pulse' : 'bg-default-300'}`}></span>
                 <span className={`relative inline-flex rounded-full h-3 w-3 ${isCheckedIn ? 'bg-success' : isOnBreak ? 'bg-orange-400' : 'bg-default-400'}`}></span>
               </div>
               <span className={`text-sm font-black uppercase tracking-tight ${isCheckedIn ? 'text-success' : isOnBreak ? 'text-orange-400' : 'text-default-400'}`}>
-                {isCheckedIn ? 'On Duty' : isOnBreak ? 'On Break' : 'Off Duty'}
+                {isCheckedIn ? t("time_tracker.on_duty") : isOnBreak ? t("time_tracker.on_break") : t("time_tracker.off_duty")}
               </span>
             </div>
           </div>
@@ -178,7 +180,7 @@ export function TimeTrackerWidget({ variant = "compact" }: TimeTrackerWidgetProp
                 <Clock className={isCheckedIn ? "text-primary w-2.5 h-2.5 sm:w-3 sm:h-3" : "w-2.5 h-2.5 sm:w-3 sm:h-3"} />
               </motion.div>
               <span className="text-[6px] sm:text-[9px] font-black uppercase tracking-[0.2em] text-default-400/80">
-                Focus
+                {t("time_tracker.focus")}
               </span>
             </div>
             
@@ -201,7 +203,7 @@ export function TimeTrackerWidget({ variant = "compact" }: TimeTrackerWidgetProp
                     animate={{ scale: 1, opacity: 1, rotate: 0 }}
                     exit={{ scale: 0.5, opacity: 0, rotate: 90 }}
                   >
-                    <Tooltip content={isOnBreak ? "Back to Work" : "Check In / Resume"} placement="bottom" showArrow offset={10}>
+                    <Tooltip content={isOnBreak ? t("time_tracker.back_to_work") : t("time_tracker.check_in_resume")} placement="bottom" showArrow offset={10}>
                       <Button 
                         isIconOnly 
                         color="primary" 
@@ -221,7 +223,7 @@ export function TimeTrackerWidget({ variant = "compact" }: TimeTrackerWidgetProp
                     animate={{ scale: 1, opacity: 1, rotate: 0 }}
                     exit={{ scale: 0.5, opacity: 0, rotate: -90 }}
                   >
-                    <Tooltip content="Check Out / End Session" placement="bottom" color="danger" showArrow offset={10}>
+                    <Tooltip content={t("time_tracker.check_out_end")} placement="bottom" color="danger" showArrow offset={10}>
                       <Button 
                         isIconOnly 
                         color="danger" 
@@ -240,7 +242,7 @@ export function TimeTrackerWidget({ variant = "compact" }: TimeTrackerWidgetProp
             
             <div className="flex flex-col min-w-[35px] sm:min-w-[70px]">
               <span className="text-[6px] sm:text-[9px] font-black text-default-400 uppercase tracking-widest leading-none mb-0.5">
-                System
+                {t("time_tracker.system")}
               </span>
               <div className="flex items-center gap-0.5 sm:gap-2">
                 <div className="relative flex h-1 w-1 sm:h-2 sm:w-2">
@@ -248,14 +250,14 @@ export function TimeTrackerWidget({ variant = "compact" }: TimeTrackerWidgetProp
                   <span className={`relative inline-flex rounded-full h-1 w-1 sm:h-2 sm:w-2 ${isCheckedIn ? 'bg-success' : isOnBreak ? 'bg-orange-400' : 'bg-default-400'}`}></span>
                 </div>
                 <span className={`text-[7px] sm:text-[11px] font-black uppercase tracking-tight leading-none ${isCheckedIn ? 'text-success' : isOnBreak ? 'text-orange-400' : 'text-default-400'}`}>
-                  {isCheckedIn ? 'On' : isOnBreak ? 'Break' : 'Off'}
+                  {isCheckedIn ? t("time_tracker.on") : isOnBreak ? t("time_tracker.break") : t("time_tracker.off")}
                 </span>
               </div>
             </div>
 
             {/* Micro-Interaction Icons */}
             <div className="flex gap-0.5 sm:gap-1.5 ml-0 sm:ml-2">
-               <Tooltip content={isOnBreak ? "Resume Work" : isCheckedIn ? "Take a break" : "Must be on duty to take a break"}>
+               <Tooltip content={isOnBreak ? t("time_tracker.resume_work") : isCheckedIn ? t("time_tracker.take_break") : t("time_tracker.must_be_on_duty")}>
                   <Button 
                     isIconOnly 
                     size="sm" 
@@ -267,7 +269,7 @@ export function TimeTrackerWidget({ variant = "compact" }: TimeTrackerWidgetProp
                     <Coffee className="w-2.5 h-2.5 sm:w-4 sm:h-4" fill={isOnBreak ? "currentColor" : "none"} />
                   </Button>
                </Tooltip>
-               <Tooltip content="High Productivity Mode">
+               <Tooltip content={t("time_tracker.productivity_mode")}>
                   <Button isIconOnly size="sm" variant="light" className={`min-w-unit-5 w-5 h-5 sm:min-w-unit-8 sm:w-8 sm:h-8 rounded sm:rounded-lg ${isCheckedIn ? 'text-yellow-500 animate-pulse' : 'text-default-300'}`}>
                     <Zap className="w-2.5 h-2.5 sm:w-4 sm:h-4" fill={isCheckedIn ? "currentColor" : "none"} />
                   </Button>

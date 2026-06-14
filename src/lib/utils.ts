@@ -1,17 +1,25 @@
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
+import i18n from "./i18n";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export function formatDate(date: string | Date | null | undefined): string {
+export function formatDate(date: any): string {
   if (!date) return "—";
   
-  const d = new Date(date);
+  let d: Date;
+  if (typeof date.toDate === "function") {
+    d = date.toDate();
+  } else {
+    d = new Date(date);
+  }
+
   if (isNaN(d.getTime())) return "—";
 
-  return new Intl.DateTimeFormat("en-US", {
+  const currentLang = i18n.language || "en";
+  return new Intl.DateTimeFormat(currentLang, {
     month: "short",
     day: "numeric",
     year: "numeric",
@@ -48,23 +56,24 @@ export function formatCurrency(
   options?: Intl.NumberFormatOptions
 ): string {
   const code = normalizeCurrencyCode(currency);
+  const currentLang = i18n.language || "en";
 
   if (isSarCurrency(code)) {
-    const formatted = amount.toLocaleString(undefined, {
+    const formatted = amount.toLocaleString(currentLang, {
       maximumFractionDigits: 0,
       ...options,
     });
-    return `${formatted} \u20C1`;
+    return currentLang === "ar" ? `${formatted} ر.س` : `${formatted} SAR`;
   }
 
   try {
-    return new Intl.NumberFormat(undefined, {
+    return new Intl.NumberFormat(currentLang, {
       style: "currency",
       currency: code,
       maximumFractionDigits: 0,
       ...options,
     }).format(amount);
   } catch {
-    return `${amount.toLocaleString()} ${code}`;
+    return `${amount.toLocaleString(currentLang)} ${code}`;
   }
 }

@@ -12,6 +12,7 @@ import {
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import { useTranslation } from "react-i18next";
 import { PeopleService } from "../api/people.service";
 import { useCompany } from "@/features/companies/context/company-context";
 import { toast } from "sonner";
@@ -38,6 +39,7 @@ interface HireEmployeeModalProps {
 }
 
 export function HireEmployeeModal({ isOpen, onOpenChange }: HireEmployeeModalProps) {
+  const { t } = useTranslation("people");
   const { companyId } = useCompany();
   const queryClient = useQueryClient();
   const { register, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm<HireFormData>({
@@ -58,12 +60,12 @@ export function HireEmployeeModal({ isOpen, onOpenChange }: HireEmployeeModalPro
         status: (data.status || "active") as any,
         joiningDate: new Date(data.joiningDate || new Date().toISOString()),
       } as any);
-      toast.success("Employee hired successfully!");
+      toast.success(t("extra.hire_success"));
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.people.employees(companyId) });
       onOpenChange(false);
       reset();
     } catch (error) {
-      toast.error("Failed to hire employee");
+      toast.error(t("extra.hire_failed"));
     }
   };
 
@@ -72,76 +74,76 @@ export function HireEmployeeModal({ isOpen, onOpenChange }: HireEmployeeModalPro
       <ModalContent>
         {(onClose) => (
           <form onSubmit={handleSubmit(onSubmit)}>
-            <ModalHeader className="flex flex-col gap-1">Hire New Employee</ModalHeader>
+            <ModalHeader className="flex flex-col gap-1">{t("hire_modal.title")}</ModalHeader>
             <ModalBody>
               <div className="grid grid-cols-2 gap-4">
                 <Input
-                  label="First Name"
-                  placeholder="Enter first name"
+                  label={t("hire_modal.first_name")}
+                  placeholder={t("hire_modal.first_name")}
                   {...register("firstName")}
                   isInvalid={!!errors.firstName}
                   errorMessage={errors.firstName?.message}
                 />
                 <Input
-                  label="Last Name"
-                  placeholder="Enter last name"
+                  label={t("hire_modal.last_name")}
+                  placeholder={t("hire_modal.last_name")}
                   {...register("lastName")}
                   isInvalid={!!errors.lastName}
                   errorMessage={errors.lastName?.message}
                 />
                 <Input
-                  label="Email"
-                  placeholder="Enter work email"
+                  label={t("hire_modal.email")}
+                  placeholder={t("hire_modal.email")}
                   {...register("email")}
                   isInvalid={!!errors.email}
                   errorMessage={errors.email?.message}
                 />
                 <Input
-                  label="Job Title"
-                  placeholder="e.g. Software Engineer"
+                  label={t("hire_modal.job_title")}
+                  placeholder={t("hire_modal.job_title")}
                   {...register("jobTitle")}
                   isInvalid={!!errors.jobTitle}
                   errorMessage={errors.jobTitle?.message}
                 />
                 <Select 
-                  label="Department"
-                  placeholder="Select department"
+                  label={t("hire_modal.department")}
+                  placeholder={t("hire_modal.department")}
                   {...register("department")}
                   isInvalid={!!errors.department}
                   errorMessage={errors.department?.message}
                 >
-                  <SelectItem key="Engineering">Engineering</SelectItem>
-                  <SelectItem key="Product">Product</SelectItem>
-                  <SelectItem key="Sales">Sales</SelectItem>
-                  <SelectItem key="Marketing">Marketing</SelectItem>
-                  <SelectItem key="HR">HR</SelectItem>
+                  <SelectItem key="Engineering">{t("departments.Engineering")}</SelectItem>
+                  <SelectItem key="Product">{t("departments.Product")}</SelectItem>
+                  <SelectItem key="Sales">{t("departments.Sales")}</SelectItem>
+                  <SelectItem key="Marketing">{t("departments.Marketing")}</SelectItem>
+                  <SelectItem key="HR">{t("departments.HR")}</SelectItem>
                 </Select>
                 <Select 
-                  label="Role"
-                  placeholder="Select role"
+                  label={t("profile.role")}
+                  placeholder={t("profile.role")}
                   {...register("role")}
                   isInvalid={!!errors.role}
                   errorMessage={errors.role?.message}
                 >
-                  <SelectItem key="super_admin">Super Admin</SelectItem>
-                  <SelectItem key="admin">Admin</SelectItem>
-                  <SelectItem key="manager">Manager</SelectItem>
-                  <SelectItem key="employee">Employee</SelectItem>
+                  <SelectItem key="super_admin">{t("roles.super_admin")}</SelectItem>
+                  <SelectItem key="admin">{t("roles.admin")}</SelectItem>
+                  <SelectItem key="manager">{t("roles.manager")}</SelectItem>
+                  <SelectItem key="employee">{t("roles.employee")}</SelectItem>
                 </Select>
                 <Select 
-                  label="Permissions"
-                  placeholder="Select permissions"
+                  label={t("profile.permissions")}
+                  placeholder={t("profile.permissions")}
                   selectionMode="multiple"
                   {...register("permissions")}
                   isInvalid={!!errors.permissions}
                   errorMessage={errors.permissions?.message as string}
                 >
-                  <SelectItem key="view_employees">View Employees</SelectItem>
-                  <SelectItem key="manage_leaves">Manage Leaves</SelectItem>
-                  <SelectItem key="manage_payroll">Manage Payroll</SelectItem>
+                  <SelectItem key="view_employees">{t("extra.perm_view_employees")}</SelectItem>
+                  <SelectItem key="manage_leaves">{t("extra.perm_manage_leaves")}</SelectItem>
+                  <SelectItem key="manage_payroll">{t("extra.perm_manage_payroll")}</SelectItem>
                 </Select>
                 <Input
-                  label="Joining Date"
+                  label={t("hire_modal.joining_date")}
                   type="date"
                   {...register("joiningDate")}
                   isInvalid={!!errors.joiningDate}
@@ -151,10 +153,10 @@ export function HireEmployeeModal({ isOpen, onOpenChange }: HireEmployeeModalPro
             </ModalBody>
             <ModalFooter>
               <Button variant="light" onPress={onClose}>
-                Cancel
+                {t("hire_modal.cancel")}
               </Button>
               <Button color="primary" type="submit" isLoading={isSubmitting}>
-                Confirm Hire
+                {t("hire_modal.hire_employee")}
               </Button>
             </ModalFooter>
           </form>

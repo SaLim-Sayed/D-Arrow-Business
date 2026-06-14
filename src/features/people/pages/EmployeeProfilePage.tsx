@@ -53,6 +53,7 @@ import { useEffect } from "react";
 import { Input, Select, SelectItem, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter } from "@heroui/react";
 import { useTranslation } from "react-i18next";
 import { useAppPermissions } from "@/features/companies/hooks/use-app-permissions";
+import { formatDate } from "@/lib/utils";
 
 const statusColorMap: Record<string, "success" | "warning" | "danger" | "primary" | "default"> = {
   active: "success",
@@ -232,10 +233,10 @@ export default function EmployeeProfilePage() {
                       <div className="flex flex-wrap items-center gap-2 mt-1.5">
                         <span className="text-primary font-bold text-sm">{employee.jobTitle}</span>
                         <span className="text-default-200">•</span>
-                        <span className="text-default-500 font-medium text-sm">{employee.department}</span>
+                        <span className="text-default-500 font-medium text-sm">{t(`departments.${employee.department}`, employee.department)}</span>
                         {employee.role && (
                           <span className={`text-[10px] font-black px-2.5 py-1 rounded-full uppercase tracking-wider ${roleColorMap[employee.role] || roleColorMap.employee}`}>
-                            {employee.role.replace("_", " ")}
+                            {t(`roles.${employee.role}`, employee.role.replace("_", " "))}
                           </span>
                         )}
                       </div>
@@ -249,7 +250,7 @@ export default function EmployeeProfilePage() {
                           </span>
                         )}
                         <span className="flex items-center gap-1.5">
-                          <Calendar size={12} /> Joined {new Date(employee.joiningDate as any).toLocaleDateString()}
+                          <Calendar size={12} /> {t("profile.joined")} {formatDate(employee.joiningDate)}
                         </span>
                       </div>
                     </div>
@@ -306,46 +307,46 @@ export default function EmployeeProfilePage() {
         <ModalContent>
           {(onClose) => (
             <>
-              <ModalHeader className="flex flex-col gap-1">Edit Employee Details</ModalHeader>
+              <ModalHeader className="flex flex-col gap-1">{t("profile.edit_profile")}</ModalHeader>
               <ModalBody>
                 <div className="space-y-4 py-2">
                   <Input
-                    label="Job Title"
+                    label={t("profile.job_title")}
                     variant="bordered"
                     value={editData.jobTitle}
                     onValueChange={(val) => setEditData({ ...editData, jobTitle: val })}
                   />
                   <Input
-                    label="Department"
+                    label={t("profile.department")}
                     variant="bordered"
                     value={editData.department}
                     onValueChange={(val) => setEditData({ ...editData, department: val })}
                   />
                   <Select
-                    label="System Role"
+                    label={t("profile.role")}
                     variant="bordered"
                     selectedKeys={[editData.role]}
                     onSelectionChange={(keys) => setEditData({ ...editData, role: Array.from(keys)[0] as string })}
                   >
-                    <SelectItem key="employee">Employee</SelectItem>
-                    <SelectItem key="manager">Manager</SelectItem>
-                    <SelectItem key="admin">Admin</SelectItem>
+                    <SelectItem key="employee">{t("roles.employee")}</SelectItem>
+                    <SelectItem key="manager">{t("roles.manager")}</SelectItem>
+                    <SelectItem key="admin">{t("roles.admin")}</SelectItem>
                   </Select>
                   <Input
-                    label="Office Location"
+                    label={t("profile.office_location")}
                     variant="bordered"
                     value={editData.officeLocation}
                     onValueChange={(val) => setEditData({ ...editData, officeLocation: val })}
                   />
                   <Input
-                    label="Phone Number"
+                    label={t("profile.phone")}
                     variant="bordered"
                     value={editData.phoneNumber}
                     onValueChange={(val) => setEditData({ ...editData, phoneNumber: val })}
                   />
                   <Input
                     type="number"
-                    label="Salary"
+                    label={t("profile.salary")}
                     variant="bordered"
                     value={editData.salary}
                     onValueChange={(val) => setEditData({ ...editData, salary: val })}
@@ -355,10 +356,10 @@ export default function EmployeeProfilePage() {
               </ModalBody>
               <ModalFooter>
                 <Button color="danger" variant="flat" onPress={onClose} isDisabled={updateMutation.isPending}>
-                  Cancel
+                  {t("profile.cancel")}
                 </Button>
                 <Button color="primary" onPress={() => handleSaveEdit(onClose)} isLoading={updateMutation.isPending}>
-                  Save Changes
+                  {t("profile.save_changes")}
                 </Button>
               </ModalFooter>
             </>
@@ -389,9 +390,9 @@ export default function EmployeeProfilePage() {
                 <Tab key="work" title={<span className="flex items-center gap-1.5"><Briefcase size={15} />{t("profile.tab_work")}</span>}>
                   <div className="p-6 space-y-6">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                      <InfoItem icon={<Calendar size={16} />} label={t("profile.joined")} value={new Date(employee.joiningDate as any).toLocaleDateString()} />
+                      <InfoItem icon={<Calendar size={16} />} label={t("profile.joined")} value={formatDate(employee.joiningDate)} />
                       <InfoItem icon={<Briefcase size={16} />} label={t("profile.employment_type")} value={t("profile.full_time")} />
-                      <InfoItem icon={<ShieldCheck size={16} />} label={t("profile.role")} value={employee.role ? employee.role.replace("_", " ") : "Employee"} />
+                      <InfoItem icon={<ShieldCheck size={16} />} label={t("profile.role")} value={employee.role ? t(`roles.${employee.role}`) : t("roles.employee")} />
                       <InfoItem icon={<UserIcon size={16} />} label={t("profile.reporting_to")} value="Sarah (CEO)" />
                       {employee.salary && (
                         <InfoItem icon={<TrendingUp size={16} />} label={t("profile.salary")} value={`${employee.currency || "USD"} ${employee.salary.toLocaleString()}`} />
@@ -431,9 +432,9 @@ export default function EmployeeProfilePage() {
                 <Tab key="personal" title={<span className="flex items-center gap-1.5"><UserIcon size={15} />{t("profile.tab_personal")}</span>}>
                   <div className="p-6 space-y-5">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                      <InfoItem icon={<Mail size={16} />} label="Email Address" value={employee.email} />
-                      <InfoItem icon={<Phone size={16} />} label="Phone Number" value={employee.phoneNumber || "Not provided"} />
-                      <InfoItem icon={<MapPin size={16} />} label="Office Location" value={employee.officeLocation || "Remote"} />
+                      <InfoItem icon={<Mail size={16} />} label={t("profile.email_address")} value={employee.email} />
+                      <InfoItem icon={<Phone size={16} />} label={t("profile.phone")} value={employee.phoneNumber || "—"} />
+                      <InfoItem icon={<MapPin size={16} />} label={t("profile.office_location")} value={employee.officeLocation || "—"} />
                     </div>
                   </div>
                 </Tab>
@@ -443,17 +444,17 @@ export default function EmployeeProfilePage() {
                     <div className="flex items-center justify-between">
                       <h4 className="font-bold text-sm flex items-center gap-2">
                         <GraduationCap size={16} className="text-primary" />
-                        Skill Proficiency
+                        {t("profile.skills_competencies")}
                       </h4>
                       {(canManageEmployees || isOwnProfile) && (
                         <Button size="sm" variant="flat" onPress={onSkillsOpen} className="font-bold">
-                          Manage Skills
+                          {t("profile.manage_skills")}
                         </Button>
                       )}
                     </div>
                     <div className="space-y-4">
                       {(!employee.skills || employee.skills.length === 0) ? (
-                        <p className="text-sm text-default-500">No skills added yet.</p>
+                        <p className="text-sm text-default-500">{t("profile.no_skills")}</p>
                       ) : (
                         employee.skills.map((skill) => (
                           <div key={skill.name} className="space-y-1.5">
@@ -493,10 +494,10 @@ export default function EmployeeProfilePage() {
                   <div className="p-6 space-y-4">
                     <h4 className="font-bold text-sm flex items-center gap-2">
                       <Package size={16} className="text-primary" />
-                      Assigned Equipment
+                      {t("profile.assigned_assets")}
                     </h4>
                     {employeeAssets.length === 0 ? (
-                      <p className="text-sm text-default-500">No assets assigned yet.</p>
+                      <p className="text-sm text-default-500">{t("profile.no_assets")}</p>
                     ) : (
                       employeeAssets.map((asset) => (
                         <div key={asset.id} className="flex items-center justify-between p-4 bg-default-50 rounded-xl border border-default-100 hover:border-primary/30 transition-colors">
@@ -506,10 +507,10 @@ export default function EmployeeProfilePage() {
                             </div>
                             <div>
                               <p className="font-bold text-sm">{asset.name}</p>
-                              <p className="text-xs text-default-500">S/N: {asset.serialNumber} • Assigned {new Date(asset.assignedDate as Date | string).toLocaleDateString()}</p>
+                              <p className="text-xs text-default-500">S/N: {asset.serialNumber} • {t("profile.joined")} {formatDate(asset.assignedDate as Date | string)}</p>
                             </div>
                           </div>
-                          <Chip size="sm" variant="flat" color={asset.status === 'assigned' ? 'success' : 'warning'} className="font-bold capitalize">{asset.status}</Chip>
+                          <Chip size="sm" variant="flat" color={asset.status === 'assigned' ? 'success' : 'warning'} className="font-bold capitalize">{t(`statuses.${asset.status}`, asset.status)}</Chip>
                         </div>
                       ))
                     )}
@@ -520,23 +521,23 @@ export default function EmployeeProfilePage() {
                   <div className="p-6 space-y-4">
                     <h4 className="font-bold text-sm flex items-center gap-2">
                       <TrendingUp size={16} className="text-primary" />
-                      Appraisal History
+                      {t("profile.appraisals")}
                     </h4>
                     {isLoadingAppraisals ? (
-                      <p className="text-sm text-default-500 animate-pulse">Loading appraisals...</p>
+                      <p className="text-sm text-default-500 animate-pulse">{t("common.actions.loading")}</p>
                     ) : appraisals.length === 0 ? (
-                      <p className="text-sm text-default-500">No performance reviews yet.</p>
+                      <p className="text-sm text-default-500">{t("profile.no_appraisals")}</p>
                     ) : (
                       appraisals.map((appraisal, idx) => (
                         <div key={idx} className="p-4 bg-default-50 rounded-xl border border-default-100 space-y-3">
                           <div className="flex items-center justify-between">
                             <div>
                               <p className="font-black text-sm">{appraisal.cycleName}</p>
-                              <p className="text-xs text-default-500">{appraisal.cycleDate ? new Date(appraisal.cycleDate).toLocaleDateString() : ''}</p>
+                              <p className="text-xs text-default-500">{appraisal.cycleDate ? formatDate(appraisal.cycleDate) : ''}</p>
                             </div>
                             <div className="flex flex-col items-end">
-                              <p className="text-xl font-black text-primary">Grade {appraisal.grade || '?'}</p>
-                              <p className="text-xs font-bold text-default-600">{appraisal.points || 0} Points</p>
+                              <p className="text-xl font-black text-primary">{t("performance.grade")} {appraisal.grade || '?'}</p>
+                              <p className="text-xs font-bold text-default-600">{appraisal.points || 0} {t("performance.points")}</p>
                             </div>
                           </div>
                         </div>
@@ -549,25 +550,25 @@ export default function EmployeeProfilePage() {
                   <div className="p-6 space-y-4">
                     <h4 className="font-bold text-sm flex items-center gap-2">
                       <Clock size={16} className="text-primary" />
-                      Daily Time Logs
+                      {t("profile.daily_time_logs")}
                     </h4>
                     {isLoadingAttendance ? (
-                      <p className="text-sm text-default-500 animate-pulse">Loading attendance logs...</p>
+                      <p className="text-sm text-default-500 animate-pulse">{t("profile.loading_logs")}</p>
                     ) : attendanceLogs.length === 0 ? (
-                      <p className="text-sm text-default-500">No time logs available.</p>
+                      <p className="text-sm text-default-500">{t("profile.no_logs")}</p>
                     ) : (
-                      <Table aria-label="Attendance time logs" classNames={{ wrapper: "shadow-none border border-default-100" }}>
+                      <Table aria-label={t("profile.daily_time_logs")} classNames={{ wrapper: "shadow-none border border-default-100" }}>
                         <TableHeader>
-                          <TableColumn>DATE</TableColumn>
-                          <TableColumn>CHECK IN</TableColumn>
-                          <TableColumn>CHECK OUT</TableColumn>
-                          <TableColumn>HOURS</TableColumn>
-                          <TableColumn>STATUS</TableColumn>
+                          <TableColumn>{t("timesheets.col_date")}</TableColumn>
+                          <TableColumn>{t("timesheets.col_checkin")}</TableColumn>
+                          <TableColumn>{t("timesheets.col_checkout")}</TableColumn>
+                          <TableColumn>{t("timesheets.col_hours")}</TableColumn>
+                          <TableColumn>{t("timesheets.col_status")}</TableColumn>
                         </TableHeader>
                         <TableBody>
                           {attendanceLogs.map((log) => (
                             <TableRow key={log.id}>
-                              <TableCell className="font-medium text-sm">{new Date(log.date).toLocaleDateString()}</TableCell>
+                              <TableCell className="font-medium text-sm">{formatDate(log.date)}</TableCell>
                               <TableCell className="text-sm">
                                 {log.checkIn ? new Date(log.checkIn as any).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "-"}
                               </TableCell>
@@ -579,7 +580,7 @@ export default function EmployeeProfilePage() {
                               </TableCell>
                               <TableCell>
                                 <Chip size="sm" variant="flat" color={log.status === 'present' ? 'success' : log.status === 'late' ? 'warning' : 'danger'} className="capitalize font-bold">
-                                  {log.status.replace('-', ' ')}
+                                  {t(`statuses.${log.status}`, log.status.replace('-', ' '))}
                                 </Chip>
                               </TableCell>
                             </TableRow>
@@ -595,9 +596,9 @@ export default function EmployeeProfilePage() {
                     {employeeRequests.length === 0 ? (
                       <div className="flex flex-col items-center justify-center py-10 gap-3">
                         <CalendarDays size={40} className="text-default-300" />
-                        <p className="text-default-500 font-medium">No leave requests found.</p>
+                        <p className="text-default-500 font-medium">{t("profile.no_leaves")}</p>
                         {isOwnProfile && (
-                          <Button size="sm" color="primary" variant="flat" onPress={onOpen}>Apply for Leave</Button>
+                          <Button size="sm" color="primary" variant="flat" onPress={onOpen}>{t("profile.apply_leave")}</Button>
                         )}
                       </div>
                     ) : (
@@ -613,9 +614,9 @@ export default function EmployeeProfilePage() {
                                 <Clock size={18} className="text-warning mt-0.5 shrink-0" />
                               )}
                               <div>
-                                <p className="font-bold text-sm capitalize">{req.type} Leave</p>
+                                <p className="font-bold text-sm capitalize">{t(`leave_modal.type_${req.type}`, req.type)}</p>
                                 <p className="text-xs text-default-500 mt-0.5">
-                                  {new Date(req.startDate as any).toLocaleDateString()} → {new Date(req.endDate as any).toLocaleDateString()}
+                                  {formatDate(req.startDate)} → {formatDate(req.endDate)}
                                 </p>
                                 <p className="text-xs text-default-600 mt-1.5 max-w-xs">{req.reason}</p>
                               </div>
@@ -626,7 +627,7 @@ export default function EmployeeProfilePage() {
                               color={req.status === "approved" ? "success" : req.status === "rejected" ? "danger" : "warning"}
                               className="capitalize font-bold shrink-0"
                             >
-                              {req.status}
+                              {t(`statuses.${req.status}`, req.status)}
                             </Chip>
                           </div>
                         ))}
@@ -651,7 +652,7 @@ export default function EmployeeProfilePage() {
                 variant="flat"
                 className="capitalize font-bold"
               >
-                {employee.status}
+                {t(`statuses.${employee.status}`, employee.status)}
               </Chip>
               <Divider />
               <div className="space-y-4">
@@ -661,20 +662,20 @@ export default function EmployeeProfilePage() {
                 </div>
                 <div>
                   <p className="text-[10px] font-bold text-default-400 uppercase tracking-widest mb-1">{t("profile.department")}</p>
-                  <p className="text-sm font-bold">{employee.department}</p>
+                  <p className="text-sm font-bold">{t(`departments.${employee.department}`, employee.department)}</p>
                 </div>
                 <div>
                   <p className="text-[10px] font-bold text-default-400 uppercase tracking-widest mb-1">{t("profile.role")}</p>
-                  <p className="text-sm font-bold capitalize">{(employee.role || "employee").replace("_", " ")}</p>
+                  <p className="text-sm font-bold capitalize">{t(`roles.${employee.role || "employee"}`, employee.role || "employee")}</p>
                 </div>
               </div>
             </CardBody>
           </Card>
-
+ 
           {employee.status === 'onboarding' && employee.onboardingTasks && employee.onboardingTasks.length > 0 && (
             <Card className="border border-primary/20 shadow-sm rounded-2xl bg-primary/5">
               <CardBody className="p-5 space-y-3">
-                <h4 className="font-black text-[10px] text-primary uppercase tracking-[0.15em]">Onboarding Checklist</h4>
+                <h4 className="font-black text-[10px] text-primary uppercase tracking-[0.15em]">{t("extra.onboarding_checklist")}</h4>
                 <div className="space-y-2">
                   {employee.onboardingTasks.map(task => (
                     <div key={task.id} className="flex items-center gap-2">

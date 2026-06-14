@@ -367,8 +367,8 @@ export function TaskDetailPage() {
   const activeSprint = task.sprintId
     ? allSprints?.data?.find((s) => s.id === task.sprintId)
     : null;
-  const sprintName = activeSprint?.name || "No Active Sprint";
-  const sprintLongName = activeSprint ? `${activeSprint.name}` : "Not Assigned";
+  const sprintName = activeSprint?.name || t("detail.sections.noActiveSprint");
+  const sprintLongName = activeSprint ? `${activeSprint.name}` : t("detail.sections.notAssigned");
 
   const progressPercent =
     task.status === "done"
@@ -415,7 +415,7 @@ export function TaskDetailPage() {
                 <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${typeGradient} text-white flex items-center justify-center shadow-lg ring-4 ring-content1`}>
                   <FileText className="w-7 h-7" />
                 </div>
-                <p className="mt-3 text-xs font-bold text-default-500 uppercase tracking-widest">Task ID</p>
+                <p className="mt-3 text-xs font-bold text-default-500 uppercase tracking-widest">{t("detail.sections.taskId")}</p>
                 <button
                   type="button"
                   onClick={copyTaskRef}
@@ -444,7 +444,7 @@ export function TaskDetailPage() {
 
               <div className="rounded-xl border border-default-200/60 p-4 bg-default-50/50 space-y-3">
               <div className="flex justify-between items-center">
-                <span className="text-xs font-bold text-default-500 uppercase tracking-wide">Progress</span>
+                <span className="text-xs font-bold text-default-500 uppercase tracking-wide">{t("detail.sections.progress")}</span>
                 <span className="text-sm font-black text-primary">{progressPercent}%</span>
               </div>
               <Progress
@@ -452,7 +452,7 @@ export function TaskDetailPage() {
                 color="primary"
                 size="sm"
                 className="w-full"
-                aria-label="Task progress"
+                aria-label={t("detail.sections.progress")}
               />
               <div className="flex flex-wrap gap-2 pt-1">
                 <Chip size="sm" variant="flat" color="primary" className="capitalize font-semibold">
@@ -469,7 +469,7 @@ export function TaskDetailPage() {
 
             <div className="space-y-3">
               <div className="rounded-xl p-4 border border-warning-200/60 bg-warning-50/40">
-                <p className="text-[10px] font-bold text-warning-700 uppercase tracking-widest">Sprint</p>
+                <p className="text-[10px] font-bold text-warning-700 uppercase tracking-widest">{t("form.sprint.label")}</p>
                 <p className="font-bold text-sm text-foreground mt-1 truncate" title={sprintName}>
                   {sprintName}
                 </p>
@@ -479,7 +479,7 @@ export function TaskDetailPage() {
                 <div className="rounded-xl p-4 border border-primary-200/60 bg-primary-50/40">
                   <div className="flex items-center gap-2 mb-1">
                     <Clock className="w-4 h-4 text-primary" />
-                    <p className="text-[10px] font-bold text-primary uppercase tracking-widest">Time logged</p>
+                    <p className="text-[10px] font-bold text-primary uppercase tracking-widest">{t("detail.sections.logHoursTitle")}</p>
                   </div>
                   <p className="font-black text-lg text-foreground">
                     {loggedHours}h {loggedMins}m
@@ -488,7 +488,7 @@ export function TaskDetailPage() {
               )}
 
               <div className="rounded-xl p-4 border border-default-200/60 bg-content1">
-                <p className="text-[10px] font-bold text-default-500 uppercase tracking-widest mb-2">Tags</p>
+                <p className="text-[10px] font-bold text-default-500 uppercase tracking-widest mb-2">{t("form.tags.label")}</p>
                 <div className="flex flex-wrap gap-1.5">
                   {task.tags && task.tags.length > 0 ? (
                     task.tags.map((tag: string) => (
@@ -497,7 +497,7 @@ export function TaskDetailPage() {
                       </Chip>
                     ))
                   ) : (
-                    <span className="text-xs text-default-400">No tags</span>
+                    <span className="text-xs text-default-400">{t("detail.sections.noTags")}</span>
                   )}
                 </div>
               </div>
@@ -513,10 +513,10 @@ export function TaskDetailPage() {
               {task.title}
             </h1>
             <p className="text-sm text-default-500 mt-2">
-              Created by{" "}
-              <span className="font-semibold text-foreground">{task.reporter?.name || "Unknown"}</span>
-              {" · "}
-              <span className="font-semibold text-foreground">{formatDate(task.createdAt)}</span>
+              {t("detail.sections.createdBy", {
+                name: task.reporter?.name || t("history.unknownUser"),
+                date: formatDate(task.createdAt),
+              })}
             </p>
           </header>
 
@@ -538,7 +538,7 @@ export function TaskDetailPage() {
                     }`}
                   >
                     <TabIcon className="w-4 h-4" />
-                    {label}
+                    {t(`detail.tabs.${key}`, label)}
                     {count !== null && count > 0 && (
                       <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${isActive ? "bg-white/20" : "bg-default-200"}`}>
                         {count}
@@ -554,13 +554,13 @@ export function TaskDetailPage() {
           <div ref={scrollContainerRef} className="flex-1 overflow-y-auto pb-24">
             <SectionCard
               id="section-details"
-              title="Task Details"
-              subtitle="Sprint, assignee, status, and scheduling"
+              title={t("detail.sections.detailsTitle")}
+              subtitle={t("detail.sections.detailsSubtitle")}
               icon={<ListTodo className="w-5 h-5" />}
             >
               <div className="space-y-8">
               <div>
-                <h3 className="text-xs font-bold text-default-500 uppercase tracking-widest mb-4">Primary</h3>
+                <h3 className="text-xs font-bold text-default-500 uppercase tracking-widest mb-4">{t("detail.sections.primary")}</h3>
                 <div className="grid grid-cols-1 gap-4 max-w-2xl">
                   {task.type === "subtask" && (
                     <Dropdown>
@@ -619,7 +619,7 @@ export function TaskDetailPage() {
                     <DropdownTrigger>
                       <div className="w-full">
                         <FieldBox
-                          label="Associated Sprint"
+                          label={t("detail.sections.associatedSprint")}
                           className="cursor-pointer hover:border-primary/50 transition-colors"
                         >
                           <div className="flex items-center justify-between w-full">
@@ -632,7 +632,7 @@ export function TaskDetailPage() {
                       </div>
                     </DropdownTrigger>
                     <DropdownMenu
-                      aria-label="Sprint"
+                      aria-label={t("form.sprint.label")}
                       onAction={(key) =>
                         handleInlineChange(
                           "sprintId",
@@ -641,7 +641,7 @@ export function TaskDetailPage() {
                       }
                     >
                       {[
-                        <DropdownItem key="none">No Sprint</DropdownItem>,
+                        <DropdownItem key="none">{t("form.sprint.unassigned")}</DropdownItem>,
                         ...(allSprints?.data || []).map((s) => (
                           <DropdownItem key={s.id}>{s.name}</DropdownItem>
                         )),
@@ -652,13 +652,13 @@ export function TaskDetailPage() {
               </div>
 
               <div>
-                <h3 className="text-xs font-bold text-default-500 uppercase tracking-widest mb-4">Properties</h3>
+                <h3 className="text-xs font-bold text-default-500 uppercase tracking-widest mb-4">{t("detail.sections.properties")}</h3>
                 <div className="space-y-4">
                   <Dropdown>
                     <DropdownTrigger>
                       <div className="w-full">
                         <FieldBox
-                          label="Assigned to"
+                          label={t("detail.sections.assignedTo")}
                           className="cursor-pointer hover:border-primary/50 transition-colors"
                         >
                           <div className="flex items-center gap-2 bg-default-100 py-1 px-2 rounded-md">
@@ -682,7 +682,7 @@ export function TaskDetailPage() {
                       </div>
                     </DropdownTrigger>
                     <DropdownMenu
-                      aria-label="Assignee"
+                      aria-label={t("detail.sections.assignedTo")}
                       onAction={(key) =>
                         handleInlineChange(
                           "assigneeId",
@@ -695,7 +695,9 @@ export function TaskDetailPage() {
                           {t("form.assignee.unassigned")}
                         </DropdownItem>,
                         ...(allUsers || []).map((u: any) => (
-                          <DropdownItem key={u.id}>{u.name}</DropdownItem>
+                          <DropdownItem key={u.id}>
+                            {i18n.language === "ar" ? u.nameAr || u.name : u.name}
+                          </DropdownItem>
                         )),
                       ]}
                     </DropdownMenu>
@@ -706,7 +708,7 @@ export function TaskDetailPage() {
                       <DropdownTrigger>
                         <div className="w-full">
                           <FieldBox
-                            label="Status"
+                            label={t("detail.sections.status")}
                             className="cursor-pointer hover:border-primary/50 transition-colors"
                           >
                             <div className="flex items-center justify-between w-full">
@@ -732,9 +734,9 @@ export function TaskDetailPage() {
                       </DropdownMenu>
                     </Dropdown>
 
-                    <FieldBox label="Epic">
+                    <FieldBox label={t("detail.sections.epic")}>
                       <span className="font-bold text-sm text-foreground">
-                        None
+                        {t("detail.sections.none")}
                       </span>
                     </FieldBox>
 
@@ -742,7 +744,7 @@ export function TaskDetailPage() {
                       <DropdownTrigger>
                         <div className="w-full">
                           <FieldBox
-                            label="Item Type"
+                            label={t("detail.sections.itemType")}
                             className="cursor-pointer hover:border-primary/50 transition-colors"
                           >
                             <div className="flex items-center gap-2">
@@ -755,7 +757,7 @@ export function TaskDetailPage() {
                         </div>
                       </DropdownTrigger>
                       <DropdownMenu
-                        aria-label="Item Type"
+                        aria-label={t("detail.sections.itemType")}
                         onAction={(key) => handleTypeChange(key.toString())}
                       >
                         <DropdownItem key="task">{t("type.task")}</DropdownItem>
@@ -768,7 +770,7 @@ export function TaskDetailPage() {
                       <DropdownTrigger>
                         <div className="w-full">
                           <FieldBox
-                            label="Priority"
+                            label={t("detail.sections.priority")}
                             className="cursor-pointer hover:border-primary/50 transition-colors"
                           >
                             <div className="flex items-center gap-2">
@@ -791,7 +793,7 @@ export function TaskDetailPage() {
                         </div>
                       </DropdownTrigger>
                       <DropdownMenu
-                        aria-label="Priority"
+                        aria-label={t("detail.sections.priority")}
                         onAction={(key) => handleInlineChange("priority", key)}
                       >
                         {TASK_PRIORITIES.map((p) => (
@@ -802,9 +804,9 @@ export function TaskDetailPage() {
                       </DropdownMenu>
                     </Dropdown>
 
-                    <FieldBox label="Start Date">
+                    <FieldBox label={t("detail.sections.startDate")}>
                       <DatePicker
-                        aria-label="Start Date"
+                        aria-label={t("detail.sections.startDate")}
                         classNames={{
                           base: "w-full -mt-2",
                           inputWrapper:
@@ -824,9 +826,9 @@ export function TaskDetailPage() {
                       />
                     </FieldBox>
 
-                    <FieldBox label="End Date">
+                    <FieldBox label={t("detail.sections.endDate")}>
                       <DatePicker
-                        aria-label="End Date"
+                        aria-label={t("detail.sections.endDate")}
                         classNames={{
                           base: "w-full -mt-2",
                           inputWrapper:
@@ -853,14 +855,14 @@ export function TaskDetailPage() {
 
             <SectionCard
               id="section-description"
-              title="Description"
-              subtitle="Add context, acceptance criteria, or notes"
+              title={t("detail.sections.descriptionTitle")}
+              subtitle={t("detail.sections.descriptionSubtitle")}
               icon={<AlignLeft className="w-5 h-5" />}
             >
               <Textarea
                 value={task.description || ""}
                 onValueChange={(val) => handleFieldChange("description", val)}
-                placeholder="No description provided. Type to add one."
+                placeholder={t("detail.sections.descriptionPlaceholder")}
                 minRows={5}
                 variant="bordered"
                 classNames={{
@@ -872,8 +874,12 @@ export function TaskDetailPage() {
 
             <SectionCard
               id="section-comments"
-              title="Comments"
-              subtitle={`${task.commentsCount || 0} discussion${(task.commentsCount || 0) === 1 ? "" : "s"}`}
+              title={t("detail.sections.commentsTitle")}
+              subtitle={
+                (task.commentsCount || 0) === 1
+                  ? t("detail.sections.commentsSubtitle_one", { count: 1 })
+                  : t("detail.sections.commentsSubtitle_other", { count: task.commentsCount || 0 })
+              }
               icon={<MessageSquare className="w-5 h-5" />}
               bare
             >
@@ -892,8 +898,8 @@ export function TaskDetailPage() {
 
             <SectionCard
               id="section-attachments"
-              title="Attachments"
-              subtitle="Files linked to this task"
+              title={t("detail.sections.attachmentsTitle")}
+              subtitle={t("detail.sections.attachmentsSubtitle")}
               icon={<Paperclip className="w-5 h-5" />}
               action={
                 <>
@@ -906,7 +912,7 @@ export function TaskDetailPage() {
                     isLoading={isUploading}
                     onPress={() => fileInputRef.current?.click()}
                   >
-                    Upload
+                    {t("detail.sections.upload")}
                   </Button>
                   <input
                     ref={fileInputRef}
@@ -941,7 +947,7 @@ export function TaskDetailPage() {
                     <Paperclip className="w-5 h-5 text-default-400 group-hover:text-primary transition-colors" />
                   </div>
                   <p className="text-sm text-default-500 group-hover:text-primary font-medium">
-                    Click to upload files
+                    {t("detail.sections.clickToUpload")}
                   </p>
                 </div>
               )}
@@ -949,8 +955,12 @@ export function TaskDetailPage() {
 
             <SectionCard
               id="section-log-hours"
-              title="Log Hours"
-              subtitle={totalLoggedMinutes > 0 ? `Total logged: ${loggedHours}h ${loggedMins}m` : "Track time spent on this task"}
+              title={t("detail.sections.logHoursTitle")}
+              subtitle={
+                totalLoggedMinutes > 0
+                  ? t("detail.sections.totalLogged", { hours: loggedHours, minutes: loggedMins })
+                  : t("detail.sections.logHoursSubtitle")
+              }
               icon={<Timer className="w-5 h-5" />}
               bare
             >
@@ -959,7 +969,7 @@ export function TaskDetailPage() {
                   <div className="flex flex-wrap gap-3">
                     <Input
                       type="number"
-                      label="Hours"
+                      label={t("detail.sections.hours")}
                       placeholder="0"
                       labelPlacement="inside"
                       value={logHours}
@@ -973,7 +983,7 @@ export function TaskDetailPage() {
                     />
                     <Input
                       type="number"
-                      label="Minutes"
+                      label={t("detail.sections.minutes")}
                       placeholder="0"
                       labelPlacement="inside"
                       value={logMinutes}
@@ -987,8 +997,8 @@ export function TaskDetailPage() {
                     />
                   </div>
                   <Textarea
-                    label="Description"
-                    placeholder="What did you work on?"
+                    label={t("form.description.label")}
+                    placeholder={t("detail.sections.logDescPlaceholder")}
                     labelPlacement="inside"
                     value={logDesc}
                     onValueChange={setLogDesc}
@@ -1000,7 +1010,7 @@ export function TaskDetailPage() {
                     }}
                   />
                   <Button color="primary" className="font-bold" onPress={handleLogTime}>
-                    Save Log
+                    {t("detail.sections.saveLog")}
                   </Button>
                 </div>
                 <div className="space-y-3 max-w-xl">
@@ -1023,14 +1033,14 @@ export function TaskDetailPage() {
                             </span>
                           </div>
                           <p className="text-sm text-default-600">
-                            {log.description || "No description."}
+                            {log.description || t("detail.noDescription")}
                           </p>
                         </div>
                       </div>
                     ))
                   ) : (
                     <p className="text-default-400 text-sm py-4 text-center rounded-xl border border-dashed border-default-200">
-                      No time logged yet.
+                      {t("detail.sections.noTimeLogged")}
                     </p>
                   )}
                 </div>
@@ -1039,8 +1049,8 @@ export function TaskDetailPage() {
 
             <SectionCard
               id="section-subitems"
-              title="Subitems"
-              subtitle="Child tasks linked to this item"
+              title={t("detail.sections.subitemsTitle")}
+              subtitle={t("detail.sections.subitemsSubtitle")}
               icon={<Layers className="w-5 h-5" />}
               className="border-b-0"
               action={
@@ -1072,12 +1082,12 @@ export function TaskDetailPage() {
               startContent={<Trash2 className="w-4 h-4" />}
               className="font-semibold"
             >
-              Delete
+              {t("detail.sections.delete")}
             </Button>
             <div className="flex items-center gap-3">
               {isDirty && (
                 <Chip size="sm" variant="flat" color="warning" className="font-semibold animate-pulse">
-                  Unsaved changes
+                  {t("detail.sections.unsavedChanges")}
                 </Chip>
               )}
               <Button
@@ -1089,7 +1099,7 @@ export function TaskDetailPage() {
                 startContent={<Save className="w-4 h-4" />}
                 className="font-bold shadow-md shadow-primary/25 min-w-[140px]"
               >
-                Save Changes
+                {t("detail.saveChanges")}
               </Button>
             </div>
           </footer>

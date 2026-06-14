@@ -19,7 +19,26 @@
       "leads": "العملاء المحتملون",
       "contacts": "جهات الاتصال",
       "deals": "الصفقات",
-      "tasks": "مهام CRM"
+      "tasks": "مهام CRM",
+      "activeDeals": "الصفقات النشطة",
+      "wonDeals": "الصفقات الرابحة",
+      "lostDeals": "الصفقات الخاسرة",
+      "expectedRevenue": "الإيرادات المتوقعة",
+      "conversionRate": "معدل التحويل"
+    },
+    "funnel": {
+      "title": "مسار المبيعات",
+      "leads": "العملاء المحتملون",
+      "qualified": "مؤهل",
+      "proposal": "عرض مقترح",
+      "negotiation": "تفاوض",
+      "won": "ربح"
+    },
+    "charts": {
+      "leadsBySource": "العملاء المحتملون حسب المصدر",
+      "dealsByStage": "الصفقات حسب المرحلة",
+      "revenueByMonth": "الإيرادات حسب الشهر",
+      "noData": "لا توجد بيانات إيرادات بعد"
     }
   },
   "ui": {
@@ -107,6 +126,12 @@
       "createFailed": "فشل الإنشاء",
       "updated": "تم التحديث",
       "updateFailed": "فشل التحديث"
+    },
+    "convert": {
+      "action": "تحويل إلى جهة اتصال",
+      "viewContact": "عرض جهة الاتصال",
+      "success": "تم تحويل العميل المحتمل إلى جهة اتصال بنجاح",
+      "failed": "فشل تحويل العميل المحتمل"
     }
   },
   "leadDetail": {
@@ -277,6 +302,8 @@
       "timeline": "الجدول الزمني"
     },
     "tasks": {
+      "placeholder": "عنوان المهمة…",
+      "add": "إضافة مهمة",
       "empty": "لا مهام مرتبطة."
     }
   },

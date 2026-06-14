@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Button, Input, Slider } from "@heroui/react";
 import { Trash2, Plus } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { useUpdateEmployeeMutation } from "../hooks/use-people";
 import type { Employee } from "../types/people.types";
 
@@ -11,6 +12,7 @@ interface ManageSkillsModalProps {
 }
 
 export function ManageSkillsModal({ isOpen, onOpenChange, employee }: ManageSkillsModalProps) {
+  const { t } = useTranslation("people");
   const [skills, setSkills] = useState<{ name: string; level: number }[]>([]);
   const updateMutation = useUpdateEmployeeMutation();
 
@@ -57,26 +59,26 @@ export function ManageSkillsModal({ isOpen, onOpenChange, employee }: ManageSkil
       <ModalContent>
         {(onClose) => (
           <>
-            <ModalHeader className="flex flex-col gap-1">Manage Skills</ModalHeader>
+            <ModalHeader className="flex flex-col gap-1">{t("skills_modal.title")}</ModalHeader>
             <ModalBody>
               <div className="space-y-4">
                 {skills.length === 0 ? (
-                  <p className="text-default-500 text-sm text-center py-4">No skills added yet.</p>
+                  <p className="text-default-500 text-sm text-center py-4">{t("profile.no_skills")}</p>
                 ) : (
                   skills.map((skill, index) => (
                     <div key={index} className="flex flex-col sm:flex-row items-start sm:items-center gap-4 p-4 border border-default-100 rounded-xl bg-default-50/50">
                       <Input
-                        label="Skill Name"
+                        label={t("skills_modal.skill_name")}
                         variant="bordered"
                         size="sm"
                         value={skill.name}
-                        placeholder="e.g. React"
+                        placeholder={t("skills_modal.skill_placeholder")}
                         className="flex-1"
                         onValueChange={(val) => handleSkillChange(index, "name", val)}
                       />
                       <div className="flex-1 w-full px-2">
                         <Slider
-                          label="Proficiency"
+                           label={t("profile.proficiency")}
                           size="sm"
                           step={1}
                           maxValue={100}
@@ -93,16 +95,16 @@ export function ManageSkillsModal({ isOpen, onOpenChange, employee }: ManageSkil
                   ))
                 )}
                 <Button color="primary" variant="flat" onPress={handleAddSkill} startContent={<Plus size={16} />} className="w-full border-dashed border-2 bg-transparent">
-                  Add New Skill
+                  {t("skills_modal.add_skill")}
                 </Button>
               </div>
             </ModalBody>
             <ModalFooter>
               <Button color="danger" variant="flat" onPress={onClose} isDisabled={updateMutation.isPending}>
-                Cancel
+                {t("skills_modal.cancel")}
               </Button>
               <Button color="primary" onPress={handleSave} isLoading={updateMutation.isPending}>
-                Save Skills
+                {t("skills_modal.save")}
               </Button>
             </ModalFooter>
           </>

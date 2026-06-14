@@ -113,5 +113,36 @@
     "home": "الرئيسية",
     "errorRecovery": "نظام استرداد الأخطاء • دي أرو للأعمال",
     "unexpected": "حدث خطأ غير متوقع."
+  },
+  "notifications": {
+    "title": "الإشعارات",
+    "markAllAsRead": "تحديد الكل كمقروء",
+    "empty": "لا توجد إشعارات بعد.",
+    "types": {
+      "task_created": {
+        "title": "تم إنشاء المهمة",
+        "message": "تم إنشاء المهمة \"{{taskTitle}}\" بواسطة {{actionBy}}."
+      },
+      "task_updated": {
+        "title": "تم تحديث المهمة",
+        "message": "تم تحديث المهمة \"{{taskTitle}}\" بواسطة {{actionBy}}."
+      },
+      "task_assigned": {
+        "title": "تم تعيين المهمة",
+        "message": "تم تعيين المهمة \"{{taskTitle}}\" بواسطة {{actionBy}}."
+      },
+      "attendance_started": {
+        "title": "بدء الحضور",
+        "message": "بدأ {{employeeName}} العمل."
+      },
+      "attendance_resumed": {
+        "title": "استئناف الحضور",
+        "message": "استأنف {{employeeName}} العمل."
+      },
+      "attendance_completed": {
+        "title": "نهاية الحضور",
+        "message": "سجّل {{employeeName}} الخروج. إجمالي الوقت: {{totalTime}}."
+      }
+    }
   }
 }

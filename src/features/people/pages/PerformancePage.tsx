@@ -179,37 +179,37 @@ export default function PerformancePage() {
         <ModalContent>
           {(onClose) => (
             <>
-              <ModalHeader className="flex flex-col gap-1">Start New Review Cycle</ModalHeader>
+              <ModalHeader className="flex flex-col gap-1">{t("performance.start_cycle_title")}</ModalHeader>
               <ModalBody>
                 <Input
                   autoFocus
-                  label="Cycle Name"
-                  placeholder="e.g. Q3 2026 Performance Review"
+                  label={t("performance.cycle_name")}
+                  placeholder={t("performance.cycle_name_placeholder")}
                   variant="bordered"
                   value={newCycle.name}
                   onValueChange={(val) => setNewCycle({...newCycle, name: val})}
                 />
                 <Select
-                  label="Review Type"
-                  placeholder="Select type"
+                  label={t("performance.review_type")}
+                  placeholder={t("performance.select_type")}
                   variant="bordered"
                   selectedKeys={newCycle.type ? [newCycle.type] : []}
                   onSelectionChange={(keys) => setNewCycle({...newCycle, type: Array.from(keys)[0] as string})}
                 >
-                  <SelectItem key="360">360 Feedback</SelectItem>
-                  <SelectItem key="manager">Manager Review</SelectItem>
-                  <SelectItem key="peer">Peer Review</SelectItem>
+                  <SelectItem key="360">{t("performance.type_360")}</SelectItem>
+                  <SelectItem key="manager">{t("performance.type_manager")}</SelectItem>
+                  <SelectItem key="peer">{t("performance.type_peer")}</SelectItem>
                 </Select>
                 <div className="flex gap-2">
                   <Input 
-                    label="Start Date" 
+                    label={t("performance.start_date")} 
                     type="date" 
                     variant="bordered" 
                     value={newCycle.start}
                     onValueChange={(val) => setNewCycle({...newCycle, start: val})}
                   />
                   <Input 
-                    label="End Date" 
+                    label={t("performance.end_date")} 
                     type="date" 
                     variant="bordered" 
                     value={newCycle.end}
@@ -219,10 +219,10 @@ export default function PerformancePage() {
               </ModalBody>
               <ModalFooter>
                 <Button color="danger" variant="flat" onPress={onClose} isDisabled={isSubmitting}>
-                  Cancel
+                  {t("performance.cancel")}
                 </Button>
                 <Button color="primary" onPress={() => handleStartCycle(onClose)} isLoading={isSubmitting}>
-                  Start Cycle
+                  {t("performance.start_cycle_btn")}
                 </Button>
               </ModalFooter>
             </>
@@ -234,7 +234,7 @@ export default function PerformancePage() {
         <ModalContent>
           {(onClose) => (
             <>
-              <ModalHeader className="flex flex-col gap-1">Manage Cycle: {selectedCycle?.name}</ModalHeader>
+              <ModalHeader className="flex flex-col gap-1">{t("performance.manage_cycle_title", { name: selectedCycle?.name })}</ModalHeader>
               <ModalBody>
                 {isLoadingUsers ? (
                   <div className="flex justify-center p-8"><Loader2 className="animate-spin text-primary" size={32} /></div>
@@ -246,28 +246,28 @@ export default function PerformancePage() {
                           <Avatar src={emp.avatar} name={emp.name} className="shrink-0" />
                           <div>
                             <p className="font-bold text-sm text-foreground">{emp.name}</p>
-                            <p className="text-xs text-default-500">{emp.role}</p>
+                            <p className="text-xs text-default-500">{t(`roles.${emp.role}`, emp.role)}</p>
                           </div>
                         </div>
                         <div className="flex gap-3 items-center w-full sm:w-auto">
                           <Select 
                             className="w-48 shrink-0" 
                             size="sm" 
-                            label="Grade" 
+                            label={t("performance.grade")} 
                             variant="bordered"
                             selectedKeys={appraisals[emp.id]?.grade ? [appraisals[emp.id].grade] : []}
                             onSelectionChange={(keys) => setAppraisals({...appraisals, [emp.id]: {...appraisals[emp.id], grade: Array.from(keys)[0] as string}})}
                           >
-                            <SelectItem key="A">Grade A (Excellent)</SelectItem>
-                            <SelectItem key="B">Grade B (Good)</SelectItem>
-                            <SelectItem key="C">Grade C (Average)</SelectItem>
-                            <SelectItem key="D">Grade D (Poor)</SelectItem>
+                            <SelectItem key="A">{t("performance.grade_a")}</SelectItem>
+                            <SelectItem key="B">{t("performance.grade_b")}</SelectItem>
+                            <SelectItem key="C">{t("performance.grade_c")}</SelectItem>
+                            <SelectItem key="D">{t("performance.grade_d")}</SelectItem>
                           </Select>
                           <Input 
                             type="number" 
                             className="w-24 shrink-0" 
                             size="sm" 
-                            label="Points" 
+                            label={t("performance.points")} 
                             variant="bordered"
                             placeholder="0-100"
                             value={appraisals[emp.id]?.points?.toString() || ""}
@@ -281,10 +281,10 @@ export default function PerformancePage() {
               </ModalBody>
               <ModalFooter>
                 <Button color="danger" variant="flat" onPress={onClose} isDisabled={isSavingAppraisals}>
-                  Cancel
+                  {t("performance.cancel")}
                 </Button>
                 <Button color="primary" onPress={() => saveAppraisals(onClose)} isLoading={isSavingAppraisals}>
-                  Save Appraisals
+                  {t("performance.save_appraisals")}
                 </Button>
               </ModalFooter>
             </>
@@ -317,12 +317,20 @@ export default function PerformancePage() {
                     <div>
                       <h4 className="font-bold text-primary">{cycle.name}</h4>
                       <div className="flex items-center gap-2 mt-1">
-                        <Chip size="sm" variant="flat">{cycle.type === '360' ? '360 Feedback' : cycle.type === 'manager' ? 'Manager Review' : 'Peer Review'}</Chip>
-                        <span className="text-xs text-default-500">{cycle.start} to {cycle.end}</span>
+                        <Chip size="sm" variant="flat">
+                          {cycle.type === '360' 
+                            ? t("performance.type_360") 
+                            : cycle.type === 'manager' 
+                            ? t("performance.type_manager") 
+                            : t("performance.type_peer")}
+                        </Chip>
+                        <span className="text-xs text-default-500">
+                          {cycle.start} {t("performance.to")} {cycle.end}
+                        </span>
                       </div>
                     </div>
                     <Button size="sm" variant="flat" color="primary" className="mt-4 md:mt-0" onPress={() => handleOpenManage(cycle)}>
-                      Manage Cycle
+                      {t("performance.manage_cycle")}
                     </Button>
                   </div>
                 ))}
@@ -341,7 +349,7 @@ export default function PerformancePage() {
               <div className="flex justify-center p-8"><Loader2 className="animate-spin text-primary" size={24} /></div>
             ) : myAppraisals.length === 0 ? (
               <div className="text-center py-10">
-                 <p className="text-default-400 text-sm">No recent appraisals found.</p>
+                 <p className="text-default-400 text-sm">{t("performance.no_recent_appraisals")}</p>
               </div>
             ) : (
               <div className="space-y-4">
@@ -350,8 +358,8 @@ export default function PerformancePage() {
                     <p className="text-xs text-default-500 mb-1">{appraisal.cycleName}</p>
                     <div className="flex justify-between items-center">
                       <div>
-                        <p className="text-xl font-black text-primary">Grade {appraisal.grade || '?'}</p>
-                        <p className="text-xs font-bold text-default-600">{appraisal.points || 0} Points</p>
+                        <p className="text-xl font-black text-primary">{t("performance.grade")} {appraisal.grade || '?'}</p>
+                        <p className="text-xs font-bold text-default-600">{appraisal.points || 0} {t("performance.points")}</p>
                       </div>
                       <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold">
                         {appraisal.grade || '-'}

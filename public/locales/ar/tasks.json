@@ -8,7 +8,9 @@
     "completedThisWeek": "مكتملة هذا الأسبوع",
     "recentTasks": "المهام الأخيرة",
     "tasksByStatus": "المهام حسب الحالة",
-    "tasksByPriority": "المهام حسب الأولوية"
+    "tasksByPriority": "المهام حسب الأولوية",
+    "overview": "نظرة عامة",
+    "distribution": "التوزيع"
   },
   "list": {
     "title": "المهام",
@@ -54,7 +56,59 @@
     "createdAt": "تاريخ الإنشاء",
     "attachedFiles": "الملفات المرفقة ({{count}})",
     "fileIndex": "ملف {{index}}",
-    "viewFullSize": "عرض بالحجم الكامل"
+    "viewFullSize": "عرض بالحجم الكامل",
+    "tabs": {
+      "details": "التفاصيل",
+      "description": "الوصف",
+      "comments": "التعليقات",
+      "history": "السجل",
+      "attachments": "المرفقات",
+      "log-hours": "تسجيل الساعات",
+      "subitems": "العناصر الفرعية"
+    },
+    "sections": {
+      "detailsTitle": "تفاصيل المهمة",
+      "detailsSubtitle": "المرحلة، المسؤول، الحالة، والجدولة",
+      "primary": "أساسي",
+      "associatedSprint": "المرحلة المرتبطة",
+      "properties": "الخصائص",
+      "assignedTo": "المسؤول",
+      "status": "الحالة",
+      "epic": "الملحمة",
+      "itemType": "نوع العنصر",
+      "priority": "الأولوية",
+      "startDate": "تاريخ البدء",
+      "endDate": "تاريخ الانتهاء",
+      "descriptionTitle": "الوصف",
+      "descriptionSubtitle": "أضف سياقاً، معايير قبول، أو ملاحظات",
+      "descriptionPlaceholder": "لم يتم تقديم وصف. اكتب لإضافة وصف.",
+      "commentsTitle": "التعليقات",
+      "commentsSubtitle_one": "نقاش واحد",
+      "commentsSubtitle_other": "{{count}} نقاشات",
+      "attachmentsTitle": "المرفقات",
+      "attachmentsSubtitle": "الملفات المرتبطة بهذه المهمة",
+      "upload": "رفع",
+      "clickToUpload": "انقر لرفع الملفات",
+      "logHoursTitle": "تسجيل الساعات",
+      "logHoursSubtitle": "تتبع الوقت المستغرق في هذه المهمة",
+      "totalLogged": "إجمالي المسجل: {{hours}} ساعة {{minutes}} دقيقة",
+      "hours": "الساعات",
+      "minutes": "الدقائق",
+      "logDescPlaceholder": "ما الذي عملت عليه؟",
+      "saveLog": "حفظ السجل",
+      "noTimeLogged": "لم يتم تسجيل وقت بعد.",
+      "subitemsTitle": "العناصر الفرعية",
+      "subitemsSubtitle": "المهام الفرعية المرتبطة بهذا العنصر",
+      "delete": "حذف",
+      "unsavedChanges": "تغييرات غير محفوظة",
+      "createdBy": "أُنشئ بواسطة {{name}} في {{date}}",
+      "noActiveSprint": "لا توجد مرحلة نشطة",
+      "notAssigned": "غير معين",
+      "noTags": "لا توجد وسوم",
+      "none": "بلا",
+      "taskId": "معرف المهمة",
+      "progress": "التقدم"
+    }
   },
   "form": {
     "createTitle": "إنشاء مهمة",
@@ -78,7 +132,8 @@
     "assignee": {
       "label": "المسؤول",
       "placeholder": "اختر المسؤول",
-      "unassigned": "غير معين"
+      "unassigned": "غير معين",
+      "me": "أنا"
     },
     "dueDate": {
       "label": "تاريخ الاستحقاق",
@@ -108,9 +163,22 @@
       "optional": "اختياري",
       "hint": "أضف الملفات الآن أو تخطَّ وأرفق لاحقاً من صفحة المهمة.",
       "partialUpload": "تعذر رفع بعض الملفات. سيتم حفظ المهمة بالملفات التي نجح رفعها.",
-      "uploadFailed": "فشل رفع الملفات. سيتم إنشاء المهمة بدون تلك المرفقات."
+      "uploadFailed": "فشل رفع الملفات. سيتم إنشاء المهمة بدون تلك المرفقات.",
+      "document": "مستند",
+      "view": "عرض",
+      "pending": "قيد الانتظار",
+      "new": "جديد",
+      "clickOrDrag": "انقر أو اسحب الملفات لرفعها",
+      "optionalHint": "اختياري — صور، ملفات PDF، ومستندات",
+      "filesSelected_one": "تم اختيار ملف واحد",
+      "filesSelected_other": "تم اختيار {{count}} ملفات"
     },
     "createHint": "أكمل التفاصيل أدناه. العنوان فقط مطلوب."
+  },
+  "type": {
+    "task": "مهمة",
+    "epic": "ملحمة",
+    "subtask": "مهمة فرعية"
   },
   "status": {
     "todo": "للتنفيذ",
