@@ -328,5 +328,30 @@
     "take_break": "Take a break",
     "must_be_on_duty": "Must be on duty to take a break",
     "productivity_mode": "High Productivity Mode"
+  },
+  "toast": {
+    "leave_submitted": "Leave request submitted successfully",
+    "leave_failed": "Failed to submit leave request",
+    "offboarded": "Employee successfully offboarded",
+    "offboard_failed": "Failed to offboard employee",
+    "employee_updated": "Employee updated successfully",
+    "employee_update_failed": "Failed to update employee",
+    "review_submitted": "Performance review submitted successfully",
+    "review_failed": "Failed to submit performance review",
+    "asset_assigned": "Asset assigned successfully",
+    "asset_assign_failed": "Failed to assign asset",
+    "asset_updated": "Asset updated successfully",
+    "asset_update_failed": "Failed to update asset",
+    "announcement_posted": "Announcement posted successfully",
+    "announcement_failed": "Failed to post announcement",
+    "users_load_failed": "Failed to load users"
+  },
+  "attendance_toast": {
+    "shift_started": "Shift started!",
+    "break_started": "Break started.",
+    "shift_completed": "Shift completed.",
+    "checkin_failed": "Failed to check in.",
+    "break_failed": "Failed to start break",
+    "checkout_failed": "Failed to check out"
   }
 }

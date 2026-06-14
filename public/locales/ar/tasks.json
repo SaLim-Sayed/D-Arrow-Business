@@ -255,5 +255,13 @@
     "msgCreateSuccess": "تم إنشاء المرحلة بنجاح",
     "msgUpdateError": "فشل تحديث المرحلة",
     "msgCreateError": "فشل إنشاء المرحلة"
+  },
+  "toast": {
+    "created": "تم إنشاء المهمة بنجاح",
+    "updated": "تم تحديث المهمة بنجاح",
+    "deleted": "تم حذف المهمة بنجاح",
+    "createFailed": "فشل إنشاء المهمة",
+    "updateFailed": "فشل تحديث المهمة",
+    "deleteFailed": "فشل حذف المهمة"
   }
 }

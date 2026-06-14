@@ -6,6 +6,7 @@ import { mapFirestoreUser } from "@/features/auth/utils/map-user";
 import { collection, getDocs, query, where } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useCompany } from "@/features/companies/context/company-context";
+import i18n from "@/lib/i18n";
 
 export function useAllUsers() {
   const { setAvailableUsers, setLoadingUsers } = useTasksStore();
@@ -35,7 +36,7 @@ export function useAllUsers() {
         return users;
       } catch (error) {
         console.error("Failed to fetch users:", error);
-        toast.error("Failed to load users");
+        toast.error(i18n.t("toast.users_load_failed", { ns: "people" }));
         throw error;
       } finally {
         setLoadingUsers(false);

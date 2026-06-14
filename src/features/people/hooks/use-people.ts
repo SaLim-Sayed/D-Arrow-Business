@@ -4,6 +4,9 @@ import { PeopleService } from "../api/people.service";
 import { useCompany } from "@/features/companies/context/company-context";
 import type { LeaveRequest, PerformanceReview, Asset, Announcement } from "../types/people.types";
 import { toast } from "sonner";
+import i18n from "@/lib/i18n";
+
+const t = (key: string) => i18n.t(key, { ns: "people" });
 
 export function useEmployeesQuery() {
   const { companyId } = useCompany();
@@ -34,10 +37,10 @@ export function useSubmitLeaveRequestMutation() {
       PeopleService.submitLeaveRequest(companyId!, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.people.leaveRequests(companyId!) });
-      toast.success("Leave request submitted successfully");
+      toast.success(t("toast.leave_submitted"));
     },
     onError: (error: any) => {
-      toast.error(error.message || "Failed to submit leave request");
+      toast.error(error.message || t("toast.leave_failed"));
     }
   });
 }
@@ -51,10 +54,10 @@ export function useOffboardEmployeeMutation() {
       PeopleService.updateEmployee(companyId!, employeeId, { status: status as any }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.people.employees(companyId!) });
-      toast.success("Employee successfully offboarded");
+      toast.success(t("toast.offboarded"));
     },
     onError: (error: any) => {
-      toast.error(error.message || "Failed to offboard employee");
+      toast.error(error.message || t("toast.offboard_failed"));
     }
   });
 }
@@ -68,10 +71,10 @@ export function useUpdateEmployeeMutation() {
       PeopleService.updateEmployee(companyId!, employeeId, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.people.employees(companyId!) });
-      toast.success("Employee updated successfully");
+      toast.success(t("toast.employee_updated"));
     },
     onError: (error: any) => {
-      toast.error(error.message || "Failed to update employee");
+      toast.error(error.message || t("toast.employee_update_failed"));
     }
   });
 }
@@ -115,10 +118,10 @@ export function useCreatePerformanceReviewMutation() {
       PeopleService.createPerformanceReview(companyId!, data),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.people.performanceReviews(variables.employeeId) });
-      toast.success("Performance review submitted successfully");
+      toast.success(t("toast.review_submitted"));
     },
     onError: (error: any) => {
-      toast.error(error.message || "Failed to submit performance review");
+      toast.error(error.message || t("toast.review_failed"));
     }
   });
 }
@@ -142,10 +145,10 @@ export function useCreateAssetMutation() {
       PeopleService.createAsset(companyId!, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.people.assets(companyId!) });
-      toast.success("Asset assigned successfully");
+      toast.success(t("toast.asset_assigned"));
     },
     onError: (error: any) => {
-      toast.error(error.message || "Failed to assign asset");
+      toast.error(error.message || t("toast.asset_assign_failed"));
     }
   });
 }
@@ -159,10 +162,10 @@ export function useUpdateAssetMutation() {
       PeopleService.updateAsset(companyId!, assetId, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.people.assets(companyId!) });
-      toast.success("Asset updated successfully");
+      toast.success(t("toast.asset_updated"));
     },
     onError: (error: any) => {
-      toast.error(error.message || "Failed to update asset");
+      toast.error(error.message || t("toast.asset_update_failed"));
     }
   });
 }
@@ -186,10 +189,10 @@ export function useCreateAnnouncementMutation() {
       PeopleService.createAnnouncement(companyId!, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.people.announcements(companyId!) });
-      toast.success("Announcement posted successfully");
+      toast.success(t("toast.announcement_posted"));
     },
     onError: (error: any) => {
-      toast.error(error.message || "Failed to post announcement");
+      toast.error(error.message || t("toast.announcement_failed"));
     }
   });
 }

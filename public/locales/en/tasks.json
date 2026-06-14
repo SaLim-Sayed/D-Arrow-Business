@@ -255,5 +255,13 @@
     "msgCreateSuccess": "Sprint created successfully",
     "msgUpdateError": "Failed to update sprint",
     "msgCreateError": "Failed to create sprint"
+  },
+  "toast": {
+    "created": "Task created successfully",
+    "updated": "Task updated successfully",
+    "deleted": "Task deleted successfully",
+    "createFailed": "Failed to create task",
+    "updateFailed": "Failed to update task",
+    "deleteFailed": "Failed to delete task"
   }
 }

@@ -6,6 +6,9 @@ import type { CreateTaskDTO, UpdateTaskDTO } from "../types/task.types";
 import { toast } from "sonner";
 import { useCompany } from "@/features/companies/context/company-context";
 import { useAuth } from "@/features/auth/context/auth-context";
+import i18n from "@/lib/i18n";
+
+const t = (key: string) => i18n.t(key, { ns: "tasks" });
 
 export function useCreateTask() {
   const queryClient = useQueryClient();
@@ -20,14 +23,14 @@ export function useCreateTask() {
       }),
     onSuccess: (response) => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.tasks.all });
-      toast.success("Task created successfully");
+      toast.success(t("toast.created"));
 
       if (response?.data && companyId) {
         TaskNotificationService.notifyTaskChange(response.data, companyId, "created", user?.email);
       }
     },
     onError: () => {
-      toast.error("Failed to create task");
+      toast.error(t("toast.createFailed"));
     },
   });
 }
@@ -83,13 +86,13 @@ export function useUpdateTask() {
       context?.previousQueries?.forEach(([queryKey, previousData]) => {
         queryClient.setQueryData(queryKey, previousData);
       });
-      toast.error("Failed to update task");
+      toast.error(t("toast.updateFailed"));
     },
     onSuccess: (response, variables) => {
       queryClient.invalidateQueries({
         queryKey: QUERY_KEYS.tasks.detail(variables.id),
       });
-      toast.success("Task updated successfully");
+      toast.success(t("toast.updated"));
 
       if (response?.data && companyId) {
         const updateType = variables.data.assigneeId ? "assigned" : "updated";
@@ -111,10 +114,10 @@ export function useDeleteTask() {
     mutationFn: (id: string) => TaskService.deleteTask(companyId!, id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.tasks.all });
-      toast.success("Task deleted successfully");
+      toast.success(t("toast.deleted"));
     },
     onError: () => {
-      toast.error("Failed to delete task");
+      toast.error(t("toast.deleteFailed"));
     },
   });
 }

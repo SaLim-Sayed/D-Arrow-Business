@@ -5,6 +5,9 @@ import { db } from "@/lib/firebase";
 import { collection, query, where, getDocs, getDoc, addDoc, serverTimestamp } from "firebase/firestore";
 import { useAuthStore } from "./auth.store";
 import { AttendanceNotificationService } from "@/features/people/api/attendance-notifications.service";
+import i18n from "@/lib/i18n";
+
+const at = (key: string) => i18n.t(key, { ns: "people" });
 
 interface AttendanceState {
   liveSeconds: number;
@@ -88,7 +91,7 @@ export const useAttendanceStore = create<AttendanceState>((set, get) => ({
       });
       get().startTimer();
       await get().syncWithDb(companyId, userId);
-      toast.success("Shift started!");
+      toast.success(at("attendance_toast.shift_started"));
 
       const authUser = useAuthStore.getState().user;
       if (authUser) {
@@ -100,7 +103,7 @@ export const useAttendanceStore = create<AttendanceState>((set, get) => ({
       }
     } catch (error) {
       console.error("Check-in error:", error);
-      toast.error("Failed to check in.");
+      toast.error(at("attendance_toast.checkin_failed"));
     } finally {
       set({ isShiftLoading: false });
     }
@@ -114,9 +117,9 @@ export const useAttendanceStore = create<AttendanceState>((set, get) => ({
       await PeopleService.checkOut(companyId, attendanceId, finalEmployeeId, "on-break");
       get().stopTimer();
       await get().syncWithDb(companyId, userId);
-      toast.success("Break started.");
+      toast.success(at("attendance_toast.break_started"));
     } catch (error) {
-      toast.error("Failed to start break");
+      toast.error(at("attendance_toast.break_failed"));
     } finally {
       set({ isShiftLoading: false });
     }
@@ -131,14 +134,14 @@ export const useAttendanceStore = create<AttendanceState>((set, get) => ({
       await PeopleService.checkOut(companyId, attendanceId, finalEmployeeId, "off-duty");
       get().stopTimer();
       await get().syncWithDb(companyId, userId);
-      toast.success("Shift completed.");
+      toast.success(at("attendance_toast.shift_completed"));
 
       const authUser = useAuthStore.getState().user;
       if (authUser) {
         AttendanceNotificationService.notifyShiftCompleted(companyId, authUser.name, totalSeconds);
       }
     } catch (error) {
-      toast.error("Failed to check out");
+      toast.error(at("attendance_toast.checkout_failed"));
     } finally {
       set({ isShiftLoading: false });
     }

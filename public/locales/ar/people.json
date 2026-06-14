@@ -328,5 +328,30 @@
     "take_break": "أخذ استراحة",
     "must_be_on_duty": "يجب أن تكون في العمل لأخذ استراحة",
     "productivity_mode": "وضع الإنتاجية العالية"
+  },
+  "toast": {
+    "leave_submitted": "تم تقديم طلب الإجازة بنجاح",
+    "leave_failed": "فشل تقديم طلب الإجازة",
+    "offboarded": "تم إنهاء خدمة الموظف بنجاح",
+    "offboard_failed": "فشل إنهاء خدمة الموظف",
+    "employee_updated": "تم تحديث بيانات الموظف بنجاح",
+    "employee_update_failed": "فشل تحديث بيانات الموظف",
+    "review_submitted": "تم تقديم تقييم الأداء بنجاح",
+    "review_failed": "فشل تقديم تقييم الأداء",
+    "asset_assigned": "تم تخصيص الأصل بنجاح",
+    "asset_assign_failed": "فشل تخصيص الأصل",
+    "asset_updated": "تم تحديث الأصل بنجاح",
+    "asset_update_failed": "فشل تحديث الأصل",
+    "announcement_posted": "تم نشر الإعلان بنجاح",
+    "announcement_failed": "فشل نشر الإعلان",
+    "users_load_failed": "فشل تحميل المستخدمين"
+  },
+  "attendance_toast": {
+    "shift_started": "بدأت الوردية!",
+    "break_started": "بدأت الاستراحة.",
+    "shift_completed": "اكتملت الوردية.",
+    "checkin_failed": "فشل تسجيل الدخول.",
+    "break_failed": "فشل بدء الاستراحة",
+    "checkout_failed": "فشل تسجيل الخروج"
   }
 }
