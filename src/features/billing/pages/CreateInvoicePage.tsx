@@ -12,6 +12,7 @@ import {
   Textarea,
 } from "@heroui/react";
 import { Plus, Trash2, Save, Send } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
@@ -23,6 +24,7 @@ import { invoiceSchema, type CreateInvoiceDTO } from "../schemas/invoice";
 import { formatCurrency } from "@/lib/utils";
 
 export default function CreateInvoicePage() {
+  const { t } = useTranslation("billing");
   const navigate = useNavigate();
 
   const { data: contactsRes } = useContactsQuery();
@@ -97,8 +99,8 @@ export default function CreateInvoicePage() {
   return (
     <div className="space-y-6 max-w-5xl mx-auto pb-20 animate-in fade-in duration-500">
       <PageHeader
-        title="New Invoice"
-        description="Create a new sales invoice for your customer."
+        title={t("invoices.create.title") || "New Invoice"}
+        description={t("invoices.create.description") || "Create a new sales invoice for your customer."}
       />
 
       <form className="space-y-6">
@@ -112,8 +114,8 @@ export default function CreateInvoicePage() {
                 render={({ field }) => (
                   <Select
                     {...field}
-                    label="Customer"
-                    placeholder="Select a customer"
+                    label={t("invoices.create.customer") || "Customer"}
+                    placeholder={t("invoices.create.customer_placeholder") || "Select a customer"}
                     variant="bordered"
                     isInvalid={!!errors.customerId}
                     errorMessage={(errors.customerId?.message as string)}
@@ -128,7 +130,7 @@ export default function CreateInvoicePage() {
               />
 
               <Input
-                label="Invoice Number"
+                label={t("invoices.create.invoice_number") || "Invoice Number"}
                 variant="bordered"
                 {...register("invoiceNumber")}
                 isInvalid={!!errors.invoiceNumber}
@@ -142,18 +144,18 @@ export default function CreateInvoicePage() {
         {/* Items Table */}
         <Card className="border border-default-100 shadow-sm rounded-2xl">
           <CardHeader className="px-6 py-4 flex justify-between items-center bg-default-50/50">
-            <h3 className="font-bold text-lg">Item Details</h3>
+            <h3 className="font-bold text-lg">{t("invoices.create.item_details") || "Item Details"}</h3>
           </CardHeader>
           <Divider />
           <CardBody className="p-0 overflow-x-auto">
             <table className="w-full text-left min-w-[800px]">
               <thead className="bg-default-100/50 text-sm font-medium text-default-600">
                 <tr>
-                  <th className="p-4 w-[30%]">Product / Item</th>
-                  <th className="p-4 w-[15%]">Quantity</th>
-                  <th className="p-4 w-[15%]">Rate</th>
-                  <th className="p-4 w-[15%]">Tax (%)</th>
-                  <th className="p-4 w-[15%] text-right">Amount</th>
+                  <th className="p-4 w-[30%]">{t("invoices.create.product_item") || "Product / Item"}</th>
+                  <th className="p-4 w-[15%]">{t("invoices.create.quantity") || "Quantity"}</th>
+                  <th className="p-4 w-[15%]">{t("invoices.create.rate") || "Rate"}</th>
+                  <th className="p-4 w-[15%]">{t("invoices.create.tax") || "Tax (%)"}</th>
+                  <th className="p-4 w-[15%] text-right">{t("invoices.create.amount") || "Amount"}</th>
                   <th className="p-4 w-[10%]"></th>
                 </tr>
               </thead>
@@ -173,7 +175,7 @@ export default function CreateInvoicePage() {
                           <Select
                             size="sm"
                             aria-label="Select Product"
-                            placeholder="Select Product..."
+                            placeholder={t("invoices.create.select_product") || "Select Product..."}
                             variant="flat"
                             onChange={(e) => handleProductSelect(index, e.target.value)}
                           >
@@ -185,7 +187,7 @@ export default function CreateInvoicePage() {
                           </Select>
                           <Input
                             size="sm"
-                            placeholder="Item description..."
+                            placeholder={t("invoices.create.item_description") || "Item description..."}
                             variant="flat"
                             {...register(`items.${index}.description` as const)}
                             isInvalid={!!errors.items?.[index]?.description}
@@ -247,7 +249,7 @@ export default function CreateInvoicePage() {
                 startContent={<Plus className="w-4 h-4" />}
                 onPress={() => append({ description: "", quantity: 1, unitPrice: 0, taxRate: 0, discount: 0, total: 0 })}
               >
-                Add another line
+                {t("invoices.create.add_line") || "Add another line"}
               </Button>
             </div>
           </CardBody>
@@ -256,14 +258,14 @@ export default function CreateInvoicePage() {
         <div className="flex flex-col md:flex-row gap-6 justify-between items-start">
           <div className="w-full md:w-1/2 space-y-4">
              <Textarea
-               label="Customer Notes"
-               placeholder="Thanks for your business."
+               label={t("invoices.create.notes") || "Customer Notes"}
+               placeholder={t("invoices.create.notes_placeholder") || "Thanks for your business."}
                variant="bordered"
                {...register("notes")}
              />
              <Textarea
-               label="Terms & Conditions"
-               placeholder="Payment due in 15 days."
+               label={t("invoices.create.terms") || "Terms & Conditions"}
+               placeholder={t("invoices.create.terms_placeholder") || "Payment due in 15 days."}
                variant="bordered"
                {...register("termsAndConditions")}
              />
@@ -272,24 +274,24 @@ export default function CreateInvoicePage() {
           <Card className="w-full md:w-1/3 border border-default-100 shadow-sm rounded-2xl bg-default-50/50">
             <CardBody className="p-6 space-y-4">
               <div className="flex justify-between text-sm text-default-600">
-                <span>Sub Total</span>
+                <span>{t("invoices.create.sub_total") || "Sub Total"}</span>
                 <span className="font-medium">{formatCurrency(subTotal, "USD")}</span>
               </div>
               {totalDiscount > 0 && (
                 <div className="flex justify-between text-sm text-danger">
-                  <span>Discount</span>
+                  <span>{t("invoices.create.discount") || "Discount"}</span>
                   <span>-{formatCurrency(totalDiscount, "USD")}</span>
                 </div>
               )}
               {totalTax > 0 && (
                 <div className="flex justify-between text-sm text-default-600">
-                  <span>Tax</span>
+                  <span>{t("invoices.create.total_tax") || "Tax"}</span>
                   <span className="font-medium">{formatCurrency(totalTax, "USD")}</span>
                 </div>
               )}
               <Divider />
               <div className="flex justify-between text-lg font-bold">
-                <span>Total</span>
+                <span>{t("invoices.create.total") || "Total"}</span>
                 <span>{formatCurrency(grandTotal, "USD")}</span>
               </div>
             </CardBody>
@@ -303,7 +305,7 @@ export default function CreateInvoicePage() {
             isLoading={isSubmitting}
             startContent={<Save className="w-4 h-4" />}
           >
-            Save as Draft
+            {t("invoices.create.save_draft") || "Save as Draft"}
           </Button>
           <Button
             color="primary"
@@ -311,7 +313,7 @@ export default function CreateInvoicePage() {
             isLoading={isSubmitting}
             startContent={<Send className="w-4 h-4" />}
           >
-            Save & Send
+            {t("invoices.create.save_send") || "Save & Send"}
           </Button>
         </div>
       </form>

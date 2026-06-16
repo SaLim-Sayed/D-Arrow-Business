@@ -68,7 +68,7 @@ export default function InvoicesPage() {
               <TrendingUp className="w-6 h-6" />
             </div>
             <div>
-              <p className="text-default-500 text-sm font-medium">Outstanding Balance</p>
+              <p className="text-default-500 text-sm font-medium">{t("invoices.metrics.outstanding") || "Outstanding Balance"}</p>
               <h4 className="text-2xl font-bold text-primary">{formatCurrency(totalOutstanding, "USD")}</h4>
             </div>
           </CardBody>
@@ -80,7 +80,7 @@ export default function InvoicesPage() {
               <AlertCircle className="w-6 h-6" />
             </div>
             <div>
-              <p className="text-default-500 text-sm font-medium">Overdue Amount</p>
+              <p className="text-default-500 text-sm font-medium">{t("invoices.metrics.overdue") || "Overdue Amount"}</p>
               <h4 className="text-2xl font-bold text-danger">{formatCurrency(totalOverdue, "USD")}</h4>
             </div>
           </CardBody>
@@ -92,7 +92,7 @@ export default function InvoicesPage() {
               <CheckCircle2 className="w-6 h-6" />
             </div>
             <div>
-              <p className="text-default-500 text-sm font-medium">Total Paid</p>
+              <p className="text-default-500 text-sm font-medium">{t("invoices.metrics.paid") || "Total Paid"}</p>
               <h4 className="text-2xl font-bold text-success">{formatCurrency(totalPaid, "USD")}</h4>
             </div>
           </CardBody>
@@ -104,7 +104,7 @@ export default function InvoicesPage() {
               <Clock className="w-6 h-6" />
             </div>
             <div>
-              <p className="text-default-500 text-sm font-medium">Draft Invoices</p>
+              <p className="text-default-500 text-sm font-medium">{t("invoices.metrics.drafts") || "Draft Invoices"}</p>
               <h4 className="text-2xl font-bold text-default-900">{draftsCount}</h4>
             </div>
           </CardBody>
@@ -123,13 +123,13 @@ export default function InvoicesPage() {
 
       <Table aria-label="Invoices table" className="mt-4">
         <TableHeader>
-          <TableColumn>DATE</TableColumn>
-          <TableColumn>INVOICE#</TableColumn>
-          <TableColumn>CUSTOMER</TableColumn>
-          <TableColumn>DUE DATE</TableColumn>
-          <TableColumn>AMOUNT</TableColumn>
-          <TableColumn>STATUS</TableColumn>
-          <TableColumn align="end">ACTIONS</TableColumn>
+          <TableColumn>{t("invoices.columns.date") || "DATE"}</TableColumn>
+          <TableColumn>{t("invoices.columns.invoice_number") || "INVOICE#"}</TableColumn>
+          <TableColumn>{t("invoices.columns.customer") || "CUSTOMER"}</TableColumn>
+          <TableColumn>{t("invoices.columns.due_date") || "DUE DATE"}</TableColumn>
+          <TableColumn>{t("invoices.columns.amount") || "AMOUNT"}</TableColumn>
+          <TableColumn>{t("invoices.columns.status") || "STATUS"}</TableColumn>
+          <TableColumn align="end">{t("invoices.columns.actions") || "ACTIONS"}</TableColumn>
         </TableHeader>
         <TableBody items={filteredInvoices} isLoading={isLoading}>
           {(item) => (

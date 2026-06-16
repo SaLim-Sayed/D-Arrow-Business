@@ -42,7 +42,7 @@ export default function SettingsPage() {
       console.log(data);
       toast.success(t("settings.saved_successfully") || "Settings saved successfully");
     } catch (error) {
-      toast.error(tc("errors.general") || "An error occurred");
+      toast.error(tc("errors.somethingWentWrong") || "An error occurred");
     }
   };
 
@@ -69,7 +69,7 @@ export default function SettingsPage() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <Input
                       label={t("settings.company_name") || "Company Name"}
-                      placeholder="e.g. Acme Corp"
+                      placeholder={t("settings.placeholders.company_name") || "e.g. Acme Corp"}
                       {...register("companyProfile.name")}
                       isInvalid={!!(errors?.companyProfile as any)?.name}
                       errorMessage={(errors?.companyProfile as any)?.name?.message}
@@ -77,7 +77,7 @@ export default function SettingsPage() {
                     />
                     <Input
                       label={t("settings.tax_number") || "Tax Number (VAT)"}
-                      placeholder="e.g. 1234567890"
+                      placeholder={t("settings.placeholders.tax_number") || "e.g. 1234567890"}
                       {...register("companyProfile.taxNumber")}
                       variant="bordered"
                     />
@@ -85,7 +85,7 @@ export default function SettingsPage() {
 
                   <Input
                     label={t("settings.address") || "Address"}
-                    placeholder="Full business address"
+                    placeholder={t("settings.placeholders.address") || "Full business address"}
                     {...register("companyProfile.address")}
                     isInvalid={!!(errors?.companyProfile as any)?.address}
                     errorMessage={(errors?.companyProfile as any)?.address?.message}
@@ -96,7 +96,7 @@ export default function SettingsPage() {
                     <Input
                       label={t("settings.email") || "Email Address"}
                       type="email"
-                      placeholder="billing@example.com"
+                      placeholder={t("settings.placeholders.email") || "billing@example.com"}
                       {...register("companyProfile.email")}
                       isInvalid={!!(errors?.companyProfile as any)?.email}
                       errorMessage={(errors?.companyProfile as any)?.email?.message}
@@ -104,7 +104,7 @@ export default function SettingsPage() {
                     />
                     <Input
                       label={t("settings.phone") || "Phone Number"}
-                      placeholder="+1 234 567 8900"
+                      placeholder={t("settings.placeholders.phone") || "+1 234 567 8900"}
                       {...register("companyProfile.phone")}
                       variant="bordered"
                     />
@@ -121,7 +121,7 @@ export default function SettingsPage() {
                 <CardBody className="px-6 py-6 grid grid-cols-1 md:grid-cols-3 gap-4">
                   <Input
                     label={t("settings.prefix") || "Prefix"}
-                    placeholder="INV-"
+                    placeholder={t("settings.placeholders.prefix") || "INV-"}
                     {...register("invoiceSequence.prefix")}
                     variant="bordered"
                   />
@@ -134,7 +134,7 @@ export default function SettingsPage() {
                   <Input
                     label={t("settings.padding") || "Number Padding"}
                     type="number"
-                    placeholder="e.g. 4 for 0001"
+                    placeholder={t("settings.placeholders.padding") || "e.g. 4 for 0001"}
                     {...register("invoiceSequence.padding", { valueAsNumber: true })}
                     variant="bordered"
                   />
@@ -150,7 +150,7 @@ export default function SettingsPage() {
                 </CardHeader>
                 <Divider />
                 <CardBody className="px-6 py-6 text-default-500">
-                  <p>Currency, Tax Rates, and Payment Methods configuration will go here.</p>
+                  <p>{t("settings.financial_desc") || "Currency, Tax Rates, and Payment Methods configuration will go here."}</p>
                 </CardBody>
               </Card>
             </div>

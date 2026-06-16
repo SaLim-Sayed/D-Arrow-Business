@@ -10,6 +10,23 @@
     "journals": "Manual Journals",
     "settings": "Settings"
   },
+  "dashboard": {
+    "description": "Overview of your financial and invoicing status.",
+    "outstanding": "Outstanding",
+    "overdue": "Overdue",
+    "total_received": "Total Received",
+    "drafts": "Drafts",
+    "quick_actions": "Quick Actions",
+    "create_invoice": "Create New Invoice",
+    "view_invoices": "View All Invoices",
+    "manage_bills": "Manage Vendor Bills",
+    "status_chart": "Invoices Status (Pie Chart)",
+    "no_data": "No data available to display chart.",
+    "revenue_chart": "Revenue Overview (Bar Chart)",
+    "recent_invoices": "Recent Invoices",
+    "view_all": "View All",
+    "no_recent": "No recent invoices."
+  },
   "settings": {
     "title": "Billing Settings",
     "subtitle": "Manage company profile and billing preferences",
@@ -26,7 +43,17 @@
     "tax_number": "Tax Number (VAT)",
     "address": "Address",
     "email": "Email",
-    "phone": "Phone Number"
+    "phone": "Phone Number",
+    "placeholders": {
+      "company_name": "e.g. Acme Corp",
+      "tax_number": "e.g. 1234567890",
+      "address": "Full business address",
+      "email": "billing@example.com",
+      "phone": "+1 234 567 8900",
+      "prefix": "INV-",
+      "padding": "e.g. 4 for 0001"
+    },
+    "financial_desc": "Currency, Tax Rates, and Payment Methods configuration will go here."
   },
   "products": {
     "title": "Products & Services",
@@ -100,31 +127,138 @@
       "operating_expense": "Operating Expense",
       "cost_of_goods_sold": "Cost of Goods Sold",
       "other_expense": "Other Expense"
+    },
+    "names": {
+      "Cash on Hand": "Cash on Hand",
+      "Accounts Receivable": "Accounts Receivable",
+      "Inventory Asset": "Inventory Asset",
+      "Accounts Payable": "Accounts Payable",
+      "Owner's Equity": "Owner's Equity",
+      "Sales Revenue": "Sales Revenue",
+      "Cost of Goods Sold": "Cost of Goods Sold",
+      "Bank Fees": "Bank Fees"
     }
   },
   "journals": {
     "title": "Manual Journals",
     "description": "Record manual journal entries for double-entry accounting.",
     "add": "New Journal",
-    "search": "Search by journal number or reference..."
+    "search": "Search by journal number or reference...",
+    "columns": {
+      "date": "DATE",
+      "journal_number": "JOURNAL#",
+      "reference": "REFERENCE",
+      "notes": "NOTES",
+      "amount": "AMOUNT",
+      "status": "STATUS",
+      "actions": "ACTIONS"
+    }
   },
   "invoices": {
     "title": "Invoices",
     "description": "Manage sales invoices and accounts receivable.",
     "add": "New Invoice",
-    "search": "Search by invoice number..."
+    "search": "Search by invoice number...",
+    "metrics": {
+      "outstanding": "Outstanding Balance",
+      "overdue": "Overdue Amount",
+      "paid": "Total Paid",
+      "drafts": "Draft Invoices"
+    },
+    "columns": {
+      "date": "DATE",
+      "invoice_number": "INVOICE#",
+      "customer": "CUSTOMER",
+      "due_date": "DUE DATE",
+      "amount": "AMOUNT",
+      "status": "STATUS",
+      "actions": "ACTIONS"
+    },
+    "create": {
+      "title": "New Invoice",
+      "description": "Create a new sales invoice for your customer.",
+      "customer": "Customer",
+      "customer_placeholder": "Select a customer",
+      "invoice_number": "Invoice Number",
+      "item_details": "Item Details",
+      "product_item": "Product / Item",
+      "quantity": "Quantity",
+      "rate": "Rate",
+      "tax": "Tax (%)",
+      "amount": "Amount",
+      "select_product": "Select Product...",
+      "item_description": "Item description...",
+      "add_line": "Add another line",
+      "notes": "Customer Notes",
+      "notes_placeholder": "Thanks for your business.",
+      "terms": "Terms & Conditions",
+      "terms_placeholder": "Payment due in 15 days.",
+      "sub_total": "Sub Total",
+      "discount": "Discount",
+      "total_tax": "Tax",
+      "total": "Total",
+      "save_draft": "Save as Draft",
+      "save_send": "Save & Send"
+    },
+    "detail": {
+      "issue_date": "Issue Date",
+      "due_date": "Due Date",
+      "record_payment": "Record Payment",
+      "send_email": "Send Email",
+      "bill_to": "Bill To",
+      "unknown_customer": "Unknown Customer",
+      "amount_due": "Amount Due",
+      "item_description": "Item Description",
+      "qty": "Qty",
+      "rate": "Rate",
+      "amount": "Amount",
+      "subtotal": "Subtotal",
+      "total_discount": "Total Discount",
+      "total_tax": "Total Tax",
+      "total": "Total",
+      "paid": "Paid",
+      "balance_due": "Balance Due",
+      "notes": "Notes",
+      "terms": "Terms & Conditions",
+      "invoice_not_found": "Invoice not found or loading..."
+    }
   },
   "bills": {
     "title": "Bills",
     "description": "Manage vendor bills and accounts payable.",
     "add": "New Bill",
-    "search": "Search by bill number..."
+    "search": "Search by bill number...",
+    "columns": {
+      "date": "DATE",
+      "bill_number": "BILL#",
+      "vendor": "VENDOR",
+      "due_date": "DUE DATE",
+      "amount": "AMOUNT",
+      "status": "STATUS",
+      "actions": "ACTIONS"
+    }
   },
   "reports": {
     "title": "Financial Statements",
     "description": "View your real-time financial health, including P&L and Balance Sheet.",
     "profit_loss": "Profit & Loss",
     "balance_sheet": "Balance Sheet",
-    "trial_balance": "Trial Balance"
+    "trial_balance": "Trial Balance",
+    "current_fiscal_period": "For the current fiscal period",
+    "income": "Income",
+    "total_income": "Total Income",
+    "expenses": "Expenses",
+    "total_expenses": "Total Expenses",
+    "net_income": "Net Income",
+    "as_of_today": "As of today",
+    "assets": "Assets",
+    "total_assets": "Total Assets",
+    "liabilities": "Liabilities",
+    "total_liabilities": "Total Liabilities",
+    "equity": "Equity",
+    "net_income_current_year": "Net Income (Current Year)",
+    "total_equity": "Total Equity",
+    "liabilities_plus_equity": "Liabilities + Equity",
+    "trial_balance_desc": "Trial balance logic will be fully driven by Journal Entries sum."
   }
 }

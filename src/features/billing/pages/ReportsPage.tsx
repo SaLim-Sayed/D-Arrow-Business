@@ -43,40 +43,40 @@ export default function ReportsPage() {
           <Card className="mt-4">
             <CardHeader className="flex flex-col items-start px-6 pt-6">
               <h3 className="text-xl font-bold">{t("reports.profit_loss") || "Profit and Loss"}</h3>
-              <p className="text-sm text-default-500">For the current fiscal period</p>
+              <p className="text-sm text-default-500">{t("reports.current_fiscal_period") || "For the current fiscal period"}</p>
             </CardHeader>
             <Divider />
             <CardBody className="px-6 py-6 space-y-6">
               <div>
-                <h4 className="text-success font-semibold text-lg border-b pb-2 mb-3">Income</h4>
+                <h4 className="text-success font-semibold text-lg border-b pb-2 mb-3">{t("reports.income") || "Income"}</h4>
                 {incomes.map(a => (
                   <div key={a.id} className="flex justify-between py-1">
-                    <span>{a.name}</span>
+                    <span>{t(`accounts.names.${a.name}`, { defaultValue: a.name })}</span>
                     <span>{formatCurrency(a.currentBalance, a.currency)}</span>
                   </div>
                 ))}
                 <div className="flex justify-between font-bold mt-2 pt-2 border-t">
-                  <span>Total Income</span>
+                  <span>{t("reports.total_income") || "Total Income"}</span>
                   <span className="text-success">{formatCurrency(totalIncome, "USD")}</span>
                 </div>
               </div>
 
               <div>
-                <h4 className="text-warning font-semibold text-lg border-b pb-2 mb-3">Expenses</h4>
+                <h4 className="text-warning font-semibold text-lg border-b pb-2 mb-3">{t("reports.expenses") || "Expenses"}</h4>
                 {expenses.map(a => (
                   <div key={a.id} className="flex justify-between py-1">
-                    <span>{a.name}</span>
+                    <span>{t(`accounts.names.${a.name}`, { defaultValue: a.name })}</span>
                     <span>{formatCurrency(a.currentBalance, a.currency)}</span>
                   </div>
                 ))}
                 <div className="flex justify-between font-bold mt-2 pt-2 border-t">
-                  <span>Total Expenses</span>
+                  <span>{t("reports.total_expenses") || "Total Expenses"}</span>
                   <span className="text-warning">{formatCurrency(totalExpense, "USD")}</span>
                 </div>
               </div>
 
               <div className="flex justify-between font-black text-xl p-4 bg-default-100 rounded-lg">
-                <span>Net Income</span>
+                <span>{t("reports.net_income") || "Net Income"}</span>
                 <span className={netIncome >= 0 ? "text-success" : "text-danger"}>
                   {formatCurrency(netIncome, "USD")}
                 </span>
@@ -89,21 +89,21 @@ export default function ReportsPage() {
           <Card className="mt-4">
             <CardHeader className="flex flex-col items-start px-6 pt-6">
               <h3 className="text-xl font-bold">{t("reports.balance_sheet") || "Balance Sheet"}</h3>
-              <p className="text-sm text-default-500">As of today</p>
+              <p className="text-sm text-default-500">{t("reports.as_of_today") || "As of today"}</p>
             </CardHeader>
             <Divider />
             <CardBody className="px-6 py-6 grid md:grid-cols-2 gap-8">
               {/* Assets */}
               <div>
-                <h4 className="text-primary font-semibold text-lg border-b pb-2 mb-3">Assets</h4>
+                <h4 className="text-primary font-semibold text-lg border-b pb-2 mb-3">{t("reports.assets") || "Assets"}</h4>
                 {assets.map(a => (
                   <div key={a.id} className="flex justify-between py-1">
-                    <span>{a.name}</span>
+                    <span>{t(`accounts.names.${a.name}`, { defaultValue: a.name })}</span>
                     <span>{formatCurrency(a.currentBalance, a.currency)}</span>
                   </div>
                 ))}
                 <div className="flex justify-between font-bold mt-2 pt-2 border-t text-primary">
-                  <span>Total Assets</span>
+                  <span>{t("reports.total_assets") || "Total Assets"}</span>
                   <span>{formatCurrency(totalAssets, "USD")}</span>
                 </div>
               </div>
@@ -111,42 +111,42 @@ export default function ReportsPage() {
               {/* Liabilities & Equity */}
               <div className="space-y-6">
                 <div>
-                  <h4 className="text-danger font-semibold text-lg border-b pb-2 mb-3">Liabilities</h4>
+                  <h4 className="text-danger font-semibold text-lg border-b pb-2 mb-3">{t("reports.liabilities") || "Liabilities"}</h4>
                   {liabilities.map(a => (
                     <div key={a.id} className="flex justify-between py-1">
-                      <span>{a.name}</span>
+                      <span>{t(`accounts.names.${a.name}`, { defaultValue: a.name })}</span>
                       <span>{formatCurrency(a.currentBalance, a.currency)}</span>
                     </div>
                   ))}
                   <div className="flex justify-between font-bold mt-2 pt-2 border-t text-danger">
-                    <span>Total Liabilities</span>
+                    <span>{t("reports.total_liabilities") || "Total Liabilities"}</span>
                     <span>{formatCurrency(totalLiabilities, "USD")}</span>
                   </div>
                 </div>
 
                 <div>
-                  <h4 className="text-secondary font-semibold text-lg border-b pb-2 mb-3">Equity</h4>
+                  <h4 className="text-secondary font-semibold text-lg border-b pb-2 mb-3">{t("reports.equity") || "Equity"}</h4>
                   {equities.map(a => (
                     <div key={a.id} className="flex justify-between py-1">
-                      <span>{a.name}</span>
+                      <span>{t(`accounts.names.${a.name}`, { defaultValue: a.name })}</span>
                       <span>{formatCurrency(a.currentBalance, a.currency)}</span>
                     </div>
                   ))}
                   <div className="flex justify-between py-1">
-                    <span>Net Income (Current Year)</span>
+                    <span>{t("reports.net_income_current_year") || "Net Income (Current Year)"}</span>
                     <span className={netIncome >= 0 ? "text-success" : "text-danger"}>
                       {formatCurrency(netIncome, "USD")}
                     </span>
                   </div>
                   <div className="flex justify-between font-bold mt-2 pt-2 border-t text-secondary">
-                    <span>Total Equity</span>
+                    <span>{t("reports.total_equity") || "Total Equity"}</span>
                     <span>{formatCurrency(totalEquity + netIncome, "USD")}</span>
                   </div>
                 </div>
                 
                 {/* Equation Check */}
                 <div className="flex justify-between font-black p-3 bg-default-100 rounded-md">
-                  <span>Liabilities + Equity</span>
+                  <span>{t("reports.liabilities_plus_equity") || "Liabilities + Equity"}</span>
                   <span>{formatCurrency(totalLiabilities + totalEquity + netIncome, "USD")}</span>
                 </div>
               </div>
@@ -162,7 +162,7 @@ export default function ReportsPage() {
             <Divider />
             <CardBody className="px-6 py-6">
                <div className="flex justify-center p-8 text-default-500">
-                  Trial balance logic will be fully driven by Journal Entries sum.
+                  {t("reports.trial_balance_desc") || "Trial balance logic will be fully driven by Journal Entries sum."}
                </div>
             </CardBody>
           </Card>

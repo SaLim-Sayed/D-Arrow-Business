@@ -82,7 +82,7 @@ export default function ChartOfAccountsPage() {
                 <div className="flex flex-col">
                   <span className="font-semibold text-sm flex items-center gap-2">
                     {item.isSystemAccount && <Lock className="h-3 w-3 text-default-400" />}
-                    {item.name}
+                    {t(`accounts.names.${item.name}`, { defaultValue: item.name })}
                   </span>
                   {item.description && (
                     <span className="text-xs text-default-500">{item.description}</span>

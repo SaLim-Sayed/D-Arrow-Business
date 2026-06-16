@@ -52,13 +52,13 @@ export default function BillsPage() {
 
       <Table aria-label="Bills table" className="mt-4">
         <TableHeader>
-          <TableColumn>DATE</TableColumn>
-          <TableColumn>BILL#</TableColumn>
-          <TableColumn>VENDOR</TableColumn>
-          <TableColumn>DUE DATE</TableColumn>
-          <TableColumn>AMOUNT</TableColumn>
-          <TableColumn>STATUS</TableColumn>
-          <TableColumn align="end">ACTIONS</TableColumn>
+          <TableColumn>{t("bills.columns.date")}</TableColumn>
+          <TableColumn>{t("bills.columns.bill_number")}</TableColumn>
+          <TableColumn>{t("bills.columns.vendor")}</TableColumn>
+          <TableColumn>{t("bills.columns.due_date")}</TableColumn>
+          <TableColumn>{t("bills.columns.amount")}</TableColumn>
+          <TableColumn>{t("bills.columns.status")}</TableColumn>
+          <TableColumn align="end">{t("bills.columns.actions")}</TableColumn>
         </TableHeader>
         <TableBody items={filteredBills} isLoading={isLoading}>
           {(item) => (

@@ -111,7 +111,7 @@ export default function BillingDashboardPage() {
     <div className="space-y-6 animate-in fade-in duration-500 max-w-7xl mx-auto pb-20">
       <PageHeader
         title={t("nav.dashboard") || "Billing Dashboard"}
-        description="Overview of your financial and invoicing status."
+        description={t("dashboard.description") || "Overview of your financial and invoicing status."}
       />
 
       {/* Main Stats */}
@@ -123,7 +123,7 @@ export default function BillingDashboardPage() {
             </div>
             <div>
               <p className="text-default-500 text-sm font-semibold uppercase tracking-wider">
-                Outstanding
+                {t("dashboard.outstanding") || "Outstanding"}
               </p>
               <h4 className="text-3xl font-black text-primary mt-1">
                 {formatCurrency(totalOutstanding, "USD")}
@@ -139,7 +139,7 @@ export default function BillingDashboardPage() {
             </div>
             <div>
               <p className="text-default-500 text-sm font-semibold uppercase tracking-wider">
-                Overdue
+                {t("dashboard.overdue") || "Overdue"}
               </p>
               <h4 className="text-3xl font-black text-danger mt-1">
                 {formatCurrency(totalOverdue, "USD")}
@@ -155,7 +155,7 @@ export default function BillingDashboardPage() {
             </div>
             <div>
               <p className="text-default-500 text-sm font-semibold uppercase tracking-wider">
-                Total Received
+                {t("dashboard.total_received") || "Total Received"}
               </p>
               <h4 className="text-3xl font-black text-success mt-1">
                 {formatCurrency(totalPaid, "USD")}
@@ -171,7 +171,7 @@ export default function BillingDashboardPage() {
             </div>
             <div>
               <p className="text-default-500 text-sm font-semibold uppercase tracking-wider">
-                Drafts
+                {t("dashboard.drafts") || "Drafts"}
               </p>
               <h4 className="text-3xl font-black text-default-900 mt-1">
                 {draftsCount}
@@ -185,7 +185,7 @@ export default function BillingDashboardPage() {
         {/* Quick Actions */}
         <Card className="shadow-sm border border-default-100 rounded-2xl bg-white dark:bg-content1">
           <CardHeader className="px-6 py-5 border-b border-default-100">
-            <h3 className="font-bold text-lg">Quick Actions</h3>
+            <h3 className="font-bold text-lg">{t("dashboard.quick_actions") || "Quick Actions"}</h3>
           </CardHeader>
           <CardBody className="p-6 gap-4 flex-col">
             <Button
@@ -195,7 +195,7 @@ export default function BillingDashboardPage() {
               startContent={<Plus className="w-5 h-5 mr-2" />}
               onPress={() => navigate("/billing/invoices/new")}
             >
-              Create New Invoice
+              {t("dashboard.create_invoice") || "Create New Invoice"}
             </Button>
             <Button
               variant="flat"
@@ -204,7 +204,7 @@ export default function BillingDashboardPage() {
               startContent={<FileSpreadsheet className="w-5 h-5 mr-2" />}
               onPress={() => navigate("/billing/invoices")}
             >
-              View All Invoices
+              {t("dashboard.view_invoices") || "View All Invoices"}
             </Button>
             <Button
               variant="flat"
@@ -213,7 +213,7 @@ export default function BillingDashboardPage() {
               startContent={<ReceiptText className="w-5 h-5 mr-2" />}
               onPress={() => navigate("/billing/bills")}
             >
-              Manage Vendor Bills
+              {t("dashboard.manage_bills") || "Manage Vendor Bills"}
             </Button>
           </CardBody>
         </Card>
@@ -221,7 +221,7 @@ export default function BillingDashboardPage() {
         {/* Status Pie Chart */}
         <Card className="lg:col-span-2 shadow-sm border border-default-100 rounded-2xl bg-white dark:bg-content1">
           <CardHeader className="px-6 py-5 border-b border-default-100">
-            <h3 className="font-bold text-lg">Invoices Status (Pie Chart)</h3>
+            <h3 className="font-bold text-lg">{t("dashboard.status_chart") || "Invoices Status (Pie Chart)"}</h3>
           </CardHeader>
           <CardBody className="p-6 h-[300px] flex items-center justify-center">
             {invoiceStatusData.length > 0 ? (
@@ -253,7 +253,7 @@ export default function BillingDashboardPage() {
               </ResponsiveContainer>
             ) : (
               <p className="text-default-400">
-                No data available to display chart.
+                {t("dashboard.no_data") || "No data available to display chart."}
               </p>
             )}
           </CardBody>
@@ -264,7 +264,7 @@ export default function BillingDashboardPage() {
         {/* Revenue Bar Chart */}
         <Card className="shadow-sm border border-default-100 rounded-2xl bg-white dark:bg-content1">
           <CardHeader className="px-6 py-5 border-b border-default-100">
-            <h3 className="font-bold text-lg">Revenue Overview (Bar Chart)</h3>
+            <h3 className="font-bold text-lg">{t("dashboard.revenue_chart") || "Revenue Overview (Bar Chart)"}</h3>
           </CardHeader>
           <CardBody className="p-6 h-[350px]">
             <ResponsiveContainer width="100%" height="100%">
@@ -332,13 +332,13 @@ export default function BillingDashboardPage() {
         {/* Recent Activity */}
         <Card className="shadow-sm border border-default-100 rounded-2xl bg-white dark:bg-content1">
           <CardHeader className="px-6 py-5 border-b border-default-100 flex justify-between">
-            <h3 className="font-bold text-lg">Recent Invoices</h3>
+            <h3 className="font-bold text-lg">{t("dashboard.recent_invoices") || "Recent Invoices"}</h3>
             <Button
               size="sm"
               variant="light"
               onPress={() => navigate("/billing/invoices")}
             >
-              View All
+              {t("dashboard.view_all") || "View All"}
             </Button>
           </CardHeader>
           <CardBody className="p-0">
@@ -374,7 +374,7 @@ export default function BillingDashboardPage() {
               ))}
               {invoices.length === 0 && (
                 <div className="p-8 text-center text-default-500">
-                  No recent invoices.
+                  {t("dashboard.no_recent") || "No recent invoices."}
                 </div>
               )}
             </div>

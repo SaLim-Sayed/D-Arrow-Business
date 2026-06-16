@@ -1,5 +1,5 @@
 import { useParams, useNavigate } from "react-router-dom";
-
+import { useTranslation } from "react-i18next";
 import {
   Card,
   CardBody,
@@ -15,7 +15,7 @@ import { formatCurrency } from "@/lib/utils";
 export default function InvoiceDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-
+  const { t } = useTranslation("billing");
 
   const { data: invoices = [] } = useInvoices();
   const { data: contactsRes } = useContactsQuery();
@@ -27,7 +27,7 @@ export default function InvoiceDetailPage() {
   if (!invoice) {
     return (
       <div className="flex justify-center p-10">
-        <p className="text-default-500">Invoice not found or loading...</p>
+        <p className="text-default-500">{t("invoices.detail.invoice_not_found") || "Invoice not found or loading..."}</p>
       </div>
     );
   }
@@ -62,7 +62,7 @@ export default function InvoiceDetailPage() {
               </Chip>
             </h1>
             <p className="text-default-500 text-sm">
-               Issue Date: {invoice.issueDate.toLocaleDateString()}
+               {t("invoices.detail.issue_date") || "Issue Date"}: {invoice.issueDate.toLocaleDateString()}
             </p>
           </div>
         </div>
@@ -74,14 +74,14 @@ export default function InvoiceDetailPage() {
               variant="flat"
               startContent={<CreditCard className="w-4 h-4" />}
             >
-              Record Payment
+              {t("invoices.detail.record_payment") || "Record Payment"}
             </Button>
           )}
           <Button
              variant="flat"
              startContent={<Mail className="w-4 h-4" />}
           >
-             Send Email
+             {t("invoices.detail.send_email") || "Send Email"}
           </Button>
           <Button
              variant="flat"
@@ -126,8 +126,8 @@ export default function InvoiceDetailPage() {
              {/* Bill To & Info */}
              <div className="grid grid-cols-2 md:grid-cols-3 gap-8">
                <div className="md:col-span-2">
-                 <h4 className="text-xs font-bold uppercase tracking-widest text-default-400 mb-2">Bill To</h4>
-                 <h5 className="font-bold text-lg text-default-900">{customer ? `${customer.firstName} ${customer.lastName}` : "Unknown Customer"}</h5>
+                 <h4 className="text-xs font-bold uppercase tracking-widest text-default-400 mb-2">{t("invoices.detail.bill_to") || "Bill To"}</h4>
+                 <h5 className="font-bold text-lg text-default-900">{customer ? `${customer.firstName} ${customer.lastName}` : (t("invoices.detail.unknown_customer") || "Unknown Customer")}</h5>
                  <p className="text-default-500 text-sm mt-1">
                    {customer?.email}<br/>
                    {customer?.phone}
@@ -135,15 +135,15 @@ export default function InvoiceDetailPage() {
                </div>
                <div className="space-y-4">
                  <div>
-                   <h4 className="text-xs font-bold uppercase tracking-widest text-default-400">Issue Date</h4>
+                   <h4 className="text-xs font-bold uppercase tracking-widest text-default-400">{t("invoices.detail.issue_date") || "Issue Date"}</h4>
                    <p className="font-medium text-default-900">{invoice.issueDate.toLocaleDateString()}</p>
                  </div>
                  <div>
-                   <h4 className="text-xs font-bold uppercase tracking-widest text-default-400">Due Date</h4>
+                   <h4 className="text-xs font-bold uppercase tracking-widest text-default-400">{t("invoices.detail.due_date") || "Due Date"}</h4>
                    <p className="font-medium text-default-900">{invoice.dueDate.toLocaleDateString()}</p>
                  </div>
                  <div className="bg-default-100/50 p-3 rounded-lg border border-default-100">
-                   <h4 className="text-xs font-bold uppercase tracking-widest text-default-500">Amount Due</h4>
+                   <h4 className="text-xs font-bold uppercase tracking-widest text-default-500">{t("invoices.detail.amount_due") || "Amount Due"}</h4>
                    <p className="font-black text-xl text-primary">{formatCurrency(invoice.grandTotal - (invoice.amountPaid || 0), invoice.currency)}</p>
                  </div>
                </div>
@@ -154,10 +154,10 @@ export default function InvoiceDetailPage() {
                <table className="w-full text-left border-collapse">
                  <thead>
                    <tr className="border-b-2 border-default-200">
-                     <th className="py-3 text-xs font-bold uppercase tracking-widest text-default-500 w-[50%]">Item Description</th>
-                     <th className="py-3 text-xs font-bold uppercase tracking-widest text-default-500 text-right">Qty</th>
-                     <th className="py-3 text-xs font-bold uppercase tracking-widest text-default-500 text-right">Rate</th>
-                     <th className="py-3 text-xs font-bold uppercase tracking-widest text-default-500 text-right">Amount</th>
+                     <th className="py-3 text-xs font-bold uppercase tracking-widest text-default-500 w-[50%]">{t("invoices.detail.item_description") || "Item Description"}</th>
+                     <th className="py-3 text-xs font-bold uppercase tracking-widest text-default-500 text-right">{t("invoices.detail.qty") || "Qty"}</th>
+                     <th className="py-3 text-xs font-bold uppercase tracking-widest text-default-500 text-right">{t("invoices.detail.rate") || "Rate"}</th>
+                     <th className="py-3 text-xs font-bold uppercase tracking-widest text-default-500 text-right">{t("invoices.detail.amount") || "Amount"}</th>
                    </tr>
                  </thead>
                  <tbody className="divide-y divide-default-100">
@@ -180,35 +180,35 @@ export default function InvoiceDetailPage() {
              <div className="flex justify-end mt-8">
                <div className="w-full md:w-1/2 space-y-3">
                  <div className="flex justify-between text-default-600">
-                   <span>Subtotal</span>
+                   <span>{t("invoices.detail.subtotal") || "Subtotal"}</span>
                    <span className="font-medium">{formatCurrency(invoice.subTotal, invoice.currency)}</span>
                  </div>
                  {invoice.totalDiscount > 0 && (
                    <div className="flex justify-between text-danger">
-                     <span>Total Discount</span>
+                     <span>{t("invoices.detail.total_discount") || "Total Discount"}</span>
                      <span>-{formatCurrency(invoice.totalDiscount, invoice.currency)}</span>
                    </div>
                  )}
                  {invoice.totalTax > 0 && (
                    <div className="flex justify-between text-default-600">
-                     <span>Total Tax</span>
+                     <span>{t("invoices.detail.total_tax") || "Total Tax"}</span>
                      <span className="font-medium">{formatCurrency(invoice.totalTax, invoice.currency)}</span>
                    </div>
                  )}
                  <Divider className="my-2" />
                  <div className="flex justify-between items-center text-xl font-black text-default-900">
-                   <span>Total</span>
+                   <span>{t("invoices.detail.total") || "Total"}</span>
                    <span>{formatCurrency(invoice.grandTotal, invoice.currency)}</span>
                  </div>
                 {(invoice.amountPaid || 0) > 0 && (
                   <div className="flex justify-between items-center text-sm font-medium text-success py-2 border-t border-dashed border-default-200 mt-2">
-                    <span>Paid</span>
+                    <span>{t("invoices.detail.paid") || "Paid"}</span>
                     <span>-{formatCurrency(invoice.amountPaid || 0, invoice.currency)}</span>
                   </div>
                 )}
                 {(invoice.amountPaid || 0) > 0 && (
                   <div className="flex justify-between items-center text-lg font-black text-primary py-3 border-t border-default-200 mt-2 bg-primary/5 rounded-xl px-4 -mx-4">
-                    <span>Balance Due</span>
+                    <span>{t("invoices.detail.balance_due") || "Balance Due"}</span>
                     <span>{formatCurrency(invoice.grandTotal - (invoice.amountPaid || 0), invoice.currency)}</span>
                   </div>
                 )}
@@ -219,13 +219,13 @@ export default function InvoiceDetailPage() {
              <div className="pt-12 mt-12 border-t border-default-100 space-y-6">
                 {invoice.notes && (
                   <div>
-                    <h4 className="text-xs font-bold uppercase tracking-widest text-default-400 mb-1">Notes</h4>
+                    <h4 className="text-xs font-bold uppercase tracking-widest text-default-400 mb-1">{t("invoices.detail.notes") || "Notes"}</h4>
                     <p className="text-sm text-default-600 whitespace-pre-line">{invoice.notes}</p>
                   </div>
                 )}
                 {invoice.termsAndConditions && (
                   <div>
-                    <h4 className="text-xs font-bold uppercase tracking-widest text-default-400 mb-1">Terms & Conditions</h4>
+                    <h4 className="text-xs font-bold uppercase tracking-widest text-default-400 mb-1">{t("invoices.detail.terms") || "Terms & Conditions"}</h4>
                     <p className="text-xs text-default-500 whitespace-pre-line">{invoice.termsAndConditions}</p>
                   </div>
                 )}

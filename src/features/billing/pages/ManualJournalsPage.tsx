@@ -53,13 +53,13 @@ export default function ManualJournalsPage() {
 
       <Table aria-label="Journals table" className="mt-4">
         <TableHeader>
-          <TableColumn>DATE</TableColumn>
-          <TableColumn>JOURNAL#</TableColumn>
-          <TableColumn>REFERENCE</TableColumn>
-          <TableColumn>NOTES</TableColumn>
-          <TableColumn>AMOUNT</TableColumn>
-          <TableColumn>STATUS</TableColumn>
-          <TableColumn align="end">ACTIONS</TableColumn>
+          <TableColumn>{t("journals.columns.date")}</TableColumn>
+          <TableColumn>{t("journals.columns.journal_number")}</TableColumn>
+          <TableColumn>{t("journals.columns.reference")}</TableColumn>
+          <TableColumn>{t("journals.columns.notes")}</TableColumn>
+          <TableColumn>{t("journals.columns.amount")}</TableColumn>
+          <TableColumn>{t("journals.columns.status")}</TableColumn>
+          <TableColumn align="end">{t("journals.columns.actions")}</TableColumn>
         </TableHeader>
         <TableBody items={filteredJournals} isLoading={isLoading}>
           {(item) => (

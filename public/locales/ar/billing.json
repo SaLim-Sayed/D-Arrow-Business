@@ -10,6 +10,23 @@
     "journals": "القيود اليومية",
     "settings": "الإعدادات"
   },
+  "dashboard": {
+    "description": "نظرة عامة على حالتك المالية والفواتير.",
+    "outstanding": "المستحق",
+    "overdue": "المتأخر",
+    "total_received": "إجمالي المستلم",
+    "drafts": "المسودات",
+    "quick_actions": "إجراءات سريعة",
+    "create_invoice": "إنشاء فاتورة جديدة",
+    "view_invoices": "عرض جميع الفواتير",
+    "manage_bills": "إدارة فواتير الموردين",
+    "status_chart": "حالة الفواتير (رسم دائري)",
+    "no_data": "لا توجد بيانات لعرض الرسم البياني.",
+    "revenue_chart": "نظرة عامة على الإيرادات (رسم شريطي)",
+    "recent_invoices": "الفواتير الحديثة",
+    "view_all": "عرض الكل",
+    "no_recent": "لا توجد فواتير حديثة."
+  },
   "settings": {
     "title": "إعدادات الفوترة",
     "subtitle": "إدارة الملف التعريفي للشركة وإعدادات الفواتير",
@@ -26,7 +43,17 @@
     "tax_number": "الرقم الضريبي",
     "address": "العنوان",
     "email": "البريد الإلكتروني",
-    "phone": "رقم الهاتف"
+    "phone": "رقم الهاتف",
+    "placeholders": {
+      "company_name": "مثال: شركة النور",
+      "tax_number": "مثال: 1234567890",
+      "address": "عنوان الشركة بالكامل",
+      "email": "billing@example.com",
+      "phone": "+966 50 123 4567",
+      "prefix": "INV-",
+      "padding": "مثال: 4 للرقم 0001"
+    },
+    "financial_desc": "سيتم إضافة إعدادات العملة ومعدلات الضرائب وطرق الدفع هنا."
   },
   "products": {
     "title": "المنتجات والخدمات",
@@ -100,31 +127,138 @@
       "operating_expense": "مصروفات تشغيلية",
       "cost_of_goods_sold": "تكلفة البضاعة المباعة",
       "other_expense": "مصروفات أخرى"
+    },
+    "names": {
+      "Cash on Hand": "النقدية في الخزينة",
+      "Accounts Receivable": "الذمم المدينة",
+      "Inventory Asset": "أصول المخزون",
+      "Accounts Payable": "الذمم الدائنة",
+      "Owner's Equity": "حقوق المالك",
+      "Sales Revenue": "إيرادات المبيعات",
+      "Cost of Goods Sold": "تكلفة البضاعة المباعة",
+      "Bank Fees": "رسوم بنكية"
     }
   },
   "journals": {
     "title": "القيود اليومية اليدوية",
-    "description": "تسجيل قيود يومية للمحاسبة ذات القيد المزدوج.",
+    "description": "سجل القيود اليومية اليدوية للمحاسبة ذات القيد المزدوج.",
     "add": "قيد جديد",
-    "search": "البحث برقم القيد أو المرجع..."
+    "search": "البحث برقم القيد أو المرجع...",
+    "columns": {
+      "date": "التاريخ",
+      "journal_number": "رقم القيد",
+      "reference": "المرجع",
+      "notes": "ملاحظات",
+      "amount": "المبلغ",
+      "status": "الحالة",
+      "actions": "إجراءات"
+    }
   },
   "invoices": {
     "title": "الفواتير",
     "description": "إدارة فواتير المبيعات والذمم المدينة.",
     "add": "فاتورة جديدة",
-    "search": "البحث برقم الفاتورة..."
+    "search": "البحث برقم الفاتورة...",
+    "metrics": {
+      "outstanding": "الرصيد المستحق",
+      "overdue": "المبلغ المتأخر",
+      "paid": "إجمالي المدفوعات",
+      "drafts": "الفواتير المسودة"
+    },
+    "columns": {
+      "date": "التاريخ",
+      "invoice_number": "رقم الفاتورة",
+      "customer": "العميل",
+      "due_date": "تاريخ الاستحقاق",
+      "amount": "المبلغ",
+      "status": "الحالة",
+      "actions": "الإجراءات"
+    },
+    "create": {
+      "title": "فاتورة جديدة",
+      "description": "إنشاء فاتورة مبيعات جديدة لعميلك.",
+      "customer": "العميل",
+      "customer_placeholder": "اختر عميلاً",
+      "invoice_number": "رقم الفاتورة",
+      "item_details": "تفاصيل العناصر",
+      "product_item": "المنتج / العنصر",
+      "quantity": "الكمية",
+      "rate": "السعر",
+      "tax": "الضريبة (%)",
+      "amount": "المبلغ",
+      "select_product": "اختر منتجاً...",
+      "item_description": "وصف العنصر...",
+      "add_line": "إضافة سطر آخر",
+      "notes": "ملاحظات العميل",
+      "notes_placeholder": "شكراً لتعاملكم معنا.",
+      "terms": "الشروط والأحكام",
+      "terms_placeholder": "تستحق الدفعة خلال 15 يوماً.",
+      "sub_total": "المجموع الفرعي",
+      "discount": "الخصم",
+      "total_tax": "الضريبة",
+      "total": "الإجمالي",
+      "save_draft": "حفظ كمسودة",
+      "save_send": "حفظ وإرسال"
+    },
+    "detail": {
+      "issue_date": "تاريخ الإصدار",
+      "due_date": "تاريخ الاستحقاق",
+      "record_payment": "تسجيل الدفعة",
+      "send_email": "إرسال بريد",
+      "bill_to": "فاتورة إلى",
+      "unknown_customer": "عميل غير معروف",
+      "amount_due": "المبلغ المستحق",
+      "item_description": "وصف العنصر",
+      "qty": "الكمية",
+      "rate": "السعر",
+      "amount": "المبلغ",
+      "subtotal": "المجموع الفرعي",
+      "total_discount": "إجمالي الخصم",
+      "total_tax": "إجمالي الضريبة",
+      "total": "الإجمالي",
+      "paid": "مدفوع",
+      "balance_due": "الرصيد المستحق",
+      "notes": "ملاحظات",
+      "terms": "الشروط والأحكام",
+      "invoice_not_found": "لم يتم العثور على الفاتورة أو قيد التحميل..."
+    }
   },
   "bills": {
-    "title": "فواتير المشتريات",
+    "title": "الفواتير (الموردين)",
     "description": "إدارة فواتير الموردين والذمم الدائنة.",
-    "add": "فاتورة مشتريات جديدة",
-    "search": "البحث برقم الفاتورة..."
+    "add": "فاتورة جديدة",
+    "search": "البحث برقم الفاتورة...",
+    "columns": {
+      "date": "التاريخ",
+      "bill_number": "رقم الفاتورة",
+      "vendor": "المورد",
+      "due_date": "تاريخ الاستحقاق",
+      "amount": "المبلغ",
+      "status": "الحالة",
+      "actions": "إجراءات"
+    }
   },
   "reports": {
     "title": "القوائم المالية",
     "description": "عرض الوضع المالي لشركتك في الوقت الفعلي، بما في ذلك قائمة الدخل والميزانية العمومية.",
     "profit_loss": "قائمة الدخل",
     "balance_sheet": "الميزانية العمومية",
-    "trial_balance": "ميزان المراجعة"
+    "trial_balance": "ميزان المراجعة",
+    "current_fiscal_period": "للفترة المالية الحالية",
+    "income": "الإيرادات",
+    "total_income": "إجمالي الإيرادات",
+    "expenses": "المصروفات",
+    "total_expenses": "إجمالي المصروفات",
+    "net_income": "صافي الدخل",
+    "as_of_today": "كما في تاريخ اليوم",
+    "assets": "الأصول",
+    "total_assets": "إجمالي الأصول",
+    "liabilities": "الخصوم",
+    "total_liabilities": "إجمالي الخصوم",
+    "equity": "حقوق الملكية",
+    "net_income_current_year": "صافي الدخل (السنة الحالية)",
+    "total_equity": "إجمالي حقوق الملكية",
+    "liabilities_plus_equity": "الخصوم + حقوق الملكية",
+    "trial_balance_desc": "منطق ميزان المراجعة سيعتمد بالكامل على مجموع القيود اليومية."
   }
 }
