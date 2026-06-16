@@ -48,6 +48,8 @@ import ProductsPage from "@/features/billing/pages/ProductsPage";
 import ChartOfAccountsPage from "@/features/billing/pages/ChartOfAccountsPage";
 import ManualJournalsPage from "@/features/billing/pages/ManualJournalsPage";
 import InvoicesPage from "@/features/billing/pages/InvoicesPage";
+import CreateInvoicePage from "@/features/billing/pages/CreateInvoicePage";
+import InvoiceDetailPage from "@/features/billing/pages/InvoiceDetailPage";
 import BillsPage from "@/features/billing/pages/BillsPage";
 import ReportsPage from "@/features/billing/pages/ReportsPage";
 
@@ -146,6 +148,8 @@ export const router = createBrowserRouter([
               { index: true, element: <Navigate to="/billing/settings" replace /> },
               { path: "reports", element: <ReportsPage /> },
               { path: "invoices", element: <InvoicesPage /> },
+              { path: "invoices/new", element: <CreateInvoicePage /> },
+              { path: "invoices/:id", element: <InvoiceDetailPage /> },
               { path: "bills", element: <BillsPage /> },
               { path: "accounts", element: <ChartOfAccountsPage /> },
               { path: "journals", element: <ManualJournalsPage /> },
