@@ -2,7 +2,12 @@
   "module_name": "Billing",
   "nav": {
     "dashboard": "Dashboard",
+    "reports": "Reports",
+    "invoices": "Invoices",
+    "bills": "Bills",
     "products": "Products & Services",
+    "accounts": "Chart of Accounts",
+    "journals": "Manual Journals",
     "settings": "Settings"
   },
   "settings": {
@@ -57,5 +62,69 @@
       "tax_rate": "Tax Rate",
       "is_active": "Active"
     }
+  },
+  "accounts": {
+    "title": "Chart of Accounts",
+    "description": "Manage your assets, liabilities, equity, income, and expenses.",
+    "add": "New Account",
+    "search": "Search accounts by name or code...",
+    "columns": {
+      "code": "ACCOUNT CODE",
+      "name": "ACCOUNT NAME",
+      "type": "TYPE",
+      "balance": "BALANCE",
+      "actions": "ACTIONS"
+    },
+    "types": {
+      "asset": "Asset",
+      "liability": "Liability",
+      "equity": "Equity",
+      "income": "Income",
+      "expense": "Expense"
+    },
+    "sub_types": {
+      "cash": "Cash",
+      "bank": "Bank",
+      "accounts_receivable": "Accounts Receivable",
+      "inventory": "Inventory",
+      "current_asset": "Current Asset",
+      "fixed_asset": "Fixed Asset",
+      "accounts_payable": "Accounts Payable",
+      "credit_card": "Credit Card",
+      "current_liability": "Current Liability",
+      "long_term_liability": "Long Term Liability",
+      "equity": "Equity",
+      "retained_earnings": "Retained Earnings",
+      "operating_income": "Operating Income",
+      "other_income": "Other Income",
+      "operating_expense": "Operating Expense",
+      "cost_of_goods_sold": "Cost of Goods Sold",
+      "other_expense": "Other Expense"
+    }
+  },
+  "journals": {
+    "title": "Manual Journals",
+    "description": "Record manual journal entries for double-entry accounting.",
+    "add": "New Journal",
+    "search": "Search by journal number or reference..."
+  },
+  "invoices": {
+    "title": "Invoices",
+    "description": "Manage sales invoices and accounts receivable.",
+    "add": "New Invoice",
+    "search": "Search by invoice number..."
+  },
+  "bills": {
+    "title": "Bills",
+    "description": "Manage vendor bills and accounts payable.",
+    "add": "New Bill",
+    "search": "Search by bill number..."
+  },
+  "reports": {
+    "title": "Financial Statements",
+    "description": "View your real-time financial health, including P&L and Balance Sheet.",
+    "profit_loss": "Profit & Loss",
+    "balance_sheet": "Balance Sheet",
+    "trial_balance": "Trial Balance"
   }
 }

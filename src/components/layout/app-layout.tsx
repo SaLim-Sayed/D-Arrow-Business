@@ -16,7 +16,7 @@ export function AppLayout() {
   const portal = getPortalFromPath(pathname);
   const isPicker = portal === "picker";
   const showSidebar =
-    portal === "tasks" || portal === "crm" || portal === "people";
+    portal === "tasks" || portal === "crm" || portal === "people" || portal === "billing";
   const portals = useAccessiblePortals();
   const showPortalFab = portals.length > 1;
 

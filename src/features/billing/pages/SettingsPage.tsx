@@ -28,7 +28,9 @@ export default function SettingsPage() {
         nextNumber: 1,
         padding: 4,
       },
-      currencies: [],
+      currencies: [
+        { code: "USD", symbol: "$", name: "US Dollar", isDefault: true }
+      ],
       taxes: [],
       paymentMethods: [],
     },

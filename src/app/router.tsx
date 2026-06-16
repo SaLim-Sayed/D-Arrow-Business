@@ -45,6 +45,11 @@ import { ErrorPage } from "@/components/shared/error-page";
 import { BillingLayout } from "@/features/billing/components/BillingLayout";
 import SettingsPage from "@/features/billing/pages/SettingsPage";
 import ProductsPage from "@/features/billing/pages/ProductsPage";
+import ChartOfAccountsPage from "@/features/billing/pages/ChartOfAccountsPage";
+import ManualJournalsPage from "@/features/billing/pages/ManualJournalsPage";
+import InvoicesPage from "@/features/billing/pages/InvoicesPage";
+import BillsPage from "@/features/billing/pages/BillsPage";
+import ReportsPage from "@/features/billing/pages/ReportsPage";
 
 export const router = createBrowserRouter([
   {
@@ -139,6 +144,11 @@ export const router = createBrowserRouter([
             element: <BillingLayout />,
             children: [
               { index: true, element: <Navigate to="/billing/settings" replace /> },
+              { path: "reports", element: <ReportsPage /> },
+              { path: "invoices", element: <InvoicesPage /> },
+              { path: "bills", element: <BillsPage /> },
+              { path: "accounts", element: <ChartOfAccountsPage /> },
+              { path: "journals", element: <ManualJournalsPage /> },
               { path: "products", element: <ProductsPage /> },
               { path: "settings", element: <SettingsPage /> },
             ],
