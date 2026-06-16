@@ -13,7 +13,7 @@ import { formatCurrency } from "@/lib/utils";
 
 export default function ReportsPage() {
   const { t } = useTranslation("billing");
-  const { data: accounts = [], isLoading } = useAccounts();
+  const { data: accounts = [] } = useAccounts();
 
   // Basic calculation for Demo
   const assets = accounts.filter(a => a.type === "asset");

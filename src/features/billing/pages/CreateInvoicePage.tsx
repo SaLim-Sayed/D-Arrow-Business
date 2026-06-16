@@ -1,4 +1,3 @@
-import { useState, useMemo } from "react";
 import { useForm, useFieldArray, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -11,19 +10,10 @@ import {
   SelectItem,
   Divider,
   Textarea,
-  DatePicker,
-  Table,
-  TableHeader,
-  TableBody,
-  TableColumn,
-  TableRow,
-  TableCell,
 } from "@heroui/react";
 import { Plus, Trash2, Save, Send } from "lucide-react";
-import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { getLocalTimeZone, today } from "@internationalized/date";
 
 import { PageHeader } from "@/components/shared/page-header";
 import { useContactsQuery } from "@/features/crm/hooks/use-contacts";
@@ -33,7 +23,6 @@ import { invoiceSchema, type CreateInvoiceDTO } from "../schemas/invoice";
 import { formatCurrency } from "@/lib/utils";
 
 export default function CreateInvoicePage() {
-  const { t } = useTranslation("billing");
   const navigate = useNavigate();
 
   const { data: contactsRes } = useContactsQuery();
@@ -50,7 +39,7 @@ export default function CreateInvoicePage() {
     setValue,
     formState: { errors, isSubmitting },
   } = useForm<CreateInvoiceDTO>({
-    resolver: zodResolver(invoiceSchema),
+    resolver: zodResolver(invoiceSchema) as any,
     defaultValues: {
       invoiceNumber: `INV-${Math.floor(1000 + Math.random() * 9000)}`,
       status: "draft",
@@ -73,50 +62,25 @@ export default function CreateInvoicePage() {
   const watchItems = watch("items");
 
   // Dynamic calculations
-  useMemo(() => {
-    let subTotal = 0;
-    let totalTax = 0;
-    let totalDiscount = 0;
-
-    watchItems.forEach((item, index) => {
-      const q = Number(item.quantity) || 0;
-      const rate = Number(item.unitPrice) || 0;
-      const discount = Number(item.discount) || 0;
-      const taxRate = Number(item.taxRate) || 0;
-
-      const lineTotalBeforeTax = (q * rate) - discount;
-      const lineTax = lineTotalBeforeTax * (taxRate / 100);
-      const lineTotal = lineTotalBeforeTax + lineTax;
-
-      subTotal += (q * rate);
-      totalDiscount += discount;
-      totalTax += lineTax;
-
-      // Update the hidden total field per line to satisfy schema without infinite loop
-      if (item.total !== lineTotal) {
-         setValue(`items.${index}.total`, lineTotal);
-      }
-    });
-
-    const grandTotal = subTotal - totalDiscount + totalTax;
-
-    setValue("subTotal", subTotal);
-    setValue("totalTax", totalTax);
-    setValue("totalDiscount", totalDiscount);
-    setValue("grandTotal", grandTotal);
-  }, [watchItems, setValue]);
-
-  const watchSubTotal = watch("subTotal");
-  const watchTotalTax = watch("totalTax");
-  const watchTotalDiscount = watch("totalDiscount");
-  const watchGrandTotal = watch("grandTotal");
+  // Dynamic calculations
+  // We compute totals dynamically from watchItems.
+  const subTotal = watchItems.reduce((acc, item) => acc + (Number(item.quantity) || 0) * (Number(item.unitPrice) || 0), 0);
+  const totalDiscount = watchItems.reduce((acc, item) => acc + (Number(item.discount) || 0), 0);
+  const totalTax = watchItems.reduce((acc, item) => {
+    const q = Number(item.quantity) || 0;
+    const r = Number(item.unitPrice) || 0;
+    const d = Number(item.discount) || 0;
+    const tx = Number(item.taxRate) || 0;
+    const beforeTax = (q * r) - d;
+    return acc + (beforeTax * (tx / 100));
+  }, 0);
+  const grandTotal = subTotal - totalDiscount + totalTax;
 
   const handleProductSelect = (index: number, productId: string) => {
     const product = products.find(p => p.id === productId);
     if (product) {
       setValue(`items.${index}.description`, product.name);
       setValue(`items.${index}.unitPrice`, product.price);
-      setValue(`items.${index}.taxRate`, product.taxRate);
     }
   };
 
@@ -135,8 +99,6 @@ export default function CreateInvoicePage() {
       <PageHeader
         title="New Invoice"
         description="Create a new sales invoice for your customer."
-        backButton
-        onBack={() => navigate(-1)}
       />
 
       <form className="space-y-6">
@@ -157,8 +119,8 @@ export default function CreateInvoicePage() {
                     errorMessage={(errors.customerId?.message as string)}
                   >
                     {contacts.map((contact) => (
-                      <SelectItem key={contact.id} value={contact.id}>
-                        {contact.name}
+                      <SelectItem key={contact.id}>
+                        {contact.firstName} {contact.lastName}
                       </SelectItem>
                     ))}
                   </Select>
@@ -216,7 +178,7 @@ export default function CreateInvoicePage() {
                             onChange={(e) => handleProductSelect(index, e.target.value)}
                           >
                             {products.map((p) => (
-                              <SelectItem key={p.id} value={p.id}>
+                              <SelectItem key={p.id}>
                                 {p.name}
                               </SelectItem>
                             ))}
@@ -311,24 +273,24 @@ export default function CreateInvoicePage() {
             <CardBody className="p-6 space-y-4">
               <div className="flex justify-between text-sm text-default-600">
                 <span>Sub Total</span>
-                <span className="font-medium">{formatCurrency(watchSubTotal, "USD")}</span>
+                <span className="font-medium">{formatCurrency(subTotal, "USD")}</span>
               </div>
-              {watchTotalDiscount > 0 && (
+              {totalDiscount > 0 && (
                 <div className="flex justify-between text-sm text-danger">
                   <span>Discount</span>
-                  <span>-{formatCurrency(watchTotalDiscount, "USD")}</span>
+                  <span>-{formatCurrency(totalDiscount, "USD")}</span>
                 </div>
               )}
-              {watchTotalTax > 0 && (
+              {totalTax > 0 && (
                 <div className="flex justify-between text-sm text-default-600">
                   <span>Tax</span>
-                  <span className="font-medium">{formatCurrency(watchTotalTax, "USD")}</span>
+                  <span className="font-medium">{formatCurrency(totalTax, "USD")}</span>
                 </div>
               )}
               <Divider />
               <div className="flex justify-between text-lg font-bold">
                 <span>Total</span>
-                <span>{formatCurrency(watchGrandTotal, "USD")}</span>
+                <span>{formatCurrency(grandTotal, "USD")}</span>
               </div>
             </CardBody>
           </Card>
@@ -337,7 +299,7 @@ export default function CreateInvoicePage() {
         <div className="flex justify-end gap-3 sticky bottom-4 bg-background/80 backdrop-blur-md p-4 rounded-2xl border border-default-100 shadow-xl z-10">
           <Button
             variant="flat"
-            onPress={handleSubmit((data) => onSubmit(data, "draft"))}
+            onPress={() => handleSubmit((data) => onSubmit(data as any, "draft"))()}
             isLoading={isSubmitting}
             startContent={<Save className="w-4 h-4" />}
           >
@@ -345,7 +307,7 @@ export default function CreateInvoicePage() {
           </Button>
           <Button
             color="primary"
-            onPress={handleSubmit((data) => onSubmit(data, "sent"))}
+            onPress={() => handleSubmit((data) => onSubmit(data as any, "sent"))()}
             isLoading={isSubmitting}
             startContent={<Send className="w-4 h-4" />}
           >

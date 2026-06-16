@@ -26,6 +26,7 @@ export const invoiceSchema = z.object({
   totalTax: z.number().min(0),
   totalDiscount: z.number().min(0),
   grandTotal: z.number().min(0),
+  amountPaid: z.number().min(0).optional(),
   
   notes: z.string().optional(),
   termsAndConditions: z.string().optional(),

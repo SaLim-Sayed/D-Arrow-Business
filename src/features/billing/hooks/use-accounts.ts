@@ -3,14 +3,14 @@ import type { Account, CreateAccountDTO, UpdateAccountDTO } from "../schemas/acc
 
 // Mock Data for Standard Chart of Accounts Seed
 const MOCK_ACCOUNTS: Account[] = [
-  { id: "acc_1000", code: "1000", name: "Cash on Hand", type: "asset", subType: "cash", isSystemAccount: true, isActive: true, currentBalance: 5000 },
-  { id: "acc_1200", code: "1200", name: "Accounts Receivable", type: "asset", subType: "accounts_receivable", isSystemAccount: true, isActive: true, currentBalance: 12000 },
-  { id: "acc_1500", code: "1500", name: "Inventory Asset", type: "asset", subType: "inventory", isSystemAccount: true, isActive: true, currentBalance: 30000 },
-  { id: "acc_2000", code: "2000", name: "Accounts Payable", type: "liability", subType: "accounts_payable", isSystemAccount: true, isActive: true, currentBalance: 4500 },
-  { id: "acc_3000", code: "3000", name: "Owner's Equity", type: "equity", subType: "equity", isSystemAccount: true, isActive: true, currentBalance: 42500 },
-  { id: "acc_4000", code: "4000", name: "Sales Revenue", type: "income", subType: "operating_income", isSystemAccount: true, isActive: true, currentBalance: 0 },
-  { id: "acc_5000", code: "5000", name: "Cost of Goods Sold", type: "expense", subType: "cost_of_goods_sold", isSystemAccount: true, isActive: true, currentBalance: 0 },
-  { id: "acc_6000", code: "6000", name: "Bank Fees", type: "expense", subType: "operating_expense", isSystemAccount: false, isActive: true, currentBalance: 0 },
+  { id: "acc_1000", code: "1000", name: "Cash on Hand", type: "asset", subType: "cash", isSystemAccount: true, isActive: true, currentBalance: 5000, currency: "USD" },
+  { id: "acc_1200", code: "1200", name: "Accounts Receivable", type: "asset", subType: "accounts_receivable", isSystemAccount: true, isActive: true, currentBalance: 12000, currency: "USD" },
+  { id: "acc_1500", code: "1500", name: "Inventory Asset", type: "asset", subType: "inventory", isSystemAccount: true, isActive: true, currentBalance: 30000, currency: "USD" },
+  { id: "acc_2000", code: "2000", name: "Accounts Payable", type: "liability", subType: "accounts_payable", isSystemAccount: true, isActive: true, currentBalance: 4500, currency: "USD" },
+  { id: "acc_3000", code: "3000", name: "Owner's Equity", type: "equity", subType: "equity", isSystemAccount: true, isActive: true, currentBalance: 42500, currency: "USD" },
+  { id: "acc_4000", code: "4000", name: "Sales Revenue", type: "income", subType: "operating_income", isSystemAccount: true, isActive: true, currentBalance: 0, currency: "USD" },
+  { id: "acc_5000", code: "5000", name: "Cost of Goods Sold", type: "expense", subType: "cost_of_goods_sold", isSystemAccount: true, isActive: true, currentBalance: 0, currency: "USD" },
+  { id: "acc_6000", code: "6000", name: "Bank Fees", type: "expense", subType: "operating_expense", isSystemAccount: false, isActive: true, currentBalance: 0, currency: "USD" },
 ];
 
 let accountsCache = [...MOCK_ACCOUNTS];

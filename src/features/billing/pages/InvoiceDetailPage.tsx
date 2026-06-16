@@ -1,5 +1,5 @@
 import { useParams, useNavigate } from "react-router-dom";
-import { useTranslation } from "react-i18next";
+
 import {
   Card,
   CardBody,
@@ -13,9 +13,9 @@ import { useContactsQuery } from "@/features/crm/hooks/use-contacts";
 import { formatCurrency } from "@/lib/utils";
 
 export default function InvoiceDetailPage() {
-  const { id } = useParams();
+  const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { t } = useTranslation("billing");
+
 
   const { data: invoices = [] } = useInvoices();
   const { data: contactsRes } = useContactsQuery();
@@ -127,7 +127,7 @@ export default function InvoiceDetailPage() {
              <div className="grid grid-cols-2 md:grid-cols-3 gap-8">
                <div className="md:col-span-2">
                  <h4 className="text-xs font-bold uppercase tracking-widest text-default-400 mb-2">Bill To</h4>
-                 <h5 className="font-bold text-lg text-default-900">{customer?.name || "Unknown Customer"}</h5>
+                 <h5 className="font-bold text-lg text-default-900">{customer ? `${customer.firstName} ${customer.lastName}` : "Unknown Customer"}</h5>
                  <p className="text-default-500 text-sm mt-1">
                    {customer?.email}<br/>
                    {customer?.phone}
@@ -200,18 +200,18 @@ export default function InvoiceDetailPage() {
                    <span>Total</span>
                    <span>{formatCurrency(invoice.grandTotal, invoice.currency)}</span>
                  </div>
-                 {invoice.amountPaid > 0 && (
-                   <div className="flex justify-between items-center text-success font-medium">
-                     <span>Amount Paid</span>
-                     <span>-{formatCurrency(invoice.amountPaid, invoice.currency)}</span>
-                   </div>
-                 )}
-                 {invoice.amountPaid > 0 && (
-                   <div className="flex justify-between items-center text-lg font-bold text-default-900 bg-default-100/50 p-2 rounded-md mt-2">
-                     <span>Balance Due</span>
-                     <span>{formatCurrency(invoice.grandTotal - invoice.amountPaid, invoice.currency)}</span>
-                   </div>
-                 )}
+                {(invoice.amountPaid || 0) > 0 && (
+                  <div className="flex justify-between items-center text-sm font-medium text-success py-2 border-t border-dashed border-default-200 mt-2">
+                    <span>Paid</span>
+                    <span>-{formatCurrency(invoice.amountPaid || 0, invoice.currency)}</span>
+                  </div>
+                )}
+                {(invoice.amountPaid || 0) > 0 && (
+                  <div className="flex justify-between items-center text-lg font-black text-primary py-3 border-t border-default-200 mt-2 bg-primary/5 rounded-xl px-4 -mx-4">
+                    <span>Balance Due</span>
+                    <span>{formatCurrency(invoice.grandTotal - (invoice.amountPaid || 0), invoice.currency)}</span>
+                  </div>
+                )}
                </div>
              </div>
 
