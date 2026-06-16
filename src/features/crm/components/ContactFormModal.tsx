@@ -52,6 +52,8 @@ export function ContactFormModal({ isOpen, onOpenChange, contact }: ContactFormM
       department: "",
       accountName: "",
       commercialRegister: "",
+      taxNumber: "",
+      billingAddress: "",
       assignedTo: null,
     },
   });
@@ -68,6 +70,8 @@ export function ContactFormModal({ isOpen, onOpenChange, contact }: ContactFormM
         department: contact.department ?? "",
         accountName: contact.accountName ?? "",
         commercialRegister: contact.commercialRegister ?? "",
+        taxNumber: contact.taxNumber ?? "",
+        billingAddress: contact.billingAddress ?? "",
         assignedTo: contact.assignedTo ?? null,
       });
     } else {
@@ -80,6 +84,8 @@ export function ContactFormModal({ isOpen, onOpenChange, contact }: ContactFormM
         department: "",
         accountName: "",
         commercialRegister: "",
+        taxNumber: "",
+        billingAddress: "",
         assignedTo: null,
       });
     }
@@ -149,6 +155,20 @@ export function ContactFormModal({ isOpen, onOpenChange, contact }: ContactFormM
                 isInvalid={!!errors.commercialRegister}
                 errorMessage={errors.commercialRegister?.message}
               />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <Input
+                  label={t("contacts.form.taxNumber") || "Tax Number"}
+                  {...register("taxNumber")}
+                  isInvalid={!!errors.taxNumber}
+                  errorMessage={errors.taxNumber?.message}
+                />
+                <Input
+                  label={t("contacts.form.billingAddress") || "Billing Address"}
+                  {...register("billingAddress")}
+                  isInvalid={!!errors.billingAddress}
+                  errorMessage={errors.billingAddress?.message}
+                />
+              </div>
               <Controller
                 name="assignedTo"
                 control={control}

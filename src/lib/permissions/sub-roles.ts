@@ -4,13 +4,15 @@ import type { Permission } from "./index";
 export type TasksSubRole = "admin" | "manager" | "member" | "viewer";
 export type CrmSubRole = "admin" | "manager" | "sales" | "viewer";
 export type PeopleSubRole = "admin" | "manager" | "hr" | "employee";
+export type BillingSubRole = "admin" | "manager" | "accountant";
 
-export type PortalSubRole = TasksSubRole | CrmSubRole | PeopleSubRole;
+export type PortalSubRole = TasksSubRole | CrmSubRole | PeopleSubRole | BillingSubRole;
 
 export interface PortalSubRoles {
   tasks?: TasksSubRole;
   crm?: CrmSubRole;
   people?: PeopleSubRole;
+  billing?: BillingSubRole;
 }
 
 const TASKS_SUB_ROLE_PERMISSIONS: Record<TasksSubRole, readonly Permission[]> = {
@@ -63,18 +65,25 @@ const PEOPLE_SUB_ROLE_PERMISSIONS: Record<PeopleSubRole, readonly Permission[]> 
   employee: ["people.view"],
 };
 
+const BILLING_SUB_ROLE_PERMISSIONS: Record<BillingSubRole, readonly Permission[]> = {
+  admin: ["portals.billing"], // Add actual permissions later
+  manager: ["portals.billing"],
+  accountant: ["portals.billing"],
+};
+
 export const PORTAL_SUB_ROLE_OPTIONS: Record<PortalId, readonly PortalSubRole[]> = {
   tasks: ["admin", "manager", "member", "viewer"],
   crm: ["admin", "manager", "sales", "viewer"],
   people: ["admin", "manager", "hr", "employee"],
+  billing: ["admin", "manager", "accountant"],
 };
 
 const DEFAULT_SUB_ROLES_BY_GLOBAL: Partial<
   Record<import("@/features/auth/types/auth.types").UserRole, PortalSubRoles>
 > = {
-  super_admin: { tasks: "admin", crm: "admin", people: "admin" },
-  admin: { tasks: "admin", crm: "admin", people: "admin" },
-  manager: { tasks: "manager", crm: "manager", people: "manager" },
+  super_admin: { tasks: "admin", crm: "admin", people: "admin", billing: "admin" },
+  admin: { tasks: "admin", crm: "admin", people: "admin", billing: "admin" },
+  manager: { tasks: "manager", crm: "manager", people: "manager", billing: "manager" },
   employee: { tasks: "member", crm: "sales", people: "employee" },
   viewer: { crm: "viewer" },
 };
@@ -90,6 +99,10 @@ export function getSubRolePermissions(
       return CRM_SUB_ROLE_PERMISSIONS[subRole as CrmSubRole] ?? [];
     case "people":
       return PEOPLE_SUB_ROLE_PERMISSIONS[subRole as PeopleSubRole] ?? [];
+    case "billing":
+      return BILLING_SUB_ROLE_PERMISSIONS[subRole as BillingSubRole] ?? [];
+    default:
+      return [];
   }
 }
 
@@ -112,6 +125,7 @@ export function permissionPortal(permission: Permission): PortalId | null {
   if (permission.startsWith("tasks.")) return "tasks";
   if (permission.startsWith("crm.")) return "crm";
   if (permission.startsWith("people.")) return "people";
+  if (permission.startsWith("portals.billing")) return "billing";
   return null;
 }
 
@@ -137,6 +151,12 @@ export function parsePortalSubRoles(raw: unknown): PortalSubRoles | undefined {
     PORTAL_SUB_ROLE_OPTIONS.people.includes(data.people as PeopleSubRole)
   ) {
     result.people = data.people as PeopleSubRole;
+  }
+  if (
+    typeof data.billing === "string" &&
+    PORTAL_SUB_ROLE_OPTIONS.billing.includes(data.billing as BillingSubRole)
+  ) {
+    result.billing = data.billing as BillingSubRole;
   }
 
   return Object.keys(result).length ? result : undefined;

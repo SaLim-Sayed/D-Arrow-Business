@@ -1,0 +1,61 @@
+{
+  "module_name": "Billing",
+  "nav": {
+    "dashboard": "Dashboard",
+    "products": "Products & Services",
+    "settings": "Settings"
+  },
+  "settings": {
+    "title": "Billing Settings",
+    "subtitle": "Manage company profile and billing preferences",
+    "tab_general": "General",
+    "tab_financial": "Financial",
+    "company_profile": "Company Profile",
+    "financial_settings": "Financial Configuration",
+    "invoice_sequence": "Invoice Sequencing",
+    "prefix": "Prefix",
+    "next_number": "Next Number",
+    "padding": "Number Padding",
+    "saved_successfully": "Settings saved successfully",
+    "company_name": "Company Name",
+    "tax_number": "Tax Number (VAT)",
+    "address": "Address",
+    "email": "Email",
+    "phone": "Phone Number"
+  },
+  "products": {
+    "title": "Products & Services",
+    "description": "Manage items and services you sell.",
+    "add": "Add Item",
+    "search": "Search by name or SKU...",
+    "columns": {
+      "type": "TYPE",
+      "name_sku": "NAME & SKU",
+      "category": "CATEGORY",
+      "price": "PRICE",
+      "status": "STATUS",
+      "actions": "ACTIONS"
+    },
+    "types": {
+      "goods": "Goods",
+      "service": "Service"
+    },
+    "status": {
+      "active": "Active",
+      "inactive": "Inactive"
+    },
+    "form": {
+      "edit_title": "Edit Product/Service",
+      "add_title": "Add Product/Service",
+      "type": "Type",
+      "name": "Name",
+      "sku": "SKU / Item Code",
+      "price": "Price",
+      "description": "Description",
+      "category": "Category",
+      "unit": "Unit",
+      "tax_rate": "Tax Rate",
+      "is_active": "Active"
+    }
+  }
+}

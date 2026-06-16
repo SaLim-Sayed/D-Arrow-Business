@@ -13,6 +13,8 @@ import {
   CheckSquare,
   Timer,
   TrendingUp,
+  Settings,
+  Package,
   type LucideIcon,
 } from "lucide-react";
 
@@ -21,7 +23,7 @@ export interface PortalNavItem {
   path: string;
   icon: LucideIcon;
   end?: boolean;
-  namespace?: "common" | "crm";
+  namespace?: "common" | "crm" | "billing";
 }
 
 export const TASKS_NAV: PortalNavItem[] = [
@@ -49,6 +51,12 @@ export const PEOPLE_NAV: PortalNavItem[] = [
   { labelKey: "nav.performance", path: "/people/performance", icon: TrendingUp },
 ];
 
+export const BILLING_NAV: PortalNavItem[] = [
+  { labelKey: "nav.dashboard", path: "/billing", icon: LayoutDashboard, end: true, namespace: "billing" },
+  { labelKey: "nav.products", path: "/billing/products", icon: Package, namespace: "billing" },
+  { labelKey: "nav.settings", path: "/billing/settings", icon: Settings, namespace: "billing" },
+];
+
 export function getNavForPortal(portal: PortalId): PortalNavItem[] {
   switch (portal) {
     case "tasks":
@@ -57,6 +65,8 @@ export function getNavForPortal(portal: PortalId): PortalNavItem[] {
       return CRM_NAV;
     case "people":
       return PEOPLE_NAV;
+    case "billing":
+      return BILLING_NAV;
     default:
       return [];
   }

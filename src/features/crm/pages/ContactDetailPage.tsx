@@ -27,6 +27,7 @@ import {
   Paperclip,
   User,
   Clock,
+  CreditCard,
 } from "lucide-react";
 import { PageHeader } from "@/components/shared/page-header";
 import { LoadingSpinner } from "@/components/shared/loading-spinner";
@@ -144,6 +145,11 @@ export function ContactDetailPage() {
               {t("contacts.form.commercialRegister")}: {contact.commercialRegister}
             </Chip>
           )}
+          {contact.taxNumber && (
+            <Chip variant="flat" size="sm" color="secondary">
+              {t("contacts.form.taxNumber") || "Tax No"}: {contact.taxNumber}
+            </Chip>
+          )}
         </CardBody>
       </Card>
 
@@ -184,6 +190,12 @@ export function ContactDetailPage() {
             </FieldBox>
             <FieldBox label={t("contacts.form.commercialRegister")}>
               {contact.commercialRegister || "—"}
+            </FieldBox>
+            <FieldBox label={t("contacts.form.taxNumber") || "Tax Number"}>
+              {contact.taxNumber || "—"}
+            </FieldBox>
+            <FieldBox label={t("contacts.form.billingAddress") || "Billing Address"}>
+              {contact.billingAddress || "—"}
             </FieldBox>
             <FieldBox label={t("contacts.form.assignedTo")}>
               {assignee?.name ?? t("contacts.filters.unassigned")}
@@ -349,6 +361,21 @@ export function ContactDetailPage() {
             ) : (
               <CrmTimeline activities={activities} />
             )}
+          </div>
+        </Tab>
+        <Tab
+          key="billing"
+          title={
+            <span className="flex items-center gap-1.5">
+              <CreditCard className="h-4 w-4" />
+              {t("contactDetail.tabs.billing") || "Billing & Invoices"}
+            </span>
+          }
+        >
+          <div className="pt-4">
+            <p className="text-default-500 text-sm">
+              {t("contactDetail.billing.empty") || "No invoices or payments found for this customer."}
+            </p>
           </div>
         </Tab>
       </Tabs>

@@ -2,7 +2,7 @@ import type { PortalId } from "@/lib/portal-permissions";
 import type { UserRole } from "@/features/auth/types/auth.types";
 import { getAccessiblePortals as getRolePortals } from "@/lib/permissions";
 
-export const ALL_PORTAL_IDS: PortalId[] = ["tasks", "crm", "people"];
+export const ALL_PORTAL_IDS: PortalId[] = ["tasks", "crm", "people", "billing"];
 
 export function getRoleDefaultPortals(role: UserRole | undefined): PortalId[] {
   return getRolePortals(role);

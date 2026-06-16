@@ -17,6 +17,7 @@ const PORTAL_META: Record<PortalId, { titleKey: string }> = {
   tasks: { titleKey: "portals.tasks.short" },
   crm: { titleKey: "portals.crm.short" },
   people: { titleKey: "portals.people.short" },
+  billing: { titleKey: "portals.billing.short" },
 };
 
 interface PortalSidebarProps {
@@ -26,6 +27,7 @@ interface PortalSidebarProps {
 export function PortalSidebar({ portal }: PortalSidebarProps) {
   const { t, i18n } = useTranslation();
   const { t: tCrm } = useTranslation("crm");
+  const { t: tBilling } = useTranslation("billing");
   const { sidebarCollapsed, toggleSidebar, setPortalPickerOpen } = useLayoutStore();
   const navItems = getNavForPortal(portal);
   const meta = PORTAL_META[portal];
@@ -102,8 +104,9 @@ export function PortalSidebar({ portal }: PortalSidebarProps) {
       <nav className="flex-1 space-y-2 p-4">
         {navItems.map((item) => {
           const Icon = item.icon;
-          const label =
-            item.namespace === "crm" ? tCrm(item.labelKey) : t(item.labelKey);
+          let label = t(item.labelKey);
+          if (item.namespace === "crm") label = tCrm(item.labelKey);
+          if (item.namespace === "billing") label = tBilling(item.labelKey);
 
           return (
             <Tooltip

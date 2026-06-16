@@ -1,0 +1,61 @@
+{
+  "module_name": "الفوترة",
+  "nav": {
+    "dashboard": "لوحة التحكم",
+    "products": "المنتجات والخدمات",
+    "settings": "الإعدادات"
+  },
+  "settings": {
+    "title": "إعدادات الفوترة",
+    "subtitle": "إدارة الملف التعريفي للشركة وإعدادات الفواتير",
+    "tab_general": "عام",
+    "tab_financial": "المالية",
+    "company_profile": "الملف التعريفي للشركة",
+    "financial_settings": "الإعدادات المالية",
+    "invoice_sequence": "تسلسل الفواتير",
+    "prefix": "البادئة",
+    "next_number": "الرقم التالي",
+    "padding": "حشو الأرقام (Padding)",
+    "saved_successfully": "تم حفظ الإعدادات بنجاح",
+    "company_name": "اسم الشركة",
+    "tax_number": "الرقم الضريبي",
+    "address": "العنوان",
+    "email": "البريد الإلكتروني",
+    "phone": "رقم الهاتف"
+  },
+  "products": {
+    "title": "المنتجات والخدمات",
+    "description": "إدارة المنتجات والخدمات التي تقدمها.",
+    "add": "إضافة عنصر",
+    "search": "ابحث بالاسم أو الرمز (SKU)...",
+    "columns": {
+      "type": "النوع",
+      "name_sku": "الاسم والرمز",
+      "category": "الفئة",
+      "price": "السعر",
+      "status": "الحالة",
+      "actions": "الإجراءات"
+    },
+    "types": {
+      "goods": "سلعة",
+      "service": "خدمة"
+    },
+    "status": {
+      "active": "نشط",
+      "inactive": "غير نشط"
+    },
+    "form": {
+      "edit_title": "تعديل منتج/خدمة",
+      "add_title": "إضافة منتج/خدمة",
+      "type": "النوع",
+      "name": "الاسم",
+      "sku": "الرمز (SKU)",
+      "price": "السعر",
+      "description": "الوصف",
+      "category": "الفئة",
+      "unit": "الوحدة",
+      "tax_rate": "نسبة الضريبة",
+      "is_active": "نشط"
+    }
+  }
+}

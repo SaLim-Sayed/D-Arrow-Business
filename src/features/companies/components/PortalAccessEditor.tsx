@@ -33,6 +33,7 @@ function setPortalSubRole(
   if (portal === "tasks") next.tasks = subRole as TasksSubRole;
   else if (portal === "crm") next.crm = subRole as CrmSubRole;
   else if (portal === "people") next.people = subRole as PeopleSubRole;
+  else if (portal === "billing") next.billing = subRole as any; // Temporary cast until BillingSubRole imported if needed
   return next;
 }
 
@@ -44,6 +45,7 @@ function clearPortalSubRole(
   if (portal === "tasks") delete next.tasks;
   else if (portal === "crm") delete next.crm;
   else if (portal === "people") delete next.people;
+  else if (portal === "billing") delete next.billing;
   return next;
 }
 
@@ -58,6 +60,7 @@ function pruneSubRoles(
     if (portal === "tasks") next.tasks = value as TasksSubRole;
     else if (portal === "crm") next.crm = value as CrmSubRole;
     else if (portal === "people") next.people = value as PeopleSubRole;
+    else if (portal === "billing") next.billing = value as any;
   }
   return next;
 }

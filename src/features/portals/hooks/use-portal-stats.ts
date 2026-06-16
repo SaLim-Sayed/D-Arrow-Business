@@ -16,6 +16,8 @@ export function usePortalStat(portal: PortalId): number | null {
     case "people":
       return (leaveRequests?.data ?? []).filter((r) => r.status === "pending")
         .length;
+    case "billing":
+      return 0; // TODO: Return pending invoices count
     default:
       return null;
   }

@@ -21,6 +21,8 @@ export const contactFormSchema = z.object({
       "Commercial register must be at least 5 characters"
     ),
   assignedTo: z.string().nullable().optional(),
+  taxNumber: z.string().optional(),
+  billingAddress: z.string().optional(),
 });
 
 export type ContactFormValues = z.infer<typeof contactFormSchema>;
@@ -35,6 +37,8 @@ export function toCreateContactDTO(values: ContactFormValues): CreateContactDTO 
     department: values.department?.trim(),
     accountName: values.accountName?.trim(),
     commercialRegister: values.commercialRegister?.trim() || undefined,
+    taxNumber: values.taxNumber?.trim() || undefined,
+    billingAddress: values.billingAddress?.trim() || undefined,
     assignedTo: values.assignedTo ?? null,
     leadId: null,
     ownerId: values.assignedTo ?? null,

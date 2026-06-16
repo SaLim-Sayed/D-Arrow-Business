@@ -41,6 +41,11 @@ import { TeamMembersPage } from "@/features/companies/pages/TeamMembersPage";
 import { NotFoundPage } from "@/components/shared/not-found-page";
 import { ErrorPage } from "@/components/shared/error-page";
 
+// Billing Imports
+import { BillingLayout } from "@/features/billing/components/BillingLayout";
+import SettingsPage from "@/features/billing/pages/SettingsPage";
+import ProductsPage from "@/features/billing/pages/ProductsPage";
+
 export const router = createBrowserRouter([
   {
     path: "/",
@@ -127,6 +132,15 @@ export const router = createBrowserRouter([
               { path: "pricing", element: <PricingPage /> },
               { path: "team", element: <TeamMembersPage /> },
               { path: "roles", element: <RolesPermissionsPage /> },
+            ],
+          },
+          {
+            path: "billing",
+            element: <BillingLayout />,
+            children: [
+              { index: true, element: <Navigate to="/billing/settings" replace /> },
+              { path: "products", element: <ProductsPage /> },
+              { path: "settings", element: <SettingsPage /> },
             ],
           },
           {
