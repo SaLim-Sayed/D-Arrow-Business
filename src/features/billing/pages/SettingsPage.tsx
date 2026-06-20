@@ -6,10 +6,12 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { billingSettingsSchema } from "../schemas/settings";
+import { useSeedBillingDataMutation } from "../hooks/use-seed-billing";
 
 export default function SettingsPage() {
   const { t } = useTranslation("billing");
   const { t: tc } = useTranslation("common");
+  const seedMutation = useSeedBillingDataMutation();
 
   const {
     register,
@@ -151,6 +153,29 @@ export default function SettingsPage() {
                 <Divider />
                 <CardBody className="px-6 py-6 text-default-500">
                   <p>{t("settings.financial_desc") || "Currency, Tax Rates, and Payment Methods configuration will go here."}</p>
+                </CardBody>
+              </Card>
+            </div>
+          </Tab>
+          <Tab key="advanced" title="Advanced">
+            <div className="space-y-6 mt-4">
+              <Card className="bg-white dark:bg-content1 rounded-2xl shadow-sm border border-danger/20">
+                <CardHeader className="px-6 py-4">
+                  <h2 className="text-xl font-bold text-danger">Developer Actions</h2>
+                </CardHeader>
+                <Divider />
+                <CardBody className="px-6 py-6 text-default-500 space-y-4">
+                  <p>Load mock data into your database for testing purposes. This will create sample products, invoices, and bills.</p>
+                  <div>
+                    <Button 
+                      color="danger" 
+                      variant="flat" 
+                      onPress={() => seedMutation.mutate()}
+                      isLoading={seedMutation.isPending}
+                    >
+                      Seed Demo Data
+                    </Button>
+                  </div>
                 </CardBody>
               </Card>
             </div>

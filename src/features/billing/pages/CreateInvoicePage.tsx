@@ -13,13 +13,14 @@ import {
 } from "@heroui/react";
 import { Plus, Trash2, Save, Send } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
+import { useEffect } from "react";
 import { toast } from "sonner";
 
 import { PageHeader } from "@/components/shared/page-header";
 import { useContactsQuery } from "@/features/crm/hooks/use-contacts";
 import { useProducts } from "../hooks/use-products";
-import { useCreateInvoiceMutation } from "../hooks/use-invoices";
+import { useCreateInvoiceMutation, useUpdateInvoiceMutation, useInvoice } from "../hooks/use-invoices";
 import { invoiceSchema, type CreateInvoiceDTO } from "../schemas/invoice";
 import { formatCurrency } from "@/lib/utils";
 
@@ -31,7 +32,13 @@ export default function CreateInvoicePage() {
   const contacts = contactsRes?.data || [];
   
   const { data: products = [] } = useProducts();
+  
+  const { id } = useParams<{ id: string }>();
+  const isEditing = !!id;
+  const { data: existingInvoice, isLoading: isLoadingExisting } = useInvoice(id);
+
   const createInvoice = useCreateInvoiceMutation();
+  const updateInvoice = useUpdateInvoiceMutation();
 
   const {
     control,
@@ -61,6 +68,18 @@ export default function CreateInvoicePage() {
     name: "items",
   });
 
+  useEffect(() => {
+    if (isEditing && existingInvoice) {
+      const resetData = {
+        ...existingInvoice,
+        issueDate: new Date(existingInvoice.issueDate),
+        dueDate: new Date(existingInvoice.dueDate),
+      };
+      // Type assertion is safe here as existingInvoice items map to the CreateInvoiceDTO
+      control._reset(resetData as any);
+    }
+  }, [isEditing, existingInvoice, control]);
+
   const watchItems = watch("items");
 
   // Dynamic calculations
@@ -88,19 +107,29 @@ export default function CreateInvoicePage() {
 
   const onSubmit = async (data: CreateInvoiceDTO, actionType: "draft" | "sent") => {
     try {
-      await createInvoice.mutateAsync({ ...data, status: actionType });
-      toast.success(actionType === "sent" ? "Invoice sent!" : "Draft saved");
+      const finalData = { ...data, status: actionType };
+      if (isEditing && id) {
+        await updateInvoice.mutateAsync({ id, data: finalData });
+        toast.success(actionType === "sent" ? "Invoice sent!" : "Invoice updated");
+      } else {
+        await createInvoice.mutateAsync(finalData);
+        toast.success(actionType === "sent" ? "Invoice sent!" : "Draft saved");
+      }
       navigate("/billing/invoices");
     } catch (error) {
       toast.error("Failed to save invoice");
     }
   };
 
+  if (isEditing && isLoadingExisting) {
+    return <div className="p-8 text-center animate-pulse">Loading invoice...</div>;
+  }
+
   return (
     <div className="space-y-6 max-w-5xl mx-auto pb-20 animate-in fade-in duration-500">
       <PageHeader
-        title={t("invoices.create.title") || "New Invoice"}
-        description={t("invoices.create.description") || "Create a new sales invoice for your customer."}
+        title={isEditing ? "Edit Invoice" : (t("invoices.create.title") || "New Invoice")}
+        description={isEditing ? "Update invoice details." : (t("invoices.create.description") || "Create a new sales invoice for your customer.")}
       />
 
       <form className="space-y-6">
@@ -302,18 +331,18 @@ export default function CreateInvoicePage() {
           <Button
             variant="flat"
             onPress={() => handleSubmit((data) => onSubmit(data as any, "draft"))()}
-            isLoading={isSubmitting}
+            isLoading={isSubmitting || updateInvoice.isPending || createInvoice.isPending}
             startContent={<Save className="w-4 h-4" />}
           >
-            {t("invoices.create.save_draft") || "Save as Draft"}
+            {isEditing ? "Update Draft" : (t("invoices.create.save_draft") || "Save as Draft")}
           </Button>
           <Button
             color="primary"
             onPress={() => handleSubmit((data) => onSubmit(data as any, "sent"))()}
-            isLoading={isSubmitting}
+            isLoading={isSubmitting || updateInvoice.isPending || createInvoice.isPending}
             startContent={<Send className="w-4 h-4" />}
           >
-            {t("invoices.create.save_send") || "Save & Send"}
+            {isEditing ? "Update & Send" : (t("invoices.create.save_send") || "Save & Send")}
           </Button>
         </div>
       </form>

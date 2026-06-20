@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import {
   Table,
   TableHeader,
@@ -9,22 +9,58 @@ import {
   Button,
   Chip,
   Input,
+  useDisclosure,
 } from "@heroui/react";
-import { Plus, Search, FileText } from "lucide-react";
+import { Plus, Search, FileText, Edit2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { PageHeader } from "@/components/shared/page-header";
 import { useJournals } from "../hooks/use-journals";
 import { formatCurrency } from "@/lib/utils";
+import { JournalFormModal } from "../components/JournalFormModal";
+import { JournalPrintView } from "../components/JournalPrintView";
+import { generateQuotationPdf } from "@/features/crm/utils/generate-quotation-pdf";
+import type { JournalEntry } from "../schemas/journal";
 
 export default function ManualJournalsPage() {
   const { t } = useTranslation("billing");
   const { data: journals = [], isLoading } = useJournals();
   const [search, setSearch] = useState("");
 
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  const [selectedJournal, setSelectedJournal] = useState<JournalEntry | null>(null);
+  const [printingJournal, setPrintingJournal] = useState<JournalEntry | null>(null);
+  const printRef = useRef<HTMLDivElement>(null);
+
   const filteredJournals = journals.filter((j) =>
     j.journalNumber.toLowerCase().includes(search.toLowerCase()) ||
     j.reference?.toLowerCase().includes(search.toLowerCase())
   );
+
+  const handleCreate = () => {
+    setSelectedJournal(null);
+    onOpen();
+  };
+
+  const handleEdit = (journal: JournalEntry) => {
+    setSelectedJournal(journal);
+    onOpen();
+  };
+
+  const handleDownload = async (journal: JournalEntry) => {
+    setPrintingJournal(journal);
+    // Give react time to render the print view with the data
+    setTimeout(async () => {
+      if (printRef.current) {
+        try {
+          await generateQuotationPdf(printRef.current, `Journal-${journal.journalNumber}.pdf`);
+        } catch (error) {
+          console.error("Failed to generate PDF:", error);
+        } finally {
+          setPrintingJournal(null);
+        }
+      }
+    }, 300);
+  };
 
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
@@ -35,6 +71,7 @@ export default function ManualJournalsPage() {
           <Button
             color="primary"
             startContent={<Plus className="h-4 w-4" />}
+            onPress={handleCreate}
           >
             {t("journals.add") || "New Journal"}
           </Button>
@@ -84,7 +121,16 @@ export default function ManualJournalsPage() {
               </TableCell>
               <TableCell>
                 <div className="flex justify-end gap-2">
-                  <Button isIconOnly size="sm" variant="light">
+                  <Button isIconOnly size="sm" variant="light" onPress={() => handleEdit(item)}>
+                    <Edit2 className="h-4 w-4" />
+                  </Button>
+                  <Button 
+                    isIconOnly 
+                    size="sm" 
+                    variant="light" 
+                    onPress={() => handleDownload(item)}
+                    isLoading={printingJournal?.id === item.id}
+                  >
                     <FileText className="h-4 w-4" />
                   </Button>
                 </div>
@@ -93,6 +139,18 @@ export default function ManualJournalsPage() {
           )}
         </TableBody>
       </Table>
+
+      {/* Render the modal for Creating/Editing */}
+      <JournalFormModal 
+        isOpen={isOpen} 
+        onClose={onClose} 
+        journalToEdit={selectedJournal} 
+      />
+
+      {/* Hidden printable view for the PDF generation */}
+      {printingJournal && (
+        <JournalPrintView ref={printRef} journal={printingJournal} />
+      )}
     </div>
   );
 }

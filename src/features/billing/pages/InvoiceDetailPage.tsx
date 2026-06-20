@@ -7,7 +7,7 @@ import {
   Chip,
   Divider,
 } from "@heroui/react";
-import { Printer, Download, ArrowLeft, Mail, CreditCard } from "lucide-react";
+import { Printer, Download, ArrowLeft, Mail, CreditCard, Edit2 } from "lucide-react";
 import { useInvoices } from "../hooks/use-invoices";
 import { useContactsQuery } from "@/features/crm/hooks/use-contacts";
 import { formatCurrency } from "@/lib/utils";
@@ -68,6 +68,16 @@ export default function InvoiceDetailPage() {
         </div>
 
         <div className="flex items-center gap-2">
+          {invoice.status === "draft" && (
+            <Button
+              color="primary"
+              variant="flat"
+              startContent={<Edit2 className="w-4 h-4" />}
+              onPress={() => navigate(`/billing/invoices/${invoice.id}/edit`)}
+            >
+              {t("actions.edit") || "Edit Invoice"}
+            </Button>
+          )}
           {invoice.status !== "paid" && (
             <Button
               color="success"

@@ -1,60 +1,40 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import type { Invoice, CreateInvoiceDTO } from "../schemas/invoice";
+import type { Invoice, CreateInvoiceDTO, UpdateInvoiceDTO } from "../schemas/invoice";
 import type { CreateJournalEntryDTO } from "../schemas/journal";
-
-let invoicesCache: Invoice[] = [
-  {
-    id: "inv_1",
-    invoiceNumber: "INV-0001",
-    customerId: "cust_123",
-    status: "draft",
-    issueDate: new Date(),
-    dueDate: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000),
-    items: [
-      { id: "item_1", description: "Consulting Services", quantity: 10, unitPrice: 150, taxRate: 15, discount: 0, total: 1725 },
-    ],
-    subTotal: 1500,
-    totalTax: 225,
-    totalDiscount: 0,
-    grandTotal: 1725,
-    currency: "USD",
-  }
-];
-
-const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+import { BillingService } from "../api/billing.service";
+import { useCompany } from "@/features/companies/context/company-context";
+import { convertTimestampsToDates } from "../utils/timestamp";
 
 export function useInvoices() {
+  const { companyId } = useCompany();
+
   return useQuery({
-    queryKey: ["billing", "invoices"],
+    queryKey: ["billing", "invoices", companyId],
     queryFn: async () => {
-      await delay(400);
-      return [...invoicesCache].sort((a, b) => b.issueDate.getTime() - a.issueDate.getTime());
+      const res = await BillingService.invoices.getAll(companyId!);
+      const data = convertTimestampsToDates(res.data) as Invoice[];
+      return data.sort((a, b) => b.issueDate.getTime() - a.issueDate.getTime());
     },
+    enabled: !!companyId,
   });
 }
 
 export function useCreateInvoiceMutation() {
   const queryClient = useQueryClient();
+  const { companyId } = useCompany();
   
   return useMutation({
     mutationFn: async (data: CreateInvoiceDTO) => {
-      await delay(600);
-      
-      const newInvoice: Invoice = {
+      const payload = {
         ...data,
-        id: `inv_${Math.random().toString(36).slice(2)}`,
         status: data.status ?? "draft",
       };
 
-      invoicesCache.push(newInvoice);
+      const res = await BillingService.invoices.create(companyId!, payload);
+      const newInvoice = convertTimestampsToDates(res.data) as Invoice;
 
       // If the invoice is published/sent, it creates an accounting journal entry!
       if (newInvoice.status === "sent" || newInvoice.status === "paid") {
-        // This logic normally lives in a backend Firebase Function / Transaction.
-        // Debit Accounts Receivable (1200)
-        // Credit Sales Revenue (4000)
-        // Credit Tax Payable (Liability - assuming acc_2500)
-        
         const je: CreateJournalEntryDTO = {
           journalNumber: `JE-INV-${newInvoice.invoiceNumber}`,
           date: newInvoice.issueDate,
@@ -68,12 +48,14 @@ export function useCreateInvoiceMutation() {
           status: "published",
           lines: [
             {
+              id: `jel_${Math.random().toString(36).slice(2)}`,
               accountId: "acc_1200", // Accounts Receivable
               debit: newInvoice.grandTotal,
               credit: 0,
               description: `Invoice ${newInvoice.invoiceNumber} receivable`,
             },
             {
+              id: `jel_${Math.random().toString(36).slice(2)}`,
               accountId: "acc_4000", // Sales Revenue
               debit: 0,
               credit: newInvoice.subTotal,
@@ -84,6 +66,7 @@ export function useCreateInvoiceMutation() {
 
         if (newInvoice.totalTax > 0) {
           je.lines.push({
+            id: `jel_${Math.random().toString(36).slice(2)}`,
             accountId: "acc_2000", // Using Accounts Payable or Tax Liability
             debit: 0,
             credit: newInvoice.totalTax,
@@ -91,15 +74,102 @@ export function useCreateInvoiceMutation() {
           });
         }
 
-        // We could call `useCreateJournalMutation` directly or just simulate it here.
-        // For the sake of the mock, we will just console log the generated journal.
-        console.log("Accounting Engine: Generated Journal Entry for Invoice", je);
+        try {
+          await BillingService.journals.create(companyId!, je);
+        } catch (error) {
+          console.error("Failed to generate journal entry for invoice:", error);
+        }
       }
 
       return newInvoice;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["billing", "invoices"] });
+      queryClient.invalidateQueries({ queryKey: ["billing", "journals"] });
+    },
+  });
+}
+
+export function useInvoice(id?: string) {
+  const { companyId } = useCompany();
+
+  return useQuery({
+    queryKey: ["billing", "invoices", companyId, id],
+    queryFn: async () => {
+      const res = await BillingService.invoices.getById(companyId!, id!);
+      return convertTimestampsToDates(res.data) as Invoice;
+    },
+    enabled: !!id && !!companyId,
+  });
+}
+
+export function useUpdateInvoiceMutation() {
+  const queryClient = useQueryClient();
+  const { companyId } = useCompany();
+  
+  return useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: UpdateInvoiceDTO }) => {
+      // Get the existing invoice to check its status before update
+      const existingRes = await BillingService.invoices.getById(companyId!, id);
+      const existingInvoice = convertTimestampsToDates(existingRes.data) as Invoice;
+
+      const res = await BillingService.invoices.update(companyId!, id, data);
+      const updatedInvoice = convertTimestampsToDates(res.data) as Invoice;
+
+      // Handle accounting entry if status changes to sent/paid
+      if ((data.status === "sent" || data.status === "paid") && existingInvoice.status === "draft") {
+        const je: CreateJournalEntryDTO = {
+          journalNumber: `JE-INV-${updatedInvoice.invoiceNumber}`,
+          date: updatedInvoice.issueDate,
+          reference: updatedInvoice.invoiceNumber,
+          notes: `Auto-generated from Invoice ${updatedInvoice.invoiceNumber}`,
+          sourceType: "invoice",
+          sourceId: updatedInvoice.id,
+          totalDebit: updatedInvoice.grandTotal,
+          totalCredit: updatedInvoice.grandTotal,
+          currency: updatedInvoice.currency,
+          status: "published",
+          lines: [
+            {
+              id: `jel_${Math.random().toString(36).slice(2)}`,
+              accountId: "acc_1200", // Accounts Receivable
+              debit: updatedInvoice.grandTotal,
+              credit: 0,
+              description: `Invoice ${updatedInvoice.invoiceNumber} receivable`,
+            },
+            {
+              id: `jel_${Math.random().toString(36).slice(2)}`,
+              accountId: "acc_4000", // Sales Revenue
+              debit: 0,
+              credit: updatedInvoice.subTotal,
+              description: `Sales from ${updatedInvoice.invoiceNumber}`,
+            }
+          ]
+        };
+
+        if (updatedInvoice.totalTax > 0) {
+          je.lines.push({
+            id: `jel_${Math.random().toString(36).slice(2)}`,
+            accountId: "acc_2000", // Tax Liability
+            debit: 0,
+            credit: updatedInvoice.totalTax,
+            description: `Tax from ${updatedInvoice.invoiceNumber}`,
+          });
+        }
+        
+        try {
+          await BillingService.journals.create(companyId!, je);
+        } catch (error) {
+          console.error("Failed to generate journal entry for invoice update:", error);
+        }
+      }
+
+      return updatedInvoice;
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["billing", "invoices"] });
+      queryClient.invalidateQueries({ queryKey: ["billing", "invoices", variables.id] });
+      queryClient.invalidateQueries({ queryKey: ["billing", "journals"] });
     },
   });
 }

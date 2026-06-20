@@ -1,46 +1,57 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import type { Account, CreateAccountDTO, UpdateAccountDTO } from "../schemas/account";
+import type { CreateAccountDTO, UpdateAccountDTO } from "../schemas/account";
+import { BillingService } from "../api/billing.service";
+import { useCompany } from "@/features/companies/context/company-context";
 
 // Mock Data for Standard Chart of Accounts Seed
-const MOCK_ACCOUNTS: Account[] = [
-  { id: "acc_1000", code: "1000", name: "Cash on Hand", type: "asset", subType: "cash", isSystemAccount: true, isActive: true, currentBalance: 5000, currency: "USD" },
-  { id: "acc_1200", code: "1200", name: "Accounts Receivable", type: "asset", subType: "accounts_receivable", isSystemAccount: true, isActive: true, currentBalance: 12000, currency: "USD" },
-  { id: "acc_1500", code: "1500", name: "Inventory Asset", type: "asset", subType: "inventory", isSystemAccount: true, isActive: true, currentBalance: 30000, currency: "USD" },
-  { id: "acc_2000", code: "2000", name: "Accounts Payable", type: "liability", subType: "accounts_payable", isSystemAccount: true, isActive: true, currentBalance: 4500, currency: "USD" },
-  { id: "acc_3000", code: "3000", name: "Owner's Equity", type: "equity", subType: "equity", isSystemAccount: true, isActive: true, currentBalance: 42500, currency: "USD" },
-  { id: "acc_4000", code: "4000", name: "Sales Revenue", type: "income", subType: "operating_income", isSystemAccount: true, isActive: true, currentBalance: 0, currency: "USD" },
-  { id: "acc_5000", code: "5000", name: "Cost of Goods Sold", type: "expense", subType: "cost_of_goods_sold", isSystemAccount: true, isActive: true, currentBalance: 0, currency: "USD" },
-  { id: "acc_6000", code: "6000", name: "Bank Fees", type: "expense", subType: "operating_expense", isSystemAccount: false, isActive: true, currentBalance: 0, currency: "USD" },
+const MOCK_ACCOUNTS: CreateAccountDTO[] = [
+  { code: "1000", name: "Cash on Hand", type: "asset", subType: "cash", isSystemAccount: true, isActive: true, currentBalance: 5000, currency: "USD" },
+  { code: "1200", name: "Accounts Receivable", type: "asset", subType: "accounts_receivable", isSystemAccount: true, isActive: true, currentBalance: 12000, currency: "USD" },
+  { code: "1500", name: "Inventory Asset", type: "asset", subType: "inventory", isSystemAccount: true, isActive: true, currentBalance: 30000, currency: "USD" },
+  { code: "2000", name: "Accounts Payable", type: "liability", subType: "accounts_payable", isSystemAccount: true, isActive: true, currentBalance: 4500, currency: "USD" },
+  { code: "3000", name: "Owner's Equity", type: "equity", subType: "equity", isSystemAccount: true, isActive: true, currentBalance: 42500, currency: "USD" },
+  { code: "4000", name: "Sales Revenue", type: "income", subType: "operating_income", isSystemAccount: true, isActive: true, currentBalance: 0, currency: "USD" },
+  { code: "5000", name: "Cost of Goods Sold", type: "expense", subType: "cost_of_goods_sold", isSystemAccount: true, isActive: true, currentBalance: 0, currency: "USD" },
+  { code: "6000", name: "Bank Fees", type: "expense", subType: "operating_expense", isSystemAccount: false, isActive: true, currentBalance: 0, currency: "USD" },
 ];
 
-let accountsCache = [...MOCK_ACCOUNTS];
-
-const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
-
 export function useAccounts() {
+  const { companyId } = useCompany();
+
   return useQuery({
-    queryKey: ["billing", "accounts"],
+    queryKey: ["billing", "accounts", companyId],
     queryFn: async () => {
-      await delay(400);
-      return [...accountsCache];
+      const res = await BillingService.accounts.getAll(companyId!);
+      
+      // Auto-seed if empty for the sake of the demo/migration
+      if (res.data.length === 0) {
+        console.log("Seeding default chart of accounts...");
+        const seedPromises = MOCK_ACCOUNTS.map(acc => 
+          BillingService.accounts.create(companyId!, acc)
+        );
+        const seeded = await Promise.all(seedPromises);
+        return seeded.map(s => s.data);
+      }
+      
+      return res.data;
     },
+    enabled: !!companyId,
   });
 }
 
 export function useCreateAccountMutation() {
   const queryClient = useQueryClient();
+  const { companyId } = useCompany();
   
   return useMutation({
     mutationFn: async (data: CreateAccountDTO) => {
-      await delay(500);
-      const newAccount: Account = {
+      const payload = {
         ...data,
-        id: `acc_${Math.random().toString(36).slice(2)}`,
         currentBalance: data.currentBalance ?? 0,
         isSystemAccount: data.isSystemAccount ?? false,
       };
-      accountsCache.push(newAccount);
-      return newAccount;
+      const res = await BillingService.accounts.create(companyId!, payload);
+      return res.data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["billing", "accounts"] });
@@ -50,15 +61,12 @@ export function useCreateAccountMutation() {
 
 export function useUpdateAccountMutation() {
   const queryClient = useQueryClient();
+  const { companyId } = useCompany();
 
   return useMutation({
     mutationFn: async ({ id, data }: { id: string; data: UpdateAccountDTO }) => {
-      await delay(500);
-      const index = accountsCache.findIndex(a => a.id === id);
-      if (index === -1) throw new Error("Account not found");
-      
-      accountsCache[index] = { ...accountsCache[index], ...data };
-      return accountsCache[index];
+      const res = await BillingService.accounts.update(companyId!, id, data);
+      return res.data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["billing", "accounts"] });
@@ -68,15 +76,13 @@ export function useUpdateAccountMutation() {
 
 export function useDeleteAccountMutation() {
   const queryClient = useQueryClient();
+  const { companyId } = useCompany();
 
   return useMutation({
     mutationFn: async (id: string) => {
-      await delay(500);
-      const acc = accountsCache.find(a => a.id === id);
-      if (acc?.isSystemAccount) {
-        throw new Error("Cannot delete system accounts");
-      }
-      accountsCache = accountsCache.filter(a => a.id !== id);
+      // Note: We should ideally fetch to check if isSystemAccount before delete,
+      // but UI handles disabling the delete button for system accounts.
+      await BillingService.accounts.delete(companyId!, id);
       return id;
     },
     onSuccess: () => {

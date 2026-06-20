@@ -150,6 +150,7 @@ export const router = createBrowserRouter([
               { path: "reports", element: <ReportsPage /> },
               { path: "invoices", element: <InvoicesPage /> },
               { path: "invoices/new", element: <CreateInvoicePage /> },
+              { path: "invoices/:id/edit", element: <CreateInvoicePage /> },
               { path: "invoices/:id", element: <InvoiceDetailPage /> },
               { path: "bills", element: <BillsPage /> },
               { path: "accounts", element: <ChartOfAccountsPage /> },

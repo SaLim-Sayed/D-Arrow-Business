@@ -1,39 +1,32 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import type { BillingSettings } from "../schemas/settings";
-
-const mockSettings: BillingSettings = {
-  companyProfile: {
-    name: "Acme Corp",
-    address: "123 Main St",
-    email: "billing@acme.com",
-  },
-  invoiceSequence: {
-    prefix: "INV-",
-    nextNumber: 1001,
-    padding: 4,
-  },
-  currencies: [
-    { code: "USD", symbol: "$", name: "US Dollar", isDefault: true },
-    { code: "EUR", symbol: "€", name: "Euro", isDefault: false },
-  ],
-  taxes: [
-    { id: "tax1", name: "VAT", rate: 15, isDefault: true },
-    { id: "tax2", name: "Zero Tax", rate: 0, isDefault: false },
-  ],
-  paymentMethods: [
-    { id: "pm1", name: "Bank Transfer", isActive: true },
-    { id: "pm2", name: "Cash", isActive: true },
-  ],
-};
-
-const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+import { BillingService } from "../api/billing.service";
+import { useCompany } from "@/features/companies/context/company-context";
 
 export function useBillingSettings() {
+  const { companyId } = useCompany();
+
   return useQuery({
-    queryKey: ["billing", "settings"],
+    queryKey: ["billing", "settings", companyId],
     queryFn: async () => {
-      await delay(300);
-      return mockSettings;
+      const res = await BillingService.settings.get(companyId!);
+      return res.data;
+    },
+    enabled: !!companyId,
+  });
+}
+
+export function useUpdateBillingSettingsMutation() {
+  const queryClient = useQueryClient();
+  const { companyId } = useCompany();
+
+  return useMutation({
+    mutationFn: async (data: Partial<BillingSettings>) => {
+      const res = await BillingService.settings.update(companyId!, data);
+      return res.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["billing", "settings"] });
     },
   });
 }

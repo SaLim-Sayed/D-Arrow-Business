@@ -1,113 +1,57 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import type {
-  Product,
-  ProductCategory,
-  ProductUnit,
   CreateProductDTO,
   UpdateProductDTO,
 } from "../schemas/product";
-
-// --- Mock Data ---
-let mockProducts: Product[] = [
-  {
-    id: "p1",
-    type: "goods",
-    name: "MacBook Pro M3",
-    sku: "MBP-M3-14",
-    price: 1999,
-    categoryId: "c1",
-    unitId: "u1",
-    isActive: true,
-    createdAt: new Date(),
-  },
-  {
-    id: "p2",
-    type: "service",
-    name: "Consulting Hour",
-    sku: "CONS-HR",
-    price: 150,
-    categoryId: "c2",
-    unitId: "u2",
-    isActive: true,
-    createdAt: new Date(),
-  },
-];
-
-let mockCategories: ProductCategory[] = [
-  { id: "c1", name: "Electronics", description: "Laptops, Phones, etc." },
-  { id: "c2", name: "Services", description: "Professional services" },
-];
-
-let mockUnits: ProductUnit[] = [
-  { id: "u1", name: "Piece", abbreviation: "pcs" },
-  { id: "u2", name: "Hour", abbreviation: "hr" },
-  { id: "u3", name: "Kilogram", abbreviation: "kg" },
-];
-
-// --- API Functions ---
-const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
-
-const fetchProducts = async (): Promise<Product[]> => {
-  await delay(500);
-  return [...mockProducts];
-};
-
-const createProduct = async (data: CreateProductDTO): Promise<Product> => {
-  await delay(500);
-  const newProduct: Product = {
-    ...data,
-    id: `p${Date.now()}`,
-    createdAt: new Date(),
-  };
-  mockProducts = [newProduct, ...mockProducts];
-  return newProduct;
-};
-
-const updateProduct = async ({ id, data }: { id: string; data: UpdateProductDTO }): Promise<Product> => {
-  await delay(500);
-  const index = mockProducts.findIndex((p) => p.id === id);
-  if (index === -1) throw new Error("Product not found");
-  mockProducts[index] = { ...mockProducts[index], ...data, updatedAt: new Date() };
-  return mockProducts[index];
-};
-
-const deleteProduct = async (id: string): Promise<void> => {
-  await delay(500);
-  mockProducts = mockProducts.filter((p) => p.id !== id);
-};
+import { BillingService } from "../api/billing.service";
+import { useCompany } from "@/features/companies/context/company-context";
 
 // --- Hooks ---
 export function useProducts() {
+  const { companyId } = useCompany();
   return useQuery({
-    queryKey: ["billing", "products"],
-    queryFn: fetchProducts,
+    queryKey: ["billing", "products", companyId],
+    queryFn: async () => {
+      const res = await BillingService.products.getAll(companyId!);
+      return res.data;
+    },
+    enabled: !!companyId,
   });
 }
 
 export function useProductCategories() {
+  const { companyId } = useCompany();
   return useQuery({
-    queryKey: ["billing", "product-categories"],
+    queryKey: ["billing", "product-categories", companyId],
     queryFn: async () => {
-      await delay(300);
-      return mockCategories;
+      const res = await BillingService.productCategories.getAll(companyId!);
+      return res.data;
     },
+    enabled: !!companyId,
   });
 }
 
 export function useProductUnits() {
+  const { companyId } = useCompany();
   return useQuery({
-    queryKey: ["billing", "product-units"],
+    queryKey: ["billing", "product-units", companyId],
     queryFn: async () => {
-      await delay(300);
-      return mockUnits;
+      const res = await BillingService.productUnits.getAll(companyId!);
+      return res.data;
     },
+    enabled: !!companyId,
   });
 }
 
 export function useCreateProductMutation() {
   const queryClient = useQueryClient();
+  const { companyId } = useCompany();
+
   return useMutation({
-    mutationFn: createProduct,
+    mutationFn: async (data: CreateProductDTO) => {
+      const res = await BillingService.products.create(companyId!, data);
+      return res.data;
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["billing", "products"] });
     },
@@ -116,8 +60,13 @@ export function useCreateProductMutation() {
 
 export function useUpdateProductMutation() {
   const queryClient = useQueryClient();
+  const { companyId } = useCompany();
+
   return useMutation({
-    mutationFn: updateProduct,
+    mutationFn: async ({ id, data }: { id: string; data: UpdateProductDTO }) => {
+      const res = await BillingService.products.update(companyId!, id, data);
+      return res.data;
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["billing", "products"] });
     },
@@ -126,8 +75,12 @@ export function useUpdateProductMutation() {
 
 export function useDeleteProductMutation() {
   const queryClient = useQueryClient();
+  const { companyId } = useCompany();
+
   return useMutation({
-    mutationFn: deleteProduct,
+    mutationFn: async (id: string) => {
+      await BillingService.products.delete(companyId!, id);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["billing", "products"] });
     },
