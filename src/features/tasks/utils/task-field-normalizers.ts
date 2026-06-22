@@ -19,3 +19,8 @@ export function normalizeTaskPriorityValue(priority: unknown): TaskPriority {
   }
   return "medium";
 }
+
+export function normalizeTaskTypeValue(type: unknown): "task" | "subtask" {
+  const value = selectionKeyToString(type) ?? "";
+  return value === "subtask" ? "subtask" : "task";
+}

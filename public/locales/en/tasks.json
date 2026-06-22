@@ -190,7 +190,8 @@
       "filesSelected_one": "{{count}} file selected",
       "filesSelected_other": "{{count}} files selected"
     },
-    "createHint": "Fill in the details below. Only the title is required."
+    "createHint": "Fill in the details below. Only the title is required.",
+    "checkFields": "Please check the form fields and try again."
   },
   "type": {
     "task": "Main Task",

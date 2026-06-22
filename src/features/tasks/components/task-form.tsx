@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { useForm, Controller } from "react-hook-form";
+import { useForm, Controller, type FieldErrors, type Resolver } from "react-hook-form";
 import { useCompany } from "@/features/companies/context/company-context";
 import { TaskService } from "../api/tasks.service";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -18,7 +18,6 @@ import {
   Textarea,
   SelectItem,
   Avatar,
-  Spinner,
   Modal,
   ModalContent,
   ModalBody,
@@ -30,19 +29,40 @@ import { useAllUsers } from "@/features/users/hooks/use-users";
 import { useAuthStore } from "@/stores/auth.store";
 import { useTasksPermissions } from "../hooks/use-tasks-permissions";
 import { useAllTasksQuery, useSprintsQuery } from "../hooks/use-tasks";
-import type { CreateTaskDTO, Task } from "../types/task.types";
+import type { CreateTaskDTO, Task, TaskPriority, TaskStatus } from "../types/task.types";
 import { toast } from "sonner";
 import { parseDate } from "@internationalized/date";
 import { cn } from "@/lib/utils";
 import { SearchableSelect } from "@/components/shared/searchable-select";
+import {
+  normalizeTaskPriorityValue,
+  normalizeTaskStatusValue,
+  normalizeTaskTypeValue,
+} from "../utils/task-field-normalizers";
+
+const TASK_STATUS_VALUES = ["todo", "in_progress", "in_review", "done"] as const;
+const TASK_PRIORITY_VALUES = ["low", "medium", "high", "urgent"] as const;
+const TASK_TYPE_VALUES = ["task", "subtask"] as const;
+
+type TaskFormValues = {
+  title: string;
+  description: string;
+  status: TaskStatus;
+  priority: TaskPriority;
+  type: "task" | "subtask";
+  assigneeId?: string | null;
+  parentId?: string | null;
+  sprintId?: string | null;
+  dueDate?: string | null;
+};
 
 const taskSchema = z
   .object({
     title: z.string().min(3, "Title must be at least 3 characters"),
     description: z.string(),
-    status: z.enum(["todo", "in_progress", "in_review", "done"]),
-    priority: z.enum(["low", "medium", "high", "urgent"]),
-    type: z.enum(["task", "subtask"]),
+    status: z.enum(TASK_STATUS_VALUES),
+    priority: z.enum(TASK_PRIORITY_VALUES),
+    type: z.enum(TASK_TYPE_VALUES),
     assigneeId: z.string().nullable().optional(),
     parentId: z.string().nullable().optional(),
     sprintId: z.string().nullable().optional(),
@@ -58,7 +78,17 @@ const taskSchema = z
     }
   });
 
-type TaskFormValues = z.infer<typeof taskSchema>;
+const taskFormResolver: Resolver<TaskFormValues> = (values, context, options) =>
+  zodResolver(taskSchema)(
+    {
+      ...(values as TaskFormValues),
+      status: normalizeTaskStatusValue(values.status),
+      priority: normalizeTaskPriorityValue(values.priority),
+      type: normalizeTaskTypeValue(values.type),
+    },
+    context,
+    options
+  );
 
 interface TaskFormProps {
   defaultValues?: Partial<Task>;
@@ -115,13 +145,15 @@ export function TaskForm({
     isRtl && user.nameAr ? user.nameAr : user.name;
 
   const form = useForm<TaskFormValues>({
-    resolver: zodResolver(taskSchema),
+    resolver: taskFormResolver,
     defaultValues: {
       title: defaultValues?.title ?? "",
       description: defaultValues?.description ?? "",
-      status: defaultValues?.status ?? "todo",
-      priority: defaultValues?.priority ?? "medium",
-      type: parentTaskId ? "subtask" : (defaultValues?.type ?? "task"),
+      status: normalizeTaskStatusValue(defaultValues?.status ?? "todo"),
+      priority: normalizeTaskPriorityValue(defaultValues?.priority ?? "medium"),
+      type: parentTaskId
+        ? "subtask"
+        : normalizeTaskTypeValue(defaultValues?.type ?? "task"),
       assigneeId: defaultValues?.assigneeId ?? null,
       parentId: parentTaskId ?? defaultValues?.parentId ?? null,
       sprintId: defaultValues?.sprintId ?? null,
@@ -156,6 +188,11 @@ export function TaskForm({
   }, [taskType, parentIdValue, parentTaskId, form]);
 
   async function handleSubmit(values: TaskFormValues) {
+    if (!companyId) {
+      toast.error(t("toast.createFailed"));
+      return;
+    }
+
     if (
       !canApprove &&
       values.status === "done" &&
@@ -196,9 +233,9 @@ export function TaskForm({
     const payload: CreateTaskDTO = {
       title: values.title,
       description: values.description ?? "",
-      status: values.status,
-      priority: values.priority,
-      type: values.type,
+      status: normalizeTaskStatusValue(values.status),
+      priority: normalizeTaskPriorityValue(values.priority),
+      type: values.type === "subtask" ? "subtask" : "task",
       parentId: values.type === "subtask" ? values.parentId : null,
       sprintId: values.sprintId ?? null,
       assigneeId: values.assigneeId ?? null,
@@ -212,11 +249,25 @@ export function TaskForm({
     onSubmit(payload);
   }
 
+  const onInvalid = (fieldErrors: FieldErrors<TaskFormValues>) => {
+    const first = Object.values(fieldErrors).find(
+      (e) => e && typeof e === "object" && "message" in e && e.message
+    ) as { message?: string } | undefined;
+    toast.error(first?.message ?? t("form.checkFields"));
+  };
+
+  const submitForm = () => {
+    void form.handleSubmit(handleSubmit, onInvalid)();
+  };
+
   const totalAttachments = existingAttachments.length + selectedFiles.length;
 
   return (
     <form
-      onSubmit={form.handleSubmit(handleSubmit)}
+      onSubmit={(e) => {
+        e.preventDefault();
+        submitForm();
+      }}
       className="space-y-8 w-full"
     >
       <div className="space-y-6">
@@ -280,7 +331,9 @@ export function TaskForm({
               isDisabled={!!parentTaskId}
               selectedKey={field.value}
               triggerLabel={field.value ? t(`type.${field.value}`) : undefined}
-              onSelectionChange={(key) => field.onChange(key as string)}
+              onSelectionChange={(key) => {
+                if (key) field.onChange(normalizeTaskTypeValue(key));
+              }}
             >
               <SelectItem key="task" textValue={t("type.task")} description={t("type.taskHint")}>
                 {t("type.task")}
@@ -391,7 +444,9 @@ export function TaskForm({
               searchPlaceholder={t("form.search.placeholder")}
               selectedKey={field.value}
               triggerLabel={field.value ? t(`status.${field.value}`) : undefined}
-              onSelectionChange={(key) => field.onChange(key as string)}
+              onSelectionChange={(key) => {
+                if (key) field.onChange(normalizeTaskStatusValue(key));
+              }}
             >
               {TASK_STATUSES.map((status) => (
                 <SelectItem
@@ -427,7 +482,9 @@ export function TaskForm({
               searchPlaceholder={t("form.search.placeholder")}
               selectedKey={field.value}
               triggerLabel={field.value ? t(`priority.${field.value}`) : undefined}
-              onSelectionChange={(key) => field.onChange(key as string)}
+              onSelectionChange={(key) => {
+                if (key) field.onChange(normalizeTaskPriorityValue(key));
+              }}
             >
               {TASK_PRIORITIES.map((priority) => (
                 <SelectItem
@@ -670,15 +727,14 @@ export function TaskForm({
           </Button>
         )}
         <Button
-          type="submit"
+          type="button"
           color="primary"
           radius="sm"
           isDisabled={isSubmitting || isUploading}
+          isLoading={isSubmitting || isUploading}
+          onPress={submitForm}
           className={`h-10 font-semibold ${!onCancel ? "w-full sm:w-auto sm:min-w-[140px]" : "px-6"}`}
         >
-          {(isSubmitting || isUploading) ? (
-            <Spinner size="sm" color="current" className="me-2" />
-          ) : null}
           {(isSubmitting || isUploading) ? tc("actions.loading") : tc("actions.save")}
         </Button>
       </div>

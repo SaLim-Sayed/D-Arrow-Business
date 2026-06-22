@@ -1,8 +1,10 @@
-/** HeroUI / React Aria may prefix string collection keys with `$`. */
+/** HeroUI / React Aria may prefix string collection keys with `$` or `.$`. */
 export function selectionKeyToString(key: unknown): string | null {
   if (key == null || key === "") return null;
-  const raw = String(key);
-  return raw.startsWith("$") ? raw.slice(1) : raw;
+  let raw = String(key);
+  if (raw.startsWith(".$")) raw = raw.slice(2);
+  else if (raw.startsWith("$")) raw = raw.slice(1);
+  return raw;
 }
 
 /** Map app keys back to HeroUI collection keys for `selectedKeys`. */

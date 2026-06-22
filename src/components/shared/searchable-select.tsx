@@ -69,7 +69,7 @@ function getSelectItemKey(child: ReactElement): string | null {
 function toSelectedKeysSet(selectedKey: Key | null | undefined): Set<Key> {
   const normalized = selectionKeyToString(selectedKey);
   if (!normalized) return new Set();
-  return new Set<Key>([normalized, `$${normalized}`]);
+  return new Set<Key>([normalized]);
 }
 
 /** Fallback when HeroUI selectedItems is empty but selectedKey is set. */
@@ -215,7 +215,11 @@ export function SearchableSelect({
       onOpenChange={handleOpenChange}
       onSelectionChange={(keys) => {
         const key = (Array.from(keys)[0] as Key | undefined) ?? null;
-        onSelectionChange?.(selectionKeyToString(key));
+        const normalized = selectionKeyToString(key);
+        if (normalized == null && selectedKey != null && selectedKey !== "") {
+          return;
+        }
+        onSelectionChange?.(normalized);
         setQuery("");
       }}
       listboxProps={{
