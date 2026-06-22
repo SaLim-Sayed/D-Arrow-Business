@@ -12,6 +12,7 @@ import { Filter, Search, X, UserCircle2, Calendar } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 import { selectFieldProps } from "@/components/shared/select-field";
+import { NativeDateInput } from "@/components/shared/native-date-input";
 import { LEAD_SOURCES, LEAD_STATUSES } from "../constants/lead-workflow";
 import type { LeadsListParams } from "../utils/leads-list.utils";
 import type { User } from "@/features/auth/types/auth.types";
@@ -120,8 +121,7 @@ export function LeadsFiltersBar({ params, onChange, onReset, users }: LeadsFilte
           </DropdownMenu>
         </Dropdown>
 
-        <Input
-          type="date"
+        <NativeDateInput
           size="sm"
           variant="bordered"
           label={t("leads.filters.from")}
@@ -131,8 +131,7 @@ export function LeadsFiltersBar({ params, onChange, onReset, users }: LeadsFilte
           onValueChange={(v) => onChange({ dateFrom: v || undefined, page: 1 })}
           startContent={<Calendar className="h-3.5 w-3.5 text-default-400 hidden sm:block" />}
         />
-        <Input
-          type="date"
+        <NativeDateInput
           size="sm"
           variant="bordered"
           label={t("leads.filters.to")}

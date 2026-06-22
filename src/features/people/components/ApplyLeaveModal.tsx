@@ -5,11 +5,11 @@ import {
   ModalBody, 
   ModalFooter, 
   Button, 
-  Input, 
   Select, 
   SelectItem,
   Textarea
 } from "@heroui/react";
+import { NativeDateInput } from "@/components/shared/native-date-input";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -87,16 +87,14 @@ export function ApplyLeaveModal({ isOpen, onOpenChange }: ApplyLeaveModalProps) 
                   <SelectItem key="unpaid" textValue={t("leave_modal.type_unpaid")}>{t("leave_modal.type_unpaid")}</SelectItem>
                 </Select>
                 <div className="grid grid-cols-2 gap-4">
-                  <Input
+                  <NativeDateInput
                     label={t("leave_modal.start_date")}
-                    type="date"
                     {...register("startDate")}
                     isInvalid={!!errors.startDate}
                     errorMessage={errors.startDate?.message}
                   />
-                  <Input
+                  <NativeDateInput
                     label={t("leave_modal.end_date")}
-                    type="date"
                     {...register("endDate")}
                     isInvalid={!!errors.endDate}
                     errorMessage={errors.endDate?.message}

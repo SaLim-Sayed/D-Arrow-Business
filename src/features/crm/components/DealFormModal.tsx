@@ -8,8 +8,8 @@ import {
   Input,
   Select,
   SelectItem,
-  DatePicker,
 } from "@heroui/react";
+import { AppDatePicker } from "@/components/shared/app-date-picker";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect } from "react";
@@ -193,7 +193,7 @@ export function DealFormModal({ isOpen, onOpenChange, deal }: DealFormModalProps
                 name="expectedCloseDate"
                 control={control}
                 render={({ field }) => (
-                  <DatePicker
+                  <AppDatePicker
                     label={t("deals.form.expectedCloseDate")}
                     value={
                       field.value

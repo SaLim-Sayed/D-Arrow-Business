@@ -9,6 +9,7 @@ import {
   Select, 
   SelectItem 
 } from "@heroui/react";
+import { NativeDateInput } from "@/components/shared/native-date-input";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -146,9 +147,8 @@ export function HireEmployeeModal({ isOpen, onOpenChange }: HireEmployeeModalPro
                   <SelectItem key="manage_leaves" textValue={t("extra.perm_manage_leaves")}>{t("extra.perm_manage_leaves")}</SelectItem>
                   <SelectItem key="manage_payroll" textValue={t("extra.perm_manage_payroll")}>{t("extra.perm_manage_payroll")}</SelectItem>
                 </Select>
-                <Input
+                <NativeDateInput
                   label={t("hire_modal.joining_date")}
-                  type="date"
                   {...register("joiningDate")}
                   isInvalid={!!errors.joiningDate}
                   errorMessage={errors.joiningDate?.message}

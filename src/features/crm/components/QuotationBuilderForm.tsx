@@ -9,9 +9,9 @@ import {
   Select,
   SelectItem,
   Divider,
-  DatePicker,
   Textarea,
 } from "@heroui/react";
+import { AppDatePicker } from "@/components/shared/app-date-picker";
 import { parseDate } from "@internationalized/date";
 import { FileDown, Eye, Save, Trash2 } from "lucide-react";
 import { useCompanyProfile } from "@/features/companies/hooks/use-company-profile";
@@ -513,7 +513,7 @@ export function QuotationBuilderForm() {
               value={quoteNumber}
               onValueChange={setQuoteNumber}
             />
-            <DatePicker
+            <AppDatePicker
               label={t("quotation.quoteDate")}
               value={parseDate(quoteDateIso)}
               onChange={(date: { toString(): string } | null) => {

@@ -19,12 +19,12 @@ import {
   SelectItem,
   Avatar,
   Spinner,
-  DatePicker,
   Modal,
   ModalContent,
   ModalBody,
   Chip,
 } from "@heroui/react";
+import { AppDatePicker } from "@/components/shared/app-date-picker";
 import { TASK_PRIORITIES, TASK_STATUSES } from "@/lib/constants";
 import { useAllUsers } from "@/features/users/hooks/use-users";
 import { useAuthStore } from "@/stores/auth.store";
@@ -539,20 +539,13 @@ export function TaskForm({
         name="dueDate"
         control={control}
         render={({ field }: { field: any }) => (
-          <DatePicker
+          <AppDatePicker
             label={t("form.dueDate.label")}
-            labelPlacement="outside"
             className="max-w-full"
-            variant="bordered"
             value={field.value ? parseDate(field.value) : null}
             onChange={(date: any) => field.onChange(date?.toString() || null)}
             isInvalid={!!errors.dueDate}
             errorMessage={errors.dueDate?.message}
-            classNames={{
-              ...fieldClassNames,
-              input: "text-start",
-              segment: "text-start",
-            }}
           />
         )}
       />

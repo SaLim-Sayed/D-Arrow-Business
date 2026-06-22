@@ -15,6 +15,7 @@ import {
   TableHeader,
   TableRow,
 } from "@heroui/react";
+import { NativeDateInput } from "@/components/shared/native-date-input";
 import { Plus, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -178,8 +179,7 @@ export function JournalFormModal({
                   variant="bordered"
                   isRequired
                 />
-                <Input
-                  type="date"
+                <NativeDateInput
                   label={t("journals.columns.date")}
                   value={date}
                   onValueChange={setDate}

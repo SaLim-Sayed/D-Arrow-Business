@@ -12,8 +12,8 @@ import {
   ModalFooter,
   useDisclosure,
   Spinner,
-  DatePicker,
 } from "@heroui/react";
+import { AppDatePicker } from "@/components/shared/app-date-picker";
 import { 
   Calendar, 
   Flag, 
@@ -193,13 +193,13 @@ export function SprintsPage() {
                   onChange={(e) => setNewSprint({ ...newSprint, name: e.target.value })}
                 />
                 <div className="grid grid-cols-2 gap-4">
-                  <DatePicker
+                  <AppDatePicker
                     label={t("sprints.startDate")}
                     variant="flat"
                     value={newSprint.startDate ? parseDate(newSprint.startDate.split('T')[0]) : null}
                     onChange={(date: any) => setNewSprint({ ...newSprint, startDate: date?.toString() || "" })}
                   />
-                  <DatePicker
+                  <AppDatePicker
                     label={t("sprints.endDate")}
                     variant="flat"
                     value={newSprint.endDate ? parseDate(newSprint.endDate.split('T')[0]) : null}

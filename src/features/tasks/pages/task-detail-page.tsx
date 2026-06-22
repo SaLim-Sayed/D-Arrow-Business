@@ -27,11 +27,11 @@ import {
   DropdownTrigger,
   DropdownMenu,
   DropdownItem,
-  DatePicker,
   Textarea,
   Input,
   Progress,
 } from "@heroui/react";
+import { AppDatePicker } from "@/components/shared/app-date-picker";
 import { parseDate } from "@internationalized/date";
 import {
   FileText,
@@ -797,7 +797,7 @@ export function TaskDetailPage() {
                     </Dropdown>
 
                     <FieldBox label={t("detail.sections.startDate")}>
-                      <DatePicker
+                      <AppDatePicker
                         aria-label={t("detail.sections.startDate")}
                         classNames={{
                           base: "w-full -mt-2",
@@ -819,7 +819,7 @@ export function TaskDetailPage() {
                     </FieldBox>
 
                     <FieldBox label={t("detail.sections.endDate")}>
-                      <DatePicker
+                      <AppDatePicker
                         aria-label={t("detail.sections.endDate")}
                         classNames={{
                           base: "w-full -mt-2",

@@ -1,4 +1,5 @@
 import { Button, Card, CardBody, Chip, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, useDisclosure, Input, Select, SelectItem, Avatar } from "@heroui/react";
+import { NativeDateInput } from "@/components/shared/native-date-input";
 import { useState } from "react";
 import { Plus, Target, Star, Loader2 } from "lucide-react";
 import { useAuthStore } from "@/stores/auth.store";
@@ -203,16 +204,14 @@ export default function PerformancePage() {
                   <SelectItem key="peer" textValue={t("performance.type_peer")}>{t("performance.type_peer")}</SelectItem>
                 </Select>
                 <div className="flex gap-2">
-                  <Input 
+                  <NativeDateInput 
                     label={t("performance.start_date")} 
-                    type="date" 
                     variant="bordered" 
                     value={newCycle.start}
                     onValueChange={(val) => setNewCycle({...newCycle, start: val})}
                   />
-                  <Input 
+                  <NativeDateInput 
                     label={t("performance.end_date")} 
-                    type="date" 
                     variant="bordered" 
                     value={newCycle.end}
                     onValueChange={(val) => setNewCycle({...newCycle, end: val})}

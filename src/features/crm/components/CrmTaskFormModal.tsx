@@ -9,8 +9,8 @@ import {
   Select,
   SelectItem,
   Textarea,
-  DatePicker,
 } from "@heroui/react";
+import { AppDatePicker } from "@/components/shared/app-date-picker";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect } from "react";
@@ -211,7 +211,7 @@ export function CrmTaskFormModal({ isOpen, onOpenChange, task }: CrmTaskFormModa
                 name="dueDate"
                 control={control}
                 render={({ field }) => (
-                  <DatePicker
+                  <AppDatePicker
                     label={t("crmTasks.form.dueDate")}
                     value={
                       field.value
