@@ -1,7 +1,7 @@
 import type { SelectProps } from "@heroui/react";
 
 export const selectClassNames: NonNullable<SelectProps["classNames"]> = {
-  base: "w-full",
+  base: "w-full gap-2.5",
   trigger: "bg-content1 min-h-10 rounded-md",
   label: "text-start font-semibold text-default-600 text-sm",
   value: "text-start w-full text-sm",

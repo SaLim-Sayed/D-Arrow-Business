@@ -1,6 +1,7 @@
 import { Chip } from "@heroui/react";
 import { useTranslation } from "react-i18next";
 import type { TaskStatus } from "@/features/tasks/types/task.types";
+import { normalizeTaskStatusValue } from "@/features/tasks/utils/task-field-normalizers";
 
 const statusConfig: Record<
   TaskStatus,
@@ -12,18 +13,19 @@ const statusConfig: Record<
   done: { color: "success" },
 };
 
-export function StatusBadge({ status }: { status: TaskStatus }) {
+export function StatusBadge({ status }: { status: string | undefined | null }) {
   const { t } = useTranslation("tasks");
-  const config = statusConfig[status];
+  const normalized = normalizeTaskStatusValue(status);
+  const config = statusConfig[normalized];
 
   return (
-    <Chip 
-      size="sm" 
-      variant="flat" 
+    <Chip
+      size="sm"
+      variant="flat"
       color={config.color}
       className="font-medium"
     >
-      {t(`status.${status}`)}
+      {t(`status.${normalized}`)}
     </Chip>
   );
 }

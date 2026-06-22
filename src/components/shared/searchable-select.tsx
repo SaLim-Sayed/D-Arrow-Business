@@ -1,6 +1,7 @@
 import {
   useState,
   useMemo,
+  useCallback,
   Children,
   isValidElement,
   type ReactElement,
@@ -12,9 +13,15 @@ import { useTranslation } from "react-i18next";
 import type { Key } from "@react-types/shared";
 import { selectFieldProps } from "./select-field";
 import { cn } from "@/lib/utils";
+import { selectionKeyToString } from "@/lib/selection-key";
 
-function getItemTextValue(child: ReactElement): string {
-  const props = child.props as { textValue?: string; children?: ReactNode };
+function getItemSearchText(child: ReactElement): string {
+  const props = child.props as {
+    textValue?: string;
+    searchValue?: string;
+    children?: ReactNode;
+  };
+  if (props.searchValue) return props.searchValue;
   if (props.textValue) return props.textValue;
   if (typeof props.children === "string") return props.children;
   return "";
@@ -27,7 +34,7 @@ function filterItemChildren(children: ReactNode, query: string): ReactNode {
   const filtered = !q
     ? items
     : items.filter((child) =>
-        getItemTextValue(child).toLowerCase().includes(q)
+        getItemSearchText(child).toLowerCase().includes(q)
       );
 
   return filtered.map((child) => {
@@ -41,6 +48,48 @@ function filterItemChildren(children: ReactNode, query: string): ReactNode {
   });
 }
 
+type SelectedItems = Parameters<NonNullable<SelectProps["renderValue"]>>[0];
+
+function defaultRenderValue(items: SelectedItems) {
+  if (!items.length) return null;
+  const item = items[0];
+  if (item.rendered != null) return item.rendered;
+  return item.textValue ?? null;
+}
+
+function getSelectItemKey(child: ReactElement): string | null {
+  const props = child.props as { key?: Key };
+  const raw = child.key ?? props.key;
+  const normalized = selectionKeyToString(raw);
+  if (!normalized) return null;
+  if (normalized.startsWith(".$")) return normalized.slice(2);
+  return normalized;
+}
+
+function toSelectedKeysSet(selectedKey: Key | null | undefined): Set<Key> {
+  const normalized = selectionKeyToString(selectedKey);
+  if (!normalized) return new Set();
+  return new Set<Key>([normalized, `$${normalized}`]);
+}
+
+/** Fallback when HeroUI selectedItems is empty but selectedKey is set. */
+function renderSelectedFromChildren(
+  children: ReactNode,
+  selectedKey: Key | null | undefined
+): ReactNode {
+  const normalized = selectionKeyToString(selectedKey);
+  if (!normalized) return null;
+
+  const items = Children.toArray(children).filter(isValidElement) as ReactElement[];
+  for (const child of items) {
+    if (getSelectItemKey(child) !== normalized) continue;
+    const props = child.props as { children?: ReactNode; textValue?: string };
+    if (props.textValue) return props.textValue;
+    return props.children ?? null;
+  }
+  return null;
+}
+
 export type SearchableSelectProps = Omit<
   SelectProps,
   "children" | "selectedKeys" | "onSelectionChange" | "defaultSelectedKeys"
@@ -50,6 +99,8 @@ export type SearchableSelectProps = Omit<
   onSelectionChange?: (key: Key | null) => void;
   searchPlaceholder?: string;
   compact?: boolean;
+  /** Shown in the trigger when HeroUI has no matching selected item (e.g. badges). */
+  triggerLabel?: string;
 };
 
 export function SearchableSelect({
@@ -58,10 +109,12 @@ export function SearchableSelect({
   onSelectionChange,
   searchPlaceholder,
   compact,
+  triggerLabel,
   listboxProps,
   classNames,
   placeholder,
   onOpenChange,
+  renderValue: renderValueProp,
   ...props
 }: SearchableSelectProps) {
   const { t } = useTranslation();
@@ -73,6 +126,38 @@ export function SearchableSelect({
   const filteredChildren = useMemo(
     () => filterItemChildren(children, query),
     [children, query]
+  );
+
+  const triggerFallbackContent = useMemo(() => {
+    if (!hasSelection) return undefined;
+    if (renderValueProp) {
+      return renderValueProp([]);
+    }
+    return renderSelectedFromChildren(children, selectedKey) ?? undefined;
+  }, [children, hasSelection, renderValueProp, selectedKey]);
+
+  const resolvedPlaceholder = useMemo(() => {
+    if (!hasSelection) return placeholder;
+    if (triggerLabel) return triggerLabel;
+    const fallback = triggerFallbackContent;
+    if (typeof fallback === "string") return fallback;
+    return placeholder;
+  }, [hasSelection, placeholder, triggerFallbackContent, triggerLabel]);
+
+  const renderValue: SelectProps["renderValue"] = useCallback(
+    (items: SelectedItems) => {
+      if (hasSelection && renderValueProp) {
+        return renderValueProp(items);
+      }
+      if (items.length > 0) {
+        return defaultRenderValue(items);
+      }
+      if (hasSelection) {
+        return renderSelectedFromChildren(children, selectedKey);
+      }
+      return null;
+    },
+    [children, hasSelection, renderValueProp, selectedKey]
   );
 
   const handleOpenChange = (open: boolean) => {
@@ -107,7 +192,7 @@ export function SearchableSelect({
       variant="bordered"
       labelPlacement="outside"
       radius="sm"
-      placeholder={placeholder}
+      placeholder={resolvedPlaceholder}
       {...field}
       classNames={{
         ...field.classNames,
@@ -115,19 +200,22 @@ export function SearchableSelect({
         value: cn(
           field.classNames?.value,
           classNames?.value,
-          !hasSelection && placeholder && "text-default-400"
+          "w-full min-w-0",
+          !hasSelection && resolvedPlaceholder && "text-default-400"
+        ),
+        innerWrapper: cn(
+          field.classNames?.innerWrapper,
+          classNames?.innerWrapper,
+          "w-full min-w-0"
         ),
       }}
       {...props}
-      selectedKeys={
-        selectedKey != null && selectedKey !== ""
-          ? new Set([selectedKey])
-          : new Set()
-      }
+      renderValue={renderValue}
+      selectedKeys={toSelectedKeysSet(selectedKey)}
       onOpenChange={handleOpenChange}
       onSelectionChange={(keys) => {
         const key = (Array.from(keys)[0] as Key | undefined) ?? null;
-        onSelectionChange?.(key);
+        onSelectionChange?.(selectionKeyToString(key));
         setQuery("");
       }}
       listboxProps={{

@@ -15,6 +15,10 @@ import {
 import { db, storage, auth } from "@/lib/firebase";
 import type { ApiResponse, PaginatedResponse } from "@/types/api.types";
 import { withLogging } from "@/lib/service-utils";
+import {
+  normalizeTaskPriorityValue,
+  normalizeTaskStatusValue,
+} from "../utils/task-field-normalizers";
 import type {
   Task,
   Sprint,
@@ -55,6 +59,10 @@ function mapTaskDoc(id: string, data: Record<string, unknown>): Task {
   return {
     id,
     ...data,
+    title: typeof data.title === "string" ? data.title : "",
+    description: typeof data.description === "string" ? data.description : "",
+    status: normalizeTaskStatusValue(data.status),
+    priority: normalizeTaskPriorityValue(data.priority),
     type: normalizeTaskType(data.type),
     createdAt:
       data.createdAt instanceof Timestamp
@@ -89,6 +97,10 @@ export const TaskService = {
     filters?: TaskFilters & { projectId?: string }
   ): Promise<PaginatedResponse<Task>> {
     return withLogging(SERVICE_NAME, "getTasks", (async () => {
+      if (!companyId) {
+        return { data: [], total: 0, page: 1, pageSize: 10, totalPages: 0 };
+      }
+
       const tasksRef = collection(db, "companies", companyId, "tasks");
       
       let q = query(tasksRef);
@@ -128,9 +140,10 @@ export const TaskService = {
       }
       if (filters?.search) {
         const search = filters.search.toLowerCase();
-        tasks = tasks.filter(t => 
-          t.title.toLowerCase().includes(search) || 
-          t.description.toLowerCase().includes(search)
+        tasks = tasks.filter(
+          (t) =>
+            (t.title ?? "").toLowerCase().includes(search) ||
+            (t.description ?? "").toLowerCase().includes(search)
         );
       }
       if (filters?.overdueOnly) {
@@ -157,7 +170,11 @@ export const TaskService = {
       tasks.sort((a: any, b: any) => {
         const valA = a[sortBy];
         const valB = b[sortBy];
-        
+
+        if (valA == null && valB == null) return 0;
+        if (valA == null) return sortOrder === "asc" ? -1 : 1;
+        if (valB == null) return sortOrder === "asc" ? 1 : -1;
+
         if (valA < valB) return sortOrder === "asc" ? -1 : 1;
         if (valA > valB) return sortOrder === "asc" ? 1 : -1;
         return 0;

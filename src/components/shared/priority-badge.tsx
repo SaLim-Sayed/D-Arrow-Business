@@ -1,6 +1,7 @@
 import { Chip } from "@heroui/react";
 import { useTranslation } from "react-i18next";
 import type { TaskPriority } from "@/features/tasks/types/task.types";
+import { normalizeTaskPriorityValue } from "@/features/tasks/utils/task-field-normalizers";
 
 const priorityConfig: Record<
   TaskPriority,
@@ -12,13 +13,18 @@ const priorityConfig: Record<
   urgent: { color: "danger" },
 };
 
-export function PriorityBadge({ priority }: { priority: TaskPriority }) {
+export function PriorityBadge({
+  priority,
+}: {
+  priority: string | undefined | null;
+}) {
   const { t } = useTranslation("tasks");
-  const config = priorityConfig[priority];
+  const normalized = normalizeTaskPriorityValue(priority);
+  const config = priorityConfig[normalized];
 
   return (
     <Chip size="sm" variant="flat" color={config.color} className="font-medium">
-      {t(`priority.${priority}`)}
+      {t(`priority.${normalized}`)}
     </Chip>
   );
 }

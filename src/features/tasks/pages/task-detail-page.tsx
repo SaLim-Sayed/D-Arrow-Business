@@ -11,8 +11,10 @@ import { TaskComments } from "../components/task-comments";
 import { TaskHistory } from "../components/task-history";
 import { AttachmentThumbnail, isLikelyImageUrl } from "../components/attachment-thumbnail";
 import { StatusBadge } from "@/components/shared/status-badge";
+import { PriorityBadge } from "@/components/shared/priority-badge";
 import { LoadingSpinner } from "@/components/shared/loading-spinner";
 import { FieldBox } from "@/components/shared/field-box";
+import { SearchableSelect } from "@/components/shared/searchable-select";
 import {
   Button,
   Avatar,
@@ -23,10 +25,7 @@ import {
   ModalBody,
   ModalFooter,
   Spinner,
-  Dropdown,
-  DropdownTrigger,
-  DropdownMenu,
-  DropdownItem,
+  SelectItem,
   Textarea,
   Input,
   Progress,
@@ -37,7 +36,6 @@ import {
   FileText,
   Copy,
   Plus,
-  CheckCircle2,
   Trash2,
   ArrowRight,
   Clock,
@@ -51,9 +49,15 @@ import {
   Layers,
   AlignLeft,
   History,
+  UserRound,
+  CalendarRange,
 } from "lucide-react";
 import { TASK_STATUSES, TASK_PRIORITIES } from "@/lib/constants";
 import { formatDate } from "@/lib/utils";
+import {
+  normalizeTaskPriorityValue,
+  normalizeTaskStatusValue,
+} from "../utils/task-field-normalizers";
 
 const NAV_TABS = [
   { key: "details", label: "Details", icon: ListTodo },
@@ -101,14 +105,14 @@ function SectionCard({
   return (
     <section
       id={id}
-      className={`scroll-mt-24 p-6 md:p-8 border-b border-default-100/80 ${className}`}
+      className={`scroll-mt-24 px-5 md:px-8 py-5 md:py-6 border-b border-default-100 ${className}`}
     >
-      <div className="max-w-5xl mx-auto">
-        <div className="flex items-start justify-between gap-4 mb-5">
-          <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-xl bg-primary/10 text-primary shrink-0">{icon}</div>
-            <div>
-              <h2 className="text-lg font-bold text-foreground tracking-tight">{title}</h2>
+      <div className="max-w-4xl mx-auto">
+        <div className="flex items-start justify-between gap-4 mb-4">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className="p-2 rounded-md bg-primary/10 text-primary shrink-0">{icon}</div>
+            <div className="min-w-0 text-start">
+              <h2 className="text-base font-semibold text-foreground">{title}</h2>
               {subtitle && <p className="text-xs text-default-500 mt-0.5">{subtitle}</p>}
             </div>
           </div>
@@ -117,7 +121,7 @@ function SectionCard({
         {bare ? (
           children
         ) : (
-          <div className="rounded-2xl border border-default-200/60 bg-content1/80 backdrop-blur-sm shadow-sm p-5 md:p-6">
+          <div className="rounded-lg border border-default-200 bg-default-50/30 p-4 md:p-5">
             {children}
           </div>
         )}
@@ -137,7 +141,7 @@ function SubtasksList({ parentId }: { parentId: string }) {
 
   if (subtasks.length === 0) {
     return (
-      <div className="text-center py-8 rounded-xl border border-dashed border-default-200 bg-default-50/50 space-y-4">
+      <div className="text-center py-6 rounded-lg border border-dashed border-default-200 bg-default-50/50 space-y-3">
         <p className="text-sm text-default-500">{t("detail.noSubtasks")}</p>
         <Button
           size="sm"
@@ -157,7 +161,7 @@ function SubtasksList({ parentId }: { parentId: string }) {
     <div className="space-y-2">
       {subtasks.map((st) => (
         <Link key={st.id} to={`/tasks/${st.id}`} className="block group">
-          <div className="flex items-center justify-between p-4 rounded-xl border border-default-200/80 bg-default-50/50 hover:border-primary/30 hover:bg-primary-50/30 transition-all">
+          <div className="flex items-center justify-between p-3 rounded-lg border border-default-200 bg-content1 hover:border-primary/30 hover:bg-primary-50/20 transition-colors">
             <div className="flex items-center gap-3 min-w-0">
               <StatusBadge status={st.status} />
               <span className="font-semibold text-sm truncate group-hover:text-primary transition-colors">{st.title}</span>
@@ -227,6 +231,12 @@ export function TaskDetailPage() {
     ? {
         ...baseTask,
         ...pendingChanges,
+        status: normalizeTaskStatusValue(
+          pendingChanges.status ?? baseTask.status
+        ),
+        priority: normalizeTaskPriorityValue(
+          pendingChanges.priority ?? baseTask.priority
+        ),
         history: pendingChanges.history ?? baseTask.history,
         assignee:
           allUsers?.find(
@@ -367,7 +377,6 @@ export function TaskDetailPage() {
     ? allSprints?.data?.find((s) => s.id === task.sprintId)
     : null;
   const sprintName = activeSprint?.name || t("detail.sections.noActiveSprint");
-  const sprintLongName = activeSprint ? `${activeSprint.name}` : t("detail.sections.notAssigned");
 
   const progressPercent =
     task.status === "done"
@@ -387,38 +396,55 @@ export function TaskDetailPage() {
 
   const taskRef = `TSK-${taskId?.slice(0, 6).toUpperCase()}`;
   const typeGradient = TYPE_ICON_COLOR[task.type] || TYPE_ICON_COLOR.task;
+  const isRtl = i18n.language === "ar";
+
+  const assigneeName = task.assignee
+    ? isRtl
+      ? task.assignee.nameAr || task.assignee.name
+      : task.assignee.name
+    : null;
+
+  const displayUserName = (user: { name: string; nameAr?: string | null }) =>
+    isRtl && user.nameAr ? user.nameAr : user.name;
 
   const copyTaskRef = () => {
     navigator.clipboard.writeText(taskRef);
   };
 
   return (
-    <div className="min-h-[calc(100vh-64px)] bg-gradient-to-br from-default-50 via-content1 to-default-100/80">
+    <div className="min-h-[calc(100vh-64px)] bg-default-50/50">
       <div className="flex flex-col lg:flex-row min-h-[calc(100vh-64px)]">
         {/* LEFT SIDEBAR */}
-        <aside className="w-full lg:w-[300px] shrink-0 border-b lg:border-b-0 lg:border-r border-default-200/80 bg-content1/90 backdrop-blur-md flex flex-col lg:sticky lg:top-16 lg:h-[calc(100vh-64px)] shadow-sm">
-          <div className="flex-1 overflow-y-auto p-5 space-y-5">
+        <aside className="w-full lg:w-[280px] shrink-0 border-b lg:border-b-0 lg:border-e border-default-200 bg-content1 flex flex-col lg:sticky lg:top-16 lg:h-[calc(100vh-64px)]">
+          <div className="flex-1 overflow-y-auto p-4 space-y-4">
             <Button
               variant="light"
               size="sm"
-              className="w-fit -ml-1 font-semibold text-default-500"
-              startContent={<ChevronLeft className="w-4 h-4" />}
+              radius="sm"
+              className="w-fit font-medium text-default-500"
+              startContent={
+                <ChevronLeft className={`w-4 h-4 ${isRtl ? "rotate-180" : ""}`} />
+              }
               onPress={() => navigate("/tasks/work")}
             >
               {tc("actions.back")}
             </Button>
 
-            <div className="rounded-2xl overflow-hidden border border-default-200/60 shadow-sm">
-              <div className={`h-20 bg-gradient-to-br ${typeGradient} opacity-90`} />
-              <div className="px-4 pb-4 -mt-10 relative">
-                <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${typeGradient} text-white flex items-center justify-center shadow-lg ring-4 ring-content1`}>
-                  <FileText className="w-7 h-7" />
+            <div className="rounded-lg overflow-hidden border border-default-200">
+              <div className={`h-14 bg-gradient-to-br ${typeGradient} opacity-90`} />
+              <div className="px-3 pb-3 -mt-8 relative">
+                <div
+                  className={`w-12 h-12 rounded-lg bg-gradient-to-br ${typeGradient} text-white flex items-center justify-center shadow-md ring-2 ring-content1`}
+                >
+                  <FileText className="w-5 h-5" />
                 </div>
-                <p className="mt-3 text-xs font-bold text-default-500 uppercase tracking-widest">{t("detail.sections.taskId")}</p>
+                <p className="mt-2 text-[11px] font-medium text-default-500">
+                  {t("detail.sections.taskId")}
+                </p>
                 <button
                   type="button"
                   onClick={copyTaskRef}
-                  className="mt-1 flex items-center gap-2 font-mono text-sm font-bold text-foreground hover:text-primary transition-colors"
+                  className="mt-0.5 flex items-center gap-1.5 font-mono text-sm font-semibold text-foreground hover:text-primary transition-colors"
                 >
                   {taskRef}
                   <Copy className="w-3.5 h-3.5 text-default-400" />
@@ -427,71 +453,72 @@ export function TaskDetailPage() {
             </div>
 
               {task.parentId && parentTaskRecord && (
-                <div className="rounded-xl p-4 border border-default-200/60 bg-content1">
-                  <p className="text-[10px] font-bold text-default-500 uppercase tracking-widest mb-2">
+                <div className="rounded-lg p-3 border border-default-200 bg-default-50/50">
+                  <p className="text-[11px] font-medium text-default-500 mb-1.5">
                     {t("detail.parentTask")}
                   </p>
                   <button
                     type="button"
                     onClick={() => navigate(`/tasks/${parentTaskRecord.id}`)}
-                    className="w-full text-left font-bold text-sm text-primary hover:underline truncate"
+                    className="w-full text-start font-semibold text-sm text-primary hover:underline truncate"
                   >
                     {parentTaskRecord.title}
                   </button>
                 </div>
               )}
 
-              <div className="rounded-xl border border-default-200/60 p-4 bg-default-50/50 space-y-3">
+              <div className="rounded-lg border border-default-200 p-3 bg-default-50/50 space-y-2.5">
               <div className="flex justify-between items-center">
-                <span className="text-xs font-bold text-default-500 uppercase tracking-wide">{t("detail.sections.progress")}</span>
-                <span className="text-sm font-black text-primary">{progressPercent}%</span>
+                <span className="text-xs font-medium text-default-500">{t("detail.sections.progress")}</span>
+                <span className="text-sm font-semibold text-primary">{progressPercent}%</span>
               </div>
               <Progress
                 value={progressPercent}
                 color="primary"
                 size="sm"
+                radius="sm"
                 className="w-full"
                 aria-label={t("detail.sections.progress")}
               />
-              <div className="flex flex-wrap gap-2 pt-1">
-                <Chip size="sm" variant="flat" color="primary" className="capitalize font-semibold">
+              <div className="flex flex-wrap gap-1.5 pt-0.5">
+                <Chip size="sm" variant="flat" color="primary" radius="sm" className="font-medium">
                   {t(`status.${task.status}`)}
                 </Chip>
-                <Chip size="sm" variant="flat" color={PRIORITY_CHIP_COLOR[task.priority]} className="capitalize font-semibold">
+                <Chip size="sm" variant="flat" color={PRIORITY_CHIP_COLOR[task.priority]} radius="sm" className="font-medium">
                   {t(`priority.${task.priority}`)}
                 </Chip>
-                <Chip size="sm" variant="bordered" className="capitalize font-semibold">
+                <Chip size="sm" variant="bordered" radius="sm" className="font-medium">
                   {t(`type.${task.type}`)}
                 </Chip>
               </div>
             </div>
 
-            <div className="space-y-3">
-              <div className="rounded-xl p-4 border border-warning-200/60 bg-warning-50/40">
-                <p className="text-[10px] font-bold text-warning-700 uppercase tracking-widest">{t("form.sprint.label")}</p>
-                <p className="font-bold text-sm text-foreground mt-1 truncate" title={sprintName}>
+            <div className="space-y-2.5">
+              <div className="rounded-lg p-3 border border-default-200 bg-content1">
+                <p className="text-[11px] font-medium text-default-500">{t("form.sprint.label")}</p>
+                <p className="font-semibold text-sm text-foreground mt-1 truncate" title={sprintName}>
                   {sprintName}
                 </p>
               </div>
 
               {totalLoggedMinutes > 0 && (
-                <div className="rounded-xl p-4 border border-primary-200/60 bg-primary-50/40">
+                <div className="rounded-lg p-3 border border-primary/20 bg-primary-50/30">
                   <div className="flex items-center gap-2 mb-1">
-                    <Clock className="w-4 h-4 text-primary" />
-                    <p className="text-[10px] font-bold text-primary uppercase tracking-widest">{t("detail.sections.logHoursTitle")}</p>
+                    <Clock className="w-3.5 h-3.5 text-primary" />
+                    <p className="text-[11px] font-medium text-primary">{t("detail.sections.logHoursTitle")}</p>
                   </div>
-                  <p className="font-black text-lg text-foreground">
+                  <p className="font-semibold text-base text-foreground">
                     {loggedHours}h {loggedMins}m
                   </p>
                 </div>
               )}
 
-              <div className="rounded-xl p-4 border border-default-200/60 bg-content1">
-                <p className="text-[10px] font-bold text-default-500 uppercase tracking-widest mb-2">{t("form.tags.label")}</p>
+              <div className="rounded-lg p-3 border border-default-200 bg-content1">
+                <p className="text-[11px] font-medium text-default-500 mb-1.5">{t("form.tags.label")}</p>
                 <div className="flex flex-wrap gap-1.5">
                   {task.tags && task.tags.length > 0 ? (
                     task.tags.map((tag: string) => (
-                      <Chip key={tag} size="sm" variant="flat" className="font-medium">
+                      <Chip key={tag} size="sm" variant="flat" radius="sm" className="font-medium">
                         {tag}
                       </Chip>
                     ))
@@ -507,11 +534,11 @@ export function TaskDetailPage() {
         {/* RIGHT MAIN CONTENT */}
         <div className="flex-1 flex flex-col min-h-0 min-w-0">
           {/* Main Header */}
-          <header className="px-6 md:px-8 pt-6 pb-4 border-b border-default-100/80 bg-content1/60 backdrop-blur-sm">
-            <h1 className="text-2xl md:text-3xl font-black text-foreground tracking-tight leading-tight max-w-4xl">
+          <header className="px-5 md:px-8 pt-5 pb-3 border-b border-default-100 bg-content1">
+            <h1 className="text-xl md:text-2xl font-bold text-foreground leading-tight max-w-4xl text-start" dir="auto">
               {task.title}
             </h1>
-            <p className="text-sm text-default-500 mt-2">
+            <p className="text-xs text-default-500 mt-1.5 text-start">
               {t("detail.sections.createdBy", {
                 name: task.reporter?.name || t("history.unknownUser"),
                 date: formatDate(task.createdAt),
@@ -520,8 +547,8 @@ export function TaskDetailPage() {
           </header>
 
           {/* Sticky ScrollSpy Nav */}
-          <nav className="sticky top-0 z-20 bg-content1/95 backdrop-blur-md border-b border-default-200/80 px-4 md:px-6 py-3">
-            <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide">
+          <nav className="sticky top-0 z-20 bg-content1/95 backdrop-blur-md border-b border-default-200 px-4 md:px-6 py-2.5">
+            <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-hide">
               {NAV_TABS.map(({ key, label, icon: TabIcon }) => {
                 const isActive = activeTab === key;
                 const count = key === "comments" ? task.commentsCount || 0 : key === "attachments" ? task.attachments?.length || 0 : null;
@@ -530,16 +557,16 @@ export function TaskDetailPage() {
                     key={key}
                     type="button"
                     onClick={() => scrollToSection(key)}
-                    className={`shrink-0 flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold transition-all ${
+                    className={`shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
                       isActive
-                        ? "bg-primary text-white shadow-md shadow-primary/25"
+                        ? "bg-primary text-white"
                         : "text-default-600 hover:bg-default-100"
                     }`}
                   >
-                    <TabIcon className="w-4 h-4" />
+                    <TabIcon className="w-3.5 h-3.5" />
                     {t(`detail.tabs.${key}`, label)}
                     {count !== null && count > 0 && (
-                      <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${isActive ? "bg-white/20" : "bg-default-200"}`}>
+                      <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-sm ${isActive ? "bg-white/20" : "bg-default-200"}`}>
                         {count}
                       </span>
                     )}
@@ -557,252 +584,199 @@ export function TaskDetailPage() {
               subtitle={t("detail.sections.detailsSubtitle")}
               icon={<ListTodo className="w-5 h-5" />}
             >
-              <div className="space-y-8">
-              <div>
-                <h3 className="text-xs font-bold text-default-500 uppercase tracking-widest mb-4">{t("detail.sections.primary")}</h3>
-                <div className="grid grid-cols-1 gap-4 max-w-2xl">
+              <div className="space-y-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 md:gap-6">
                   {task.type === "subtask" && (
-                    <Dropdown>
-                      <DropdownTrigger>
-                        <div className="w-full">
-                          <FieldBox
-                            label={t("form.parent.label")}
-                            className="cursor-pointer hover:border-primary/50 transition-colors"
-                          >
-                            <div className="flex items-center justify-between w-full gap-2">
-                              {parentTaskRecord ? (
-                                <button
-                                  type="button"
-                                  className="font-medium text-sm text-primary hover:underline truncate text-left"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    navigate(`/tasks/${parentTaskRecord.id}`);
-                                  }}
-                                >
-                                  {parentTaskRecord.title}
-                                </button>
-                              ) : (
-                                <span className="text-sm text-warning font-medium">
-                                  {t("form.parent.placeholder")}
-                                </span>
-                              )}
-                              <ArrowRight className="w-4 h-4 text-default-400 shrink-0" />
-                            </div>
-                          </FieldBox>
-                        </div>
-                      </DropdownTrigger>
-                      <DropdownMenu
+                    <div className="sm:col-span-2">
+                      <SearchableSelect
+                        label={t("form.parent.label")}
                         aria-label={t("form.parent.label")}
-                        onAction={(key) =>
-                          handleParentChange(key === "none" ? null : key.toString())
+                        placeholder={t("form.parent.placeholder")}
+                        searchPlaceholder={t("form.search.placeholder")}
+                        selectedKey={task.parentId ?? undefined}
+                        onSelectionChange={(key) =>
+                          handleParentChange(key ? String(key) : null)
                         }
                       >
-                        {[
-                          <DropdownItem key="none">{t("form.parent.placeholder")}</DropdownItem>,
-                          ...parentOptions.map((p) => (
-                            <DropdownItem key={p.id} textValue={p.title}>
-                              <div className="flex flex-col">
-                                <span>{p.title}</span>
-                                <span className="text-tiny text-default-400 capitalize">
-                                  {t(`type.${p.type}`)}
-                                </span>
-                              </div>
-                            </DropdownItem>
-                          )),
-                        ]}
-                      </DropdownMenu>
-                    </Dropdown>
+                        {parentOptions.map((p) => (
+                          <SelectItem key={p.id} textValue={p.title}>
+                            <div className="flex flex-col text-start">
+                              <span dir="auto">{p.title}</span>
+                              <span className="text-tiny text-default-400">
+                                {t(`type.${p.type}`)}
+                              </span>
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SearchableSelect>
+                    </div>
                   )}
 
-                  <Dropdown>
-                    <DropdownTrigger>
-                      <div className="w-full">
-                        <FieldBox
-                          label={t("detail.sections.associatedSprint")}
-                          className="cursor-pointer hover:border-primary/50 transition-colors"
-                        >
-                          <div className="flex items-center justify-between w-full">
-                            <span className="font-medium text-default-700 flex items-center gap-2">
-                              <CheckCircle2 className="w-4 h-4 text-primary" />
-                              {sprintLongName}
-                            </span>
-                          </div>
-                        </FieldBox>
-                      </div>
-                    </DropdownTrigger>
-                    <DropdownMenu
-                      aria-label={t("form.sprint.label")}
-                      onAction={(key) =>
-                        handleInlineChange(
-                          "sprintId",
-                          key === "none" ? null : key.toString()
-                        )
-                      }
-                    >
-                      {[
-                        <DropdownItem key="none">{t("form.sprint.unassigned")}</DropdownItem>,
-                        ...(allSprints?.data || []).map((s) => (
-                          <DropdownItem key={s.id}>{s.name}</DropdownItem>
-                        )),
-                      ]}
-                    </DropdownMenu>
-                  </Dropdown>
-                </div>
-              </div>
+                  <SearchableSelect
+                    label={t("detail.sections.associatedSprint")}
+                    aria-label={t("form.sprint.label")}
+                    searchPlaceholder={t("form.search.placeholder")}
+                    selectedKey={task.sprintId ?? "no-sprint"}
+                    triggerLabel={
+                      task.sprintId
+                        ? allSprints?.data?.find((s) => s.id === task.sprintId)?.name ??
+                          t("form.sprint.unassigned")
+                        : t("form.sprint.unassigned")
+                    }
+                    onSelectionChange={(key) => {
+                      const val = key as string;
+                      handleInlineChange("sprintId", val === "no-sprint" ? null : val);
+                    }}
+                  >
+                    {[
+                      <SelectItem key="no-sprint" textValue={t("form.sprint.unassigned")}>
+                        {t("form.sprint.unassigned")}
+                      </SelectItem>,
+                      ...(allSprints?.data || []).map((s) => (
+                        <SelectItem key={s.id} textValue={s.name}>
+                          <span dir="auto">{s.name}</span>
+                        </SelectItem>
+                      )),
+                    ]}
+                  </SearchableSelect>
 
-              <div>
-                <h3 className="text-xs font-bold text-default-500 uppercase tracking-widest mb-4">{t("detail.sections.properties")}</h3>
-                <div className="space-y-4">
-                  <Dropdown>
-                    <DropdownTrigger>
-                      <div className="w-full">
-                        <FieldBox
-                          label={t("detail.sections.assignedTo")}
-                          className="cursor-pointer hover:border-primary/50 transition-colors"
-                        >
-                          <div className="flex items-center gap-2 bg-default-100 py-1 px-2 rounded-md">
-                            <Avatar
-                              size="sm"
-                              src={task.assignee?.avatar}
-                              fallback={(task.assignee?.name ?? "U")
-                                .charAt(0)
-                                .toUpperCase()}
-                              showFallback
-                              className="w-5 h-5 text-[10px]"
-                            />
-                            <span className="font-medium text-xs">
-                              {(i18n.language === "ar"
-                                ? task.assignee?.nameAr
-                                : task.assignee?.name) ||
-                                t("form.assignee.unassigned")}
+                  <SearchableSelect
+                    label={t("detail.sections.assignedTo")}
+                    aria-label={t("form.assignee.label")}
+                    placeholder={t("form.assignee.placeholder")}
+                    searchPlaceholder={t("form.assignee.searchPlaceholder")}
+                    selectedKey={task.assigneeId ?? null}
+                    triggerLabel={assigneeName ?? undefined}
+                    startContent={
+                      task.assigneeId ? (
+                        <Avatar
+                          size="sm"
+                          src={task.assignee?.avatar}
+                          fallback={(assigneeName ?? "U").charAt(0).toUpperCase()}
+                          showFallback
+                          className="shrink-0"
+                        />
+                      ) : (
+                        <UserRound className="w-4 h-4 text-default-400 shrink-0" />
+                      )
+                    }
+                    renderValue={
+                      assigneeName
+                        ? () => (
+                            <span className="truncate" dir="auto">
+                              {assigneeName}
                             </span>
-                          </div>
-                        </FieldBox>
-                      </div>
-                    </DropdownTrigger>
-                    <DropdownMenu
-                      aria-label={t("detail.sections.assignedTo")}
-                      onAction={(key) =>
-                        handleInlineChange(
-                          "assigneeId",
-                          key === "unassigned" ? null : key.toString()
-                        )
-                      }
-                    >
-                      {[
-                        <DropdownItem key="unassigned">
-                          {t("form.assignee.unassigned")}
-                        </DropdownItem>,
-                        ...(allUsers || []).map((u: any) => (
-                          <DropdownItem key={u.id}>
-                            {i18n.language === "ar" ? u.nameAr || u.name : u.name}
-                          </DropdownItem>
-                        )),
-                      ]}
-                    </DropdownMenu>
-                  </Dropdown>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <Dropdown>
-                      <DropdownTrigger>
-                        <div className="w-full">
-                          <FieldBox
-                            label={t("detail.sections.status")}
-                            className="cursor-pointer hover:border-primary/50 transition-colors"
+                          )
+                        : undefined
+                    }
+                    onSelectionChange={(key) => {
+                      const val = key as string | null;
+                      handleInlineChange(
+                        "assigneeId",
+                        !val || val === "unassigned" ? null : val
+                      );
+                    }}
+                  >
+                    {[
+                      <SelectItem key="unassigned" textValue={t("form.assignee.unassigned")}>
+                        {t("form.assignee.unassigned")}
+                      </SelectItem>,
+                      ...(allUsers || []).map((u) => {
+                        const name = displayUserName(u);
+                        return (
+                          <SelectItem
+                            key={u.id}
+                            textValue={name}
+                            // @ts-expect-error custom prop used by SearchableSelect filter
+                            searchValue={`${name} ${u.email}`}
                           >
-                            <div className="flex items-center justify-between w-full">
-                              <div className="flex items-center gap-2">
-                                <span className="text-success">
-                                  <CheckCircle2 className="w-4 h-4 fill-success text-white" />
+                            <div className="flex items-center gap-2">
+                              <Avatar
+                                size="sm"
+                                src={u.avatar}
+                                fallback={name.charAt(0).toUpperCase()}
+                                showFallback
+                              />
+                              <div className="flex flex-col text-start min-w-0">
+                                <span className="text-small font-medium" dir="auto">
+                                  {name}
                                 </span>
-                                <span className="font-bold text-sm text-foreground capitalize">
-                                  {t(`status.${task.status}`)}
+                                <span className="text-tiny text-default-400" dir="ltr">
+                                  {u.email}
                                 </span>
                               </div>
                             </div>
-                          </FieldBox>
-                        </div>
-                      </DropdownTrigger>
-                      <DropdownMenu
-                        aria-label="Status"
-                        onAction={(key) => handleInlineChange("status", key)}
-                      >
-                        {TASK_STATUSES.map((s) => (
-                          <DropdownItem key={s}>{t(`status.${s}`)}</DropdownItem>
-                        ))}
-                      </DropdownMenu>
-                    </Dropdown>
+                          </SelectItem>
+                        );
+                      }),
+                    ]}
+                  </SearchableSelect>
+                </div>
 
-                    <Dropdown>
-                      <DropdownTrigger>
-                        <div className="w-full">
-                          <FieldBox
-                            label={t("detail.sections.itemType")}
-                            className="cursor-pointer hover:border-primary/50 transition-colors"
-                          >
-                            <div className="flex items-center gap-2">
-                              <FileText className="w-4 h-4 text-primary" />
-                              <span className="font-bold text-sm text-foreground capitalize">
-                                {t(`type.${task.type}`)}
-                              </span>
-                            </div>
-                          </FieldBox>
-                        </div>
-                      </DropdownTrigger>
-                      <DropdownMenu
-                        aria-label={t("detail.sections.itemType")}
-                        onAction={(key) => handleTypeChange(key.toString())}
-                      >
-                        <DropdownItem key="task">{t("type.task")}</DropdownItem>
-                        <DropdownItem key="subtask">{t("type.subtask")}</DropdownItem>
-                      </DropdownMenu>
-                    </Dropdown>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-6">
+                    <SearchableSelect
+                      label={t("form.statusLabel")}
+                      aria-label={t("form.statusLabel")}
+                      searchPlaceholder={t("form.search.placeholder")}
+                      selectedKey={task.status}
+                      triggerLabel={t(`status.${task.status}`)}
+                      renderValue={() => <StatusBadge status={task.status} />}
+                      onSelectionChange={(key) =>
+                        key && handleInlineChange("status", key)
+                      }
+                    >
+                      {TASK_STATUSES.map((s) => (
+                        <SelectItem key={s} textValue={t(`status.${s}`)}>
+                          {t(`status.${s}`)}
+                        </SelectItem>
+                      ))}
+                    </SearchableSelect>
 
-                    <Dropdown>
-                      <DropdownTrigger>
-                        <div className="w-full">
-                          <FieldBox
-                            label={t("detail.sections.priority")}
-                            className="cursor-pointer hover:border-primary/50 transition-colors"
-                          >
-                            <div className="flex items-center gap-2">
-                              <span
-                                className={`w-2.5 h-2.5 rounded-full ${
-                                  task.priority === "urgent"
-                                    ? "bg-danger"
-                                    : task.priority === "high"
-                                    ? "bg-warning"
-                                    : task.priority === "medium"
-                                    ? "bg-primary"
-                                    : "bg-default-400"
-                                }`}
-                              />
-                              <span className="font-bold text-sm text-foreground capitalize">
-                                {t(`priority.${task.priority}`)}
-                              </span>
-                            </div>
-                          </FieldBox>
-                        </div>
-                      </DropdownTrigger>
-                      <DropdownMenu
-                        aria-label={t("detail.sections.priority")}
-                        onAction={(key) => handleInlineChange("priority", key)}
-                      >
-                        {TASK_PRIORITIES.map((p) => (
-                          <DropdownItem key={p}>
-                            {t(`priority.${p}`)}
-                          </DropdownItem>
-                        ))}
-                      </DropdownMenu>
-                    </Dropdown>
+                    <SearchableSelect
+                      label={t("detail.sections.priority")}
+                      aria-label={t("detail.sections.priority")}
+                      searchPlaceholder={t("form.search.placeholder")}
+                      selectedKey={task.priority}
+                      triggerLabel={t(`priority.${task.priority}`)}
+                      renderValue={() => <PriorityBadge priority={task.priority} />}
+                      onSelectionChange={(key) =>
+                        key && handleInlineChange("priority", key)
+                      }
+                    >
+                      {TASK_PRIORITIES.map((p) => (
+                        <SelectItem key={p} textValue={t(`priority.${p}`)}>
+                          <PriorityBadge priority={p} />
+                        </SelectItem>
+                      ))}
+                    </SearchableSelect>
 
-                    <FieldBox label={t("detail.sections.startDate")}>
+                    <SearchableSelect
+                      label={t("detail.sections.itemType")}
+                      aria-label={t("detail.sections.itemType")}
+                      searchPlaceholder={t("form.search.placeholder")}
+                      selectedKey={task.type}
+                      triggerLabel={t(`type.${task.type}`)}
+                      onSelectionChange={(key) =>
+                        key && handleTypeChange(String(key))
+                      }
+                    >
+                      <SelectItem key="task" textValue={t("type.task")}>
+                        {t("type.task")}
+                      </SelectItem>
+                      <SelectItem key="subtask" textValue={t("type.subtask")}>
+                        {t("type.subtask")}
+                      </SelectItem>
+                    </SearchableSelect>
+
+                    <FieldBox label={t("detail.sections.startDate")} icon={<CalendarRange className="w-3.5 h-3.5" />}>
                       <AppDatePicker
                         aria-label={t("detail.sections.startDate")}
+                        radius="sm"
                         classNames={{
-                          base: "w-full -mt-2",
+                          base: "w-full",
                           inputWrapper:
-                            "bg-transparent shadow-none w-full min-h-0 h-8",
+                            "bg-transparent shadow-none border-none w-full min-h-0 h-8 px-0",
+                          label: "sr-only",
                         }}
                         value={
                           task.startDate
@@ -818,13 +792,15 @@ export function TaskDetailPage() {
                       />
                     </FieldBox>
 
-                    <FieldBox label={t("detail.sections.endDate")}>
+                    <FieldBox label={t("detail.sections.endDate")} icon={<CalendarRange className="w-3.5 h-3.5" />}>
                       <AppDatePicker
                         aria-label={t("detail.sections.endDate")}
+                        radius="sm"
                         classNames={{
-                          base: "w-full -mt-2",
+                          base: "w-full",
                           inputWrapper:
-                            "bg-transparent shadow-none w-full min-h-0 h-8",
+                            "bg-transparent shadow-none border-none w-full min-h-0 h-8 px-0",
+                          label: "sr-only",
                         }}
                         value={
                           task.dueDate
@@ -840,8 +816,6 @@ export function TaskDetailPage() {
                       />
                     </FieldBox>
                   </div>
-                </div>
-              </div>
               </div>
             </SectionCard>
 
@@ -855,11 +829,12 @@ export function TaskDetailPage() {
                 value={task.description || ""}
                 onValueChange={(val) => handleFieldChange("description", val)}
                 placeholder={t("detail.sections.descriptionPlaceholder")}
-                minRows={5}
+                minRows={4}
                 variant="bordered"
+                radius="sm"
                 classNames={{
-                  input: "text-sm whitespace-pre-wrap leading-relaxed",
-                  inputWrapper: "bg-default-50/80 border-default-200 rounded-xl",
+                  input: "text-sm whitespace-pre-wrap leading-relaxed text-start",
+                  inputWrapper: "bg-content1 border-default-200 rounded-md",
                 }}
               />
             </SectionCard>
@@ -1065,31 +1040,33 @@ export function TaskDetailPage() {
           </div>
 
           {/* Sticky footer — scoped to main column */}
-          <footer className="shrink-0 sticky bottom-0 z-30 bg-content1/95 backdrop-blur-md border-t border-default-200/80 px-6 md:px-8 py-3 flex items-center justify-between gap-4 shadow-[0_-4px_24px_rgba(0,0,0,0.06)]">
+          <footer className="shrink-0 sticky bottom-0 z-30 bg-content1/95 backdrop-blur-md border-t border-default-200 px-5 md:px-8 py-2.5 flex items-center justify-between gap-4">
             <Button
               color="danger"
               variant="flat"
               size="sm"
+              radius="sm"
               onPress={() => setIsDeleteModalOpen(true)}
               startContent={<Trash2 className="w-4 h-4" />}
-              className="font-semibold"
+              className="font-medium"
             >
               {t("detail.sections.delete")}
             </Button>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
               {isDirty && (
-                <Chip size="sm" variant="flat" color="warning" className="font-semibold animate-pulse">
+                <Chip size="sm" variant="flat" color="warning" radius="sm" className="font-medium">
                   {t("detail.sections.unsavedChanges")}
                 </Chip>
               )}
               <Button
                 color="primary"
                 size="sm"
+                radius="sm"
                 isDisabled={!isDirty}
                 isLoading={updateMutation.isPending}
                 onPress={handleSave}
                 startContent={<Save className="w-4 h-4" />}
-                className="font-bold shadow-md shadow-primary/25 min-w-[140px]"
+                className="font-semibold min-w-[130px]"
               >
                 {t("detail.saveChanges")}
               </Button>

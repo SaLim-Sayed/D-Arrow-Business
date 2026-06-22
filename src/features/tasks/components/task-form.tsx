@@ -103,9 +103,10 @@ export function TaskForm({
   const [isUploading, setIsUploading] = useState(false);
 
   const fieldClassNames = {
+    base: "gap-2.5 w-full",
     inputWrapper:
       "bg-content1 border border-default-200 shadow-none group-data-[focus=true]:border-primary rounded-md min-h-10",
-    label: "text-default-600 font-semibold text-sm text-start",
+    label: "text-default-600 font-semibold text-sm text-start mb-0.5",
     input: "text-start text-sm",
     innerWrapper: "w-full",
   };
@@ -216,9 +217,9 @@ export function TaskForm({
   return (
     <form
       onSubmit={form.handleSubmit(handleSubmit)}
-      className="space-y-6 w-full"
+      className="space-y-8 w-full"
     >
-      <div className="space-y-4">
+      <div className="space-y-6">
         <Controller
           name="title"
           control={control}
@@ -263,11 +264,11 @@ export function TaskForm({
         />
       </div>
 
-      <div className="rounded-lg border border-default-200 bg-default-50/40 p-4 md:p-5 space-y-4">
-        <p className="text-sm font-semibold text-foreground text-start">
+      <div className="rounded-lg border border-default-200 bg-default-50/40 p-5 md:p-6 space-y-6">
+        <p className="text-sm font-semibold text-foreground text-start pb-1">
           {t("detail.details")}
         </p>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 md:gap-6">
         <Controller
           name="type"
           control={control}
@@ -278,6 +279,7 @@ export function TaskForm({
               searchPlaceholder={t("form.search.placeholder")}
               isDisabled={!!parentTaskId}
               selectedKey={field.value}
+              triggerLabel={field.value ? t(`type.${field.value}`) : undefined}
               onSelectionChange={(key) => field.onChange(key as string)}
             >
               <SelectItem key="task" textValue={t("type.task")} description={t("type.taskHint")}>
@@ -299,6 +301,12 @@ export function TaskForm({
               aria-label={t("form.sprint.label")}
               searchPlaceholder={t("form.search.placeholder")}
               selectedKey={field.value ?? "no-sprint"}
+              triggerLabel={
+                field.value
+                  ? sprints.find((s) => s.id === field.value)?.name ??
+                    t("form.sprint.unassigned")
+                  : t("form.sprint.unassigned")
+              }
               onSelectionChange={(key) => {
                 const val = key as string;
                 field.onChange(val === "no-sprint" ? null : val);
@@ -372,7 +380,7 @@ export function TaskForm({
         />
       )}
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 md:gap-6">
         <Controller
           name="status"
           control={control}
@@ -382,6 +390,7 @@ export function TaskForm({
               aria-label={t("form.statusLabel")}
               searchPlaceholder={t("form.search.placeholder")}
               selectedKey={field.value}
+              triggerLabel={field.value ? t(`status.${field.value}`) : undefined}
               onSelectionChange={(key) => field.onChange(key as string)}
             >
               {TASK_STATUSES.map((status) => (
@@ -417,6 +426,7 @@ export function TaskForm({
               aria-label={t("form.priority.label")}
               searchPlaceholder={t("form.search.placeholder")}
               selectedKey={field.value}
+              triggerLabel={field.value ? t(`priority.${field.value}`) : undefined}
               onSelectionChange={(key) => field.onChange(key as string)}
             >
               {TASK_PRIORITIES.map((priority) => (
@@ -431,7 +441,7 @@ export function TaskForm({
           )}
         />
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 md:gap-6">
 
       <Controller
         name="assigneeId"
@@ -449,6 +459,9 @@ export function TaskForm({
               placeholder={t("form.assignee.placeholder")}
               searchPlaceholder={t("form.assignee.searchPlaceholder")}
               selectedKey={field.value ?? null}
+              triggerLabel={
+                selectedUser ? displayUserName(selectedUser) : undefined
+              }
               startContent={
                 selectedUser ? (
                   <Avatar
@@ -506,7 +519,12 @@ export function TaskForm({
                     ? `${name} ${t("form.assignee.me")} ${user.email}`
                     : `${name} ${user.email}`;
                 return (
-                  <SelectItem key={option.id} textValue={searchLabel}>
+                  <SelectItem
+                    key={option.id}
+                    textValue={name}
+                    // @ts-expect-error custom prop used by SearchableSelect filter
+                    searchValue={searchLabel}
+                  >
                     <div className="flex items-center gap-2 w-full">
                       <Avatar
                         size="sm"
@@ -551,7 +569,7 @@ export function TaskForm({
       </div>
       </div>
 
-      <div className="space-y-3">
+      <div className="space-y-5 pt-2">
         <div className="text-start">
           <div className="flex items-center gap-2 flex-wrap justify-start">
             <span className="text-sm font-semibold text-foreground inline-flex items-center gap-2">
@@ -635,7 +653,7 @@ export function TaskForm({
 
       <div
         className={cn(
-          "flex flex-col-reverse sm:flex-row gap-2 pt-4 border-t border-default-100",
+          "flex flex-col-reverse sm:flex-row gap-3 pt-6 mt-2 border-t border-default-100",
           isRtl ? "sm:justify-start" : "sm:justify-end"
         )}
       >

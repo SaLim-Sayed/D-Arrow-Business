@@ -1,11 +1,11 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
-import { Button, Input, Select, SelectItem, Chip, Card, CardBody } from "@heroui/react";
+import { Button, Input, SelectItem, Chip, Card, CardBody } from "@heroui/react";
 import { X, Search, Filter } from "lucide-react";
 import { TASK_STATUSES, TASK_PRIORITIES } from "@/lib/constants";
 import { useTasksStore } from "@/stores/tasks.store";
 import type { TaskFilters } from "../types/task.types";
-import { selectFieldProps } from "@/components/shared/select-field";
+import { SearchableSelect } from "@/components/shared/searchable-select";
 
 export function TaskFiltersEnhanced() {
   const { t } = useTranslation("tasks");
@@ -54,14 +54,16 @@ export function TaskFiltersEnhanced() {
 
       {/* Quick Filters */}
       <div className="flex flex-wrap gap-2 items-center">
-        <Select
-          {...selectFieldProps()}
+        <SearchableSelect
           aria-label={t("filters.status")}
+          searchPlaceholder={t("form.search.placeholder")}
           className="w-[180px] h-11"
-          selectedKeys={new Set(filters.status && filters.status.length > 0 ? [filters.status[0]] : [""])}
-          onSelectionChange={(keys) => {
-            const val = Array.from(keys)[0] as string;
-            handleFilterChange("status", val && val !== "" ? [val] : undefined);
+          selectedKey={
+            filters.status && filters.status.length > 0 ? filters.status[0] : "all"
+          }
+          onSelectionChange={(key) => {
+            const val = key as string;
+            handleFilterChange("status", val && val !== "all" ? [val] : undefined);
           }}
         >
           {[
@@ -72,16 +74,20 @@ export function TaskFiltersEnhanced() {
               {opt.text}
             </SelectItem>
           ))}
-        </Select>
+        </SearchableSelect>
 
-        <Select
-          {...selectFieldProps()}
+        <SearchableSelect
           aria-label={t("filters.priority")}
+          searchPlaceholder={t("form.search.placeholder")}
           className="w-[180px] h-11"
-          selectedKeys={new Set(filters.priority && filters.priority.length > 0 ? [filters.priority[0]] : [""])}
-          onSelectionChange={(keys) => {
-            const val = Array.from(keys)[0] as string;
-            handleFilterChange("priority", val && val !== "" ? [val] : undefined);
+          selectedKey={
+            filters.priority && filters.priority.length > 0
+              ? filters.priority[0]
+              : "all"
+          }
+          onSelectionChange={(key) => {
+            const val = key as string;
+            handleFilterChange("priority", val && val !== "all" ? [val] : undefined);
           }}
         >
           {[
@@ -92,7 +98,7 @@ export function TaskFiltersEnhanced() {
               {opt.text}
             </SelectItem>
           ))}
-        </Select>
+        </SearchableSelect>
 
         <Button
           variant="bordered"
@@ -132,15 +138,18 @@ export function TaskFiltersEnhanced() {
                 <span className="text-sm font-semibold tracking-tight text-foreground/80">
                   {t("filters.assignee")}
                 </span>
-                <Select
-                  {...selectFieldProps()}
+                <SearchableSelect
                   aria-label={t("filters.assignee")}
                   placeholder={t("filters.selectAssignee")}
+                  searchPlaceholder={t("form.assignee.searchPlaceholder")}
                   className="h-11"
-                  selectedKeys={new Set([filters.assigneeId || ""])}
-                  onSelectionChange={(keys) => {
-                    const val = Array.from(keys)[0] as string;
-                    handleFilterChange("assigneeId", val && val !== "" ? val : undefined);
+                  selectedKey={filters.assigneeId || "all"}
+                  onSelectionChange={(key) => {
+                    const val = key as string;
+                    handleFilterChange(
+                      "assigneeId",
+                      val && val !== "all" ? val : undefined
+                    );
                   }}
                 >
                   {[
@@ -151,7 +160,7 @@ export function TaskFiltersEnhanced() {
                       {opt.text}
                     </SelectItem>
                   ))}
-                </Select>
+                </SearchableSelect>
               </div>
 
               {/* Sort Options */}

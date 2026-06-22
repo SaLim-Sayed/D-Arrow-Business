@@ -13,20 +13,26 @@ export function FieldBox({ label, icon, children, className, onClick }: FieldBox
   return (
     <div
       className={cn(
-        "group relative rounded-xl border border-default-200/80 bg-content1 shadow-sm transition-all duration-200",
-        "hover:border-primary/30 hover:shadow-md hover:shadow-primary/5",
+        "group relative rounded-lg border border-default-200 bg-content1 transition-colors duration-200",
+        "hover:border-primary/40",
         onClick && "cursor-pointer",
         className
       )}
       onClick={onClick}
     >
-      <div className="absolute -top-2.5 left-3 px-1.5 bg-content1 flex items-center gap-1.5 z-[1]">
-        {icon && <span className="text-default-400 group-hover:text-primary transition-colors">{icon}</span>}
-        <span className="text-[11px] font-semibold text-default-500 uppercase tracking-wide group-hover:text-default-700 transition-colors">
+      <div className="absolute -top-2.5 start-3 px-1.5 bg-content1 flex items-center gap-1.5 z-[1]">
+        {icon && (
+          <span className="text-default-400 group-hover:text-primary transition-colors shrink-0">
+            {icon}
+          </span>
+        )}
+        <span className="text-xs font-semibold text-default-600 text-start group-hover:text-foreground transition-colors">
           {label}
         </span>
       </div>
-      <div className="p-4 pt-5 min-h-[52px] flex items-center text-sm">{children}</div>
+      <div className="p-3 pt-4 min-h-[44px] flex items-center text-sm text-start w-full">
+        {children}
+      </div>
     </div>
   );
 }

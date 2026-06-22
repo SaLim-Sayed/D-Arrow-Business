@@ -30,6 +30,7 @@ export function useAllTasksQuery() {
   return useQuery({
     queryKey: QUERY_KEYS.tasks.list({ all: true, companyId }),
     queryFn: () => TaskService.getTasks(companyId!, { pageSize: 200 }),
+    enabled: !!companyId,
   });
 }
 

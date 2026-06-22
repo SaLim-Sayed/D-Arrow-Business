@@ -51,8 +51,8 @@ export function TaskCreatePage() {
             isRtl && "bg-gradient-to-l"
           )}
         />
-        <CardBody className="p-5 md:p-6">
-          <div className="flex items-center gap-3 mb-5 pb-4 border-b border-default-100">
+        <CardBody className="p-6 md:p-8">
+          <div className="flex items-center gap-3 mb-6 pb-5 border-b border-default-100">
             <div className="p-2 rounded-md bg-primary/10 text-primary shrink-0">
               <ListTodo className="w-4 h-4" />
             </div>

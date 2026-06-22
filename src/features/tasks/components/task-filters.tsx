@@ -1,10 +1,10 @@
 import { useTranslation } from "react-i18next";
 import { useTasksUIStore } from "../store/tasks-ui.store";
-import { Input, Button, Select, SelectItem } from "@heroui/react";
+import { Input, Button, SelectItem } from "@heroui/react";
 import { TASK_STATUSES, TASK_PRIORITIES } from "@/lib/constants";
 import { Search, X } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { selectFieldProps } from "@/components/shared/select-field";
+import { SearchableSelect } from "@/components/shared/searchable-select";
 
 export function TaskFilters() {
   const { t } = useTranslation("tasks");
@@ -54,18 +54,18 @@ export function TaskFilters() {
 
       <div className="flex items-center gap-3">
         {/* Status filter */}
-        <Select
-          {...selectFieldProps()}
+        <SearchableSelect
           variant="flat"
+          aria-label={t("list.columns.status")}
           placeholder={t("list.columns.status")}
+          searchPlaceholder={t("form.search.placeholder")}
           className="w-48"
-          selectedKeys={filters.status.length > 0 ? new Set([filters.status[0]]) : new Set(["all"])}
-          onSelectionChange={(keys) => {
-            const value = Array.from(keys)[0] as string;
+          selectedKey={filters.status.length > 0 ? filters.status[0] : "all"}
+          onSelectionChange={(key) => {
+            const value = key as string;
             setFilter("status", value === "all" ? [] : [value as any]);
           }}
           classNames={{
-            ...selectFieldProps().classNames,
             trigger: "glass-card border-none h-12 shadow-sm hover:shadow-glow transition-all duration-300",
             value: "font-black text-[10px] uppercase tracking-[0.1em]",
           }}
@@ -94,21 +94,21 @@ export function TaskFilters() {
               </div>
             </SelectItem>
           ))}
-        </Select>
+        </SearchableSelect>
 
         {/* Priority filter */}
-        <Select
-          {...selectFieldProps()}
+        <SearchableSelect
           variant="flat"
+          aria-label={t("list.columns.priority")}
           placeholder={t("list.columns.priority")}
+          searchPlaceholder={t("form.search.placeholder")}
           className="w-48"
-          selectedKeys={filters.priority.length > 0 ? new Set([filters.priority[0]]) : new Set(["all"])}
-          onSelectionChange={(keys) => {
-            const value = Array.from(keys)[0] as string;
+          selectedKey={filters.priority.length > 0 ? filters.priority[0] : "all"}
+          onSelectionChange={(key) => {
+            const value = key as string;
             setFilter("priority", value === "all" ? [] : [value as any]);
           }}
           classNames={{
-            ...selectFieldProps().classNames,
             trigger: "glass-card border-none h-12 shadow-sm hover:shadow-glow transition-all duration-300",
             value: "font-black text-[10px] uppercase tracking-[0.1em]",
           }}
@@ -137,7 +137,7 @@ export function TaskFilters() {
               </div>
             </SelectItem>
           ))}
-        </Select>
+        </SearchableSelect>
 
         {/* Reset */}
         {hasFilters && (

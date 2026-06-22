@@ -5,7 +5,6 @@ import {
   Avatar,
   Button,
   Chip,
-  Select,
   SelectItem,
   Spinner,
 } from "@heroui/react";
@@ -17,6 +16,7 @@ import { TaskService } from "../api/tasks.service";
 
 import { useCompany } from "@/features/companies/context/company-context";
 import { selectFieldProps } from "@/components/shared/select-field";
+import { SearchableSelect } from "@/components/shared/searchable-select";
 
 interface TaskAssignmentProps {
   taskId: string;
@@ -137,23 +137,21 @@ export function TaskAssignment({
         )}
       </div>
 
-      <Select
+      <SearchableSelect
         {...selectFieldProps()}
         aria-label={t("assignment.selectAssignee")}
         placeholder={t("assignment.selectAssignee")}
+        searchPlaceholder={t("form.assignee.searchPlaceholder")}
         className="h-11"
-        selectedKeys={
-          new Set([currentAssigneeId || showUnassigned ? "unassigned" : ""])
-        }
-        onSelectionChange={(keys) =>
-          handleAssignmentChange(Array.from(keys)[0] as string)
+        selectedKey={currentAssigneeId ?? (showUnassigned ? "unassigned" : null)}
+        onSelectionChange={(key) =>
+          handleAssignmentChange((key as string) ?? "unassigned")
         }
         isDisabled={assignMutation.isPending || isLoadingUsers}
         renderValue={() => {
-          const selectedKey = currentAssigneeId;
-          if (selectedKey && selectedKey !== "unassigned") {
+          if (currentAssigneeId && currentAssigneeId !== "unassigned") {
             const user =
-              allUsers?.find((u) => u.id === selectedKey) || currentUser;
+              allUsers?.find((u) => u.id === currentAssigneeId) || currentUser;
             return (
               <div className="flex items-center gap-2">
                 <Avatar
@@ -193,8 +191,14 @@ export function TaskAssignment({
             );
           }
           const user = option.user!;
+          const searchLabel = `${user.name} ${user.email}`;
           return (
-            <SelectItem key={option.id} textValue={user.name}>
+            <SelectItem
+              key={option.id}
+              textValue={user.name}
+              // @ts-expect-error custom prop used by SearchableSelect filter
+              searchValue={searchLabel}
+            >
               <div className="flex items-center gap-2">
                 <Avatar
                   size="sm"
@@ -212,7 +216,7 @@ export function TaskAssignment({
             </SelectItem>
           );
         })}
-      </Select>
+      </SearchableSelect>
 
       {/* Current assignment display */}
       {currentAssignee && (

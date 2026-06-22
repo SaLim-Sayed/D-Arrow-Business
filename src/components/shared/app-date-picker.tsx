@@ -4,6 +4,7 @@ import type { DateValue } from "@internationalized/date";
 import { cn } from "@/lib/utils";
 
 export const datePickerClassNames: NonNullable<DatePickerProps["classNames"]> = {
+  base: "gap-2.5 w-full",
   label: "text-start font-semibold text-default-600 text-sm",
   input: "text-start text-sm",
   segment: "text-start",
