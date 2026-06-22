@@ -5,6 +5,7 @@ import { useCrmPermissions } from "../hooks/use-crm-permissions";
 import { PageHeader } from "@/components/shared/page-header";
 import { LoadingSpinner } from "@/components/shared/loading-spinner";
 import { Pagination } from "@/components/shared/pagination";
+import { selectFieldProps } from "@/components/shared/select-field";
 import {
   Table,
   TableHeader,
@@ -107,6 +108,7 @@ export function ContactsListPage() {
           className="w-full sm:w-64"
         />
         <Select
+          {...selectFieldProps({ compact: true })}
           size="sm"
           variant="bordered"
           label={t("contacts.filters.assignedTo")}
@@ -121,7 +123,7 @@ export function ContactsListPage() {
             ...(users ?? []).map((u) => ({ id: u.id, name: u.name })),
           ]}
         >
-          {(item) => <SelectItem key={item.id}>{item.name}</SelectItem>}
+          {(item) => <SelectItem key={item.id} textValue={item.name}>{item.name}</SelectItem>}
         </Select>
         {(params.search || params.assignedTo) && (
           <Button

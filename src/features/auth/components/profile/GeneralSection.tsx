@@ -1,4 +1,5 @@
 import { Card, CardBody, Button, Input, Select, SelectItem } from "@heroui/react";
+import { selectFieldProps } from "@/components/shared/select-field";
 import { Check } from "lucide-react";
 import type { UserRole } from "../../types/auth.types";
 
@@ -69,6 +70,7 @@ export function GeneralSection({
             className="font-arabic font-bold"
           />
           <Select
+            {...selectFieldProps()}
             label={tp("role")}
             variant="bordered"
             selectedKeys={new Set([role])}
@@ -81,7 +83,7 @@ export function GeneralSection({
             className="font-bold"
           >
             {USER_ROLES.map((r) => (
-              <SelectItem key={r.value}>{tp(r.labelKey)}</SelectItem>
+              <SelectItem key={r.value} textValue={tp(r.labelKey)}>{tp(r.labelKey)}</SelectItem>
             ))}
           </Select>
         </div>

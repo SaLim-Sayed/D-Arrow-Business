@@ -54,6 +54,7 @@ import { Input, Select, SelectItem, Modal, ModalContent, ModalHeader, ModalBody,
 import { useTranslation } from "react-i18next";
 import { useAppPermissions } from "@/features/companies/hooks/use-app-permissions";
 import { formatDate } from "@/lib/utils";
+import { selectFieldProps } from "@/components/shared/select-field";
 
 const statusColorMap: Record<string, "success" | "warning" | "danger" | "primary" | "default"> = {
   active: "success",
@@ -323,14 +324,15 @@ export default function EmployeeProfilePage() {
                     onValueChange={(val) => setEditData({ ...editData, department: val })}
                   />
                   <Select
+                    {...selectFieldProps()}
                     label={t("profile.role")}
                     variant="bordered"
                     selectedKeys={[editData.role]}
                     onSelectionChange={(keys) => setEditData({ ...editData, role: Array.from(keys)[0] as string })}
                   >
-                    <SelectItem key="employee">{t("roles.employee")}</SelectItem>
-                    <SelectItem key="manager">{t("roles.manager")}</SelectItem>
-                    <SelectItem key="admin">{t("roles.admin")}</SelectItem>
+                    <SelectItem key="employee" textValue={t("roles.employee")}>{t("roles.employee")}</SelectItem>
+                    <SelectItem key="manager" textValue={t("roles.manager")}>{t("roles.manager")}</SelectItem>
+                    <SelectItem key="admin" textValue={t("roles.admin")}>{t("roles.admin")}</SelectItem>
                   </Select>
                   <Input
                     label={t("profile.office_location")}

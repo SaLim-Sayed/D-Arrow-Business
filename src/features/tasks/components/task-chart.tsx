@@ -11,7 +11,8 @@ import {
   Cell,
 } from "recharts";
 import { Card, CardBody, CardHeader } from "@heroui/react";
-import type { Task } from "../types/task.types";
+import type { Task, TaskPriority, TaskStatus } from "../types/task.types";
+import { useTasksWorkspaceNavigation } from "../hooks/use-tasks-workspace-navigation";
 
 const STATUS_COLORS: Record<string, string> = {
   todo: "#94A3B8",
@@ -29,20 +30,33 @@ const PRIORITY_COLORS: Record<string, string> = {
 
 export function TaskCharts({ tasks }: { tasks: Task[] }) {
   const { t } = useTranslation("tasks");
+  const { openByStatus, openByPriority } = useTasksWorkspaceNavigation();
 
   const statusData = [
-    { name: t("status.todo"), value: tasks.filter((t) => t.status === "todo").length, key: "todo" },
-    { name: t("status.in_progress"), value: tasks.filter((t) => t.status === "in_progress").length, key: "in_progress" },
-    { name: t("status.in_review"), value: tasks.filter((t) => t.status === "in_review").length, key: "in_review" },
-    { name: t("status.done"), value: tasks.filter((t) => t.status === "done").length, key: "done" },
+    { name: t("status.todo"), value: tasks.filter((t) => t.status === "todo").length, key: "todo" as TaskStatus },
+    { name: t("status.in_progress"), value: tasks.filter((t) => t.status === "in_progress").length, key: "in_progress" as TaskStatus },
+    { name: t("status.in_review"), value: tasks.filter((t) => t.status === "in_review").length, key: "in_review" as TaskStatus },
+    { name: t("status.done"), value: tasks.filter((t) => t.status === "done").length, key: "done" as TaskStatus },
   ];
 
   const priorityData = [
-    { name: t("priority.low"), value: tasks.filter((t) => t.priority === "low").length, key: "low" },
-    { name: t("priority.medium"), value: tasks.filter((t) => t.priority === "medium").length, key: "medium" },
-    { name: t("priority.high"), value: tasks.filter((t) => t.priority === "high").length, key: "high" },
-    { name: t("priority.urgent"), value: tasks.filter((t) => t.priority === "urgent").length, key: "urgent" },
+    { name: t("priority.low"), value: tasks.filter((t) => t.priority === "low").length, key: "low" as TaskPriority },
+    { name: t("priority.medium"), value: tasks.filter((t) => t.priority === "medium").length, key: "medium" as TaskPriority },
+    { name: t("priority.high"), value: tasks.filter((t) => t.priority === "high").length, key: "high" as TaskPriority },
+    { name: t("priority.urgent"), value: tasks.filter((t) => t.priority === "urgent").length, key: "urgent" as TaskPriority },
   ];
+
+  const handleStatusClick = (key: TaskStatus) => {
+    if (tasks.some((task) => task.status === key)) {
+      openByStatus(key);
+    }
+  };
+
+  const handlePriorityClick = (key: TaskPriority) => {
+    if (tasks.some((task) => task.priority === key)) {
+      openByPriority(key);
+    }
+  };
 
   return (
     <div className="grid gap-6 md:grid-cols-2 animate-in fade-in zoom-in duration-500 delay-200">
@@ -82,7 +96,16 @@ export function TaskCharts({ tasks }: { tasks: Task[] }) {
                   boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)'
                 }}
               />
-              <Bar dataKey="value" radius={[12, 12, 0, 0]} barSize={40}>
+              <Bar
+                dataKey="value"
+                radius={[12, 12, 0, 0]}
+                barSize={40}
+                cursor="pointer"
+                onClick={(data) => {
+                  const key = (data as { payload?: { key?: TaskStatus } }).payload?.key;
+                  if (key) handleStatusClick(key);
+                }}
+              >
                 {statusData.map((entry) => (
                   <Cell key={entry.key} fill={STATUS_COLORS[entry.key]} />
                 ))}
@@ -112,12 +135,17 @@ export function TaskCharts({ tasks }: { tasks: Task[] }) {
                 outerRadius={85}
                 paddingAngle={8}
                 stroke="none"
+                cursor="pointer"
+                onClick={(_, index) => {
+                  const entry = priorityData[index];
+                  if (entry) handlePriorityClick(entry.key);
+                }}
               >
                 {priorityData.map((entry) => (
                   <Cell 
                     key={entry.key} 
                     fill={PRIORITY_COLORS[entry.key]} 
-                    className="hover:opacity-80 transition-opacity cursor-pointer"
+                    className="hover:opacity-80 transition-opacity"
                   />
                 ))}
               </Pie>
@@ -133,7 +161,12 @@ export function TaskCharts({ tasks }: { tasks: Task[] }) {
           </ResponsiveContainer>
           <div className="flex flex-wrap justify-center gap-4 px-4 pb-4">
             {priorityData.map((entry) => (
-              <div key={entry.key} className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider">
+              <button
+                key={entry.key}
+                type="button"
+                onClick={() => handlePriorityClick(entry.key)}
+                className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider rounded-lg px-2 py-1 hover:bg-default-100 transition-colors"
+              >
                 <div
                   className="h-2.5 w-2.5 rounded-full"
                   style={{ 
@@ -143,7 +176,7 @@ export function TaskCharts({ tasks }: { tasks: Task[] }) {
                 />
                 <span className="text-default-500">{entry.name}</span>
                 <span className="text-default-900">{entry.value}</span>
-              </div>
+              </button>
             ))}
           </div>
         </CardBody>

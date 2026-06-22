@@ -24,10 +24,13 @@ export function KanbanBoard() {
   const { canApproveTasks: canApprove } = useTasksPermissions();
 
   const { data, isLoading: isTasksLoading } = useTasksQuery({
+    status: filters.status.length ? filters.status : undefined,
     search: filters.search || undefined,
     priority: filters.priority.length ? filters.priority : undefined,
     assigneeId: filters.assigneeId ?? undefined,
     sprintId: filters.sprintId ?? undefined,
+    overdueOnly: filters.overdueOnly || undefined,
+    completedThisWeek: filters.completedThisWeek || undefined,
     pageSize: 100, // Show more tasks on board
   });
   

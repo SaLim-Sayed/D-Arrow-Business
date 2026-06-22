@@ -46,10 +46,16 @@ function mapHistoryEntry(entry: TaskHistoryEntry & { timestamp?: unknown }): Tas
   return { ...entry, timestamp };
 }
 
+function normalizeTaskType(type: unknown): Task["type"] {
+  if (type === "subtask") return "subtask";
+  return "task";
+}
+
 function mapTaskDoc(id: string, data: Record<string, unknown>): Task {
   return {
     id,
     ...data,
+    type: normalizeTaskType(data.type),
     createdAt:
       data.createdAt instanceof Timestamp
         ? data.createdAt.toDate().toISOString()
@@ -125,6 +131,22 @@ export const TaskService = {
         tasks = tasks.filter(t => 
           t.title.toLowerCase().includes(search) || 
           t.description.toLowerCase().includes(search)
+        );
+      }
+      if (filters?.overdueOnly) {
+        const now = new Date();
+        tasks = tasks.filter(
+          (t) => t.dueDate && new Date(t.dueDate) < now && t.status !== "done"
+        );
+      }
+      if (filters?.completedThisWeek) {
+        const weekAgo = new Date();
+        weekAgo.setDate(weekAgo.getDate() - 7);
+        tasks = tasks.filter(
+          (t) =>
+            t.status === "done" &&
+            t.completedAt &&
+            new Date(t.completedAt) >= weekAgo
         );
       }
 

@@ -4,6 +4,7 @@ import { Input, Button, Select, SelectItem } from "@heroui/react";
 import { TASK_STATUSES, TASK_PRIORITIES } from "@/lib/constants";
 import { Search, X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { selectFieldProps } from "@/components/shared/select-field";
 
 export function TaskFilters() {
   const { t } = useTranslation("tasks");
@@ -54,6 +55,7 @@ export function TaskFilters() {
       <div className="flex items-center gap-3">
         {/* Status filter */}
         <Select
+          {...selectFieldProps()}
           variant="flat"
           placeholder={t("list.columns.status")}
           className="w-48"
@@ -63,8 +65,9 @@ export function TaskFilters() {
             setFilter("status", value === "all" ? [] : [value as any]);
           }}
           classNames={{
+            ...selectFieldProps().classNames,
             trigger: "glass-card border-none h-12 shadow-sm hover:shadow-glow transition-all duration-300",
-            value: "font-black text-[10px] uppercase tracking-[0.1em]"
+            value: "font-black text-[10px] uppercase tracking-[0.1em]",
           }}
           radius="lg"
           renderValue={(items) => {
@@ -95,6 +98,7 @@ export function TaskFilters() {
 
         {/* Priority filter */}
         <Select
+          {...selectFieldProps()}
           variant="flat"
           placeholder={t("list.columns.priority")}
           className="w-48"
@@ -104,8 +108,9 @@ export function TaskFilters() {
             setFilter("priority", value === "all" ? [] : [value as any]);
           }}
           classNames={{
+            ...selectFieldProps().classNames,
             trigger: "glass-card border-none h-12 shadow-sm hover:shadow-glow transition-all duration-300",
-            value: "font-black text-[10px] uppercase tracking-[0.1em]"
+            value: "font-black text-[10px] uppercase tracking-[0.1em]",
           }}
           radius="lg"
           renderValue={(items) => {

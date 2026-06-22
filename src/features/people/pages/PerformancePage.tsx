@@ -8,6 +8,7 @@ import { useEffect } from "react";
 import { useAllUsers } from "@/features/users/hooks/use-users";
 import { useTranslation } from "react-i18next";
 import { useAppPermissions } from "@/features/companies/hooks/use-app-permissions";
+import { selectFieldProps } from "@/components/shared/select-field";
 
 interface PerformanceCycle {
   id: string;
@@ -190,15 +191,16 @@ export default function PerformancePage() {
                   onValueChange={(val) => setNewCycle({...newCycle, name: val})}
                 />
                 <Select
+                  {...selectFieldProps()}
                   label={t("performance.review_type")}
                   placeholder={t("performance.select_type")}
                   variant="bordered"
                   selectedKeys={newCycle.type ? [newCycle.type] : []}
                   onSelectionChange={(keys) => setNewCycle({...newCycle, type: Array.from(keys)[0] as string})}
                 >
-                  <SelectItem key="360">{t("performance.type_360")}</SelectItem>
-                  <SelectItem key="manager">{t("performance.type_manager")}</SelectItem>
-                  <SelectItem key="peer">{t("performance.type_peer")}</SelectItem>
+                  <SelectItem key="360" textValue={t("performance.type_360")}>{t("performance.type_360")}</SelectItem>
+                  <SelectItem key="manager" textValue={t("performance.type_manager")}>{t("performance.type_manager")}</SelectItem>
+                  <SelectItem key="peer" textValue={t("performance.type_peer")}>{t("performance.type_peer")}</SelectItem>
                 </Select>
                 <div className="flex gap-2">
                   <Input 
@@ -251,6 +253,7 @@ export default function PerformancePage() {
                         </div>
                         <div className="flex gap-3 items-center w-full sm:w-auto">
                           <Select 
+                            {...selectFieldProps({ compact: true })}
                             className="w-48 shrink-0" 
                             size="sm" 
                             label={t("performance.grade")} 
@@ -258,10 +261,10 @@ export default function PerformancePage() {
                             selectedKeys={appraisals[emp.id]?.grade ? [appraisals[emp.id].grade] : []}
                             onSelectionChange={(keys) => setAppraisals({...appraisals, [emp.id]: {...appraisals[emp.id], grade: Array.from(keys)[0] as string}})}
                           >
-                            <SelectItem key="A">{t("performance.grade_a")}</SelectItem>
-                            <SelectItem key="B">{t("performance.grade_b")}</SelectItem>
-                            <SelectItem key="C">{t("performance.grade_c")}</SelectItem>
-                            <SelectItem key="D">{t("performance.grade_d")}</SelectItem>
+                            <SelectItem key="A" textValue={t("performance.grade_a")}>{t("performance.grade_a")}</SelectItem>
+                            <SelectItem key="B" textValue={t("performance.grade_b")}>{t("performance.grade_b")}</SelectItem>
+                            <SelectItem key="C" textValue={t("performance.grade_c")}>{t("performance.grade_c")}</SelectItem>
+                            <SelectItem key="D" textValue={t("performance.grade_d")}>{t("performance.grade_d")}</SelectItem>
                           </Select>
                           <Input 
                             type="number" 

@@ -1,7 +1,6 @@
 import type { PortalId } from "@/lib/portal-permissions";
 import {
   LayoutDashboard,
-  Kanban,
   ListTodo,
   Clock,
   UserPlus,
@@ -33,8 +32,7 @@ export interface PortalNavItem {
 
 export const TASKS_NAV: PortalNavItem[] = [
   { labelKey: "nav.dashboard", path: "/tasks", icon: LayoutDashboard, end: true },
-  { labelKey: "nav.taskList", path: "/tasks/list", icon: ListTodo },
-  { labelKey: "nav.taskBoard", path: "/tasks/board", icon: Kanban },
+  { labelKey: "nav.tasks", path: "/tasks/work", icon: ListTodo },
   { labelKey: "nav.sprints", path: "/tasks/sprints", icon: Clock },
 ];
 

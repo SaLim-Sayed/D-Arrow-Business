@@ -18,6 +18,7 @@ import {
   pricingFormSchema,
   type PricingFormValues,
 } from "../schemas/pricing.schema";
+import { selectFieldProps } from "@/components/shared/select-field";
 import type { ProductPrice } from "../types/pricing.types";
 import { useCompanyProfile } from "../hooks/use-company-profile";
 import { useCreatePriceMutation, useUpdatePriceMutation } from "../hooks/use-pricing";
@@ -145,6 +146,7 @@ export function PricingFormModal({
                   control={control}
                   render={({ field }) => (
                     <Select
+                      {...selectFieldProps()}
                       label={t("pricing.fields.status")}
                       variant="bordered"
                       selectedKeys={new Set([field.value])}
@@ -153,8 +155,8 @@ export function PricingFormModal({
                         if (v) field.onChange(v);
                       }}
                     >
-                      <SelectItem key="active">{t("pricing.status.active")}</SelectItem>
-                      <SelectItem key="inactive">{t("pricing.status.inactive")}</SelectItem>
+                      <SelectItem key="active" textValue={t("pricing.status.active")}>{t("pricing.status.active")}</SelectItem>
+                      <SelectItem key="inactive" textValue={t("pricing.status.inactive")}>{t("pricing.status.inactive")}</SelectItem>
                     </Select>
                   )}
                 />

@@ -14,6 +14,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useAllUsers } from "@/features/users/hooks/use-users";
+import { selectFieldProps } from "@/components/shared/select-field";
 import {
   contactFormSchema,
   toCreateContactDTO,
@@ -174,6 +175,7 @@ export function ContactFormModal({ isOpen, onOpenChange, contact }: ContactFormM
                 control={control}
                 render={({ field }) => (
                   <Select
+                    {...selectFieldProps()}
                     label={t("contacts.form.assignedTo")}
                     selectedKeys={field.value ? [field.value] : []}
                     onSelectionChange={(keys) => {
@@ -182,7 +184,7 @@ export function ContactFormModal({ isOpen, onOpenChange, contact }: ContactFormM
                     }}
                   >
                     {(users ?? []).map((u) => (
-                      <SelectItem key={u.id}>{u.name}</SelectItem>
+                      <SelectItem key={u.id} textValue={u.name ?? u.id}>{u.name}</SelectItem>
                     ))}
                   </Select>
                 )}

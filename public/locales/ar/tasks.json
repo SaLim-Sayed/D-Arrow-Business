@@ -12,6 +12,13 @@
     "overview": "نظرة عامة",
     "distribution": "التوزيع"
   },
+  "workspace": {
+    "title": "المهام",
+    "views": {
+      "list": "قائمة",
+      "board": "لوحة"
+    }
+  },
   "list": {
     "title": "المهام",
     "newTask": "مهمة جديدة",
@@ -51,7 +58,7 @@
     "more": "+ {{count}} أخرى",
     "noSubtasks": "لا توجد مهام فرعية.",
     "addSubtask": "إضافة مهمة فرعية",
-    "parentTask": "المهمة الأساسية",
+    "parentTask": "المهمة الرئيسية",
     "saveChanges": "حفظ التغييرات",
     "createdAt": "تاريخ الإنشاء",
     "attachedFiles": "الملفات المرفقة ({{count}})",
@@ -64,17 +71,18 @@
       "history": "السجل",
       "attachments": "المرفقات",
       "log-hours": "تسجيل الساعات",
-      "subitems": "العناصر الفرعية"
+      "subitems": "المهام الفرعية"
     },
     "sections": {
       "detailsTitle": "تفاصيل المهمة",
-      "detailsSubtitle": "المرحلة، المسؤول، الحالة، والجدولة",
+      "detailsSubtitle": "السبرنت، المسؤول، الحالة، والجدولة",
       "primary": "أساسي",
-      "associatedSprint": "المرحلة المرتبطة",
+      "associatedSprint": "السبرنت المرتبط",
       "properties": "الخصائص",
       "assignedTo": "المسؤول",
       "status": "الحالة",
-      "epic": "الملحمة",
+      "parentTask": "المهمة الرئيسية",
+      "mainTask": "المهمة الرئيسية",
       "itemType": "نوع العنصر",
       "priority": "الأولوية",
       "startDate": "تاريخ البدء",
@@ -97,12 +105,12 @@
       "logDescPlaceholder": "ما الذي عملت عليه؟",
       "saveLog": "حفظ السجل",
       "noTimeLogged": "لم يتم تسجيل وقت بعد.",
-      "subitemsTitle": "العناصر الفرعية",
-      "subitemsSubtitle": "المهام الفرعية المرتبطة بهذا العنصر",
+      "subitemsTitle": "المهام الفرعية",
+      "subitemsSubtitle": "خطوات العمل المرتبطة بهذه المهمة",
       "delete": "حذف",
       "unsavedChanges": "تغييرات غير محفوظة",
       "createdBy": "أُنشئ بواسطة {{name}} في {{date}}",
-      "noActiveSprint": "لا توجد مرحلة نشطة",
+      "noActiveSprint": "لا يوجد سبرنت نشط",
       "notAssigned": "غير معين",
       "noTags": "لا توجد وسوم",
       "none": "بلا",
@@ -123,8 +131,8 @@
       "label": "الوصف",
       "placeholder": "صف المهمة..."
     },
-    "status": {
-      "label": "الحالة"
+    "search": {
+      "placeholder": "بحث..."
     },
     "priority": {
       "label": "الأولوية"
@@ -132,6 +140,7 @@
     "assignee": {
       "label": "المسؤول",
       "placeholder": "اختر المسؤول",
+      "searchPlaceholder": "ابحث عن مسؤول...",
       "unassigned": "غير معين",
       "me": "أنا"
     },
@@ -147,16 +156,19 @@
       "label": "نوع المهمة"
     },
     "parent": {
-      "label": "المهمة الأساسية",
-      "placeholder": "اختر المهمة الأساسية",
-      "required": "المهمة الأساسية مطلوبة للمهام الفرعية",
+      "label": "المهمة الرئيسية",
+      "placeholder": "اختر المهمة الرئيسية",
+      "required": "المهمة الرئيسية مطلوبة للمهام الفرعية",
       "linkedTo": "ستُربط هذه المهمة الفرعية بـ"
     },
     "createSubtaskFor": "إنشاء مهمة فرعية لـ",
     "sprint": {
-      "label": "السبرينت",
-      "assigned": "معينة للسبرينت",
-      "unassigned": "بدون سبرينت"
+      "label": "السبرنت",
+      "assigned": "معيّن لسبرنت",
+      "unassigned": "بدون سبرنت",
+      "placeholder": "اختر سبرنتاً",
+      "active": "سبرنت نشط",
+      "filterBy": "تصفية حسب السبرنت"
     },
     "attachments": {
       "label": "المرفقات",
@@ -176,9 +188,10 @@
     "createHint": "أكمل التفاصيل أدناه. العنوان فقط مطلوب."
   },
   "type": {
-    "task": "مهمة",
-    "epic": "ملحمة",
-    "subtask": "مهمة فرعية"
+    "task": "مهمة رئيسية",
+    "taskHint": "مهمة مستقلة يمكن ربط مهام فرعية بها",
+    "subtask": "مهمة فرعية",
+    "subtaskHint": "خطوة عمل مرتبطة بمهمة رئيسية"
   },
   "status": {
     "todo": "للتنفيذ",
@@ -195,7 +208,7 @@
   "history": {
     "unknownUser": "مستخدم",
     "emptyValue": "—",
-    "noParent": "بدون مهمة أساسية",
+    "noParent": "بدون مهمة رئيسية",
     "fileCount": "{{count}} ملف",
     "created": "{{user}} أنشأ هذه المهمة",
     "updated": "{{user}} حدّث المهمة",
@@ -215,8 +228,8 @@
       "status": "الحالة",
       "priority": "الأولوية",
       "type": "النوع",
-      "parentId": "المهمة الأساسية",
-      "sprintId": "السبرينت",
+      "parentId": "المهمة الرئيسية",
+      "sprintId": "السبرنت",
       "assigneeId": "المسؤول",
       "dueDate": "تاريخ الاستحقاق",
       "startDate": "تاريخ البدء",
@@ -233,28 +246,32 @@
     "approveOnly": "للمديرين فقط"
   },
   "sprints": {
-    "title": "مراحل العمل (Sprints)",
-    "subtitle": "إدارة دورات عمل فريقك والأهداف.",
-    "newSprint": "مرحلة جديدة",
-    "editSprint": "تعديل المرحلة",
-    "createSprint": "إنشاء مرحلة جديدة",
-    "nameLabel": "اسم المرحلة",
-    "namePlaceholder": "مثال: المرحلة ٢٤: الميزات الأساسية",
-    "startDate": "تاريخ البدء",
-    "endDate": "تاريخ الانتهاء",
-    "goalLabel": "الهدف",
-    "goalPlaceholder": "ما الذي تريد تحقيقه؟",
+    "title": "السبرنتات",
+    "subtitle": "خطّط دورات العمل، حدّد الأهداف، وتابع تقدّم الفريق.",
+    "newSprint": "سبرنت جديد",
+    "editSprint": "تعديل السبرنت",
+    "createSprint": "إنشاء سبرنت جديد",
+    "nameLabel": "اسم السبرنت",
+    "namePlaceholder": "مثال: سبرنت ٢٤ — الميزات الأساسية",
+    "startDate": "تاريخ البداية",
+    "endDate": "تاريخ النهاية",
+    "goalLabel": "هدف السبرنت",
+    "goalPlaceholder": "ما الذي تريد إنجازه في هذه الدورة؟",
     "cancel": "إلغاء",
     "saveChanges": "حفظ التغييرات",
-    "createBtn": "إنشاء مرحلة",
+    "createBtn": "إنشاء السبرنت",
     "statusActive": "نشط",
     "statusCompleted": "مكتمل",
-    "statusPlanned": "مخطط",
+    "statusPlanned": "مخطط له",
     "msgFillRequired": "يرجى تعبئة جميع الحقول المطلوبة",
-    "msgUpdateSuccess": "تم تحديث المرحلة بنجاح",
-    "msgCreateSuccess": "تم إنشاء المرحلة بنجاح",
-    "msgUpdateError": "فشل تحديث المرحلة",
-    "msgCreateError": "فشل إنشاء المرحلة"
+    "msgUpdateSuccess": "تم تحديث السبرنت بنجاح",
+    "msgCreateSuccess": "تم إنشاء السبرنت بنجاح",
+    "msgUpdateError": "تعذّر تحديث السبرنت",
+    "msgCreateError": "تعذّر إنشاء السبرنت",
+    "viewTasks": "عرض مهام السبرنت",
+    "duration": "مدة السبرنت",
+    "noSprints": "لا توجد سبرنتات بعد",
+    "noSprintsHint": "أنشئ سبرنتاً لتجميع المهام ضمن دورة عمل محددة"
   },
   "toast": {
     "created": "تم إنشاء المهمة بنجاح",

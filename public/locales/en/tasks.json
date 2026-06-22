@@ -12,6 +12,13 @@
     "overview": "Overview",
     "distribution": "Distribution"
   },
+  "workspace": {
+    "title": "Tasks",
+    "views": {
+      "list": "List",
+      "board": "Board"
+    }
+  },
   "list": {
     "title": "Tasks",
     "newTask": "New Task",
@@ -74,7 +81,8 @@
       "properties": "Properties",
       "assignedTo": "Assigned to",
       "status": "Status",
-      "epic": "Epic",
+      "parentTask": "Parent Task",
+      "mainTask": "Main Task",
       "itemType": "Item Type",
       "priority": "Priority",
       "startDate": "Start Date",
@@ -123,8 +131,8 @@
       "label": "Description",
       "placeholder": "Describe the task..."
     },
-    "status": {
-      "label": "Status"
+    "search": {
+      "placeholder": "Search..."
     },
     "priority": {
       "label": "Priority"
@@ -132,6 +140,7 @@
     "assignee": {
       "label": "Assignee",
       "placeholder": "Select assignee",
+      "searchPlaceholder": "Search assignees...",
       "unassigned": "Unassigned",
       "me": "Me"
     },
@@ -156,7 +165,10 @@
     "sprint": {
       "label": "Sprint",
       "assigned": "Assigned to Sprint",
-      "unassigned": "No Sprint"
+      "unassigned": "No Sprint",
+      "placeholder": "Select a sprint",
+      "active": "Active sprint",
+      "filterBy": "Filter by sprint"
     },
     "attachments": {
       "label": "Attachments",
@@ -176,9 +188,10 @@
     "createHint": "Fill in the details below. Only the title is required."
   },
   "type": {
-    "task": "Task",
-    "epic": "Epic",
-    "subtask": "Subtask"
+    "task": "Main Task",
+    "taskHint": "Standalone work item that can have subtasks",
+    "subtask": "Subtask",
+    "subtaskHint": "A step linked to a parent main task"
   },
   "status": {
     "todo": "To Do",
@@ -254,7 +267,11 @@
     "msgUpdateSuccess": "Sprint updated successfully",
     "msgCreateSuccess": "Sprint created successfully",
     "msgUpdateError": "Failed to update sprint",
-    "msgCreateError": "Failed to create sprint"
+    "msgCreateError": "Failed to create sprint",
+    "viewTasks": "View sprint tasks",
+    "duration": "Sprint duration",
+    "noSprints": "No sprints yet",
+    "noSprintsHint": "Create a sprint to group tasks into a focused work cycle"
   },
   "toast": {
     "created": "Task created successfully",

@@ -26,6 +26,7 @@ import {
   useProductUnits,
 } from "../hooks/use-products";
 import { useBillingSettings } from "../hooks/use-billing-settings";
+import { selectFieldProps } from "@/components/shared/select-field";
 
 interface ProductFormModalProps {
   isOpen: boolean;
@@ -126,6 +127,7 @@ export function ProductFormModal({ isOpen, onOpenChange, product }: ProductFormM
                   control={control}
                   render={({ field }) => (
                     <Select
+                      {...selectFieldProps()}
                       label={t("products.form.type")}
                       selectedKeys={new Set([field.value])}
                       onSelectionChange={(keys) => {
@@ -134,8 +136,8 @@ export function ProductFormModal({ isOpen, onOpenChange, product }: ProductFormM
                       }}
                       variant="bordered"
                     >
-                      <SelectItem key="goods">{t("products.types.goods")}</SelectItem>
-                      <SelectItem key="service">{t("products.types.service")}</SelectItem>
+                      <SelectItem key="goods" textValue={t("products.types.goods")}>{t("products.types.goods")}</SelectItem>
+                      <SelectItem key="service" textValue={t("products.types.service")}>{t("products.types.service")}</SelectItem>
                     </Select>
                   )}
                 />
@@ -183,6 +185,7 @@ export function ProductFormModal({ isOpen, onOpenChange, product }: ProductFormM
                   control={control}
                   render={({ field }) => (
                     <Select
+                      {...selectFieldProps()}
                       label={t("products.form.category")}
                       selectedKeys={field.value ? new Set([field.value]) : new Set()}
                       onSelectionChange={(keys) => {
@@ -192,7 +195,7 @@ export function ProductFormModal({ isOpen, onOpenChange, product }: ProductFormM
                       variant="bordered"
                     >
                       {categories.map((c: any) => (
-                        <SelectItem key={c.id}>{c.name}</SelectItem>
+                        <SelectItem key={c.id} textValue={c.name}>{c.name}</SelectItem>
                       ))}
                     </Select>
                   )}
@@ -202,6 +205,7 @@ export function ProductFormModal({ isOpen, onOpenChange, product }: ProductFormM
                   control={control}
                   render={({ field }) => (
                     <Select
+                      {...selectFieldProps()}
                       label={t("products.form.unit")}
                       selectedKeys={field.value ? new Set([field.value]) : new Set()}
                       onSelectionChange={(keys) => {
@@ -211,7 +215,7 @@ export function ProductFormModal({ isOpen, onOpenChange, product }: ProductFormM
                       variant="bordered"
                     >
                       {units.map((u: any) => (
-                        <SelectItem key={u.id}>{u.name} ({u.abbreviation})</SelectItem>
+                        <SelectItem key={u.id} textValue={`${u.name} (${u.abbreviation})`}>{u.name} ({u.abbreviation})</SelectItem>
                       ))}
                     </Select>
                   )}
@@ -221,6 +225,7 @@ export function ProductFormModal({ isOpen, onOpenChange, product }: ProductFormM
                   control={control}
                   render={({ field }) => (
                     <Select
+                      {...selectFieldProps()}
                       label={t("products.form.tax_rate")}
                       selectedKeys={field.value ? new Set([field.value]) : new Set()}
                       onSelectionChange={(keys) => {
@@ -230,7 +235,7 @@ export function ProductFormModal({ isOpen, onOpenChange, product }: ProductFormM
                       variant="bordered"
                     >
                       {(settings?.taxes || []).map((t: any) => (
-                        <SelectItem key={t.id}>{t.name} ({t.rate}%)</SelectItem>
+                        <SelectItem key={t.id} textValue={`${t.name} (${t.rate}%)`}>{t.name} ({t.rate}%)</SelectItem>
                       ))}
                     </Select>
                   )}

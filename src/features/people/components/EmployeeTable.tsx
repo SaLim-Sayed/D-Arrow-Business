@@ -18,6 +18,7 @@ import {
 import { Eye, Edit, Trash2, Search, Filter, Download, UserPlus } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { formatDate } from "@/lib/utils";
+import { selectFieldProps } from "@/components/shared/select-field";
 import type { Employee } from "../types/people.types";
 
 interface EmployeeTableProps {
@@ -222,6 +223,7 @@ export function EmployeeTable({ employees, onView, onEdit, onDelete, onHire }: E
 
         <div className="flex flex-wrap gap-2 flex-1">
           <Select
+            {...selectFieldProps({ compact: true })}
             placeholder={t("profile.department")}
             size="sm"
             className="w-36"
@@ -233,11 +235,12 @@ export function EmployeeTable({ employees, onView, onEdit, onDelete, onHire }: E
             startContent={<Filter size={14} className="text-default-400" />}
           >
             {DEPARTMENTS.map((d) => (
-              <SelectItem key={d}>{t(`departments.${d}`)}</SelectItem>
+              <SelectItem key={d} textValue={t(`departments.${d}`)}>{t(`departments.${d}`)}</SelectItem>
             ))}
           </Select>
 
           <Select
+            {...selectFieldProps({ compact: true })}
             placeholder={t("timesheets.col_status")}
             size="sm"
             className="w-32"
@@ -248,11 +251,12 @@ export function EmployeeTable({ employees, onView, onEdit, onDelete, onHire }: E
             }}
           >
             {STATUSES.map((s) => (
-              <SelectItem key={s} className="capitalize">{t(`statuses.${s}`)}</SelectItem>
+              <SelectItem key={s} textValue={t(`statuses.${s}`)} className="capitalize">{t(`statuses.${s}`)}</SelectItem>
             ))}
           </Select>
 
           <Select
+            {...selectFieldProps({ compact: true })}
             placeholder={t("profile.role")}
             size="sm"
             className="w-32"
@@ -263,7 +267,7 @@ export function EmployeeTable({ employees, onView, onEdit, onDelete, onHire }: E
             }}
           >
             {ROLES.map((r) => (
-              <SelectItem key={r} className="capitalize">{t(`roles.${r}`)}</SelectItem>
+              <SelectItem key={r} textValue={t(`roles.${r}`)} className="capitalize">{t(`roles.${r}`)}</SelectItem>
             ))}
           </Select>
 

@@ -20,6 +20,7 @@ import { dealFormSchema, toCreateDealDTO, type DealFormValues } from "../schemas
 import { useCreateDealMutation, useUpdateDealMutation } from "../hooks/use-deals";
 import { useContactsQuery } from "../hooks/use-contacts";
 import { DEAL_STAGES, normalizeDealStage, normalizeDealProbability } from "../constants/deal-workflow";
+import { selectFieldProps } from "@/components/shared/select-field";
 import { normalizeCurrencyCode } from "@/lib/utils";
 import type { Deal } from "../types/deals.types";
 
@@ -122,6 +123,7 @@ export function DealFormModal({ isOpen, onOpenChange, deal }: DealFormModalProps
                 control={control}
                 render={({ field }) => (
                   <Select
+                    {...selectFieldProps()}
                     label={t("deals.form.contact")}
                     selectedKeys={field.value ? [field.value] : []}
                     onSelectionChange={(keys) => {
@@ -129,11 +131,14 @@ export function DealFormModal({ isOpen, onOpenChange, deal }: DealFormModalProps
                       field.onChange(v ?? null);
                     }}
                   >
-                    {contacts.map((c) => (
-                      <SelectItem key={c.id}>
-                        {contactLabel(c.firstName, c.lastName)}
+                    {contacts.map((c) => {
+                      const label = contactLabel(c.firstName, c.lastName);
+                      return (
+                      <SelectItem key={c.id} textValue={label}>
+                        {label}
                       </SelectItem>
-                    ))}
+                      );
+                    })}
                   </Select>
                 )}
               />
@@ -169,6 +174,7 @@ export function DealFormModal({ isOpen, onOpenChange, deal }: DealFormModalProps
                   control={control}
                   render={({ field }) => (
                     <Select
+                      {...selectFieldProps()}
                       label={t("deals.form.stage")}
                       selectedKeys={field.value ? [field.value] : []}
                       onSelectionChange={(keys) => {
@@ -177,7 +183,7 @@ export function DealFormModal({ isOpen, onOpenChange, deal }: DealFormModalProps
                       }}
                     >
                       {DEAL_STAGES.map((s) => (
-                        <SelectItem key={s}>{t(`deals.stage.${s}`)}</SelectItem>
+                        <SelectItem key={s} textValue={t(`deals.stage.${s}`)}>{t(`deals.stage.${s}`)}</SelectItem>
                       ))}
                     </Select>
                   )}
@@ -209,6 +215,7 @@ export function DealFormModal({ isOpen, onOpenChange, deal }: DealFormModalProps
                 control={control}
                 render={({ field }) => (
                   <Select
+                    {...selectFieldProps()}
                     label={t("deals.form.assignedTo")}
                     selectedKeys={field.value ? [field.value] : []}
                     onSelectionChange={(keys) => {
@@ -217,7 +224,7 @@ export function DealFormModal({ isOpen, onOpenChange, deal }: DealFormModalProps
                     }}
                   >
                     {(users ?? []).map((u) => (
-                      <SelectItem key={u.id}>{u.name}</SelectItem>
+                      <SelectItem key={u.id} textValue={u.name ?? u.id}>{u.name}</SelectItem>
                     ))}
                   </Select>
                 )}

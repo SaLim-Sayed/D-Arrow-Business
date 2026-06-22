@@ -13,6 +13,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useTranslation } from "react-i18next";
+import { selectFieldProps } from "@/components/shared/select-field";
 import { PeopleService } from "../api/people.service";
 import { useCompany } from "@/features/companies/context/company-context";
 import { toast } from "sonner";
@@ -106,31 +107,34 @@ export function HireEmployeeModal({ isOpen, onOpenChange }: HireEmployeeModalPro
                   errorMessage={errors.jobTitle?.message}
                 />
                 <Select 
+                  {...selectFieldProps()}
                   label={t("hire_modal.department")}
                   placeholder={t("hire_modal.department")}
                   {...register("department")}
                   isInvalid={!!errors.department}
                   errorMessage={errors.department?.message}
                 >
-                  <SelectItem key="Engineering">{t("departments.Engineering")}</SelectItem>
-                  <SelectItem key="Product">{t("departments.Product")}</SelectItem>
-                  <SelectItem key="Sales">{t("departments.Sales")}</SelectItem>
-                  <SelectItem key="Marketing">{t("departments.Marketing")}</SelectItem>
-                  <SelectItem key="HR">{t("departments.HR")}</SelectItem>
+                  <SelectItem key="Engineering" textValue={t("departments.Engineering")}>{t("departments.Engineering")}</SelectItem>
+                  <SelectItem key="Product" textValue={t("departments.Product")}>{t("departments.Product")}</SelectItem>
+                  <SelectItem key="Sales" textValue={t("departments.Sales")}>{t("departments.Sales")}</SelectItem>
+                  <SelectItem key="Marketing" textValue={t("departments.Marketing")}>{t("departments.Marketing")}</SelectItem>
+                  <SelectItem key="HR" textValue={t("departments.HR")}>{t("departments.HR")}</SelectItem>
                 </Select>
                 <Select 
+                  {...selectFieldProps()}
                   label={t("profile.role")}
                   placeholder={t("profile.role")}
                   {...register("role")}
                   isInvalid={!!errors.role}
                   errorMessage={errors.role?.message}
                 >
-                  <SelectItem key="super_admin">{t("roles.super_admin")}</SelectItem>
-                  <SelectItem key="admin">{t("roles.admin")}</SelectItem>
-                  <SelectItem key="manager">{t("roles.manager")}</SelectItem>
-                  <SelectItem key="employee">{t("roles.employee")}</SelectItem>
+                  <SelectItem key="super_admin" textValue={t("roles.super_admin")}>{t("roles.super_admin")}</SelectItem>
+                  <SelectItem key="admin" textValue={t("roles.admin")}>{t("roles.admin")}</SelectItem>
+                  <SelectItem key="manager" textValue={t("roles.manager")}>{t("roles.manager")}</SelectItem>
+                  <SelectItem key="employee" textValue={t("roles.employee")}>{t("roles.employee")}</SelectItem>
                 </Select>
                 <Select 
+                  {...selectFieldProps()}
                   label={t("profile.permissions")}
                   placeholder={t("profile.permissions")}
                   selectionMode="multiple"
@@ -138,9 +142,9 @@ export function HireEmployeeModal({ isOpen, onOpenChange }: HireEmployeeModalPro
                   isInvalid={!!errors.permissions}
                   errorMessage={errors.permissions?.message as string}
                 >
-                  <SelectItem key="view_employees">{t("extra.perm_view_employees")}</SelectItem>
-                  <SelectItem key="manage_leaves">{t("extra.perm_manage_leaves")}</SelectItem>
-                  <SelectItem key="manage_payroll">{t("extra.perm_manage_payroll")}</SelectItem>
+                  <SelectItem key="view_employees" textValue={t("extra.perm_view_employees")}>{t("extra.perm_view_employees")}</SelectItem>
+                  <SelectItem key="manage_leaves" textValue={t("extra.perm_manage_leaves")}>{t("extra.perm_manage_leaves")}</SelectItem>
+                  <SelectItem key="manage_payroll" textValue={t("extra.perm_manage_payroll")}>{t("extra.perm_manage_payroll")}</SelectItem>
                 </Select>
                 <Input
                   label={t("hire_modal.joining_date")}

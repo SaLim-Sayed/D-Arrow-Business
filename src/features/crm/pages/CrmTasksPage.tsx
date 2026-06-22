@@ -22,6 +22,7 @@ import { useCrmPermissions } from "../hooks/use-crm-permissions";
 import { useAllUsers } from "@/features/users/hooks/use-users";
 import { CrmTaskFormModal } from "../components/CrmTaskFormModal";
 import { CRM_TASK_STATUSES, normalizeCrmTaskStatus } from "../constants/crm-task.constants";
+import { selectFieldProps } from "@/components/shared/select-field";
 import { formatDate } from "@/lib/utils";
 import type { CrmTask, CrmTaskStatus } from "../types/crm-tasks.types";
 
@@ -102,6 +103,7 @@ export function CrmTasksPage() {
 
       <div className="flex items-center gap-3">
         <Select
+          {...selectFieldProps({ compact: true })}
           size="sm"
           variant="bordered"
           label={t("crmTasks.filters.status")}
@@ -119,7 +121,7 @@ export function CrmTasksPage() {
             })),
           ]}
         >
-          {(item) => <SelectItem key={item.id}>{item.label}</SelectItem>}
+          {(item) => <SelectItem key={item.id} textValue={item.label}>{item.label}</SelectItem>}
         </Select>
       </div>
 

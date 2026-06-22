@@ -18,6 +18,7 @@ import { useEffect } from "react";
 import { toast } from "sonner";
 
 import { PageHeader } from "@/components/shared/page-header";
+import { selectFieldProps } from "@/components/shared/select-field";
 import { useContactsQuery } from "@/features/crm/hooks/use-contacts";
 import { useProducts } from "../hooks/use-products";
 import { useCreateInvoiceMutation, useUpdateInvoiceMutation, useInvoice } from "../hooks/use-invoices";
@@ -142,6 +143,7 @@ export default function CreateInvoicePage() {
                 name="customerId"
                 render={({ field }) => (
                   <Select
+                    {...selectFieldProps()}
                     {...field}
                     label={t("invoices.create.customer") || "Customer"}
                     placeholder={t("invoices.create.customer_placeholder") || "Select a customer"}
@@ -149,11 +151,14 @@ export default function CreateInvoicePage() {
                     isInvalid={!!errors.customerId}
                     errorMessage={(errors.customerId?.message as string)}
                   >
-                    {contacts.map((contact) => (
-                      <SelectItem key={contact.id}>
-                        {contact.firstName} {contact.lastName}
+                    {contacts.map((contact) => {
+                      const label = `${contact.firstName} ${contact.lastName}`;
+                      return (
+                      <SelectItem key={contact.id} textValue={label}>
+                        {label}
                       </SelectItem>
-                    ))}
+                      );
+                    })}
                   </Select>
                 )}
               />
@@ -202,6 +207,7 @@ export default function CreateInvoicePage() {
                       <td className="p-4">
                         <div className="flex flex-col gap-2">
                           <Select
+                            {...selectFieldProps({ compact: true })}
                             size="sm"
                             aria-label="Select Product"
                             placeholder={t("invoices.create.select_product") || "Select Product..."}
@@ -209,7 +215,7 @@ export default function CreateInvoicePage() {
                             onChange={(e) => handleProductSelect(index, e.target.value)}
                           >
                             {products.map((p) => (
-                              <SelectItem key={p.id}>
+                              <SelectItem key={p.id} textValue={p.name}>
                                 {p.name}
                               </SelectItem>
                             ))}

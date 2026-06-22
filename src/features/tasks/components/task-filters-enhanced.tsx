@@ -5,6 +5,7 @@ import { X, Search, Filter } from "lucide-react";
 import { TASK_STATUSES, TASK_PRIORITIES } from "@/lib/constants";
 import { useTasksStore } from "@/stores/tasks.store";
 import type { TaskFilters } from "../types/task.types";
+import { selectFieldProps } from "@/components/shared/select-field";
 
 export function TaskFiltersEnhanced() {
   const { t } = useTranslation("tasks");
@@ -54,6 +55,7 @@ export function TaskFiltersEnhanced() {
       {/* Quick Filters */}
       <div className="flex flex-wrap gap-2 items-center">
         <Select
+          {...selectFieldProps()}
           aria-label={t("filters.status")}
           className="w-[180px] h-11"
           selectedKeys={new Set(filters.status && filters.status.length > 0 ? [filters.status[0]] : [""])}
@@ -73,6 +75,7 @@ export function TaskFiltersEnhanced() {
         </Select>
 
         <Select
+          {...selectFieldProps()}
           aria-label={t("filters.priority")}
           className="w-[180px] h-11"
           selectedKeys={new Set(filters.priority && filters.priority.length > 0 ? [filters.priority[0]] : [""])}
@@ -130,6 +133,7 @@ export function TaskFiltersEnhanced() {
                   {t("filters.assignee")}
                 </span>
                 <Select
+                  {...selectFieldProps()}
                   aria-label={t("filters.assignee")}
                   placeholder={t("filters.selectAssignee")}
                   className="h-11"

@@ -9,6 +9,7 @@ import {
   resolveUserPortals,
 } from "@/lib/permissions/portal-access";
 import { useUpdateUserPortalAccessMutation } from "@/features/users/hooks/use-user-portal-access-mutation";
+import { selectFieldProps } from "@/components/shared/select-field";
 import {
   getDefaultSubRole,
   PORTAL_SUB_ROLE_OPTIONS,
@@ -151,6 +152,7 @@ export function PortalAccessEditor({ member }: PortalAccessEditorProps) {
             </Checkbox>
             {isOn && subRole ? (
               <Select
+                {...selectFieldProps({ compact: true })}
                 size="sm"
                 variant="bordered"
                 aria-label={t("team.subRoleFor", {
@@ -168,7 +170,7 @@ export function PortalAccessEditor({ member }: PortalAccessEditorProps) {
                 }}
               >
                 {options.map((option) => (
-                  <SelectItem key={option}>{subRoleLabel(option)}</SelectItem>
+                  <SelectItem key={option} textValue={subRoleLabel(option)}>{subRoleLabel(option)}</SelectItem>
                 ))}
               </Select>
             ) : null}

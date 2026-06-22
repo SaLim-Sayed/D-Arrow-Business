@@ -18,6 +18,7 @@ import { useAllUsers } from "@/features/users/hooks/use-users";
 import { leadFormSchema, toCreateLeadDTO, type LeadFormValues } from "../schemas/lead.schema";
 import { useCreateLeadMutation, useUpdateLeadMutation } from "../hooks/use-leads";
 import { LEAD_PRIORITIES, LEAD_SOURCES, LEAD_STATUSES, normalizeLeadStatus } from "../constants/lead-workflow";
+import { selectFieldProps } from "@/components/shared/select-field";
 import type { Lead } from "../types/leads.types";
 
 interface LeadFormModalProps {
@@ -135,6 +136,7 @@ export function LeadFormModal({ isOpen, onOpenChange, lead }: LeadFormModalProps
                   control={control}
                   render={({ field }) => (
                     <Select
+                      {...selectFieldProps()}
                       label={t("leads.form.source")}
                       selectedKeys={field.value ? [field.value] : []}
                       onSelectionChange={(keys) => {
@@ -143,7 +145,7 @@ export function LeadFormModal({ isOpen, onOpenChange, lead }: LeadFormModalProps
                       }}
                     >
                       {LEAD_SOURCES.map((s) => (
-                        <SelectItem key={s}>{t(`leads.source.${s}`)}</SelectItem>
+                        <SelectItem key={s} textValue={t(`leads.source.${s}`)}>{t(`leads.source.${s}`)}</SelectItem>
                       ))}
                     </Select>
                   )}
@@ -153,6 +155,7 @@ export function LeadFormModal({ isOpen, onOpenChange, lead }: LeadFormModalProps
                   control={control}
                   render={({ field }) => (
                     <Select
+                      {...selectFieldProps()}
                       label={t("leads.form.priority")}
                       selectedKeys={field.value ? [field.value] : []}
                       onSelectionChange={(keys) => {
@@ -161,7 +164,7 @@ export function LeadFormModal({ isOpen, onOpenChange, lead }: LeadFormModalProps
                       }}
                     >
                       {LEAD_PRIORITIES.map((p) => (
-                        <SelectItem key={p}>{t(`leads.priority.${p}`)}</SelectItem>
+                        <SelectItem key={p} textValue={t(`leads.priority.${p}`)}>{t(`leads.priority.${p}`)}</SelectItem>
                       ))}
                     </Select>
                   )}
@@ -173,6 +176,7 @@ export function LeadFormModal({ isOpen, onOpenChange, lead }: LeadFormModalProps
                   control={control}
                   render={({ field }) => (
                     <Select
+                      {...selectFieldProps()}
                       label={t("leads.form.status")}
                       selectedKeys={field.value ? [field.value] : []}
                       onSelectionChange={(keys) => {
@@ -181,7 +185,7 @@ export function LeadFormModal({ isOpen, onOpenChange, lead }: LeadFormModalProps
                       }}
                     >
                       {LEAD_STATUSES.map((s) => (
-                        <SelectItem key={s}>{t(`leads.status.${s}`)}</SelectItem>
+                        <SelectItem key={s} textValue={t(`leads.status.${s}`)}>{t(`leads.status.${s}`)}</SelectItem>
                       ))}
                     </Select>
                   )}
@@ -192,6 +196,7 @@ export function LeadFormModal({ isOpen, onOpenChange, lead }: LeadFormModalProps
                 control={control}
                 render={({ field }) => (
                   <Select
+                    {...selectFieldProps()}
                     label={t("leads.form.assignedTo")}
                     selectedKeys={field.value ? [field.value] : []}
                     onSelectionChange={(keys) => {
@@ -200,7 +205,7 @@ export function LeadFormModal({ isOpen, onOpenChange, lead }: LeadFormModalProps
                     }}
                   >
                     {(users ?? []).map((u) => (
-                      <SelectItem key={u.id}>{u.name}</SelectItem>
+                      <SelectItem key={u.id} textValue={u.name ?? u.id}>{u.name}</SelectItem>
                     ))}
                   </Select>
                 )}

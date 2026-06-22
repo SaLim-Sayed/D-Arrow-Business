@@ -32,6 +32,7 @@ import {
   normalizeCrmTaskStatus,
 } from "../constants/crm-task.constants";
 import type { CrmTask, CrmTaskPriority } from "../types/crm-tasks.types";
+import { selectFieldProps } from "@/components/shared/select-field";
 
 const CRM_TASK_PRIORITIES: CrmTaskPriority[] = ["low", "medium", "high"];
 
@@ -132,6 +133,7 @@ export function CrmTaskFormModal({ isOpen, onOpenChange, task }: CrmTaskFormModa
                   control={control}
                   render={({ field }) => (
                     <Select
+                      {...selectFieldProps()}
                       label={t("crmTasks.form.taskType")}
                       selectedKeys={field.value ? [field.value] : []}
                       onSelectionChange={(keys) => {
@@ -140,7 +142,7 @@ export function CrmTaskFormModal({ isOpen, onOpenChange, task }: CrmTaskFormModa
                       }}
                     >
                       {CRM_TASK_TYPES.map((type) => (
-                        <SelectItem key={type}>{t(`crmTasks.type.${type}`)}</SelectItem>
+                        <SelectItem key={type} textValue={t(`crmTasks.type.${type}`)}>{t(`crmTasks.type.${type}`)}</SelectItem>
                       ))}
                     </Select>
                   )}
@@ -150,6 +152,7 @@ export function CrmTaskFormModal({ isOpen, onOpenChange, task }: CrmTaskFormModa
                   control={control}
                   render={({ field }) => (
                     <Select
+                      {...selectFieldProps()}
                       label={t("crmTasks.form.priority")}
                       selectedKeys={field.value ? [field.value] : []}
                       onSelectionChange={(keys) => {
@@ -158,7 +161,7 @@ export function CrmTaskFormModal({ isOpen, onOpenChange, task }: CrmTaskFormModa
                       }}
                     >
                       {CRM_TASK_PRIORITIES.map((p) => (
-                        <SelectItem key={p}>{t(`crmTasks.priority.${p}`)}</SelectItem>
+                        <SelectItem key={p} textValue={t(`crmTasks.priority.${p}`)}>{t(`crmTasks.priority.${p}`)}</SelectItem>
                       ))}
                     </Select>
                   )}
@@ -170,6 +173,7 @@ export function CrmTaskFormModal({ isOpen, onOpenChange, task }: CrmTaskFormModa
                   control={control}
                   render={({ field }) => (
                     <Select
+                      {...selectFieldProps()}
                       label={t("crmTasks.form.status")}
                       selectedKeys={field.value ? [field.value] : []}
                       onSelectionChange={(keys) => {
@@ -178,7 +182,7 @@ export function CrmTaskFormModal({ isOpen, onOpenChange, task }: CrmTaskFormModa
                       }}
                     >
                       {CRM_TASK_STATUSES.map((s) => (
-                        <SelectItem key={s}>{t(`crmTasks.status.${s}`)}</SelectItem>
+                        <SelectItem key={s} textValue={t(`crmTasks.status.${s}`)}>{t(`crmTasks.status.${s}`)}</SelectItem>
                       ))}
                     </Select>
                   )}
@@ -189,6 +193,7 @@ export function CrmTaskFormModal({ isOpen, onOpenChange, task }: CrmTaskFormModa
                 control={control}
                 render={({ field }) => (
                   <Select
+                    {...selectFieldProps()}
                     label={t("crmTasks.form.assignee")}
                     selectedKeys={field.value ? [field.value] : []}
                     onSelectionChange={(keys) => {
@@ -197,7 +202,7 @@ export function CrmTaskFormModal({ isOpen, onOpenChange, task }: CrmTaskFormModa
                     }}
                   >
                     {(users ?? []).map((u) => (
-                      <SelectItem key={u.id}>{u.name}</SelectItem>
+                      <SelectItem key={u.id} textValue={u.name ?? u.id}>{u.name}</SelectItem>
                     ))}
                   </Select>
                 )}

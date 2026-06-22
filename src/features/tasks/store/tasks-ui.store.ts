@@ -9,6 +9,8 @@ interface TasksUIState {
     assigneeId: string | null;
     sprintId: string | null;
     search: string;
+    overdueOnly: boolean;
+    completedThisWeek: boolean;
   };
   sort: {
     field: string;
@@ -32,10 +34,12 @@ const defaultFilters = {
   assigneeId: null as string | null,
   sprintId: null as string | null,
   search: "",
+  overdueOnly: false,
+  completedThisWeek: false,
 };
 
 export const useTasksUIStore = create<TasksUIState>()((set) => ({
-  viewMode: "list",
+  viewMode: "board",
   filters: { ...defaultFilters },
   sort: { field: "createdAt", order: "desc" },
   page: 1,

@@ -16,6 +16,7 @@ import { toast } from "sonner";
 import { TaskService } from "../api/tasks.service";
 
 import { useCompany } from "@/features/companies/context/company-context";
+import { selectFieldProps } from "@/components/shared/select-field";
 
 interface TaskAssignmentProps {
   taskId: string;
@@ -137,6 +138,7 @@ export function TaskAssignment({
       </div>
 
       <Select
+        {...selectFieldProps()}
         aria-label={t("assignment.selectAssignee")}
         placeholder={t("assignment.selectAssignee")}
         className="h-11"

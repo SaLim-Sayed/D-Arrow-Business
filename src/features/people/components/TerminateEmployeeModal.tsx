@@ -14,6 +14,7 @@ import {
 } from "@heroui/react";
 import { AlertTriangle, UserMinus } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { selectFieldProps } from "@/components/shared/select-field";
 import type { Employee } from "../types/people.types";
 
 export type TerminateAction = "resigned" | "terminated";
@@ -84,16 +85,17 @@ export function TerminateEmployeeModal({ isOpen, onOpenChange, employee, onConfi
 
               <div className="space-y-4 mt-2">
                 <Select
+                  {...selectFieldProps()}
                   label={t("terminate_modal.action_type")}
                   placeholder={t("terminate_modal.action_type")}
                   selectedKeys={[actionType]}
                   onSelectionChange={(keys) => setActionType(Array.from(keys)[0] as TerminateAction)}
                   isRequired
                 >
-                  <SelectItem key="resigned" description={t("extra.resignation_desc")}>
+                  <SelectItem key="resigned" textValue={t("terminate_modal.resign")} description={t("extra.resignation_desc")}>
                     {t("terminate_modal.resign")}
                   </SelectItem>
-                  <SelectItem key="terminated" description={t("extra.termination_desc")} className="text-danger">
+                  <SelectItem key="terminated" textValue={t("terminate_modal.terminate")} description={t("extra.termination_desc")} className="text-danger">
                     {t("terminate_modal.terminate")}
                   </SelectItem>
                 </Select>

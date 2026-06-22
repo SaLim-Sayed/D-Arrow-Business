@@ -138,7 +138,7 @@ export function SprintsPage() {
             <Card 
               key={sprint.id} 
               isPressable
-              onPress={() => navigate(`/tasks/board?sprintId=${sprint.id}`)}
+              onPress={() => navigate(`/tasks/work?sprintId=${sprint.id}`)}
               className="border-none bg-content1/50 backdrop-blur-md hover:bg-content1/80 transition-all cursor-pointer group relative"
             >
               <CardBody className="p-6">

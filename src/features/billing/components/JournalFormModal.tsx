@@ -18,6 +18,7 @@ import {
 import { Plus, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { selectFieldProps } from "@/components/shared/select-field";
 import { useAccounts } from "../hooks/use-accounts";
 import {
   useCreateJournalMutation,
@@ -213,6 +214,7 @@ export function JournalFormModal({
                       <TableRow key={index}>
                         <TableCell>
                           <Select
+                            {...selectFieldProps({ compact: true })}
                             placeholder="Select Account"
                             selectedKeys={
                               line.accountId ? new Set([line.accountId]) : new Set()

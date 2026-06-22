@@ -18,6 +18,7 @@ import { useAllUsers } from "@/features/users/hooks/use-users";
 import { useUpdateUserRoleMutation } from "@/features/users/hooks/use-user-role-mutation";
 import { useAppPermissions } from "../hooks/use-app-permissions";
 import { useAuthStore } from "@/stores/auth.store";
+import { selectFieldProps } from "@/components/shared/select-field";
 import { LoadingSpinner } from "@/components/shared/loading-spinner";
 import {
   getAssignableRoles,
@@ -110,6 +111,7 @@ export function TeamMembersPage() {
                         <TableCell>
                           {canEdit ? (
                             <Select
+                              {...selectFieldProps({ compact: true })}
                               size="sm"
                               variant="bordered"
                               aria-label={t("team.assignRole")}
@@ -130,7 +132,7 @@ export function TeamMembersPage() {
                               }}
                             >
                               {assignableRoles.map((r) => (
-                                <SelectItem key={r}>{roleLabel(r)}</SelectItem>
+                                <SelectItem key={r} textValue={roleLabel(r)}>{roleLabel(r)}</SelectItem>
                               ))}
                             </Select>
                           ) : (

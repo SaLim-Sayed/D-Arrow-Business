@@ -9,8 +9,7 @@ import { AppLayout } from "@/components/layout/app-layout";
 import { PortalPickerPage } from "@/features/portals/pages/PortalPickerPage";
 import { TasksLayout } from "@/features/tasks/components/TasksLayout";
 import { TasksDashboardPage } from "@/features/tasks/pages/tasks-dashboard-page";
-import { TasksListPage } from "@/features/tasks/pages/tasks-list-page";
-import { TasksBoardPage } from "@/features/tasks/pages/tasks-board-page";
+import { TasksWorkspacePage } from "@/features/tasks/pages/tasks-workspace-page";
 import { TaskCreatePage } from "@/features/tasks/pages/task-create-page";
 import { TaskDetailPage } from "@/features/tasks/pages/task-detail-page";
 import { SprintsPage } from "@/features/tasks/pages/sprints-page";
@@ -92,8 +91,11 @@ export const router = createBrowserRouter([
             element: <TasksLayout />,
             children: [
               { index: true, element: <TasksDashboardPage /> },
-              { path: "list", element: <TasksListPage /> },
-              { path: "board", element: <TasksBoardPage /> },
+              { path: "work", element: <TasksWorkspacePage /> },
+              { path: "work/list", element: <TasksWorkspacePage /> },
+              { path: "work/board", element: <Navigate to="/tasks/work" replace /> },
+              { path: "list", element: <Navigate to="/tasks/work/list" replace /> },
+              { path: "board", element: <Navigate to="/tasks/work" replace /> },
               { path: "sprints", element: <SprintsPage /> },
               { path: "new", element: <TaskCreatePage /> },
               { path: ":taskId", element: <TaskDetailPage /> },

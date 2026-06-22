@@ -10,11 +10,14 @@ import { PrimaryActionButton } from "@/components/shared/primary-action-button";
 import { Plus } from "lucide-react";
 import { formatDate } from "@/lib/utils";
 import { StatusBadge } from "@/components/shared/status-badge";
+import { useTasksWorkspaceNavigation } from "../hooks/use-tasks-workspace-navigation";
+import type { TaskStatus } from "../types/task.types";
 
 export function TasksDashboardPage() {
   const { t } = useTranslation("tasks");
   const { t: tc } = useTranslation();
   const { data, isLoading } = useAllTasksQuery();
+  const { openAllTasks, openByStatus } = useTasksWorkspaceNavigation();
 
   if (isLoading) {
     return <LoadingSpinner />;
@@ -54,12 +57,13 @@ export function TasksDashboardPage() {
             <h4 className="text-lg font-bold">
               {t("dashboard.recentTasks")}
             </h4>
-            <Link 
-              to="/tasks/list"
+            <button
+              type="button"
+              onClick={() => openAllTasks()}
               className="text-primary text-xs font-bold uppercase tracking-wider hover:underline"
             >
               {tc("actions.viewAll")}
-            </Link>
+            </button>
           </CardHeader>
           <CardBody className="px-4 pb-6">
             <div className="space-y-2">
@@ -100,9 +104,17 @@ export function TasksDashboardPage() {
                         {formatDate(task.updatedAt)}
                       </p>
                     </div>
-                    <div className="flex flex-col items-end gap-1">
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        openByStatus(task.status as TaskStatus);
+                      }}
+                      className="flex flex-col items-end gap-1"
+                    >
                       <StatusBadge status={task.status} />
-                    </div>
+                    </button>
                   </Link>
                 );
               })}

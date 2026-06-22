@@ -10,6 +10,7 @@ export interface StatCardProps {
   bg?: string;
   gradient?: string;
   className?: string;
+  onPress?: () => void;
 }
 
 export function StatCard({
@@ -20,11 +21,15 @@ export function StatCard({
   bg = "bg-primary/10",
   gradient = "from-primary/20 to-secondary/20",
   className,
+  onPress,
 }: StatCardProps) {
   return (
     <Card
+      isPressable={!!onPress}
+      onPress={onPress}
       className={cn(
         "glass-card border-none overflow-hidden relative group card-hover-lift",
+        onPress && "cursor-pointer",
         className
       )}
     >

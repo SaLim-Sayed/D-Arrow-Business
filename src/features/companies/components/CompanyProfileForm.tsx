@@ -18,6 +18,7 @@ import {
 } from "../schemas/company.schema";
 import { useCompanyProfile, useUpdateCompanyProfileMutation } from "../hooks/use-company-profile";
 import { LoadingSpinner } from "@/components/shared/loading-spinner";
+import { selectFieldProps } from "@/components/shared/select-field";
 import { useAppPermissions } from "../hooks/use-app-permissions";
 
 const CURRENCIES = ["USD", "EUR", "SAR", "AED", "EGP"];
@@ -172,6 +173,7 @@ export function CompanyProfileForm({ readOnly }: CompanyProfileFormProps) {
               control={control}
               render={({ field }) => (
                 <Select
+                  {...selectFieldProps()}
                   label={t("company.fields.defaultCurrency")}
                   variant="bordered"
                   selectedKeys={new Set([field.value])}
@@ -182,7 +184,7 @@ export function CompanyProfileForm({ readOnly }: CompanyProfileFormProps) {
                   }}
                 >
                   {CURRENCIES.map((c) => (
-                    <SelectItem key={c}>{c}</SelectItem>
+                    <SelectItem key={c} textValue={c}>{c}</SelectItem>
                   ))}
                 </Select>
               )}

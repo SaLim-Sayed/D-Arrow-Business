@@ -11,6 +11,7 @@ import {
 import { Filter, Search, X, UserCircle2, Calendar } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
+import { selectFieldProps } from "@/components/shared/select-field";
 import { LEAD_SOURCES, LEAD_STATUSES } from "../constants/lead-workflow";
 import type { LeadsListParams } from "../utils/leads-list.utils";
 import type { User } from "@/features/auth/types/auth.types";
@@ -74,6 +75,7 @@ export function LeadsFiltersBar({ params, onChange, onReset, users }: LeadsFilte
         </Dropdown>
 
         <Select
+          {...selectFieldProps({ compact: true })}
           size="sm"
           variant="bordered"
           placeholder={t("leads.filters.source")}
@@ -86,7 +88,7 @@ export function LeadsFiltersBar({ params, onChange, onReset, users }: LeadsFilte
           aria-label={t("leads.filters.source")}
         >
           {LEAD_SOURCES.map((s) => (
-            <SelectItem key={s}>{t(`leads.source.${s}`)}</SelectItem>
+            <SelectItem key={s} textValue={t(`leads.source.${s}`)}>{t(`leads.source.${s}`)}</SelectItem>
           ))}
         </Select>
 

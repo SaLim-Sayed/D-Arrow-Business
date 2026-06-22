@@ -76,7 +76,6 @@ const TYPE_ICON_COLOR: Record<string, string> = {
   task: "from-primary to-violet-500",
   story: "from-emerald-500 to-teal-500",
   bug: "from-danger to-orange-500",
-  epic: "from-amber-500 to-orange-400",
   subtask: "from-sky-500 to-blue-500",
 };
 
@@ -404,7 +403,7 @@ export function TaskDetailPage() {
               size="sm"
               className="w-fit -ml-1 font-semibold text-default-500"
               startContent={<ChevronLeft className="w-4 h-4" />}
-              onPress={() => navigate("/tasks/list")}
+              onPress={() => navigate("/tasks/work")}
             >
               {tc("actions.back")}
             </Button>
@@ -734,12 +733,6 @@ export function TaskDetailPage() {
                       </DropdownMenu>
                     </Dropdown>
 
-                    <FieldBox label={t("detail.sections.epic")}>
-                      <span className="font-bold text-sm text-foreground">
-                        {t("detail.sections.none")}
-                      </span>
-                    </FieldBox>
-
                     <Dropdown>
                       <DropdownTrigger>
                         <div className="w-full">
@@ -761,7 +754,6 @@ export function TaskDetailPage() {
                         onAction={(key) => handleTypeChange(key.toString())}
                       >
                         <DropdownItem key="task">{t("type.task")}</DropdownItem>
-                        <DropdownItem key="epic">{t("type.epic")}</DropdownItem>
                         <DropdownItem key="subtask">{t("type.subtask")}</DropdownItem>
                       </DropdownMenu>
                     </Dropdown>
@@ -1131,7 +1123,7 @@ export function TaskDetailPage() {
                   color="danger"
                   onPress={() =>
                     deleteMutation.mutate(task.id, {
-                      onSuccess: () => navigate("/tasks/list"),
+                      onSuccess: () => navigate("/tasks/work"),
                     })
                   }
                   isLoading={deleteMutation.isPending}

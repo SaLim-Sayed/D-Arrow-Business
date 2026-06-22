@@ -16,7 +16,6 @@ import {
   Button,
   Input,
   Textarea,
-  Select,
   SelectItem,
   Avatar,
   Spinner,
@@ -34,6 +33,8 @@ import { useAllTasksQuery, useSprintsQuery } from "../hooks/use-tasks";
 import type { CreateTaskDTO, Task } from "../types/task.types";
 import { toast } from "sonner";
 import { parseDate } from "@internationalized/date";
+import { cn } from "@/lib/utils";
+import { SearchableSelect } from "@/components/shared/searchable-select";
 
 const taskSchema = z
   .object({
@@ -41,7 +42,7 @@ const taskSchema = z
     description: z.string(),
     status: z.enum(["todo", "in_progress", "in_review", "done"]),
     priority: z.enum(["low", "medium", "high", "urgent"]),
-    type: z.enum(["task", "epic", "subtask"]),
+    type: z.enum(["task", "subtask"]),
     assigneeId: z.string().nullable().optional(),
     parentId: z.string().nullable().optional(),
     sprintId: z.string().nullable().optional(),
@@ -75,8 +76,9 @@ export function TaskForm({
   isSubmitting,
   onCancel,
 }: TaskFormProps) {
-  const { t } = useTranslation("tasks");
+  const { t, i18n } = useTranslation("tasks");
   const { t: tc } = useTranslation();
+  const isRtl = i18n.language === "ar";
   const { data: allUsers } = useAllUsers();
   const { data: allTasks } = useAllTasksQuery();
   const { data: allSprints } = useSprintsQuery();
@@ -101,9 +103,15 @@ export function TaskForm({
   const [isUploading, setIsUploading] = useState(false);
 
   const fieldClassNames = {
-    inputWrapper: "bg-default-50/80 border border-default-200 shadow-sm group-data-[focus=true]:border-primary",
-    label: "text-default-600 font-semibold",
+    inputWrapper:
+      "bg-default-50/80 border border-default-200 shadow-sm group-data-[focus=true]:border-primary",
+    label: "text-default-600 font-semibold text-start",
+    input: "text-start",
+    innerWrapper: "w-full",
   };
+
+  const displayUserName = (user: { name: string; nameAr?: string | null }) =>
+    isRtl && user.nameAr ? user.nameAr : user.name;
 
   const form = useForm<TaskFormValues>({
     resolver: zodResolver(taskSchema),
@@ -218,6 +226,7 @@ export function TaskForm({
             <Input
               {...field}
               label={t("form.title.label")}
+              labelPlacement="outside"
               placeholder={t("form.title.placeholder")}
               variant="bordered"
               size="lg"
@@ -236,6 +245,7 @@ export function TaskForm({
             <Textarea
               {...field}
               label={t("form.description.label")}
+              labelPlacement="outside"
               placeholder={t("form.description.placeholder")}
               variant="bordered"
               minRows={4}
@@ -252,31 +262,29 @@ export function TaskForm({
       </div>
 
       <div className="rounded-2xl border border-default-200/60 bg-default-50/30 p-5 space-y-5">
-        <p className="text-xs font-bold text-default-500 uppercase tracking-widest">{t("detail.details")}</p>
+        <p className="text-xs font-bold text-default-500 uppercase tracking-widest text-start">
+          {t("detail.details")}
+        </p>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <Controller
           name="type"
           control={control}
           render={({ field }: { field: any }) => (
-            <div className="flex flex-col gap-2">
-              <span className="text-sm font-semibold text-foreground">
-                {t("form.type.label")}
-              </span>
-              <Select
-                aria-label={t("form.type.label")}
-                variant="bordered"
-                isDisabled={!!parentTaskId}
-                selectedKeys={new Set([field.value])}
-                classNames={{ trigger: "bg-content1 min-h-11" }}
-                onSelectionChange={(keys) =>
-                  field.onChange(Array.from(keys)[0] as string)
-                }
-              >
-                <SelectItem key="task" textValue={t("type.task")}>{t("type.task")}</SelectItem>
-                <SelectItem key="epic" textValue={t("type.epic")}>{t("type.epic")}</SelectItem>
-                <SelectItem key="subtask" textValue={t("type.subtask")}>{t("type.subtask")}</SelectItem>
-              </Select>
-            </div>
+            <SearchableSelect
+              label={t("form.type.label")}
+              aria-label={t("form.type.label")}
+              searchPlaceholder={t("form.search.placeholder")}
+              isDisabled={!!parentTaskId}
+              selectedKey={field.value}
+              onSelectionChange={(key) => field.onChange(key as string)}
+            >
+              <SelectItem key="task" textValue={t("type.task")} description={t("type.taskHint")}>
+                {t("type.task")}
+              </SelectItem>
+              <SelectItem key="subtask" textValue={t("type.subtask")} description={t("type.subtaskHint")}>
+                {t("type.subtask")}
+              </SelectItem>
+            </SearchableSelect>
           )}
         />
 
@@ -284,28 +292,25 @@ export function TaskForm({
           name="sprintId"
           control={control}
           render={({ field }: { field: any }) => (
-            <div className="flex flex-col gap-2">
-              <span className="text-sm font-semibold tracking-tight text-foreground/80">
-                {t("form.sprint.label")}
-              </span>
-              <Select
-                aria-label={t("form.sprint.label")}
-                variant="bordered"
-                selectedKeys={new Set([field.value || "no-sprint"])}
-                classNames={{ trigger: "bg-content1 min-h-11" }}
-                onSelectionChange={(keys) => {
-                  const val = Array.from(keys)[0] as string;
-                  field.onChange(val === "no-sprint" ? null : val);
-                }}
-              >
-                {[
-                  <SelectItem key="no-sprint" textValue={t("form.sprint.unassigned")}>{t("form.sprint.unassigned")}</SelectItem>,
-                  ...sprints.map((s) => (
-                    <SelectItem key={s.id} textValue={s.name}>{s.name}</SelectItem>
-                  ))
-                ]}
-              </Select>
-            </div>
+            <SearchableSelect
+              label={t("form.sprint.label")}
+              aria-label={t("form.sprint.label")}
+              searchPlaceholder={t("form.search.placeholder")}
+              selectedKey={field.value ?? "no-sprint"}
+              onSelectionChange={(key) => {
+                const val = key as string;
+                field.onChange(val === "no-sprint" ? null : val);
+              }}
+            >
+              {[
+                <SelectItem key="no-sprint" textValue={t("form.sprint.unassigned")}>{t("form.sprint.unassigned")}</SelectItem>,
+                ...sprints.map((s) => (
+                  <SelectItem key={s.id} textValue={s.name}>
+                    <span dir="auto">{s.name}</span>
+                  </SelectItem>
+                ))
+              ]}
+            </SearchableSelect>
           )}
         />
       </div>
@@ -315,28 +320,32 @@ export function TaskForm({
           name="parentId"
           control={control}
           render={({ field }: { field: any }) => (
-            <div className="flex flex-col gap-2 animate-in fade-in slide-in-from-top-2 duration-300">
-              <span className="text-sm font-semibold text-foreground">
-                {t("form.parent.label")}
-              </span>
+            <div className="animate-in fade-in slide-in-from-top-2 duration-300">
               {parentTaskId && lockedParent ? (
-                <div className="rounded-xl border border-primary/20 bg-primary-50/40 p-4">
-                  <p className="text-xs text-default-500 mb-1">{t("form.parent.linkedTo")}</p>
-                  <Chip variant="flat" color="primary" className="font-semibold max-w-full">
-                    <span className="truncate">{lockedParent.title}</span>
-                  </Chip>
+                <div className="space-y-2">
+                  <span className="text-sm font-semibold text-foreground text-start block">
+                    {t("form.parent.label")}
+                  </span>
+                  <div className="rounded-xl border border-primary/20 bg-primary-50/40 p-4 text-start">
+                    <p className="text-xs text-default-500 mb-1">{t("form.parent.linkedTo")}</p>
+                    <Chip variant="flat" color="primary" className="font-semibold max-w-full">
+                      <span className="truncate" dir="auto">
+                        {lockedParent.title}
+                      </span>
+                    </Chip>
+                  </div>
                 </div>
               ) : (
-                <Select
+                <SearchableSelect
+                  label={t("form.parent.label")}
                   aria-label={t("form.parent.label")}
-                  variant="bordered"
                   placeholder={t("form.parent.placeholder")}
-                  selectedKeys={field.value ? new Set([field.value]) : new Set()}
+                  searchPlaceholder={t("form.search.placeholder")}
+                  selectedKey={field.value ?? undefined}
                   isInvalid={!!errors.parentId}
                   errorMessage={errors.parentId?.message as string | undefined}
-                  classNames={{ trigger: "bg-content1 min-h-11" }}
-                  onSelectionChange={(keys) => {
-                    const val = Array.from(keys)[0] as string;
+                  onSelectionChange={(key) => {
+                    const val = key as string | null;
                     field.onChange(val || null);
                     const parent = parentCandidates.find((p) => p.id === val);
                     if (parent?.sprintId) {
@@ -346,15 +355,15 @@ export function TaskForm({
                 >
                   {parentCandidates.map((p) => (
                     <SelectItem key={p.id} textValue={p.title}>
-                      <div className="flex flex-col">
-                        <span>{p.title}</span>
+                      <div className="flex flex-col text-start">
+                        <span dir="auto">{p.title}</span>
                         <span className="text-tiny text-default-400 capitalize">
                           {t(`type.${p.type}`)}
                         </span>
                       </div>
                     </SelectItem>
                   ))}
-                </Select>
+                </SearchableSelect>
               )}
             </div>
           )}
@@ -366,41 +375,34 @@ export function TaskForm({
           name="status"
           control={control}
           render={({ field }: { field: any }) => (
-            <div className="flex flex-col gap-2">
-              <span className="text-sm font-semibold tracking-tight text-foreground/80">
-                {t("form.status.label")}
-              </span>
-              <Select
-                aria-label={t("form.status.label")}
-                variant="bordered"
-                selectedKeys={new Set([field.value])}
-                classNames={{ trigger: "bg-content1 min-h-11" }}
-                onSelectionChange={(keys) =>
-                  field.onChange(Array.from(keys)[0] as string)
-                }
-              >
-                {TASK_STATUSES.map((status) => (
-                  <SelectItem
-                    key={status}
-                    textValue={t(`status.${status}`)}
-                    isDisabled={
-                      status === "done" &&
-                      defaultValues?.status === "in_review" &&
-                      !canApprove
-                    }
-                  >
-                    {t(`status.${status}`)}
-                    {status === "done" &&
-                      defaultValues?.status === "in_review" &&
-                      !canApprove && (
-                        <span className="text-xs text-default-400 ml-1">
-                          ({t("errors.approveOnly")})
-                        </span>
-                      )}
-                  </SelectItem>
-                ))}
-              </Select>
-            </div>
+            <SearchableSelect
+              label={t("form.status.label")}
+              aria-label={t("form.status.label")}
+              searchPlaceholder={t("form.search.placeholder")}
+              selectedKey={field.value}
+              onSelectionChange={(key) => field.onChange(key as string)}
+            >
+              {TASK_STATUSES.map((status) => (
+                <SelectItem
+                  key={status}
+                  textValue={t(`status.${status}`)}
+                  isDisabled={
+                    status === "done" &&
+                    defaultValues?.status === "in_review" &&
+                    !canApprove
+                  }
+                >
+                  {t(`status.${status}`)}
+                  {status === "done" &&
+                    defaultValues?.status === "in_review" &&
+                    !canApprove && (
+                      <span className="text-xs text-default-400 ms-1">
+                        ({t("errors.approveOnly")})
+                      </span>
+                    )}
+                </SelectItem>
+              ))}
+            </SearchableSelect>
           )}
         />
 
@@ -408,29 +410,22 @@ export function TaskForm({
           name="priority"
           control={control}
           render={({ field }: { field: any }) => (
-            <div className="flex flex-col gap-2">
-              <span className="text-sm font-semibold tracking-tight text-foreground/80">
-                {t("form.priority.label")}
-              </span>
-              <Select
-                aria-label={t("form.priority.label")}
-                variant="bordered"
-                selectedKeys={new Set([field.value])}
-                classNames={{ trigger: "bg-content1 min-h-11" }}
-                onSelectionChange={(keys) =>
-                  field.onChange(Array.from(keys)[0] as string)
-                }
-              >
-                {TASK_PRIORITIES.map((priority) => (
-                  <SelectItem
-                    key={priority}
-                    textValue={t(`priority.${priority}`)}
-                  >
-                    {t(`priority.${priority}`)}
-                  </SelectItem>
-                ))}
-              </Select>
-            </div>
+            <SearchableSelect
+              label={t("form.priority.label")}
+              aria-label={t("form.priority.label")}
+              searchPlaceholder={t("form.search.placeholder")}
+              selectedKey={field.value}
+              onSelectionChange={(key) => field.onChange(key as string)}
+            >
+              {TASK_PRIORITIES.map((priority) => (
+                <SelectItem
+                  key={priority}
+                  textValue={t(`priority.${priority}`)}
+                >
+                  {t(`priority.${priority}`)}
+                </SelectItem>
+              ))}
+            </SearchableSelect>
           )}
         />
       </div>
@@ -438,41 +433,49 @@ export function TaskForm({
       <Controller
         name="assigneeId"
         control={control}
-        render={({ field }: { field: any }) => (
-          <div className="flex flex-col gap-2">
-            <span className="text-sm font-semibold text-foreground">
-              {t("form.assignee.label")}
-            </span>
-            <Select
+        render={({ field }: { field: any }) => {
+          const selectedKey = field.value ?? "unassigned";
+          const selectedUser =
+            selectedKey !== "unassigned"
+              ? allUsers?.find((u) => u.id === selectedKey) ||
+                (currentUser?.id === selectedKey ? currentUser : null)
+              : null;
+
+          return (
+            <SearchableSelect
+              label={t("form.assignee.label")}
               aria-label={t("form.assignee.label")}
-              variant="bordered"
               placeholder={t("form.assignee.placeholder")}
-              classNames={{ trigger: "bg-content1 min-h-11", value: "text-foreground" }}
-              selectedKeys={new Set([field.value || "unassigned"])}
-              onSelectionChange={(keys) => {
-                const val = Array.from(keys)[0] as string;
-                field.onChange(val === "unassigned" ? null : val);
-              }}
+              searchPlaceholder={t("form.assignee.searchPlaceholder")}
+              selectedKey={selectedKey}
+              startContent={
+                selectedUser ? (
+                  <Avatar
+                    size="sm"
+                    src={selectedUser.avatar}
+                    fallback={displayUserName(selectedUser).charAt(0).toUpperCase()}
+                    showFallback
+                    className="shrink-0"
+                  />
+                ) : undefined
+              }
               renderValue={() => {
-                const selectedKey = field.value;
-                if (selectedKey && selectedKey !== "unassigned") {
-                  const user =
-                    allUsers?.find((u) => u.id === selectedKey) || currentUser;
+                if (selectedUser) {
                   return (
-                    <div className="flex items-center gap-2">
-                      <Avatar
-                        size="sm"
-                        src={user?.avatar}
-                        fallback={(user?.name ?? "").charAt(0).toUpperCase()}
-                        showFallback
-                      />
-                      <span>{user?.name}</span>
+                    <div className="flex items-center gap-2 w-full">
+                      <span dir="auto">{displayUserName(selectedUser)}</span>
                     </div>
                   );
                 }
                 return (
-                  <span className="text-default-500">{t("form.assignee.placeholder")}</span>
+                  <span className="text-default-500">
+                    {t("form.assignee.placeholder")}
+                  </span>
                 );
+              }}
+              onSelectionChange={(key) => {
+                const val = key as string | null;
+                field.onChange(!val || val === "unassigned" ? null : val);
               }}
             >
               {[
@@ -499,20 +502,25 @@ export function TaskForm({
                   );
                 }
                 const user = option.user!;
+                const name = displayUserName(user);
+                const searchLabel =
+                  option.type === "me"
+                    ? `${name} ${t("form.assignee.me")} ${user.email}`
+                    : `${name} ${user.email}`;
                 return (
-                  <SelectItem key={option.id} textValue={user.name}>
-                    <div className="flex items-center gap-2">
+                  <SelectItem key={option.id} textValue={searchLabel}>
+                    <div className="flex items-center gap-2 w-full">
                       <Avatar
                         size="sm"
                         src={user.avatar}
-                        fallback={user.name.charAt(0).toUpperCase()}
+                        fallback={name.charAt(0).toUpperCase()}
                         showFallback
                       />
-                      <div className="flex flex-col">
-                        <span className="text-small font-medium">
-                          {user.name}
+                      <div className="flex flex-col text-start min-w-0">
+                        <span className="text-small font-medium" dir="auto">
+                          {name}
                         </span>
-                        <span className="text-tiny text-default-400">
+                        <span className="text-tiny text-default-400" dir="ltr">
                           {option.type === "me"
                             ? t("form.assignee.me")
                             : user.email}
@@ -522,9 +530,9 @@ export function TaskForm({
                   </SelectItem>
                 );
               })}
-            </Select>
-          </div>
-        )}
+            </SearchableSelect>
+          );
+        }}
       />
 
       <Controller
@@ -533,23 +541,28 @@ export function TaskForm({
         render={({ field }: { field: any }) => (
           <DatePicker
             label={t("form.dueDate.label")}
+            labelPlacement="outside"
             className="max-w-full"
             variant="bordered"
             value={field.value ? parseDate(field.value) : null}
             onChange={(date: any) => field.onChange(date?.toString() || null)}
             isInvalid={!!errors.dueDate}
             errorMessage={errors.dueDate?.message}
-            classNames={fieldClassNames}
+            classNames={{
+              ...fieldClassNames,
+              input: "text-start",
+              segment: "text-start",
+            }}
           />
         )}
       />
       </div>
 
       <div className="space-y-4">
-        <div>
-          <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-sm font-semibold text-foreground flex items-center gap-2">
-              <Paperclip className="w-4 h-4 text-primary" />
+        <div className="text-start">
+          <div className="flex items-center gap-2 flex-wrap justify-start">
+            <span className="text-sm font-semibold text-foreground inline-flex items-center gap-2">
+              <Paperclip className="w-4 h-4 text-primary shrink-0" />
               {t("form.attachments.label")}
             </span>
             <span className="text-[10px] font-bold uppercase tracking-wide text-default-400 bg-default-100 px-2 py-0.5 rounded-full">
@@ -627,7 +640,12 @@ export function TaskForm({
         </ModalContent>
       </Modal>
 
-      <div className="flex flex-col-reverse sm:flex-row justify-end gap-3 pt-2 border-t border-default-100">
+      <div
+        className={cn(
+          "flex flex-col-reverse sm:flex-row gap-3 pt-2 border-t border-default-100",
+          isRtl ? "sm:justify-start" : "sm:justify-end"
+        )}
+      >
         {onCancel && (
           <Button
             type="button"
@@ -647,7 +665,7 @@ export function TaskForm({
           className={`h-12 font-bold shadow-lg shadow-primary/25 ${!onCancel ? "w-full sm:w-auto sm:min-w-[160px]" : "px-8"}`}
         >
           {(isSubmitting || isUploading) ? (
-            <Spinner size="sm" color="current" className="mr-2" />
+            <Spinner size="sm" color="current" className="me-2" />
           ) : null}
           {(isSubmitting || isUploading) ? tc("actions.loading") : tc("actions.save")}
         </Button>

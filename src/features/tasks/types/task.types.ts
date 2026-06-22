@@ -2,7 +2,7 @@ import type { User } from "@/features/auth/types/auth.types";
 
 export type TaskStatus = "todo" | "in_progress" | "in_review" | "done";
 export type TaskPriority = "low" | "medium" | "high" | "urgent";
-export type TaskType = "task" | "epic" | "subtask";
+export type TaskType = "task" | "subtask";
 
 export interface TaskTimeLog {
   id: string;
@@ -111,6 +111,8 @@ export interface TaskFilters {
   sortBy?: string;
   sortOrder?: "asc" | "desc";
   dueDate?: string;
+  overdueOnly?: boolean;
+  completedThisWeek?: boolean;
 }
 
 export interface Comment {

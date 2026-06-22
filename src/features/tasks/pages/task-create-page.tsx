@@ -6,9 +6,11 @@ import { TaskForm } from "../components/task-form";
 import { PageHeader } from "@/components/shared/page-header";
 import { Card, CardBody, Chip } from "@heroui/react";
 import { ListTodo, Layers } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 export function TaskCreatePage() {
-  const { t } = useTranslation("tasks");
+  const { t, i18n } = useTranslation("tasks");
+  const isRtl = i18n.language === "ar";
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const parentId = searchParams.get("parentId");
@@ -26,27 +28,34 @@ export function TaskCreatePage() {
       {parentTask && (
         <div className="rounded-xl border border-primary/20 bg-primary-50/40 px-4 py-3 flex items-center gap-3">
           <Layers className="w-5 h-5 text-primary shrink-0" />
-          <div className="min-w-0">
+          <div className="min-w-0 text-start flex-1">
             <p className="text-xs font-bold text-default-500 uppercase tracking-wide">
               {t("form.createSubtaskFor")}
             </p>
             <Chip variant="flat" color="primary" className="mt-1 font-semibold max-w-full">
-              <span className="truncate">{parentTask.title}</span>
+              <span className="truncate" dir="auto">
+                {parentTask.title}
+              </span>
             </Chip>
           </div>
         </div>
       )}
 
       <Card className="border border-default-200/60 shadow-lg shadow-default-200/20 overflow-hidden">
-        <div className="h-1.5 bg-gradient-to-r from-primary via-violet-500 to-blue-500" />
+        <div
+          className={cn(
+            "h-1.5 bg-gradient-to-r from-primary via-violet-500 to-blue-500",
+            isRtl && "bg-gradient-to-l"
+          )}
+        />
         <CardBody className="p-6 md:p-8">
           <div className="flex items-center gap-3 mb-6 pb-6 border-b border-default-100">
-            <div className="p-2.5 rounded-xl bg-primary/10 text-primary">
+            <div className="p-2.5 rounded-xl bg-primary/10 text-primary shrink-0">
               <ListTodo className="w-5 h-5" />
             </div>
-            <div>
+            <div className="min-w-0 text-start flex-1">
               <p className="text-sm font-bold text-foreground">
-                {parentId ? t("type.subtask") : "New work item"}
+                {parentId ? t("type.subtask") : t("type.task")}
               </p>
               <p className="text-xs text-default-500">
                 {parentId ? t("form.parent.linkedTo") : t("form.createHint")}
@@ -61,7 +70,7 @@ export function TaskCreatePage() {
                   if (parentId) {
                     navigate(`/tasks/${parentId}`);
                   } else {
-                    navigate("/tasks/list");
+                    navigate("/tasks/work");
                   }
                 },
               });

@@ -14,6 +14,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useTranslation } from "react-i18next";
+import { selectFieldProps } from "@/components/shared/select-field";
 import { PeopleService } from "../api/people.service";
 import { useCompany } from "@/features/companies/context/company-context";
 import { useAuthStore } from "@/stores/auth.store";
@@ -73,16 +74,17 @@ export function ApplyLeaveModal({ isOpen, onOpenChange }: ApplyLeaveModalProps) 
             <ModalBody>
               <div className="space-y-4">
                 <Select 
+                  {...selectFieldProps()}
                   label={t("leave_modal.leave_type")}
                   placeholder={t("leave_modal.select_type")}
                   {...register("type")}
                   isInvalid={!!errors.type}
                   errorMessage={errors.type?.message}
                 >
-                  <SelectItem key="vacation">{t("leave_modal.type_vacation")}</SelectItem>
-                  <SelectItem key="sick">{t("leave_modal.type_sick")}</SelectItem>
-                  <SelectItem key="personal">{t("leave_modal.type_personal")}</SelectItem>
-                  <SelectItem key="unpaid">{t("leave_modal.type_unpaid")}</SelectItem>
+                  <SelectItem key="vacation" textValue={t("leave_modal.type_vacation")}>{t("leave_modal.type_vacation")}</SelectItem>
+                  <SelectItem key="sick" textValue={t("leave_modal.type_sick")}>{t("leave_modal.type_sick")}</SelectItem>
+                  <SelectItem key="personal" textValue={t("leave_modal.type_personal")}>{t("leave_modal.type_personal")}</SelectItem>
+                  <SelectItem key="unpaid" textValue={t("leave_modal.type_unpaid")}>{t("leave_modal.type_unpaid")}</SelectItem>
                 </Select>
                 <div className="grid grid-cols-2 gap-4">
                   <Input

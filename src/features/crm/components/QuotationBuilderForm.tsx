@@ -18,6 +18,7 @@ import { useCompanyProfile } from "@/features/companies/hooks/use-company-profil
 import { usePricingList } from "@/features/companies/hooks/use-pricing";
 import { useContactsQuery } from "@/features/crm/hooks/use-contacts";
 import { contactDisplayName } from "@/features/crm/utils/contacts-list.utils";
+import { selectFieldProps } from "@/components/shared/select-field";
 import {
   QUOTATION_BASE_PACKAGE,
   QUOTATION_OPTIONAL_ADDONS,
@@ -543,6 +544,7 @@ export function QuotationBuilderForm() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             <Select
+              {...selectFieldProps()}
               label={t("quotation.selectContact")}
               selectedKeys={selectedContactId ? [selectedContactId] : []}
               onSelectionChange={(keys) => {
@@ -551,11 +553,12 @@ export function QuotationBuilderForm() {
               }}
             >
               {contacts.map((c) => (
-                <SelectItem key={c.id}>{contactDisplayName(c)}</SelectItem>
+                <SelectItem key={c.id} textValue={contactDisplayName(c)}>{contactDisplayName(c)}</SelectItem>
               ))}
             </Select>
             <div className="flex gap-2 items-center sm:col-span-2 lg:col-span-2">
               <Select
+                {...selectFieldProps()}
                 label={t("quotation.recipientTitle.label")}
                 className="w-[140px] shrink-0"
                 selectedKeys={[recipientTitle]}
@@ -565,7 +568,7 @@ export function QuotationBuilderForm() {
                 }}
               >
                 {QUOTATION_RECIPIENT_TITLES.map((title) => (
-                  <SelectItem key={title}>
+                  <SelectItem key={title} textValue={t(`quotation.pdf.recipientTitle.${title}`)}>
                     {t(`quotation.pdf.recipientTitle.${title}`)}
                   </SelectItem>
                 ))}
