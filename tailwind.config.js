@@ -17,9 +17,9 @@ export default {
     heroui({
       layout: {
         radius: {
-          small: "0.5rem",
-          medium: "1rem",
-          large: "1.5rem",
+          small: "0.375rem",
+          medium: "0.5rem",
+          large: "0.75rem",
         },
         borderWidth: {
           small: "1px",

@@ -11,6 +11,7 @@ import { Search } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import type { Key } from "@react-types/shared";
 import { selectFieldProps } from "./select-field";
+import { cn } from "@/lib/utils";
 
 function getItemTextValue(child: ReactElement): string {
   const props = child.props as { textValue?: string; children?: ReactNode };
@@ -67,6 +68,7 @@ export function SearchableSelect({
   const { t: tt } = useTranslation("tasks");
   const [query, setQuery] = useState("");
   const field = selectFieldProps({ compact, classNames });
+  const hasSelection = selectedKey != null && selectedKey !== "";
 
   const filteredChildren = useMemo(
     () => filterItemChildren(children, query),
@@ -104,8 +106,18 @@ export function SearchableSelect({
     <Select
       variant="bordered"
       labelPlacement="outside"
+      radius="sm"
       placeholder={placeholder}
       {...field}
+      classNames={{
+        ...field.classNames,
+        ...classNames,
+        value: cn(
+          field.classNames?.value,
+          classNames?.value,
+          !hasSelection && placeholder && "text-default-400"
+        ),
+      }}
       {...props}
       selectedKeys={
         selectedKey != null && selectedKey !== ""

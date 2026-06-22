@@ -134,6 +134,11 @@
     "search": {
       "placeholder": "Search..."
     },
+    "statusLabel": "Status",
+    "status": {
+      "label": "Status",
+      "placeholder": "Select status"
+    },
     "priority": {
       "label": "Priority"
     },

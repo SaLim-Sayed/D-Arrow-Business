@@ -5,7 +5,7 @@ import { useCompany } from "@/features/companies/context/company-context";
 import { TaskService } from "../api/tasks.service";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Paperclip } from "lucide-react";
+import { Paperclip, UserRound } from "lucide-react";
 import {
   AttachmentThumbnail,
   AttachmentUploadZone,
@@ -104,9 +104,9 @@ export function TaskForm({
 
   const fieldClassNames = {
     inputWrapper:
-      "bg-default-50/80 border border-default-200 shadow-sm group-data-[focus=true]:border-primary",
-    label: "text-default-600 font-semibold text-start",
-    input: "text-start",
+      "bg-content1 border border-default-200 shadow-none group-data-[focus=true]:border-primary rounded-md min-h-10",
+    label: "text-default-600 font-semibold text-sm text-start",
+    input: "text-start text-sm",
     innerWrapper: "w-full",
   };
 
@@ -216,9 +216,9 @@ export function TaskForm({
   return (
     <form
       onSubmit={form.handleSubmit(handleSubmit)}
-      className="space-y-8 w-full"
+      className="space-y-6 w-full"
     >
-      <div className="space-y-5">
+      <div className="space-y-4">
         <Controller
           name="title"
           control={control}
@@ -229,7 +229,8 @@ export function TaskForm({
               labelPlacement="outside"
               placeholder={t("form.title.placeholder")}
               variant="bordered"
-              size="lg"
+              radius="sm"
+              size="md"
               fullWidth
               isInvalid={!!errors.title}
               errorMessage={errors.title?.message}
@@ -248,7 +249,8 @@ export function TaskForm({
               labelPlacement="outside"
               placeholder={t("form.description.placeholder")}
               variant="bordered"
-              minRows={4}
+              radius="sm"
+              minRows={3}
               fullWidth
               isInvalid={!!errors.description}
               errorMessage={errors.description?.message}
@@ -261,8 +263,8 @@ export function TaskForm({
         />
       </div>
 
-      <div className="rounded-2xl border border-default-200/60 bg-default-50/30 p-5 space-y-5">
-        <p className="text-xs font-bold text-default-500 uppercase tracking-widest text-start">
+      <div className="rounded-lg border border-default-200 bg-default-50/40 p-4 md:p-5 space-y-4">
+        <p className="text-sm font-semibold text-foreground text-start">
           {t("detail.details")}
         </p>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -326,7 +328,7 @@ export function TaskForm({
                   <span className="text-sm font-semibold text-foreground text-start block">
                     {t("form.parent.label")}
                   </span>
-                  <div className="rounded-xl border border-primary/20 bg-primary-50/40 p-4 text-start">
+                  <div className="rounded-md border border-primary/20 bg-primary-50/40 p-3 text-start">
                     <p className="text-xs text-default-500 mb-1">{t("form.parent.linkedTo")}</p>
                     <Chip variant="flat" color="primary" className="font-semibold max-w-full">
                       <span className="truncate" dir="auto">
@@ -376,8 +378,8 @@ export function TaskForm({
           control={control}
           render={({ field }: { field: any }) => (
             <SearchableSelect
-              label={t("form.status.label")}
-              aria-label={t("form.status.label")}
+              label={t("form.statusLabel")}
+              aria-label={t("form.statusLabel")}
               searchPlaceholder={t("form.search.placeholder")}
               selectedKey={field.value}
               onSelectionChange={(key) => field.onChange(key as string)}
@@ -429,17 +431,16 @@ export function TaskForm({
           )}
         />
       </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
 
       <Controller
         name="assigneeId"
         control={control}
         render={({ field }: { field: any }) => {
-          const selectedKey = field.value ?? "unassigned";
-          const selectedUser =
-            selectedKey !== "unassigned"
-              ? allUsers?.find((u) => u.id === selectedKey) ||
-                (currentUser?.id === selectedKey ? currentUser : null)
-              : null;
+          const selectedUser = field.value
+            ? allUsers?.find((u) => u.id === field.value) ||
+              (currentUser?.id === field.value ? currentUser : null)
+            : null;
 
           return (
             <SearchableSelect
@@ -447,7 +448,7 @@ export function TaskForm({
               aria-label={t("form.assignee.label")}
               placeholder={t("form.assignee.placeholder")}
               searchPlaceholder={t("form.assignee.searchPlaceholder")}
-              selectedKey={selectedKey}
+              selectedKey={field.value ?? null}
               startContent={
                 selectedUser ? (
                   <Avatar
@@ -457,22 +458,19 @@ export function TaskForm({
                     showFallback
                     className="shrink-0"
                   />
-                ) : undefined
+                ) : (
+                  <UserRound className="w-4 h-4 text-default-400 shrink-0" />
+                )
               }
-              renderValue={() => {
-                if (selectedUser) {
-                  return (
-                    <div className="flex items-center gap-2 w-full">
-                      <span dir="auto">{displayUserName(selectedUser)}</span>
-                    </div>
-                  );
-                }
-                return (
-                  <span className="text-default-500">
-                    {t("form.assignee.placeholder")}
-                  </span>
-                );
-              }}
+              renderValue={
+                selectedUser
+                  ? () => (
+                      <span className="truncate" dir="auto">
+                        {displayUserName(selectedUser)}
+                      </span>
+                    )
+                  : undefined
+              }
               onSelectionChange={(key) => {
                 const val = key as string | null;
                 field.onChange(!val || val === "unassigned" ? null : val);
@@ -541,6 +539,7 @@ export function TaskForm({
         render={({ field }: { field: any }) => (
           <AppDatePicker
             label={t("form.dueDate.label")}
+            radius="sm"
             className="max-w-full"
             value={field.value ? parseDate(field.value) : null}
             onChange={(date: any) => field.onChange(date?.toString() || null)}
@@ -550,19 +549,20 @@ export function TaskForm({
         )}
       />
       </div>
+      </div>
 
-      <div className="space-y-4">
+      <div className="space-y-3">
         <div className="text-start">
           <div className="flex items-center gap-2 flex-wrap justify-start">
             <span className="text-sm font-semibold text-foreground inline-flex items-center gap-2">
               <Paperclip className="w-4 h-4 text-primary shrink-0" />
               {t("form.attachments.label")}
             </span>
-            <span className="text-[10px] font-bold uppercase tracking-wide text-default-400 bg-default-100 px-2 py-0.5 rounded-full">
+            <span className="text-[10px] font-medium uppercase tracking-wide text-default-500 bg-default-100 px-2 py-0.5 rounded-md">
               {t("form.attachments.optional")}
             </span>
             {totalAttachments > 0 && (
-              <span className="text-xs font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full">
+              <span className="text-xs font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded-md">
                 {totalAttachments}
               </span>
             )}
@@ -635,7 +635,7 @@ export function TaskForm({
 
       <div
         className={cn(
-          "flex flex-col-reverse sm:flex-row gap-3 pt-2 border-t border-default-100",
+          "flex flex-col-reverse sm:flex-row gap-2 pt-4 border-t border-default-100",
           isRtl ? "sm:justify-start" : "sm:justify-end"
         )}
       >
@@ -643,9 +643,10 @@ export function TaskForm({
           <Button
             type="button"
             variant="flat"
+            radius="sm"
             onPress={onCancel}
             isDisabled={isSubmitting || isUploading}
-            className="h-11 font-semibold px-6"
+            className="h-10 font-medium px-5"
           >
             {tc("actions.cancel")}
           </Button>
@@ -653,9 +654,9 @@ export function TaskForm({
         <Button
           type="submit"
           color="primary"
-          variant="shadow"
+          radius="sm"
           isDisabled={isSubmitting || isUploading}
-          className={`h-12 font-bold shadow-lg shadow-primary/25 ${!onCancel ? "w-full sm:w-auto sm:min-w-[160px]" : "px-8"}`}
+          className={`h-10 font-semibold ${!onCancel ? "w-full sm:w-auto sm:min-w-[140px]" : "px-6"}`}
         >
           {(isSubmitting || isUploading) ? (
             <Spinner size="sm" color="current" className="me-2" />

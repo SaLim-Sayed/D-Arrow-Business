@@ -19,14 +19,14 @@ export function TaskCreatePage() {
   const parentTask = parentId ? parentTaskResponse?.data : null;
 
   return (
-    <div className="max-w-3xl mx-auto p-4 md:p-6 space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-500">
+    <div className="max-w-5xl mx-auto p-4 md:p-6 space-y-5 animate-in fade-in slide-in-from-bottom-2 duration-500">
       <PageHeader
         title={parentId ? t("detail.addSubtask") : t("form.createTitle")}
         onBack={() => (parentId ? navigate(`/tasks/${parentId}`) : navigate(-1))}
       />
 
       {parentTask && (
-        <div className="rounded-xl border border-primary/20 bg-primary-50/40 px-4 py-3 flex items-center gap-3">
+        <div className="rounded-lg border border-primary/20 bg-primary-50/40 px-4 py-3 flex items-center gap-3">
           <Layers className="w-5 h-5 text-primary shrink-0" />
           <div className="min-w-0 text-start flex-1">
             <p className="text-xs font-bold text-default-500 uppercase tracking-wide">
@@ -41,23 +41,26 @@ export function TaskCreatePage() {
         </div>
       )}
 
-      <Card className="border border-default-200/60 shadow-lg shadow-default-200/20 overflow-hidden">
+      <Card
+        radius="sm"
+        className="border border-default-200 shadow-sm overflow-hidden"
+      >
         <div
           className={cn(
-            "h-1.5 bg-gradient-to-r from-primary via-violet-500 to-blue-500",
+            "h-1 bg-gradient-to-r from-primary via-violet-500 to-blue-500",
             isRtl && "bg-gradient-to-l"
           )}
         />
-        <CardBody className="p-6 md:p-8">
-          <div className="flex items-center gap-3 mb-6 pb-6 border-b border-default-100">
-            <div className="p-2.5 rounded-xl bg-primary/10 text-primary shrink-0">
-              <ListTodo className="w-5 h-5" />
+        <CardBody className="p-5 md:p-6">
+          <div className="flex items-center gap-3 mb-5 pb-4 border-b border-default-100">
+            <div className="p-2 rounded-md bg-primary/10 text-primary shrink-0">
+              <ListTodo className="w-4 h-4" />
             </div>
             <div className="min-w-0 text-start flex-1">
-              <p className="text-sm font-bold text-foreground">
+              <p className="text-sm font-semibold text-foreground">
                 {parentId ? t("type.subtask") : t("type.task")}
               </p>
-              <p className="text-xs text-default-500">
+              <p className="text-xs text-default-500 mt-0.5">
                 {parentId ? t("form.parent.linkedTo") : t("form.createHint")}
               </p>
             </div>

@@ -2,9 +2,9 @@ import type { SelectProps } from "@heroui/react";
 
 export const selectClassNames: NonNullable<SelectProps["classNames"]> = {
   base: "w-full",
-  trigger: "bg-content1 min-h-11",
-  label: "text-start font-semibold text-foreground/80",
-  value: "text-start w-full",
+  trigger: "bg-content1 min-h-10 rounded-md",
+  label: "text-start font-semibold text-default-600 text-sm",
+  value: "text-start w-full text-sm",
   innerWrapper: "w-full",
   mainWrapper: "w-full",
 };

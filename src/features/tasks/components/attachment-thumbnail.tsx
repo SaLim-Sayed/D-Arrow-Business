@@ -205,10 +205,10 @@ export function AttachmentUploadZone({
   return (
     <label
       htmlFor={inputId}
-      className={`flex flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed py-8 px-4 transition-all cursor-pointer ${
+      className={`flex flex-col items-center justify-center gap-2 rounded-lg border border-dashed py-6 px-4 transition-all cursor-pointer ${
         disabled
           ? "opacity-50 pointer-events-none border-default-200"
-          : "border-default-200 hover:border-primary/50 hover:bg-primary-50/30"
+          : "border-default-200 hover:border-primary/40 hover:bg-primary-50/20"
       }`}
       onDragOver={(e) => {
         e.preventDefault();
@@ -231,10 +231,10 @@ export function AttachmentUploadZone({
           e.target.value = "";
         }}
       />
-      <div className="p-3 rounded-full bg-primary/10 text-primary">
-        <Upload className="w-6 h-6" />
+      <div className="p-2.5 rounded-md bg-primary/10 text-primary">
+        <Upload className="w-5 h-5" />
       </div>
-      <p className="text-sm font-semibold text-foreground">{t("form.attachments.clickOrDrag")}</p>
+      <p className="text-sm font-medium text-foreground">{t("form.attachments.clickOrDrag")}</p>
       <p className="text-xs text-default-400">{t("form.attachments.optionalHint")}</p>
       {fileCount > 0 && (
         <p className="text-xs font-bold text-primary mt-1">

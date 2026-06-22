@@ -134,6 +134,11 @@
     "search": {
       "placeholder": "بحث..."
     },
+    "statusLabel": "الحالة",
+    "status": {
+      "label": "الحالة",
+      "placeholder": "اختر الحالة"
+    },
     "priority": {
       "label": "الأولوية"
     },
