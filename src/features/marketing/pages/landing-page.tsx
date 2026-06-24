@@ -10,7 +10,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { Logo } from "@/components/shared/logo";
-import { LanguageSwitcher } from "@/components/layout/language-switcher";
+import { LanguageSwitcher, LanguageTogglePills } from "@/components/layout/language-switcher";
 import { LANDING_APPS } from "../constants/landing-apps";
 import { cn } from "@/lib/utils";
 
@@ -37,7 +37,8 @@ function LandingNav() {
         </nav>
 
         <div className="flex items-center gap-2">
-          <LanguageSwitcher compact />
+          <LanguageTogglePills className="hidden sm:inline-flex" />
+          <LanguageSwitcher compact className="sm:hidden" />
           <Button
             as={Link}
             to="/login"
@@ -232,9 +233,16 @@ export function LandingPage() {
 
       {/* Footer */}
       <footer className="border-t border-default-200 bg-background px-4 py-8 md:px-6">
-        <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 text-center text-sm text-default-500 sm:flex-row sm:text-start">
-          <p>{t("footer.tagline")}</p>
-          <p>© {year} D-Arrow. {t("footer.rights")}</p>
+        <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 sm:flex-row sm:text-start">
+          <p className="text-sm text-default-500 text-center sm:text-start">
+            {t("footer.tagline")}
+          </p>
+          <div className="flex flex-col items-center gap-3 sm:flex-row sm:items-center sm:gap-6">
+            <LanguageTogglePills />
+            <p className="text-sm text-default-500">
+              © {year} D-Arrow. {t("footer.rights")}
+            </p>
+          </div>
         </div>
       </footer>
     </div>

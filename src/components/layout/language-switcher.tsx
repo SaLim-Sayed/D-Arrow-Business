@@ -3,6 +3,10 @@ import { Button } from "@heroui/react";
 import { Languages } from "lucide-react";
 import { cn } from "@/lib/utils";
 
+function isArabic(lng: string | undefined) {
+  return lng?.startsWith("ar") ?? false;
+}
+
 interface LanguageSwitcherProps {
   compact?: boolean;
   className?: string;
@@ -13,13 +17,14 @@ export function LanguageSwitcher({
   className,
 }: LanguageSwitcherProps) {
   const { i18n, t } = useTranslation();
+  const arabic = isArabic(i18n.language);
 
   const toggleLanguage = () => {
-    const next = i18n.language === "ar" ? "en" : "ar";
-    i18n.changeLanguage(next);
+    i18n.changeLanguage(arabic ? "en" : "ar");
   };
 
-  const label = i18n.language === "ar" ? t("language.en") : t("language.ar");
+  const label = arabic ? t("language.en") : t("language.ar");
+  const current = arabic ? t("language.ar") : t("language.en");
 
   if (compact) {
     return (
@@ -46,29 +51,70 @@ export function LanguageSwitcher({
       size="sm"
       onPress={toggleLanguage}
       aria-label={label}
+      title={current}
       className={cn(
-        "bg-default-100/50 hover:bg-default-200/50 font-bold text-xs rounded-xl",
+        "bg-default-100/50 hover:bg-default-200/50 font-bold text-xs rounded-xl min-w-0",
         className
       )}
     >
-      <Languages className="h-4 w-4 me-2 text-primary" />
-      {label}
+      <Languages className="h-4 w-4 shrink-0 me-2 text-primary" />
+      <span className="truncate">{label}</span>
     </Button>
+  );
+}
+
+export function LanguageTogglePills({ className }: { className?: string }) {
+  const { i18n, t } = useTranslation();
+  const arabic = isArabic(i18n.language);
+
+  const pillClass = (active: boolean) =>
+    cn(
+      "rounded-md px-3 py-1.5 text-xs font-semibold transition-colors",
+      active
+        ? "bg-background text-foreground shadow-sm"
+        : "text-default-500 hover:text-foreground"
+    );
+
+  return (
+    <div
+      className={cn(
+        "inline-flex items-center gap-0.5 rounded-lg bg-default-100/80 p-1",
+        className
+      )}
+      role="group"
+      aria-label={`${t("language.en")} / ${t("language.ar")}`}
+    >
+      <button
+        type="button"
+        className={pillClass(!arabic)}
+        onClick={() => i18n.changeLanguage("en")}
+        aria-pressed={!arabic}
+      >
+        {t("language.en")}
+      </button>
+      <button
+        type="button"
+        className={pillClass(arabic)}
+        onClick={() => i18n.changeLanguage("ar")}
+        aria-pressed={arabic}
+      >
+        {t("language.ar")}
+      </button>
+    </div>
   );
 }
 
 export function LanguageSwitcherRow({ onToggle }: { onToggle?: () => void }) {
   const { i18n, t } = useTranslation();
+  const arabic = isArabic(i18n.language);
 
   const toggleLanguage = () => {
-    const next = i18n.language === "ar" ? "en" : "ar";
-    i18n.changeLanguage(next);
+    i18n.changeLanguage(arabic ? "en" : "ar");
     onToggle?.();
   };
 
-  const label = i18n.language === "ar" ? t("language.en") : t("language.ar");
-  const current =
-    i18n.language === "ar" ? t("language.ar") : t("language.en");
+  const label = arabic ? t("language.en") : t("language.ar");
+  const current = arabic ? t("language.ar") : t("language.en");
 
   return (
     <button
