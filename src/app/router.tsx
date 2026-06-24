@@ -6,7 +6,6 @@ import { ForgotPasswordPage } from "@/features/auth/pages/forgot-password-page";
 import { ResetPasswordPage } from "@/features/auth/pages/reset-password-page";
 import { ProtectedRoute } from "@/features/auth/components/protected-route";
 import { AppLayout } from "@/components/layout/app-layout";
-import { PortalPickerPage } from "@/features/portals/pages/PortalPickerPage";
 import { TasksLayout } from "@/features/tasks/components/TasksLayout";
 import { TasksDashboardPage } from "@/features/tasks/pages/tasks-dashboard-page";
 import { TasksWorkspacePage } from "@/features/tasks/pages/tasks-workspace-page";
@@ -39,6 +38,7 @@ import { RolesPermissionsPage } from "@/features/companies/pages/RolesPermission
 import { TeamMembersPage } from "@/features/companies/pages/TeamMembersPage";
 import { NotFoundPage } from "@/components/shared/not-found-page";
 import { ErrorPage } from "@/components/shared/error-page";
+import { HomePage } from "@/features/marketing/pages/home-page";
 
 // Billing Imports
 import { BillingLayout } from "@/features/billing/components/BillingLayout";
@@ -75,17 +75,16 @@ export const router = createBrowserRouter([
         element: <ResetPasswordPage />,
       },
       {
-        path: "/",
+        index: true,
+        element: <HomePage />,
+      },
+      {
         element: (
           <ProtectedRoute>
             <AppLayout />
           </ProtectedRoute>
         ),
         children: [
-          {
-            index: true,
-            element: <PortalPickerPage />,
-          },
           {
             path: "tasks",
             element: <TasksLayout />,

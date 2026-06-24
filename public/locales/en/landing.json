@@ -1,0 +1,60 @@
+{
+  "nav": {
+    "apps": "Apps",
+    "features": "Features",
+    "pricing": "Pricing",
+    "signIn": "Sign in",
+    "tryFree": "Try it free"
+  },
+  "hero": {
+    "title": "All your business on",
+    "titleHighlight": "one platform.",
+    "subtitle": "Simple, efficient, yet",
+    "subtitleHighlight": "affordable!",
+    "priceNote": "One workspace for all your teams",
+    "ctaPrimary": "Start now — It's free",
+    "ctaSecondary": "Sign in"
+  },
+  "apps": {
+    "title": "Everything you need to run your company",
+    "subtitle": "Modular apps that work together — install what you need, grow when you're ready.",
+    "viewAll": "Explore all apps"
+  },
+  "modules": {
+    "tasks": "Tasks & Projects",
+    "crm": "CRM & Sales",
+    "people": "People & HR",
+    "billing": "Billing & Finance",
+    "invoices": "Invoices",
+    "reports": "Reports",
+    "settings": "Company Settings"
+  },
+  "features": {
+    "title": "Built for growing teams",
+    "integrated": {
+      "title": "Fully integrated",
+      "desc": "Tasks, sales, HR, and billing share the same data — no duplicate entry."
+    },
+    "rtl": {
+      "title": "Arabic-first",
+      "desc": "Native RTL support for teams across the Middle East and beyond."
+    },
+    "secure": {
+      "title": "Secure by design",
+      "desc": "Role-based access per portal so everyone sees only what they need."
+    },
+    "fast": {
+      "title": "Fast & modern",
+      "desc": "A clean interface your team will actually enjoy using every day."
+    }
+  },
+  "cta": {
+    "title": "Ready to simplify your operations?",
+    "subtitle": "Create your free account in minutes. No credit card required.",
+    "button": "Get started free"
+  },
+  "footer": {
+    "tagline": "D-Arrow Business — ERP, CRM, HR & billing in one place.",
+    "rights": "All rights reserved."
+  }
+}
