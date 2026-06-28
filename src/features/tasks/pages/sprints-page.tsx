@@ -260,7 +260,7 @@ export function SprintsPage() {
                         ? parseDate(newSprint.startDate.split("T")[0])
                         : null
                     }
-                    onChange={(date) =>
+                    onChange={(date: { toString(): string } | null) =>
                       setNewSprint({ ...newSprint, startDate: date?.toString() || "" })
                     }
                   />
@@ -272,7 +272,7 @@ export function SprintsPage() {
                         ? parseDate(newSprint.endDate.split("T")[0])
                         : null
                     }
-                    onChange={(date) =>
+                    onChange={(date: { toString(): string } | null) =>
                       setNewSprint({ ...newSprint, endDate: date?.toString() || "" })
                     }
                   />
