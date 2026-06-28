@@ -150,7 +150,7 @@ export function RecordPaymentModal({
                         ? parseDate(field.value.toISOString().slice(0, 10))
                         : null
                     }
-                    onChange={(d) => {
+                    onChange={(d: { toString(): string } | null) => {
                       if (d) field.onChange(new Date(d.toString()));
                     }}
                   />
