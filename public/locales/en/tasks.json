@@ -1,4 +1,9 @@
 {
+  "module_name": "Tasks",
+  "nav": {
+    "dashboard": "Task Dashboard",
+    "back": "Back"
+  },
   "dashboard": {
     "title": "Task Dashboard",
     "subtitle": "Overview of your team's performance and activities.",
@@ -10,10 +15,18 @@
     "tasksByStatus": "Tasks by Status",
     "tasksByPriority": "Tasks by Priority",
     "overview": "Overview",
-    "distribution": "Distribution"
+    "distribution": "Distribution",
+    "quickActions": "Quick Actions",
+    "openBoard": "Open Board",
+    "openList": "Open List",
+    "openSprints": "Sprints",
+    "viewAll": "View All",
+    "noRecent": "No recent tasks",
+    "noData": "No data yet"
   },
   "workspace": {
     "title": "Tasks",
+    "subtitle": "Browse tasks on a Kanban board or list view with advanced filters.",
     "views": {
       "list": "List",
       "board": "Board"

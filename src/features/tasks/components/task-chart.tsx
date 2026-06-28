@@ -9,10 +9,11 @@ import {
   PieChart,
   Pie,
   Cell,
+  Legend,
 } from "recharts";
-import { Card, CardBody, CardHeader } from "@heroui/react";
 import type { Task, TaskPriority, TaskStatus } from "../types/task.types";
 import { useTasksWorkspaceNavigation } from "../hooks/use-tasks-workspace-navigation";
+import { TasksPanel } from "./tasks-ui";
 
 const STATUS_COLORS: Record<string, string> = {
   todo: "#94A3B8",
@@ -33,18 +34,50 @@ export function TaskCharts({ tasks }: { tasks: Task[] }) {
   const { openByStatus, openByPriority } = useTasksWorkspaceNavigation();
 
   const statusData = [
-    { name: t("status.todo"), value: tasks.filter((t) => t.status === "todo").length, key: "todo" as TaskStatus },
-    { name: t("status.in_progress"), value: tasks.filter((t) => t.status === "in_progress").length, key: "in_progress" as TaskStatus },
-    { name: t("status.in_review"), value: tasks.filter((t) => t.status === "in_review").length, key: "in_review" as TaskStatus },
-    { name: t("status.done"), value: tasks.filter((t) => t.status === "done").length, key: "done" as TaskStatus },
+    {
+      name: t("status.todo"),
+      value: tasks.filter((task) => task.status === "todo").length,
+      key: "todo" as TaskStatus,
+    },
+    {
+      name: t("status.in_progress"),
+      value: tasks.filter((task) => task.status === "in_progress").length,
+      key: "in_progress" as TaskStatus,
+    },
+    {
+      name: t("status.in_review"),
+      value: tasks.filter((task) => task.status === "in_review").length,
+      key: "in_review" as TaskStatus,
+    },
+    {
+      name: t("status.done"),
+      value: tasks.filter((task) => task.status === "done").length,
+      key: "done" as TaskStatus,
+    },
   ];
 
   const priorityData = [
-    { name: t("priority.low"), value: tasks.filter((t) => t.priority === "low").length, key: "low" as TaskPriority },
-    { name: t("priority.medium"), value: tasks.filter((t) => t.priority === "medium").length, key: "medium" as TaskPriority },
-    { name: t("priority.high"), value: tasks.filter((t) => t.priority === "high").length, key: "high" as TaskPriority },
-    { name: t("priority.urgent"), value: tasks.filter((t) => t.priority === "urgent").length, key: "urgent" as TaskPriority },
-  ];
+    {
+      name: t("priority.low"),
+      value: tasks.filter((task) => task.priority === "low").length,
+      key: "low" as TaskPriority,
+    },
+    {
+      name: t("priority.medium"),
+      value: tasks.filter((task) => task.priority === "medium").length,
+      key: "medium" as TaskPriority,
+    },
+    {
+      name: t("priority.high"),
+      value: tasks.filter((task) => task.priority === "high").length,
+      key: "high" as TaskPriority,
+    },
+    {
+      name: t("priority.urgent"),
+      value: tasks.filter((task) => task.priority === "urgent").length,
+      key: "urgent" as TaskPriority,
+    },
+  ].filter((entry) => entry.value > 0);
 
   const handleStatusClick = (key: TaskStatus) => {
     if (tasks.some((task) => task.status === key)) {
@@ -59,50 +92,44 @@ export function TaskCharts({ tasks }: { tasks: Task[] }) {
   };
 
   return (
-    <div className="grid gap-6 md:grid-cols-2 animate-in fade-in zoom-in duration-500 delay-200">
-      <Card className="glass-card border-none overflow-hidden">
-        <CardHeader className="pb-0 pt-6 px-6 flex-col items-start">
-          <p className="text-[10px] font-black uppercase tracking-[0.2em] text-primary mb-1">{t("dashboard.overview")}</p>
-          <h4 className="text-xl font-black">
-            {t("dashboard.tasksByStatus")}
-          </h4>
-        </CardHeader>
-        <CardBody className="px-2">
-          <ResponsiveContainer width="100%" height={280}>
-            <BarChart data={statusData} margin={{ top: 20, right: 30, left: 10, bottom: 5 }}>
-              <XAxis 
-                dataKey="name" 
-                fontSize={10} 
-                fontWeight={700}
-                tickLine={false} 
+    <div className="grid gap-4 md:grid-cols-2">
+      <TasksPanel title={t("dashboard.tasksByStatus")}>
+        <div className="min-h-[240px] flex-1">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart
+              data={statusData}
+              margin={{ top: 8, right: 8, left: 0, bottom: 0 }}
+            >
+              <XAxis
+                dataKey="name"
+                fontSize={11}
+                tickLine={false}
                 axisLine={false}
-                tick={{ fill: 'currentColor', opacity: 0.5 }}
+                tick={{ fill: "#71717a" }}
               />
-              <YAxis 
-                fontSize={10} 
-                fontWeight={700}
-                tickLine={false} 
-                axisLine={false} 
+              <YAxis
+                fontSize={11}
+                tickLine={false}
+                axisLine={false}
                 allowDecimals={false}
-                tick={{ fill: 'currentColor', opacity: 0.5 }}
+                tick={{ fill: "#71717a" }}
+                width={32}
               />
-              <Tooltip 
-                cursor={{ fill: 'currentColor', opacity: 0.05 }}
-                contentStyle={{ 
-                  backgroundColor: 'rgba(var(--heroui-content1), 0.8)',
-                  backdropFilter: 'blur(12px)',
-                  border: '1px solid rgba(255, 255, 255, 0.1)',
-                  borderRadius: '16px',
-                  boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)'
+              <Tooltip
+                cursor={{ fill: "rgba(0,0,0,0.04)" }}
+                contentStyle={{
+                  borderRadius: "8px",
+                  border: "1px solid var(--heroui-default-200)",
                 }}
               />
               <Bar
                 dataKey="value"
-                radius={[12, 12, 0, 0]}
-                barSize={40}
+                radius={[4, 4, 0, 0]}
+                barSize={24}
                 cursor="pointer"
                 onClick={(data) => {
-                  const key = (data as { payload?: { key?: TaskStatus } }).payload?.key;
+                  const key = (data as { payload?: { key?: TaskStatus } }).payload
+                    ?.key;
                   if (key) handleStatusClick(key);
                 }}
               >
@@ -112,75 +139,45 @@ export function TaskCharts({ tasks }: { tasks: Task[] }) {
               </Bar>
             </BarChart>
           </ResponsiveContainer>
-        </CardBody>
-      </Card>
+        </div>
+      </TasksPanel>
 
-      <Card className="glass-card border-none overflow-hidden">
-        <CardHeader className="pb-0 pt-6 px-6 flex-col items-start">
-          <p className="text-[10px] font-black uppercase tracking-[0.2em] text-secondary mb-1">{t("dashboard.distribution")}</p>
-          <h4 className="text-xl font-black">
-            {t("dashboard.tasksByPriority")}
-          </h4>
-        </CardHeader>
-        <CardBody className="px-2">
-          <ResponsiveContainer width="100%" height={220}>
-            <PieChart>
-              <Pie
-                data={priorityData}
-                dataKey="value"
-                nameKey="name"
-                cx="50%"
-                cy="50%"
-                innerRadius={60}
-                outerRadius={85}
-                paddingAngle={8}
-                stroke="none"
-                cursor="pointer"
-                onClick={(_, index) => {
-                  const entry = priorityData[index];
-                  if (entry) handlePriorityClick(entry.key);
-                }}
-              >
-                {priorityData.map((entry) => (
-                  <Cell 
-                    key={entry.key} 
-                    fill={PRIORITY_COLORS[entry.key]} 
-                    className="hover:opacity-80 transition-opacity"
-                  />
-                ))}
-              </Pie>
-              <Tooltip 
-                contentStyle={{ 
-                  backgroundColor: 'rgba(var(--heroui-content1), 0.8)',
-                  backdropFilter: 'blur(12px)',
-                  border: '1px solid rgba(255, 255, 255, 0.1)',
-                  borderRadius: '16px'
-                }}
-              />
-            </PieChart>
-          </ResponsiveContainer>
-          <div className="flex flex-wrap justify-center gap-4 px-4 pb-4">
-            {priorityData.map((entry) => (
-              <button
-                key={entry.key}
-                type="button"
-                onClick={() => handlePriorityClick(entry.key)}
-                className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider rounded-lg px-2 py-1 hover:bg-default-100 transition-colors"
-              >
-                <div
-                  className="h-2.5 w-2.5 rounded-full"
-                  style={{ 
-                    backgroundColor: PRIORITY_COLORS[entry.key],
-                    boxShadow: `0 0 10px ${PRIORITY_COLORS[entry.key]}60`
+      <TasksPanel title={t("dashboard.tasksByPriority")}>
+        {priorityData.length === 0 ? (
+          <p className="flex flex-1 items-center justify-center py-12 text-sm text-default-400">
+            {t("dashboard.noData")}
+          </p>
+        ) : (
+          <div className="min-h-[240px] flex-1">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={priorityData}
+                  dataKey="value"
+                  nameKey="name"
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={52}
+                  outerRadius={78}
+                  paddingAngle={4}
+                  stroke="none"
+                  cursor="pointer"
+                  onClick={(_, index) => {
+                    const entry = priorityData[index];
+                    if (entry) handlePriorityClick(entry.key);
                   }}
-                />
-                <span className="text-default-500">{entry.name}</span>
-                <span className="text-default-900">{entry.value}</span>
-              </button>
-            ))}
+                >
+                  {priorityData.map((entry) => (
+                    <Cell key={entry.key} fill={PRIORITY_COLORS[entry.key]} />
+                  ))}
+                </Pie>
+                <Tooltip />
+                <Legend iconType="circle" wrapperStyle={{ fontSize: "12px" }} />
+              </PieChart>
+            </ResponsiveContainer>
           </div>
-        </CardBody>
-      </Card>
+        )}
+      </TasksPanel>
     </div>
   );
 }

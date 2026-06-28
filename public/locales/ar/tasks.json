@@ -1,4 +1,9 @@
 {
+  "module_name": "المهام",
+  "nav": {
+    "dashboard": "لوحة المهام",
+    "back": "رجوع"
+  },
   "dashboard": {
     "title": "لوحة المهام",
     "subtitle": "نظرة عامة على أداء فريقك والأنشطة الأخيرة.",
@@ -10,10 +15,18 @@
     "tasksByStatus": "المهام حسب الحالة",
     "tasksByPriority": "المهام حسب الأولوية",
     "overview": "نظرة عامة",
-    "distribution": "التوزيع"
+    "distribution": "التوزيع",
+    "quickActions": "إجراءات سريعة",
+    "openBoard": "فتح اللوحة",
+    "openList": "فتح القائمة",
+    "openSprints": "السبرنتات",
+    "viewAll": "عرض الكل",
+    "noRecent": "لا توجد مهام حديثة",
+    "noData": "لا توجد بيانات بعد"
   },
   "workspace": {
     "title": "المهام",
+    "subtitle": "تصفّح المهام في لوحة كانبان أو قائمة مع فلاتر متقدمة.",
     "views": {
       "list": "قائمة",
       "board": "لوحة"

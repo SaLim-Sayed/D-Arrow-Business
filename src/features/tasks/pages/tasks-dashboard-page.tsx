@@ -3,19 +3,21 @@ import { useTranslation } from "react-i18next";
 import { useAllTasksQuery } from "../hooks/use-tasks";
 import { TaskStatsCards } from "../components/task-stats-cards";
 import { TaskCharts } from "../components/task-chart";
-import { PageHeader } from "@/components/shared/page-header";
 import { LoadingSpinner } from "@/components/shared/loading-spinner";
-import { Card, CardHeader, CardBody, Avatar } from "@heroui/react";
-import { PrimaryActionButton } from "@/components/shared/primary-action-button";
-import { Plus } from "lucide-react";
+import { Button } from "@heroui/react";
+import { CalendarRange, Kanban, Plus, List } from "lucide-react";
 import { formatDate } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { useTasksWorkspaceNavigation } from "../hooks/use-tasks-workspace-navigation";
 import type { TaskStatus } from "../types/task.types";
+import {
+  TasksPageHeader,
+  TasksPanel,
+} from "../components/tasks-ui";
 
 export function TasksDashboardPage() {
   const { t } = useTranslation("tasks");
-  const { t: tc } = useTranslation();
   const { data, isLoading } = useAllTasksQuery();
   const { openAllTasks, openByStatus } = useTasksWorkspaceNavigation();
 
@@ -29,98 +31,118 @@ export function TasksDashboardPage() {
       (a, b) =>
         new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
     )
-    .slice(0, 8);
+    .slice(0, 5);
 
   return (
-    <div className="space-y-8">
-      <PageHeader
-        eyebrow={tc("nav.dashboard")}
+    <div className="animate-in fade-in pb-24 duration-300">
+      <TasksPageHeader
         title={t("dashboard.title")}
         description={t("dashboard.subtitle")}
-        actions={
-          <PrimaryActionButton to="/tasks/new" startContent={<Plus className="h-4 w-4" />}>
-            {t("list.newTask")}
-          </PrimaryActionButton>
-        }
       />
 
       <TaskStatsCards tasks={tasks} />
-      
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2 space-y-6">
+
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+        <TasksPanel title={t("dashboard.quickActions")}>
+          <div className="flex flex-col gap-2">
+            <Button
+              as={Link}
+              to="/tasks/new"
+              color="primary"
+              size="sm"
+              className="justify-start font-semibold"
+              startContent={<Plus className="h-4 w-4" />}
+            >
+              {t("list.newTask")}
+            </Button>
+            <Button
+              as={Link}
+              to="/tasks/work"
+              size="sm"
+              variant="flat"
+              className="justify-start font-medium"
+              startContent={<Kanban className="h-4 w-4" />}
+            >
+              {t("dashboard.openBoard")}
+            </Button>
+            <Button
+              as={Link}
+              to="/tasks/work/list"
+              size="sm"
+              variant="flat"
+              className="justify-start font-medium"
+              startContent={<List className="h-4 w-4" />}
+            >
+              {t("dashboard.openList")}
+            </Button>
+            <Button
+              as={Link}
+              to="/tasks/sprints"
+              size="sm"
+              variant="flat"
+              className="justify-start font-medium"
+              startContent={<CalendarRange className="h-4 w-4" />}
+            >
+              {t("dashboard.openSprints")}
+            </Button>
+          </div>
+        </TasksPanel>
+
+        <div className="lg:col-span-2">
           <TaskCharts tasks={tasks} />
         </div>
+      </div>
 
-        {/* Recent Tasks */}
-        <Card className="glass-card border-none h-full">
-          <CardHeader className="flex flex-row items-center justify-between px-6 pt-6">
-            <h4 className="text-lg font-bold">
-              {t("dashboard.recentTasks")}
-            </h4>
-            <button
-              type="button"
-              onClick={() => openAllTasks()}
-              className="text-primary text-xs font-bold uppercase tracking-wider hover:underline"
+      <div className="mt-4">
+        <TasksPanel
+          title={t("dashboard.recentTasks")}
+          action={
+            <Button
+              size="sm"
+              variant="light"
+              className="h-7 min-w-0 px-2 text-xs"
+              onPress={() => openAllTasks()}
             >
-              {tc("actions.viewAll")}
-            </button>
-          </CardHeader>
-          <CardBody className="px-4 pb-6">
-            <div className="space-y-2">
-              {recentTasks.map((task) => {
-                const initials = (task.assignee?.name ?? "")
-                  .split(" ")
-                  .map((n: string) => n[0])
-                  .join("")
-                  .toUpperCase()
-                  .slice(0, 2);
-
-                return (
-                  <Link
-                    key={task.id}
-                    to={`/tasks/${task.id}`}
-                    className="flex items-center gap-4 rounded-2xl p-3 hover:bg-default-100/50 hover:scale-[1.02] transition-all group"
+              {t("dashboard.viewAll")}
+            </Button>
+          }
+        >
+          {recentTasks.length === 0 ? (
+            <p className="flex flex-1 items-center justify-center py-8 text-sm text-default-400">
+              {t("dashboard.noRecent")}
+            </p>
+          ) : (
+            <div className="-mx-1 divide-y divide-default-100">
+              {recentTasks.map((task) => (
+                <Link
+                  key={task.id}
+                  to={`/tasks/${task.id}`}
+                  className="flex items-center justify-between gap-3 px-1 py-2.5 transition-colors hover:bg-primary/[0.03]"
+                >
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-semibold text-default-900">
+                      {task.title}
+                    </p>
+                    <p className="text-xs text-default-500">
+                      {formatDate(task.updatedAt)}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      openByStatus(task.status as TaskStatus);
+                    }}
+                    className={cn("shrink-0")}
                   >
-                    <div className="relative">
-                      {task.assignee ? (
-                        <Avatar 
-                          size="sm" 
-                          src={task.assignee.avatar} 
-                          fallback={initials} 
-                          showFallback 
-                          className="ring-2 ring-background group-hover:ring-primary/30 transition-all"
-                        />
-                      ) : (
-                        <div className="h-8 w-8 rounded-full bg-default-100 flex items-center justify-center">
-                          <Plus className="h-4 w-4 text-default-400" />
-                        </div>
-                      )}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-bold truncate group-hover:text-primary transition-colors">
-                        {task.title}
-                      </p>
-                      <p className="text-[10px] font-medium text-default-400 uppercase tracking-tighter">
-                        {formatDate(task.updatedAt)}
-                      </p>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        openByStatus(task.status as TaskStatus);
-                      }}
-                      className="flex flex-col items-end gap-1"
-                    >
-                      <StatusBadge status={task.status} />
-                    </button>
-                  </Link>
-                );
-              })}
+                    <StatusBadge status={task.status} />
+                  </button>
+                </Link>
+              ))}
             </div>
-          </CardBody>
-        </Card>
+          )}
+        </TasksPanel>
       </div>
     </div>
   );

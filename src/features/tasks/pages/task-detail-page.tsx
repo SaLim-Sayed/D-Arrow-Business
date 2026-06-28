@@ -58,6 +58,7 @@ import {
   normalizeTaskPriorityValue,
   normalizeTaskStatusValue,
 } from "../utils/task-field-normalizers";
+import { TasksTabBar } from "../components/tasks-ui";
 
 const NAV_TABS = [
   { key: "details", label: "Details", icon: ListTodo },
@@ -77,10 +78,10 @@ const PRIORITY_CHIP_COLOR: Record<string, "default" | "primary" | "warning" | "d
 };
 
 const TYPE_ICON_COLOR: Record<string, string> = {
-  task: "from-primary to-violet-500",
-  story: "from-emerald-500 to-teal-500",
-  bug: "from-danger to-orange-500",
-  subtask: "from-sky-500 to-blue-500",
+  task: "bg-primary/10 text-primary",
+  story: "bg-success/10 text-success",
+  bug: "bg-danger/10 text-danger",
+  subtask: "bg-sky-500/10 text-sky-600",
 };
 
 function SectionCard({
@@ -103,28 +104,21 @@ function SectionCard({
   bare?: boolean;
 }) {
   return (
-    <section
-      id={id}
-      className={`scroll-mt-24 px-5 md:px-8 py-5 md:py-6 border-b border-default-100 ${className}`}
-    >
-      <div className="max-w-4xl mx-auto">
-        <div className="flex items-start justify-between gap-4 mb-4">
-          <div className="flex items-center gap-2.5 min-w-0">
-            <div className="p-2 rounded-md bg-primary/10 text-primary shrink-0">{icon}</div>
+    <section id={id} className={`scroll-mt-24 px-4 md:px-6 py-3 ${className}`}>
+      <div className="mx-auto max-w-4xl overflow-hidden rounded-lg border border-default-200 bg-content1 shadow-sm">
+        <div className="flex items-start justify-between gap-3 border-b border-default-200 bg-default-50/90 px-4 py-3">
+          <div className="flex min-w-0 items-center gap-2.5">
+            <div className="shrink-0 text-primary">{icon}</div>
             <div className="min-w-0 text-start">
-              <h2 className="text-base font-semibold text-foreground">{title}</h2>
-              {subtitle && <p className="text-xs text-default-500 mt-0.5">{subtitle}</p>}
+              <h2 className="text-sm font-bold text-default-800">{title}</h2>
+              {subtitle && (
+                <p className="mt-0.5 text-xs text-default-500">{subtitle}</p>
+              )}
             </div>
           </div>
           {action}
         </div>
-        {bare ? (
-          children
-        ) : (
-          <div className="rounded-lg border border-default-200 bg-default-50/30 p-4 md:p-5">
-            {children}
-          </div>
-        )}
+        <div className={bare ? "p-0" : "p-4 md:p-5"}>{children}</div>
       </div>
     </section>
   );
@@ -395,7 +389,7 @@ export function TaskDetailPage() {
   const loggedMins = totalLoggedMinutes % 60;
 
   const taskRef = `TSK-${taskId?.slice(0, 6).toUpperCase()}`;
-  const typeGradient = TYPE_ICON_COLOR[task.type] || TYPE_ICON_COLOR.task;
+  const typeIconClass = TYPE_ICON_COLOR[task.type] || TYPE_ICON_COLOR.task;
   const isRtl = i18n.language === "ar";
 
   const assigneeName = task.assignee
@@ -412,63 +406,79 @@ export function TaskDetailPage() {
   };
 
   return (
-    <div className="min-h-[calc(100vh-64px)] bg-default-50/50">
-      <div className="flex flex-col lg:flex-row min-h-[calc(100vh-64px)]">
+    <div className="animate-in fade-in pb-24 duration-300">
+      <nav className="mb-3 flex items-center gap-1 px-4 text-sm text-default-500 md:px-6">
+        <Link to="/tasks" className="hover:text-primary">
+          {t("module_name")}
+        </Link>
+        <ArrowRight className="h-3.5 w-3.5 rtl:rotate-180" />
+        <Link to="/tasks/work" className="hover:text-primary">
+          {t("workspace.title")}
+        </Link>
+        <ArrowRight className="h-3.5 w-3.5 rtl:rotate-180" />
+        <span className="max-w-[200px] truncate font-medium text-default-800" dir="auto">
+          {task.title}
+        </span>
+      </nav>
+
+      <div className="flex min-h-[calc(100vh-64px)] flex-col lg:flex-row">
         {/* LEFT SIDEBAR */}
-        <aside className="w-full lg:w-[280px] shrink-0 border-b lg:border-b-0 lg:border-e border-default-200 bg-content1 flex flex-col lg:sticky lg:top-16 lg:h-[calc(100vh-64px)]">
-          <div className="flex-1 overflow-y-auto p-4 space-y-4">
+        <aside className="flex w-full shrink-0 flex-col border-b border-default-200 bg-content1 lg:sticky lg:top-16 lg:h-[calc(100vh-64px)] lg:w-[280px] lg:border-b-0 lg:border-e">
+          <div className="flex-1 space-y-3 overflow-y-auto p-4">
             <Button
-              variant="light"
+              variant="bordered"
               size="sm"
-              radius="sm"
-              className="w-fit font-medium text-default-500"
+              className="w-fit border-default-200 font-medium"
               startContent={
-                <ChevronLeft className={`w-4 h-4 ${isRtl ? "rotate-180" : ""}`} />
+                <ChevronLeft className={`h-4 w-4 ${isRtl ? "rotate-180" : ""}`} />
               }
               onPress={() => navigate("/tasks/work")}
             >
               {tc("actions.back")}
             </Button>
 
-            <div className="rounded-lg overflow-hidden border border-default-200">
-              <div className={`h-14 bg-gradient-to-br ${typeGradient} opacity-90`} />
-              <div className="px-3 pb-3 -mt-8 relative">
-                <div
-                  className={`w-12 h-12 rounded-lg bg-gradient-to-br ${typeGradient} text-white flex items-center justify-center shadow-md ring-2 ring-content1`}
-                >
-                  <FileText className="w-5 h-5" />
+            <div className="overflow-hidden rounded-lg border border-default-200 bg-content1 shadow-sm">
+              <div className="border-b border-default-200 bg-default-50/90 px-4 py-3">
+                <div className="flex items-center gap-3">
+                  <div
+                    className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${typeIconClass}`}
+                  >
+                    <FileText className="h-5 w-5" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-[11px] font-medium text-default-500">
+                      {t("detail.sections.taskId")}
+                    </p>
+                    <button
+                      type="button"
+                      onClick={copyTaskRef}
+                      className="mt-0.5 flex items-center gap-1.5 font-mono text-sm font-semibold text-foreground transition-colors hover:text-primary"
+                    >
+                      {taskRef}
+                      <Copy className="h-3.5 w-3.5 text-default-400" />
+                    </button>
+                  </div>
                 </div>
-                <p className="mt-2 text-[11px] font-medium text-default-500">
-                  {t("detail.sections.taskId")}
-                </p>
-                <button
-                  type="button"
-                  onClick={copyTaskRef}
-                  className="mt-0.5 flex items-center gap-1.5 font-mono text-sm font-semibold text-foreground hover:text-primary transition-colors"
-                >
-                  {taskRef}
-                  <Copy className="w-3.5 h-3.5 text-default-400" />
-                </button>
               </div>
             </div>
 
               {task.parentId && parentTaskRecord && (
-                <div className="rounded-lg p-3 border border-default-200 bg-default-50/50">
-                  <p className="text-[11px] font-medium text-default-500 mb-1.5">
+                <div className="rounded-lg border border-default-200 bg-content1 p-3 shadow-sm">
+                  <p className="mb-1.5 text-[11px] font-medium text-default-500">
                     {t("detail.parentTask")}
                   </p>
                   <button
                     type="button"
                     onClick={() => navigate(`/tasks/${parentTaskRecord.id}`)}
-                    className="w-full text-start font-semibold text-sm text-primary hover:underline truncate"
+                    className="w-full truncate text-start text-sm font-semibold text-primary hover:underline"
                   >
                     {parentTaskRecord.title}
                   </button>
                 </div>
               )}
 
-              <div className="rounded-lg border border-default-200 p-3 bg-default-50/50 space-y-2.5">
-              <div className="flex justify-between items-center">
+              <div className="space-y-2.5 rounded-lg border border-default-200 bg-content1 p-3 shadow-sm">
+              <div className="flex items-center justify-between">
                 <span className="text-xs font-medium text-default-500">{t("detail.sections.progress")}</span>
                 <span className="text-sm font-semibold text-primary">{progressPercent}%</span>
               </div>
@@ -494,27 +504,27 @@ export function TaskDetailPage() {
             </div>
 
             <div className="space-y-2.5">
-              <div className="rounded-lg p-3 border border-default-200 bg-content1">
+              <div className="rounded-lg border border-default-200 bg-content1 p-3 shadow-sm">
                 <p className="text-[11px] font-medium text-default-500">{t("form.sprint.label")}</p>
-                <p className="font-semibold text-sm text-foreground mt-1 truncate" title={sprintName}>
+                <p className="mt-1 truncate text-sm font-semibold text-foreground" title={sprintName}>
                   {sprintName}
                 </p>
               </div>
 
               {totalLoggedMinutes > 0 && (
-                <div className="rounded-lg p-3 border border-primary/20 bg-primary-50/30">
-                  <div className="flex items-center gap-2 mb-1">
-                    <Clock className="w-3.5 h-3.5 text-primary" />
+                <div className="rounded-lg border border-primary/20 bg-primary-50/30 p-3">
+                  <div className="mb-1 flex items-center gap-2">
+                    <Clock className="h-3.5 w-3.5 text-primary" />
                     <p className="text-[11px] font-medium text-primary">{t("detail.sections.logHoursTitle")}</p>
                   </div>
-                  <p className="font-semibold text-base text-foreground">
+                  <p className="text-base font-semibold text-foreground">
                     {loggedHours}h {loggedMins}m
                   </p>
                 </div>
               )}
 
-              <div className="rounded-lg p-3 border border-default-200 bg-content1">
-                <p className="text-[11px] font-medium text-default-500 mb-1.5">{t("form.tags.label")}</p>
+              <div className="rounded-lg border border-default-200 bg-content1 p-3 shadow-sm">
+                <p className="mb-1.5 text-[11px] font-medium text-default-500">{t("form.tags.label")}</p>
                 <div className="flex flex-wrap gap-1.5">
                   {task.tags && task.tags.length > 0 ? (
                     task.tags.map((tag: string) => (
@@ -532,13 +542,15 @@ export function TaskDetailPage() {
         </aside>
 
         {/* RIGHT MAIN CONTENT */}
-        <div className="flex-1 flex flex-col min-h-0 min-w-0">
-          {/* Main Header */}
-          <header className="px-5 md:px-8 pt-5 pb-3 border-b border-default-100 bg-content1">
-            <h1 className="text-xl md:text-2xl font-bold text-foreground leading-tight max-w-4xl text-start" dir="auto">
+        <div className="flex min-h-0 min-w-0 flex-1 flex-col">
+          <header className="border-b border-default-200 bg-content1 px-4 py-4 md:px-6">
+            <h1
+              className="max-w-4xl text-start text-xl font-bold leading-tight text-default-900 md:text-2xl"
+              dir="auto"
+            >
               {task.title}
             </h1>
-            <p className="text-xs text-default-500 mt-1.5 text-start">
+            <p className="mt-1.5 text-start text-xs text-default-500">
               {t("detail.sections.createdBy", {
                 name: task.reporter?.name || t("history.unknownUser"),
                 date: formatDate(task.createdAt),
@@ -546,34 +558,22 @@ export function TaskDetailPage() {
             </p>
           </header>
 
-          {/* Sticky ScrollSpy Nav */}
-          <nav className="sticky top-0 z-20 bg-content1/95 backdrop-blur-md border-b border-default-200 px-4 md:px-6 py-2.5">
-            <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-hide">
-              {NAV_TABS.map(({ key, label, icon: TabIcon }) => {
-                const isActive = activeTab === key;
-                const count = key === "comments" ? task.commentsCount || 0 : key === "attachments" ? task.attachments?.length || 0 : null;
-                return (
-                  <button
-                    key={key}
-                    type="button"
-                    onClick={() => scrollToSection(key)}
-                    className={`shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
-                      isActive
-                        ? "bg-primary text-white"
-                        : "text-default-600 hover:bg-default-100"
-                    }`}
-                  >
-                    <TabIcon className="w-3.5 h-3.5" />
-                    {t(`detail.tabs.${key}`, label)}
-                    {count !== null && count > 0 && (
-                      <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-sm ${isActive ? "bg-white/20" : "bg-default-200"}`}>
-                        {count}
-                      </span>
-                    )}
-                  </button>
-                );
-              })}
-            </div>
+          <nav className="sticky top-0 z-20 border-b border-default-200 bg-default-50/90 px-3 py-2 md:px-4">
+            <TasksTabBar
+              tabs={NAV_TABS.map(({ key, label, icon }) => ({
+                key,
+                label: t(`detail.tabs.${key}`, label),
+                icon,
+                active: activeTab === key,
+                onClick: () => scrollToSection(key),
+                badge:
+                  key === "comments"
+                    ? task.commentsCount || 0
+                    : key === "attachments"
+                    ? task.attachments?.length || 0
+                    : undefined,
+              }))}
+            />
           </nav>
 
           {/* Scrollable Content */}
@@ -908,12 +908,12 @@ export function TaskDetailPage() {
               ) : (
                 <div
                   onClick={() => fileInputRef.current?.click()}
-                  className="cursor-pointer border-2 border-dashed border-default-200/80 rounded-xl py-8 px-6 flex flex-col items-center justify-center gap-2 hover:border-primary/40 hover:bg-primary-50/20 transition-all group max-w-md mx-auto"
+                  className="group mx-auto flex max-w-md cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-default-200 px-6 py-8 transition-colors hover:border-primary/40 hover:bg-primary-50/20"
                 >
-                  <div className="w-10 h-10 rounded-full bg-default-100 flex items-center justify-center group-hover:bg-primary-100 transition-colors">
-                    <Paperclip className="w-5 h-5 text-default-400 group-hover:text-primary transition-colors" />
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-default-100 transition-colors group-hover:bg-primary-100">
+                    <Paperclip className="h-5 w-5 text-default-400 transition-colors group-hover:text-primary" />
                   </div>
-                  <p className="text-sm text-default-500 group-hover:text-primary font-medium">
+                  <p className="text-sm font-medium text-default-500 group-hover:text-primary">
                     {t("detail.sections.clickToUpload")}
                   </p>
                 </div>
@@ -932,7 +932,7 @@ export function TaskDetailPage() {
               bare
             >
               <div className="space-y-6">
-                <div className="rounded-2xl border border-default-200/60 bg-gradient-to-br from-primary-50/50 to-content1 p-5 md:p-6 space-y-4 max-w-xl shadow-sm">
+                <div className="max-w-xl space-y-4 rounded-lg border border-default-200 bg-default-50/50 p-4 md:p-5">
                   <div className="flex flex-wrap gap-3">
                     <Input
                       type="number"
@@ -943,10 +943,6 @@ export function TaskDetailPage() {
                       onValueChange={setLogHours}
                       className="w-[120px]"
                       variant="bordered"
-                      classNames={{
-                        inputWrapper: "bg-content1 shadow-sm",
-                        label: "text-default-500 font-semibold",
-                      }}
                     />
                     <Input
                       type="number"
@@ -957,10 +953,6 @@ export function TaskDetailPage() {
                       onValueChange={setLogMinutes}
                       className="w-[120px]"
                       variant="bordered"
-                      classNames={{
-                        inputWrapper: "bg-content1 shadow-sm",
-                        label: "text-default-500 font-semibold",
-                      }}
                     />
                   </div>
                   <Textarea
@@ -971,31 +963,27 @@ export function TaskDetailPage() {
                     onValueChange={setLogDesc}
                     minRows={2}
                     variant="bordered"
-                    classNames={{
-                      inputWrapper: "bg-content1 shadow-sm",
-                      label: "text-default-500 font-semibold",
-                    }}
                   />
-                  <Button color="primary" className="font-bold" onPress={handleLogTime}>
+                  <Button color="primary" size="sm" className="font-semibold" onPress={handleLogTime}>
                     {t("detail.sections.saveLog")}
                   </Button>
                 </div>
-                <div className="space-y-3 max-w-xl">
+                <div className="max-w-xl space-y-3">
                   {task.timeLogs && task.timeLogs.length > 0 ? (
                     task.timeLogs.map((log: any) => (
                       <div
                         key={log.id}
-                        className="p-4 rounded-xl border border-default-200/80 bg-content1 flex gap-4 items-start shadow-sm"
+                        className="flex items-start gap-4 rounded-lg border border-default-200 bg-content1 p-4"
                       >
-                        <div className="p-2 rounded-lg bg-primary/10 text-primary shrink-0">
-                          <Clock className="w-4 h-4" />
+                        <div className="shrink-0 rounded-lg bg-primary/10 p-2 text-primary">
+                          <Clock className="h-4 w-4" />
                         </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex justify-between items-start gap-2 mb-1">
+                        <div className="min-w-0 flex-1">
+                          <div className="mb-1 flex items-start justify-between gap-2">
                             <span className="font-bold text-foreground">
                               {log.hours}h {log.minutes}m
                             </span>
-                            <span className="text-xs text-default-400 shrink-0">
+                            <span className="shrink-0 text-xs text-default-400">
                               {formatDate(log.date)}
                             </span>
                           </div>
@@ -1006,7 +994,7 @@ export function TaskDetailPage() {
                       </div>
                     ))
                   ) : (
-                    <p className="text-default-400 text-sm py-4 text-center rounded-xl border border-dashed border-default-200">
+                    <p className="rounded-lg border border-dashed border-default-200 py-4 text-center text-sm text-default-400">
                       {t("detail.sections.noTimeLogged")}
                     </p>
                   )}
@@ -1039,8 +1027,7 @@ export function TaskDetailPage() {
             </SectionCard>
           </div>
 
-          {/* Sticky footer — scoped to main column */}
-          <footer className="shrink-0 sticky bottom-0 z-30 bg-content1/95 backdrop-blur-md border-t border-default-200 px-5 md:px-8 py-2.5 flex items-center justify-between gap-4">
+          <footer className="sticky bottom-0 z-30 flex shrink-0 items-center justify-between gap-4 border-t border-default-200 bg-default-50/90 px-4 py-2.5 md:px-6">
             <Button
               color="danger"
               variant="flat"
