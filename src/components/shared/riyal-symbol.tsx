@@ -91,9 +91,19 @@ export function MoneyAmount({
     );
   }
 
-  const code = (currency ?? "USD").toUpperCase();
+  const code = (currency ?? "USD").trim().toUpperCase();
+
+  if (code === "USD") {
+    return (
+      <span className={cn("tabular-nums", className)} dir="ltr">
+        ${formatted}
+        {suffix ? ` ${suffix}` : ""}
+      </span>
+    );
+  }
+
   return (
-    <span className={className} dir="ltr">
+    <span className={cn("tabular-nums", className)} dir="ltr">
       {formatted} {code}
       {suffix ? ` ${suffix}` : ""}
     </span>

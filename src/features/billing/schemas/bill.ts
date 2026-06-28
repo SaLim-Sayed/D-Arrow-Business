@@ -7,6 +7,7 @@ export const billItemSchema = z.object({
   quantity: z.number().min(1).default(1),
   unitPrice: z.number().min(0),
   taxRate: z.number().min(0).default(0),
+  taxRateId: z.string().nullable().optional(),
   total: z.number().min(0),
 });
 
@@ -24,7 +25,7 @@ export const billSchema = z.object({
   subTotal: z.number().min(0),
   totalTax: z.number().min(0),
   grandTotal: z.number().min(0),
-  
+  amountPaid: z.number().min(0).optional(),
   notes: z.string().optional(),
   currency: z.string().default("USD"),
   createdAt: z.date().optional(),

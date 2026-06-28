@@ -1,11 +1,22 @@
+import { Navigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { Spinner } from "@heroui/react";
+import {
+  BarChart3,
+  FileText,
+  Layers,
+  Users,
+} from "lucide-react";
+import { AuthBrandLayout } from "../components/auth-brand-layout";
 import { LoginForm } from "../components/login-form";
 import { useAuth } from "../context/auth-context";
-import { Navigate } from "react-router-dom";
-import { LanguageSwitcher } from "@/components/layout/language-switcher";
-import { Spinner } from "@heroui/react";
 
-import { Logo } from "@/components/shared/logo";
+const LOGIN_FEATURES = [
+  { key: "crm", icon: FileText },
+  { key: "billing", icon: BarChart3 },
+  { key: "people", icon: Users },
+  { key: "apps", icon: Layers },
+] as const;
 
 export function LoginPage() {
   const { t } = useTranslation("auth");
@@ -13,8 +24,8 @@ export function LoginPage() {
 
   if (isLoading) {
     return (
-      <div className="flex h-screen items-center justify-center">
-        <Spinner size="lg" color="secondary" />
+      <div className="flex h-screen items-center justify-center bg-dashboard-gradient">
+        <Spinner size="lg" color="primary" />
       </div>
     );
   }
@@ -24,17 +35,17 @@ export function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-default-50 p-4">
-      <div className="absolute end-4 top-4">
-        <LanguageSwitcher />
-      </div>
-      <div className="mb-8 flex flex-col items-center gap-6">
-        <Logo size="xl" />
-        <h1 className="text-xl font-bold text-default-400 uppercase tracking-[0.3em]">
-          {t("login.welcome")}
-        </h1>
-      </div>
+    <AuthBrandLayout
+      title={t("login.title")}
+      subtitle={t("login.subtitle")}
+      backLabel={t("login.backToHome")}
+      brandEyebrow={t("login.brandEyebrow")}
+      brandHeadline={t("login.brandHeadline")}
+      brandDescription={t("login.brandDescription")}
+      features={LOGIN_FEATURES}
+      featureLabel={(key) => t(`login.brandFeatures.${key}`)}
+    >
       <LoginForm />
-    </div>
+    </AuthBrandLayout>
   );
 }

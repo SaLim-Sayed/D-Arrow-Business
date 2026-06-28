@@ -6,8 +6,9 @@ export const invoiceItemSchema = z.object({
   description: z.string().min(1, "Description is required"),
   quantity: z.number().min(1, "Quantity must be at least 1"),
   unitPrice: z.number().min(0, "Unit price must be >= 0"),
-  taxRate: z.number().min(0).default(0), // Percentage, e.g., 15 for 15%
-  discount: z.number().min(0).default(0), // Fixed amount or percentage based on business logic (let's assume fixed amount here)
+  taxRate: z.number().min(0).default(0),
+  taxRateId: z.string().nullable().optional(),
+  discount: z.number().min(0).default(0),
   total: z.number().min(0),
 });
 
@@ -27,6 +28,9 @@ export const invoiceSchema = z.object({
   totalDiscount: z.number().min(0),
   grandTotal: z.number().min(0),
   amountPaid: z.number().min(0).optional(),
+  quotationId: z.string().optional(),
+  paymentTermDays: z.number().int().min(0).optional(),
+  postedAt: z.date().optional(),
   
   notes: z.string().optional(),
   termsAndConditions: z.string().optional(),

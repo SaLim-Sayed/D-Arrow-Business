@@ -57,23 +57,44 @@ export function formatCurrency(
 ): string {
   const code = normalizeCurrencyCode(currency);
   const currentLang = i18n.language || "en";
+  const fractionDigits = options?.maximumFractionDigits ?? 2;
 
   if (isSarCurrency(code)) {
-    const formatted = amount.toLocaleString(currentLang, {
-      maximumFractionDigits: 0,
+    const formatted = amount.toLocaleString(currentLang.startsWith("ar") ? "ar-SA" : currentLang, {
+      maximumFractionDigits: fractionDigits,
+      minimumFractionDigits: 0,
       ...options,
     });
-    return currentLang === "ar" ? `${formatted} ر.س` : `${formatted} SAR`;
+    return currentLang.startsWith("ar") ? `${formatted} ر.س` : `${formatted} SAR`;
+  }
+
+  const absFormatted = new Intl.NumberFormat(
+    currentLang.startsWith("ar") ? "ar-SA" : currentLang,
+    {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: fractionDigits,
+      ...options,
+    }
+  ).format(Math.abs(amount));
+
+  const sign = amount < 0 ? "-" : "";
+
+  if (code === "USD") {
+    return `${sign}$${absFormatted}`;
   }
 
   try {
-    return new Intl.NumberFormat(currentLang, {
-      style: "currency",
-      currency: code,
-      maximumFractionDigits: 0,
-      ...options,
-    }).format(amount);
+    if (!currentLang.startsWith("ar")) {
+      return new Intl.NumberFormat(currentLang, {
+        style: "currency",
+        currency: code,
+        maximumFractionDigits: fractionDigits,
+        ...options,
+      }).format(amount);
+    }
+
+    return `${sign}${absFormatted}\u00A0${code}`;
   } catch {
-    return `${amount.toLocaleString(currentLang)} ${code}`;
+    return `${sign}${absFormatted} ${code}`;
   }
 }

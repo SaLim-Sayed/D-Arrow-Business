@@ -51,6 +51,8 @@ import InvoicesPage from "@/features/billing/pages/InvoicesPage";
 import CreateInvoicePage from "@/features/billing/pages/CreateInvoicePage";
 import InvoiceDetailPage from "@/features/billing/pages/InvoiceDetailPage";
 import BillsPage from "@/features/billing/pages/BillsPage";
+import CreateBillPage from "@/features/billing/pages/CreateBillPage";
+import BillDetailPage from "@/features/billing/pages/BillDetailPage";
 import ReportsPage from "@/features/billing/pages/ReportsPage";
 
 export const router = createBrowserRouter([
@@ -154,6 +156,9 @@ export const router = createBrowserRouter([
               { path: "invoices/:id/edit", element: <CreateInvoicePage /> },
               { path: "invoices/:id", element: <InvoiceDetailPage /> },
               { path: "bills", element: <BillsPage /> },
+              { path: "bills/new", element: <CreateBillPage /> },
+              { path: "bills/:id/edit", element: <CreateBillPage /> },
+              { path: "bills/:id", element: <BillDetailPage /> },
               { path: "accounts", element: <ChartOfAccountsPage /> },
               { path: "journals", element: <ManualJournalsPage /> },
               { path: "products", element: <ProductsPage /> },

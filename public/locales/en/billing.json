@@ -20,12 +20,15 @@
     "create_invoice": "Create New Invoice",
     "view_invoices": "View All Invoices",
     "manage_bills": "Manage Vendor Bills",
-    "status_chart": "Invoices Status (Pie Chart)",
+    "status_chart": "Invoice Status",
     "no_data": "No data available to display chart.",
-    "revenue_chart": "Revenue Overview (Bar Chart)",
+    "revenue_chart": "Revenue Overview",
     "recent_invoices": "Recent Invoices",
     "view_all": "View All",
-    "no_recent": "No recent invoices."
+    "no_recent": "No recent invoices.",
+    "received": "Received",
+    "pending": "Pending",
+    "view_reports": "Financial Reports"
   },
   "settings": {
     "title": "Billing Settings",
@@ -53,20 +56,53 @@
       "prefix": "INV-",
       "padding": "e.g. 4 for 0001"
     },
-    "financial_desc": "Currency, Tax Rates, and Payment Methods configuration will go here."
+    "financial_desc": "Manage tax rates applied to products and invoices.",
+    "tax_rates": "Tax Rates",
+    "tax_name": "Tax name",
+    "tax_rate_value": "Rate (%)",
+    "add_tax": "Add tax rate",
+    "tax_help": "Configure tax rates for products, invoices, and bills. Mark one as default.",
+    "tax_empty": "No tax rates configured yet.",
+    "tax_default": "Default",
+    "tax_active": "Active",
+    "tax_name_placeholder": "e.g. Sales Tax",
+    "tab_advanced": "Advanced",
+    "developer_actions": "Developer Actions",
+    "seed_desc": "Load sample data for testing. This creates products, invoices, and bills.",
+    "seed_button": "Seed Demo Data",
+    "loading": "Loading settings...",
+    "sequence_help": "Used to auto-generate invoice numbers when posting.",
+    "sequence_preview": "Next number preview",
+    "unsaved_hint": "You have unsaved changes — click Save."
   },
   "products": {
     "title": "Products & Services",
     "description": "Manage items and services you sell.",
     "add": "Add Item",
+    "edit": "Edit",
+    "delete": "Delete",
     "search": "Search by name or SKU...",
+    "export": "Export",
+    "export_empty": "No products to export.",
+    "export_success": "Products exported.",
+    "empty": "No products found.",
+    "itemCount": "{{count}} items",
+    "selectedCount": "{{count}} selected",
+    "groupBy": {
+      "type": "Group by type"
+    },
+    "filters": {
+      "all": "All",
+      "type": "Type",
+      "status": "Status"
+    },
     "columns": {
-      "type": "TYPE",
-      "name_sku": "NAME & SKU",
-      "category": "CATEGORY",
-      "price": "PRICE",
-      "status": "STATUS",
-      "actions": "ACTIONS"
+      "type": "Type",
+      "name_sku": "Name & SKU",
+      "category": "Category",
+      "price": "Price",
+      "status": "Status",
+      "actions": "Actions"
     },
     "types": {
       "goods": "Goods",
@@ -87,7 +123,28 @@
       "category": "Category",
       "unit": "Unit",
       "tax_rate": "Tax Rate",
-      "is_active": "Active"
+      "is_active": "Active",
+      "category_placeholder": "Select category",
+      "unit_placeholder": "Select unit",
+      "tax_placeholder": "Select tax rate"
+    },
+    "catalog": {
+      "categories": {
+        "electronics": "Electronics",
+        "services": "Services",
+        "software": "Software",
+        "general": "General"
+      },
+      "units": {
+        "piece": "Piece",
+        "hour": "Hour",
+        "kilogram": "Kilogram",
+        "unit": "Unit"
+      },
+      "taxes": {
+        "tax_vat_15": "VAT 15%",
+        "tax_zero": "No Tax (0%)"
+      }
     }
   },
   "accounts": {
@@ -95,12 +152,49 @@
     "description": "Manage your assets, liabilities, equity, income, and expenses.",
     "add": "New Account",
     "search": "Search accounts by name or code...",
+    "accountCount": "{{count}} accounts",
+    "selectedCount": "{{count}} selected",
+    "viewLedger": "View ledger",
+    "empty": "No accounts match your search.",
+    "filters": {
+      "label": "Filters",
+      "all": "All"
+    },
+    "groupBy": {
+      "type": "Group by Type"
+    },
+    "view": {
+      "list": "List",
+      "tree": "Tree"
+    },
+    "export": "Export",
+    "export_success": "Chart of accounts exported",
+    "export_empty": "No accounts to export",
+    "status": {
+      "active": "Active",
+      "inactive": "Archived"
+    },
     "columns": {
-      "code": "ACCOUNT CODE",
-      "name": "ACCOUNT NAME",
-      "type": "TYPE",
-      "balance": "BALANCE",
-      "actions": "ACTIONS"
+      "code": "Code",
+      "name": "Account Name",
+      "type": "Type",
+      "internal_type": "Internal Type",
+      "status": "Active",
+      "balance": "Balance",
+      "actions": "Actions"
+    },
+    "form": {
+      "add_title": "New Account",
+      "edit_title": "Edit Account",
+      "code": "Code",
+      "name": "Account Name",
+      "description": "Description",
+      "active": "Active",
+      "created": "Account created",
+      "updated": "Account updated",
+      "error": "Could not save account",
+      "parent": "Parent Account",
+      "parent_placeholder": "None (top level)"
     },
     "types": {
       "asset": "Asset",
@@ -143,22 +237,67 @@
     "title": "Manual Journals",
     "description": "Record manual journal entries for double-entry accounting.",
     "add": "New Journal",
+    "edit": "Edit Journal",
     "search": "Search by journal number or reference...",
+    "export": "Export",
+    "export_empty": "No journal entries to export.",
+    "export_success": "Journal entries exported.",
+    "empty": "No journal entries found.",
+    "entryCount": "{{count}} entries",
+    "selectedCount": "{{count}} selected",
+    "download_pdf": "Download PDF",
+    "filters": {
+      "all": "All",
+      "status": "Status",
+      "source": "Source"
+    },
+    "status": {
+      "draft": "Draft",
+      "published": "Posted",
+      "void": "Void"
+    },
+    "source": {
+      "manual": "Manual",
+      "invoice": "Invoice",
+      "bill": "Bill",
+      "payment": "Payment",
+      "refund": "Refund"
+    },
     "columns": {
-      "date": "DATE",
-      "journal_number": "JOURNAL#",
-      "reference": "REFERENCE",
-      "notes": "NOTES",
-      "amount": "AMOUNT",
-      "status": "STATUS",
-      "actions": "ACTIONS"
+      "date": "Date",
+      "journal_number": "Journal #",
+      "reference": "Reference",
+      "notes": "Notes",
+      "source": "Source",
+      "amount": "Amount",
+      "status": "Status",
+      "actions": "Actions"
     }
   },
   "invoices": {
     "title": "Invoices",
-    "description": "Manage sales invoices and accounts receivable.",
+    "description": "Sales invoices you issue to customers — they owe you (accounts receivable).",
     "add": "New Invoice",
-    "search": "Search by invoice number...",
+    "view": "View invoice",
+    "search": "Search by invoice number or customer...",
+    "export": "Export",
+    "export_empty": "No invoices to export.",
+    "export_success": "Invoices exported.",
+    "empty": "No invoices found.",
+    "invoiceCount": "{{count}} invoices",
+    "selectedCount": "{{count}} selected",
+    "unknown_customer": "Unknown customer",
+    "filters": {
+      "all": "All",
+      "status": "Status"
+    },
+    "status": {
+      "draft": "Draft",
+      "sent": "Sent",
+      "paid": "Paid",
+      "overdue": "Overdue",
+      "cancelled": "Cancelled"
+    },
     "metrics": {
       "outstanding": "Outstanding Balance",
       "overdue": "Overdue Amount",
@@ -166,17 +305,18 @@
       "drafts": "Draft Invoices"
     },
     "columns": {
-      "date": "DATE",
-      "invoice_number": "INVOICE#",
-      "customer": "CUSTOMER",
-      "due_date": "DUE DATE",
-      "amount": "AMOUNT",
-      "status": "STATUS",
-      "actions": "ACTIONS"
+      "date": "Date",
+      "invoice_number": "Invoice #",
+      "customer": "Customer",
+      "due_date": "Due Date",
+      "amount": "Amount",
+      "status": "Status",
+      "actions": "Actions"
     },
     "create": {
       "title": "New Invoice",
-      "description": "Create a new sales invoice for your customer.",
+      "edit_title": "Edit Invoice",
+      "subtitle": "Create a new sales invoice for your customer.",
       "customer": "Customer",
       "customer_placeholder": "Select a customer",
       "invoice_number": "Invoice Number",
@@ -184,7 +324,8 @@
       "product_item": "Product / Item",
       "quantity": "Quantity",
       "rate": "Rate",
-      "tax": "Tax (%)",
+      "tax": "Tax",
+      "select_tax": "Select tax rate",
       "amount": "Amount",
       "select_product": "Select Product...",
       "item_description": "Item description...",
@@ -198,7 +339,15 @@
       "total_tax": "Tax",
       "total": "Total",
       "save_draft": "Save as Draft",
-      "save_send": "Save & Send"
+      "save_send": "Save & Send",
+      "update_draft": "Update Draft",
+      "update_send": "Update & Send",
+      "number_assigned_on_post": "Assigned when posted",
+      "sent": "Invoice sent successfully",
+      "updated": "Invoice updated",
+      "draft_saved": "Draft saved",
+      "save_failed": "Failed to save invoice",
+      "loading": "Loading invoice..."
     },
     "detail": {
       "issue_date": "Issue Date",
@@ -220,31 +369,151 @@
       "balance_due": "Balance Due",
       "notes": "Notes",
       "terms": "Terms & Conditions",
-      "invoice_not_found": "Invoice not found or loading..."
+      "invoice_not_found": "Invoice not found or loading...",
+      "pdf_failed": "Failed to generate PDF",
+      "no_email": "Customer has no email on file",
+      "email_opened": "Email client opened"
     }
   },
-  "bills": {
-    "title": "Bills",
-    "description": "Manage vendor bills and accounts payable.",
-    "add": "New Bill",
-    "search": "Search by bill number...",
-    "columns": {
-      "date": "DATE",
-      "bill_number": "BILL#",
-      "vendor": "VENDOR",
-      "due_date": "DUE DATE",
-      "amount": "AMOUNT",
-      "status": "STATUS",
-      "actions": "ACTIONS"
+  "payments": {
+    "record_title": "Record Payment",
+    "due": "due",
+    "amount": "Amount",
+    "date": "Payment Date",
+    "method": "Payment Method",
+    "reference": "Reference",
+    "notes": "Notes",
+    "record": "Record Payment",
+    "recorded": "Payment recorded",
+    "failed": "Failed to record payment",
+    "history": "Payment History",
+    "methods": {
+      "bank_transfer": "Bank transfer",
+      "cash": "Cash",
+      "card": "Card",
+      "check": "Check",
+      "other": "Other"
     }
+  },
+  "actions": {
+    "edit": "Edit",
+    "cancel": "Cancel"
+  },
+  "bills": {
+    "title": "Vendor Bills",
+    "description": "Purchase bills from vendors you receive or record — you owe them (accounts payable).",
+    "add": "New Bill",
+    "view": "View bill",
+    "search": "Search by bill number or vendor...",
+    "export": "Export",
+    "export_empty": "No bills to export.",
+    "export_success": "Bills exported.",
+    "empty": "No vendor bills found.",
+    "billCount": "{{count}} bills",
+    "selectedCount": "{{count}} selected",
+    "unknown_vendor": "Unknown vendor",
+    "filters": {
+      "all": "All",
+      "status": "Status"
+    },
+    "status": {
+      "draft": "Draft",
+      "open": "Open",
+      "paid": "Paid",
+      "overdue": "Overdue",
+      "cancelled": "Cancelled"
+    },
+    "columns": {
+      "date": "Date",
+      "bill_number": "Bill #",
+      "vendor": "Vendor",
+      "due_date": "Due Date",
+      "amount": "Amount",
+      "status": "Status",
+      "actions": "Actions"
+    },
+    "create": {
+      "title": "New Bill",
+      "edit_title": "Edit Bill",
+      "subtitle": "Record a vendor bill for accounts payable.",
+      "vendor": "Vendor",
+      "vendor_placeholder": "Select vendor",
+      "bill_number": "Bill Number",
+      "line_items": "Line Items",
+      "account": "Expense Account",
+      "item_description": "Description",
+      "quantity": "Qty",
+      "rate": "Rate",
+      "tax": "Tax",
+      "amount": "Amount",
+      "add_line": "Add line",
+      "notes": "Notes",
+      "subtotal": "Subtotal",
+      "total_tax": "Tax",
+      "total": "Total",
+      "save_draft": "Save Draft",
+      "post": "Post Bill",
+      "posted": "Bill posted successfully",
+      "updated": "Bill updated",
+      "draft_saved": "Draft saved",
+      "save_failed": "Failed to save bill"
+    },
+    "detail": {
+      "not_found": "Bill not found",
+      "loading": "Loading bill...",
+      "edit": "Edit",
+      "vendor": "Vendor",
+      "due_date": "Due Date",
+      "amount_due": "Amount Due",
+      "account": "Account",
+      "description": "Description",
+      "qty": "Qty",
+      "rate": "Rate",
+      "tax": "Tax",
+      "amount": "Amount",
+      "subtotal": "Subtotal",
+      "total_tax": "Tax",
+      "total": "Total",
+      "notes": "Notes"
+    }
+  },
+  "document_guide": {
+    "title": "Invoices vs. vendor bills",
+    "subtitle": "Two different documents — money flow and counterparty differ.",
+    "invoices_title": "Sales invoices",
+    "bills_title": "Vendor bills",
+    "party": "Party",
+    "customer": "Customer (you sell to)",
+    "vendor": "Vendor (you buy from)",
+    "money_flow": "Money flow",
+    "money_in": "Money in — income",
+    "money_out": "Money out — expense",
+    "accounting": "Accounting",
+    "ar": "Accounts receivable",
+    "ap": "Accounts payable",
+    "example": "Example",
+    "example_invoice": "Selling a product or service to a customer",
+    "example_bill": "Office rent, supplies, vendor invoice",
+    "current_page": "You are here",
+    "go_to_invoices": "Go to invoices",
+    "go_to_bills": "Go to vendor bills",
+    "dismiss": "Dismiss"
   },
   "reports": {
     "title": "Financial Statements",
-    "description": "View your real-time financial health, including P&L and Balance Sheet.",
+    "description": "A financial summary — where money came from and where it went.",
     "profit_loss": "Profit & Loss",
     "balance_sheet": "Balance Sheet",
     "trial_balance": "Trial Balance",
     "current_fiscal_period": "For the current fiscal period",
+    "pl_help": "Shows whether you made or lost money: income from sales invoices, expenses from vendor bills and journal entries.",
+    "bs_help": "A snapshot of what you own (assets) vs. what you owe (liabilities) and equity — both sides should balance.",
+    "tb_help": "Accounting check: total debits should equal total credits across all accounts.",
+    "ar_help": "Unpaid sales invoices from customers — grouped by how overdue they are.",
+    "ap_help": "Unpaid vendor bills you still owe — grouped by how overdue they are.",
+    "no_income": "No income yet — create and post a sales invoice.",
+    "no_expenses": "No expenses yet — record a vendor bill or journal entry.",
+    "expense_credit_hint": "Amounts in parentheses are credit balances on expense accounts (reversal or correction).",
     "income": "Income",
     "total_income": "Total Income",
     "expenses": "Expenses",
@@ -259,6 +528,42 @@
     "net_income_current_year": "Net Income (Current Year)",
     "total_equity": "Total Equity",
     "liabilities_plus_equity": "Liabilities + Equity",
-    "trial_balance_desc": "Trial balance logic will be fully driven by Journal Entries sum."
+    "trial_account": "Account",
+    "trial_debit": "Debit",
+    "trial_credit": "Credit",
+    "trial_total": "Total",
+    "total": "Total",
+    "ar_customer": "Customer",
+    "ap_vendor": "Vendor",
+    "trial_balance_desc": "Trial balance logic will be fully driven by Journal Entries sum.",
+    "aged_receivables": "Aged Receivables",
+    "aged_payables": "Aged Payables",
+    "no_aged_data": "No outstanding balances in this category.",
+    "export": "Export",
+    "export_success": "Report exported.",
+    "export_empty": "No data to export.",
+    "export_section": "Section",
+    "export_amount": "Amount",
+    "export_account_name": "Account name",
+    "aging_buckets": {
+      "current": "Current",
+      "1_30": "1–30 days",
+      "31_60": "31–60 days",
+      "61_90": "61–90 days",
+      "90_plus": "90+ days"
+    },
+    "guide": {
+      "title": "What do these reports mean?",
+      "subtitle": "Each tab answers a different question about your finances.",
+      "current_tab": "Current tab",
+      "dismiss": "Dismiss",
+      "formula_label": "Formula",
+      "formula_pl": "Net income = total income − total expenses",
+      "pl": "Did you profit? Adds sales income and subtracts expenses.",
+      "bs": "What is your company worth? Assets (cash, receivables, inventory) vs. liabilities and equity.",
+      "tb": "Balance check — debits and credits should match.",
+      "ar": "Who hasn't paid you? From unpaid sales invoices.",
+      "ap": "Who haven't you paid? From unpaid vendor bills."
+    }
   }
 }

@@ -1,11 +1,12 @@
-import { Button, Form, Input } from "@heroui/react";
+import { Button, Input } from "@heroui/react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { AlertCircle, Eye, EyeOff } from "lucide-react";
+import { AlertCircle, ArrowRight, Eye, EyeOff, Lock, Mail } from "lucide-react";
 import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { Link, useNavigate } from "react-router-dom";
 import * as z from "zod";
+import { cn } from "@/lib/utils";
 import { useAuth } from "../context/auth-context";
 
 const loginSchema = z.object({
@@ -14,6 +15,18 @@ const loginSchema = z.object({
 });
 
 type LoginFormData = z.infer<typeof loginSchema>;
+
+const authInputClassNames = {
+  label: "font-semibold text-default-700 pb-1",
+  input: "text-sm",
+  inputWrapper: cn(
+    "bg-default-50/50 shadow-none border-default-200",
+    "group-data-[focus=true]:border-primary group-data-[focus=true]:ring-2 group-data-[focus=true]:ring-primary/15",
+    "group-data-[invalid=true]:border-danger group-data-[invalid=true]:ring-2 group-data-[invalid=true]:ring-danger/15",
+    "transition-all duration-200"
+  ),
+  errorMessage: "text-danger text-xs",
+};
 
 export function LoginForm() {
   const { t } = useTranslation("auth");
@@ -25,9 +38,11 @@ export function LoginForm() {
   const {
     control,
     handleSubmit,
-    formState: { isSubmitting, errors },
+    formState: { isSubmitting, errors, isSubmitted },
   } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
+    mode: "onSubmit",
+    reValidateMode: "onSubmit",
     defaultValues: {
       email: "",
       password: "",
@@ -46,137 +61,115 @@ export function LoginForm() {
   }
 
   return (
-    <Form
+    <form
       onSubmit={handleSubmit(onSubmit)}
-      className="space-y-6 max-w-sm w-full mx-auto"
-      validationErrors={errors as any}
+      className="flex w-full flex-col gap-5"
+      noValidate
     >
       {error && (
-        <div className="flex items-center gap-3 rounded-2xl bg-danger/10 p-4 text-sm text-danger border border-danger/20 w-full animate-in fade-in slide-in-from-top-2 duration-300">
+        <div className="flex w-full items-center gap-3 rounded-2xl border border-danger/20 bg-danger/10 p-4 text-sm text-danger animate-in fade-in slide-in-from-top-2 duration-300">
           <AlertCircle className="h-4 w-4 shrink-0" />
           <span className="font-semibold">{error}</span>
         </div>
       )}
 
-      <div className="gap-6 flex w-full flex-col">
-        <Controller
-          name="email"
-          control={control}
-          render={({ field }) => (
-            <Input
-              {...field}
-              type="email"
-              label={t("login.email")}
-              labelPlacement="outside"
-              placeholder="name@example.com"
-              autoComplete="email"
-              variant="bordered"
-              color="primary"
-              size="lg"
-              radius="lg"
-              isInvalid={!!errors.email}
-              errorMessage={errors.email?.message}
-              className="group"
-              classNames={{
-                inputWrapper:
-                  "group-data-[focus=true]:border-primary group-data-[focus=true]:ring-2 group-data-[focus=true]:ring-primary/20 transition-all duration-300",
-                label: "font-bold text-default-700 tracking-tight mb-1",
-              }}
-            />
-          )}
-        />
+      <Controller
+        name="email"
+        control={control}
+        render={({ field }) => (
+          <Input
+            {...field}
+            type="email"
+            label={t("login.email")}
+            labelPlacement="outside"
+            placeholder={t("login.emailPlaceholder")}
+            autoComplete="email"
+            variant="bordered"
+            size="lg"
+            radius="lg"
+            isInvalid={isSubmitted && !!errors.email}
+            errorMessage={isSubmitted ? errors.email?.message : undefined}
+            startContent={
+              <Mail className="pointer-events-none h-4 w-4 text-default-400" />
+            }
+            classNames={authInputClassNames}
+          />
+        )}
+      />
 
-        <Controller
-          name="password"
-          control={control}
-          render={({ field }) => (
+      <Controller
+        name="password"
+        control={control}
+        render={({ field }) => (
+          <div className="flex flex-col gap-1.5">
+            <div className="flex items-center justify-between gap-3">
+              <label
+                htmlFor="login-password"
+                className="text-sm font-semibold text-default-700"
+              >
+                {t("login.password")}
+              </label>
+              <Link
+                to="/forgot-password"
+                className="shrink-0 text-xs font-medium text-default-500 transition-colors hover:text-primary hover:underline"
+              >
+                {t("login.forgotPassword")}
+              </Link>
+            </div>
             <Input
               {...field}
+              id="login-password"
               type={showPassword ? "text" : "password"}
-              label={t("login.password")}
-              labelPlacement="outside"
-              placeholder="••••••••"
+              aria-label={t("login.password")}
+              placeholder={t("login.passwordPlaceholder")}
               autoComplete="current-password"
               variant="bordered"
-              color="primary"
               size="lg"
               radius="lg"
-              isInvalid={!!errors.password}
-              errorMessage={errors.password?.message}
-              classNames={{
-                inputWrapper:
-                  "group-data-[focus=true]:border-primary group-data-[focus=true]:ring-2 group-data-[focus=true]:ring-primary/20 transition-all duration-300",
-                label: "font-bold text-default-700 tracking-tight mb-1",
-              }}
+              isInvalid={isSubmitted && !!errors.password}
+              errorMessage={isSubmitted ? errors.password?.message : undefined}
+              startContent={
+                <Lock className="pointer-events-none h-4 w-4 text-default-400" />
+              }
+              classNames={authInputClassNames}
               endContent={
                 <button
-                  className="focus:outline-none p-2 hover:bg-default-100 rounded-xl transition-all active:scale-90"
+                  className="rounded-lg p-1.5 text-default-400 transition-colors hover:bg-default-100 hover:text-default-600 focus:outline-none"
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
                   aria-label={showPassword ? "Hide password" : "Show password"}
                 >
                   {showPassword ? (
-                    <EyeOff className="h-5 w-5 text-default-400" />
+                    <EyeOff className="h-4 w-4" />
                   ) : (
-                    <Eye className="h-5 w-5 text-default-400" />
+                    <Eye className="h-4 w-4" />
                   )}
                 </button>
               }
             />
-          )}
-        />
-      </div>
-
-      <div className="flex justify-end -mt-2">
-        <Link
-          to="/forgot-password"
-          className="text-xs text-primary font-semibold hover:underline"
-        >
-          {t("login.forgotPassword")}
-        </Link>
-      </div>
+          </div>
+        )}
+      />
 
       <Button
         type="submit"
-        variant="solid"
         color="primary"
-        className="w-full mt-4 h-12 font-black text-sm uppercase tracking-widest shadow-xl shadow-primary/30 hover:scale-[1.02] active:scale-[0.98] transition-all"
+        className="mt-1 h-12 w-full bg-primary-gradient font-bold text-sm shadow-lg shadow-primary/25 transition-transform hover:scale-[1.01] active:scale-[0.99]"
         isLoading={isSubmitting}
+        endContent={!isSubmitting && <ArrowRight className="h-4 w-4 rtl:rotate-180" />}
       >
-        {t("login.submit")}
+        {isSubmitting ? t("login.loading") : t("login.submit")}
       </Button>
 
       <p className="text-center text-sm text-default-500">
         {t("login.dontHaveAccount")}{" "}
-        <Link to="/register" className="text-secondary font-bold hover:underline">
+        <Link
+          to="/register"
+          className="font-bold text-secondary transition-colors hover:text-secondary-600 hover:underline"
+        >
           {t("login.createAccountLink")}
         </Link>
       </p>
-
-      {/* <div className="pt-6 border-t  w-full  border-default-100 mt-2">
-        <div className="rounded-2xl bg-default-50 p-4 border border-default-200">
-          <p className="text-center text-[10px] font-bold text-default-400 uppercase tracking-wider mb-2">
-            {t("login.demoCredentials")}
-          </p>
-          <div className="flex justify-center items-center gap-4 text-xs">
-            <div className="flex flex-col items-center">
-              <span className="text-[10px] text-default-400 uppercase">
-                {t("login.email")}
-              </span>
-              <span className="text-default-900 font-bold">
-                admin@darrow.com
-              </span>
-            </div>
-            <div className="h-8 w-px bg-default-200" />
-            <div className="flex flex-col items-center">
-              <span className="text-[10px] text-default-400 uppercase">
-                {t("login.password")}
-              </span>
-              <span className="text-default-900 font-bold">admin123</span>
-            </div>
-          </div>
-        </div>
-      </div> */}
-    </Form>
+    </form>
   );
 }

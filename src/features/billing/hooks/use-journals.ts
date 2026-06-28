@@ -41,12 +41,9 @@ export function useCreateJournalMutation() {
         lines: data.lines.map(l => ({ ...l, id: l.id || `jel_${Math.random().toString(36).slice(2)}` }))
       };
 
-      const res = await BillingService.journals.create(companyId!, payload);
+      const res = await BillingService.postJournalWithBalances(companyId!, payload);
 
-      // In a real system, here we would trigger a Firestore Transaction 
-      // that creates the Journal Entry AND updates the `currentBalance` of every Account involved.
-
-      return convertTimestampsToDates(res.data);
+      return convertTimestampsToDates(res);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["billing", "journals"] });

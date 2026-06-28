@@ -11,28 +11,57 @@ import {
   Divider,
   Textarea,
 } from "@heroui/react";
-import { Plus, Trash2, Save, Send } from "lucide-react";
+import { Plus, Trash2, Save, Send, ChevronRight } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams, useLocation } from "react-router-dom";
 import { useEffect } from "react";
 import { toast } from "sonner";
 
-import { PageHeader } from "@/components/shared/page-header";
 import { selectFieldProps } from "@/components/shared/select-field";
 import { useContactsQuery } from "@/features/crm/hooks/use-contacts";
+import { contactDisplayName } from "@/features/crm/utils/contacts-list.utils";
 import { useProducts } from "../hooks/use-products";
+import { useBillingSettings } from "../hooks/use-billing-settings";
 import { useCreateInvoiceMutation, useUpdateInvoiceMutation, useInvoice } from "../hooks/use-invoices";
 import { invoiceSchema, type CreateInvoiceDTO } from "../schemas/invoice";
+import { quotationDataToInvoiceForm } from "../utils/accounting-engine";
 import { formatCurrency } from "@/lib/utils";
+import { LineTaxRateSelect } from "../components/LineTaxRateSelect";
+import {
+  getDefaultTax,
+  getTaxRateForProduct,
+} from "../utils/tax-utils";
 
 export default function CreateInvoicePage() {
   const { t } = useTranslation("billing");
   const navigate = useNavigate();
+  const location = useLocation();
+  const fromQuotation = (location.state as { fromQuotation?: {
+    quotationId?: string;
+    contactId: string;
+    data: {
+      currency: string;
+      vatRate: number;
+      pricesIncludeVat: boolean;
+      notes?: string;
+      validityMonths: number;
+      items: Array<{
+        nameAr?: string;
+        nameEn?: string;
+        description?: string;
+        quantity: number;
+        unitPrice: number;
+      }>;
+    };
+  } })?.fromQuotation;
 
   const { data: contactsRes } = useContactsQuery();
   const contacts = contactsRes?.data || [];
   
   const { data: products = [] } = useProducts();
+  const { data: billingSettings } = useBillingSettings();
+  const taxes = billingSettings?.taxes ?? [];
+  const defaultTax = getDefaultTax(taxes);
   
   const { id } = useParams<{ id: string }>();
   const isEditing = !!id;
@@ -51,12 +80,20 @@ export default function CreateInvoicePage() {
   } = useForm<CreateInvoiceDTO>({
     resolver: zodResolver(invoiceSchema) as any,
     defaultValues: {
-      invoiceNumber: `INV-${Math.floor(1000 + Math.random() * 9000)}`,
+      invoiceNumber: "DRAFT",
       status: "draft",
       currency: "USD",
       issueDate: new Date(),
       dueDate: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000),
-      items: [{ description: "", quantity: 1, unitPrice: 0, taxRate: 0, discount: 0, total: 0 }],
+      items: [{
+        description: "",
+        quantity: 1,
+        unitPrice: 0,
+        taxRate: 0,
+        taxRateId: null,
+        discount: 0,
+        total: 0,
+      }],
       subTotal: 0,
       totalTax: 0,
       totalDiscount: 0,
@@ -70,6 +107,22 @@ export default function CreateInvoicePage() {
   });
 
   useEffect(() => {
+    if (!isEditing && fromQuotation?.contactId && fromQuotation.data) {
+      const draft = quotationDataToInvoiceForm({
+        customerId: fromQuotation.contactId,
+        quotationId: fromQuotation.quotationId,
+        currency: fromQuotation.data.currency,
+        vatRate: fromQuotation.data.vatRate,
+        pricesIncludeVat: fromQuotation.data.pricesIncludeVat,
+        notes: fromQuotation.data.notes,
+        validityMonths: fromQuotation.data.validityMonths,
+        items: fromQuotation.data.items,
+      });
+      control._reset(draft as any);
+    }
+  }, [isEditing, fromQuotation, control]);
+
+  useEffect(() => {
     if (isEditing && existingInvoice) {
       const resetData = {
         ...existingInvoice,
@@ -80,6 +133,19 @@ export default function CreateInvoicePage() {
       control._reset(resetData as any);
     }
   }, [isEditing, existingInvoice, control]);
+
+  useEffect(() => {
+    if (isEditing || fromQuotation || !defaultTax) return;
+    const items = watch("items");
+    if (
+      items?.length === 1 &&
+      !items[0]?.taxRateId &&
+      (items[0]?.taxRate ?? 0) === 0
+    ) {
+      setValue("items.0.taxRateId", defaultTax.id);
+      setValue("items.0.taxRate", defaultTax.rate);
+    }
+  }, [defaultTax, fromQuotation, isEditing, setValue, watch]);
 
   const watchItems = watch("items");
 
@@ -99,39 +165,99 @@ export default function CreateInvoicePage() {
   const grandTotal = subTotal - totalDiscount + totalTax;
 
   const handleProductSelect = (index: number, productId: string) => {
-    const product = products.find(p => p.id === productId);
+    const product = products.find((p) => p.id === productId);
     if (product) {
       setValue(`items.${index}.description`, product.name);
       setValue(`items.${index}.unitPrice`, product.price);
+      setValue(`items.${index}.productId`, product.id ?? null);
+      const rate = getTaxRateForProduct(taxes, product.taxRateId);
+      const tax =
+        taxes.find((tx) => tx.id === product.taxRateId) ?? defaultTax ?? null;
+      setValue(`items.${index}.taxRateId`, tax?.id ?? null);
+      setValue(`items.${index}.taxRate`, rate);
     }
+  };
+
+  const appendLine = () => {
+    append({
+      description: "",
+      quantity: 1,
+      unitPrice: 0,
+      taxRate: defaultTax?.rate ?? 0,
+      taxRateId: defaultTax?.id ?? null,
+      discount: 0,
+      total: 0,
+    });
   };
 
   const onSubmit = async (data: CreateInvoiceDTO, actionType: "draft" | "sent") => {
     try {
-      const finalData = { ...data, status: actionType };
+      const finalData: CreateInvoiceDTO = {
+        ...data,
+        status: actionType,
+        subTotal,
+        totalTax,
+        totalDiscount,
+        grandTotal,
+        items: watchItems.map((item, index) => {
+          const q = Number(item.quantity) || 0;
+          const r = Number(item.unitPrice) || 0;
+          const d = Number(item.discount) || 0;
+          const tx = Number(item.taxRate) || 0;
+          const beforeTax = q * r - d;
+          return {
+            ...data.items[index],
+            ...item,
+            total: beforeTax + beforeTax * (tx / 100),
+          };
+        }),
+      };
       if (isEditing && id) {
         await updateInvoice.mutateAsync({ id, data: finalData });
-        toast.success(actionType === "sent" ? "Invoice sent!" : "Invoice updated");
+        toast.success(
+          actionType === "sent"
+            ? t("invoices.create.sent")
+            : t("invoices.create.updated")
+        );
       } else {
         await createInvoice.mutateAsync(finalData);
-        toast.success(actionType === "sent" ? "Invoice sent!" : "Draft saved");
+        toast.success(
+          actionType === "sent"
+            ? t("invoices.create.sent")
+            : t("invoices.create.draft_saved")
+        );
       }
       navigate("/billing/invoices");
-    } catch (error) {
-      toast.error("Failed to save invoice");
+    } catch {
+      toast.error(t("invoices.create.save_failed"));
     }
   };
 
   if (isEditing && isLoadingExisting) {
-    return <div className="p-8 text-center animate-pulse">Loading invoice...</div>;
+    return (
+      <div className="p-8 text-center animate-pulse">
+        {t("invoices.create.loading")}
+      </div>
+    );
   }
 
   return (
-    <div className="space-y-6 max-w-5xl mx-auto pb-20 animate-in fade-in duration-500">
-      <PageHeader
-        title={isEditing ? "Edit Invoice" : (t("invoices.create.title") || "New Invoice")}
-        description={isEditing ? "Update invoice details." : (t("invoices.create.description") || "Create a new sales invoice for your customer.")}
-      />
+    <div className="space-y-4 max-w-5xl mx-auto pb-20 animate-in fade-in duration-300">
+      <nav className="flex items-center gap-1 text-sm text-default-500">
+        <Link to="/billing" className="hover:text-primary">
+          {t("module_name")}
+        </Link>
+        <ChevronRight className="h-3.5 w-3.5 rtl:rotate-180" />
+        <Link to="/billing/invoices" className="hover:text-primary">
+          {t("invoices.title")}
+        </Link>
+        <ChevronRight className="h-3.5 w-3.5 rtl:rotate-180" />
+        <span className="font-medium text-default-800">
+          {isEditing ? t("invoices.create.edit_title") : t("invoices.create.title")}
+        </span>
+      </nav>
+
+      <p className="text-sm text-default-500">{t("invoices.create.subtitle")}</p>
 
       <form className="space-y-6">
         <Card className="p-2 border border-default-100 shadow-sm rounded-2xl">
@@ -152,7 +278,7 @@ export default function CreateInvoicePage() {
                     errorMessage={(errors.customerId?.message as string)}
                   >
                     {contacts.map((contact) => {
-                      const label = `${contact.firstName} ${contact.lastName}`;
+                      const label = contactDisplayName(contact);
                       return (
                       <SelectItem key={contact.id} textValue={label}>
                         {label}
@@ -166,9 +292,9 @@ export default function CreateInvoicePage() {
               <Input
                 label={t("invoices.create.invoice_number") || "Invoice Number"}
                 variant="bordered"
+                isReadOnly
                 {...register("invoiceNumber")}
-                isInvalid={!!errors.invoiceNumber}
-                errorMessage={(errors.invoiceNumber?.message as string)}
+                description={t("invoices.create.number_assigned_on_post") || "Assigned when posted"}
               />
 
             </div>
@@ -188,8 +314,8 @@ export default function CreateInvoicePage() {
                   <th className="p-4 w-[30%]">{t("invoices.create.product_item") || "Product / Item"}</th>
                   <th className="p-4 w-[15%]">{t("invoices.create.quantity") || "Quantity"}</th>
                   <th className="p-4 w-[15%]">{t("invoices.create.rate") || "Rate"}</th>
-                  <th className="p-4 w-[15%]">{t("invoices.create.tax") || "Tax (%)"}</th>
-                  <th className="p-4 w-[15%] text-right">{t("invoices.create.amount") || "Amount"}</th>
+                  <th className="p-4 w-[15%]">{t("invoices.create.tax")}</th>
+                  <th className="p-4 w-[15%] text-end">{t("invoices.create.amount")}</th>
                   <th className="p-4 w-[10%]"></th>
                 </tr>
               </thead>
@@ -242,21 +368,24 @@ export default function CreateInvoicePage() {
                           size="sm"
                           type="number"
                           variant="flat"
+                          dir="ltr"
+                          classNames={{ input: "text-start" }}
                           startContent={<span className="text-default-400 text-xs">$</span>}
                           {...register(`items.${index}.unitPrice` as const, { valueAsNumber: true })}
                         />
                       </td>
                       <td className="p-4 align-top">
-                         <Input
-                          size="sm"
-                          type="number"
-                          variant="flat"
-                          endContent={<span className="text-default-400 text-xs">%</span>}
-                          {...register(`items.${index}.taxRate` as const, { valueAsNumber: true })}
+                        <LineTaxRateSelect
+                          taxes={taxes}
+                          taxRateId={watch(`items.${index}.taxRateId`)}
+                          onChange={(tax) => {
+                            setValue(`items.${index}.taxRateId`, tax?.id ?? null);
+                            setValue(`items.${index}.taxRate`, tax?.rate ?? 0);
+                          }}
                         />
                       </td>
-                      <td className="p-4 align-top text-right font-medium text-default-700">
-                        {formatCurrency(lineTotal, "USD")}
+                      <td className="p-4 align-top text-end font-medium text-default-700">
+                        <span dir="ltr">{formatCurrency(lineTotal, "USD")}</span>
                       </td>
                       <td className="p-4 align-top text-right">
                         <Button
@@ -282,7 +411,7 @@ export default function CreateInvoicePage() {
                 color="primary"
                 size="sm"
                 startContent={<Plus className="w-4 h-4" />}
-                onPress={() => append({ description: "", quantity: 1, unitPrice: 0, taxRate: 0, discount: 0, total: 0 })}
+                onPress={appendLine}
               >
                 {t("invoices.create.add_line") || "Add another line"}
               </Button>
@@ -309,25 +438,25 @@ export default function CreateInvoicePage() {
           <Card className="w-full md:w-1/3 border border-default-100 shadow-sm rounded-2xl bg-default-50/50">
             <CardBody className="p-6 space-y-4">
               <div className="flex justify-between text-sm text-default-600">
-                <span>{t("invoices.create.sub_total") || "Sub Total"}</span>
-                <span className="font-medium">{formatCurrency(subTotal, "USD")}</span>
+                <span>{t("invoices.create.sub_total")}</span>
+                <span className="font-medium" dir="ltr">{formatCurrency(subTotal, "USD")}</span>
               </div>
               {totalDiscount > 0 && (
                 <div className="flex justify-between text-sm text-danger">
-                  <span>{t("invoices.create.discount") || "Discount"}</span>
-                  <span>-{formatCurrency(totalDiscount, "USD")}</span>
+                  <span>{t("invoices.create.discount")}</span>
+                  <span dir="ltr">-{formatCurrency(totalDiscount, "USD")}</span>
                 </div>
               )}
               {totalTax > 0 && (
                 <div className="flex justify-between text-sm text-default-600">
-                  <span>{t("invoices.create.total_tax") || "Tax"}</span>
-                  <span className="font-medium">{formatCurrency(totalTax, "USD")}</span>
+                  <span>{t("invoices.create.total_tax")}</span>
+                  <span className="font-medium" dir="ltr">{formatCurrency(totalTax, "USD")}</span>
                 </div>
               )}
               <Divider />
               <div className="flex justify-between text-lg font-bold">
-                <span>{t("invoices.create.total") || "Total"}</span>
-                <span>{formatCurrency(grandTotal, "USD")}</span>
+                <span>{t("invoices.create.total")}</span>
+                <span dir="ltr">{formatCurrency(grandTotal, "USD")}</span>
               </div>
             </CardBody>
           </Card>
@@ -340,7 +469,7 @@ export default function CreateInvoicePage() {
             isLoading={isSubmitting || updateInvoice.isPending || createInvoice.isPending}
             startContent={<Save className="w-4 h-4" />}
           >
-            {isEditing ? "Update Draft" : (t("invoices.create.save_draft") || "Save as Draft")}
+            {isEditing ? t("invoices.create.update_draft") : t("invoices.create.save_draft")}
           </Button>
           <Button
             color="primary"
@@ -348,7 +477,7 @@ export default function CreateInvoicePage() {
             isLoading={isSubmitting || updateInvoice.isPending || createInvoice.isPending}
             startContent={<Send className="w-4 h-4" />}
           >
-            {isEditing ? "Update & Send" : (t("invoices.create.save_send") || "Save & Send")}
+            {isEditing ? t("invoices.create.update_send") : t("invoices.create.save_send")}
           </Button>
         </div>
       </form>

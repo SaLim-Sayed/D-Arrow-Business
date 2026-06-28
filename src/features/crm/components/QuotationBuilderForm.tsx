@@ -13,7 +13,8 @@ import {
 } from "@heroui/react";
 import { AppDatePicker } from "@/components/shared/app-date-picker";
 import { parseDate } from "@internationalized/date";
-import { FileDown, Eye, Save, Trash2 } from "lucide-react";
+import { FileDown, Eye, Save, Trash2, Receipt } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { useCompanyProfile } from "@/features/companies/hooks/use-company-profile";
 import { usePricingList } from "@/features/companies/hooks/use-pricing";
 import { useContactsQuery } from "@/features/crm/hooks/use-contacts";
@@ -77,6 +78,7 @@ function buildCompanyInfo(
 
 export function QuotationBuilderForm() {
   const { t, i18n } = useTranslation("crm");
+  const navigate = useNavigate();
   const quoteLocale = resolveQuotationLocale(i18n.language);
   const { data: company } = useCompanyProfile();
   const { data: prices = [] } = usePricingList();
@@ -421,6 +423,39 @@ export function QuotationBuilderForm() {
     }
   };
 
+  const handleConvertToInvoice = () => {
+    if (!selectedContactId) {
+      toast.error(t("quotation.contactRequiredForInvoice") || "Select a CRM contact to create an invoice");
+      return;
+    }
+    if (quotationData.items.length === 0) {
+      toast.error(t("quotation.itemsRequired"));
+      return;
+    }
+    navigate("/billing/invoices/new", {
+      state: {
+        fromQuotation: {
+          quotationId: savedQuotationId ?? undefined,
+          contactId: selectedContactId,
+          data: {
+            currency: quotationData.currency,
+            vatRate: quotationData.vatRate,
+            pricesIncludeVat: quotationData.pricesIncludeVat,
+            notes: quotationData.notes,
+            validityMonths: quotationData.validityMonths,
+            items: quotationData.items.map((item) => ({
+              nameAr: item.nameAr,
+              nameEn: item.nameEn,
+              description: item.description,
+              quantity: item.quantity,
+              unitPrice: item.unitPrice,
+            })),
+          },
+        },
+      },
+    });
+  };
+
   const handleExport = async () => {
     if (!clientName.trim()) {
       toast.error(t("quotation.clientRequired"));
@@ -480,6 +515,14 @@ export function QuotationBuilderForm() {
               </p>
             </div>
             <div className="flex flex-wrap gap-2">
+            <Button
+              color="secondary"
+              variant="flat"
+              startContent={<Receipt className="h-4 w-4" />}
+              onPress={handleConvertToInvoice}
+            >
+              {t("quotation.convertToInvoice") || "Create Invoice"}
+            </Button>
             <Button
               color="primary"
               variant="flat"

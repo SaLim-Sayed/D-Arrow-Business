@@ -5,6 +5,7 @@ import type {
 } from "../schemas/product";
 import { BillingService } from "../api/billing.service";
 import { useCompany } from "@/features/companies/context/company-context";
+import { ensureProductCatalogDefaults } from "../utils/ensure-product-catalog";
 
 // --- Hooks ---
 export function useProducts() {
@@ -24,6 +25,7 @@ export function useProductCategories() {
   return useQuery({
     queryKey: ["billing", "product-categories", companyId],
     queryFn: async () => {
+      await ensureProductCatalogDefaults(companyId!);
       const res = await BillingService.productCategories.getAll(companyId!);
       return res.data;
     },
@@ -36,6 +38,7 @@ export function useProductUnits() {
   return useQuery({
     queryKey: ["billing", "product-units", companyId],
     queryFn: async () => {
+      await ensureProductCatalogDefaults(companyId!);
       const res = await BillingService.productUnits.getAll(companyId!);
       return res.data;
     },

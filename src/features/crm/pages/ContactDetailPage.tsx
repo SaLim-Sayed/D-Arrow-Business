@@ -53,6 +53,8 @@ import { CrmAttachmentsSection } from "../components/shared/CrmAttachmentsSectio
 import { CrmTimeline } from "../components/shared/CrmTimeline";
 import { contactDisplayName } from "../utils/contacts-list.utils";
 import { formatDate, formatCurrency } from "@/lib/utils";
+import { useInvoicesByCustomer } from "@/features/billing/hooks/use-invoices";
+import { getInvoiceAmountDue } from "@/features/billing/utils/accounting-engine";
 import { normalizeCrmTaskStatus } from "../constants/crm-task.constants";
 
 export function ContactDetailPage() {
@@ -82,6 +84,9 @@ export function ContactDetailPage() {
   const deleteNote = useDeleteCrmNoteMutation();
   const uploadAttachment = useUploadCrmAttachmentMutation("contact", contactId);
   const deleteAttachment = useDeleteCrmAttachmentMutation("contact", contactId);
+
+  const { data: customerInvoices = [], isLoading: invoicesLoading } =
+    useInvoicesByCustomer(contactId);
 
   const contactDeals = useMemo(
     () => (dealsRes?.data ?? []).filter((d) => d.contactId === contactId),
@@ -373,9 +378,50 @@ export function ContactDetailPage() {
           }
         >
           <div className="pt-4">
-            <p className="text-default-500 text-sm">
-              {t("contactDetail.billing.empty") || "No invoices or payments found for this customer."}
-            </p>
+            {invoicesLoading ? (
+              <LoadingSpinner />
+            ) : customerInvoices.length === 0 ? (
+              <p className="text-default-500 text-sm">
+                {t("contactDetail.billing.empty") || "No invoices or payments found for this customer."}
+              </p>
+            ) : (
+              <Table aria-label="Customer invoices">
+                <TableHeader>
+                  <TableColumn>Invoice</TableColumn>
+                  <TableColumn>Date</TableColumn>
+                  <TableColumn>Due</TableColumn>
+                  <TableColumn>Status</TableColumn>
+                  <TableColumn align="end">Amount</TableColumn>
+                  <TableColumn align="end">Balance Due</TableColumn>
+                </TableHeader>
+                <TableBody>
+                  {customerInvoices.map((inv) => (
+                    <TableRow
+                      key={inv.id}
+                      className="cursor-pointer hover:bg-default-50"
+                      onClick={() => navigate(`/billing/invoices/${inv.id}`)}
+                    >
+                      <TableCell className="font-semibold text-primary">
+                        {inv.invoiceNumber}
+                      </TableCell>
+                      <TableCell>{formatDate(inv.issueDate)}</TableCell>
+                      <TableCell>{formatDate(inv.dueDate)}</TableCell>
+                      <TableCell>
+                        <Chip size="sm" variant="flat">
+                          {inv.status}
+                        </Chip>
+                      </TableCell>
+                      <TableCell className="text-right font-medium">
+                        {formatCurrency(inv.grandTotal, inv.currency)}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        {formatCurrency(getInvoiceAmountDue(inv), inv.currency)}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
           </div>
         </Tab>
       </Tabs>

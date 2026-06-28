@@ -39,6 +39,7 @@ export const accountSchema = z.object({
   name: z.string().min(1, "Account name is required"),
   type: z.enum(ACCOUNT_TYPES),
   subType: z.enum(ACCOUNT_SUB_TYPES),
+  parentId: z.string().optional(),
   description: z.string().optional(),
   isActive: z.boolean().default(true),
   isSystemAccount: z.boolean().default(false), // System accounts cannot be deleted (e.g., Accounts Receivable)

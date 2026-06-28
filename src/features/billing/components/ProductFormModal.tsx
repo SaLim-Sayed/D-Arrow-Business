@@ -27,6 +27,12 @@ import {
 } from "../hooks/use-products";
 import { useBillingSettings } from "../hooks/use-billing-settings";
 import { selectFieldProps } from "@/components/shared/select-field";
+import {
+  categoryLabel,
+  taxOptionLabel,
+  unitLabel,
+} from "../utils/product-labels";
+import { getActiveTaxes } from "../utils/tax-utils";
 
 interface ProductFormModalProps {
   isOpen: boolean;
@@ -41,9 +47,12 @@ export function ProductFormModal({ isOpen, onOpenChange, product }: ProductFormM
   const createProduct = useCreateProductMutation();
   const updateProduct = useUpdateProductMutation();
   
-  const { data: categories = [] } = useProductCategories();
-  const { data: units = [] } = useProductUnits();
-  const { data: settings } = useBillingSettings();
+  const { data: categories = [], isLoading: categoriesLoading } = useProductCategories();
+  const { data: units = [], isLoading: unitsLoading } = useProductUnits();
+  const { data: settings, isLoading: settingsLoading } = useBillingSettings();
+
+  const taxes = getActiveTaxes(settings?.taxes ?? []);
+  const catalogLoading = categoriesLoading || unitsLoading || settingsLoading;
 
   const isEdit = !!product;
 
@@ -168,6 +177,11 @@ export function ProductFormModal({ isOpen, onOpenChange, product }: ProductFormM
                   errorMessage={errors.price?.message as string}
                   variant="bordered"
                   isRequired
+                  dir="ltr"
+                  classNames={{ input: "text-start" }}
+                  startContent={
+                    <span className="text-default-400 text-sm">$</span>
+                  }
                 />
               </div>
 
@@ -187,16 +201,24 @@ export function ProductFormModal({ isOpen, onOpenChange, product }: ProductFormM
                     <Select
                       {...selectFieldProps()}
                       label={t("products.form.category")}
+                      placeholder={t("products.form.category_placeholder")}
+                      isLoading={categoriesLoading}
                       selectedKeys={field.value ? new Set([field.value]) : new Set()}
                       onSelectionChange={(keys) => {
                         const val = Array.from(keys)[0] as string;
                         field.onChange(val || null);
                       }}
                       variant="bordered"
+                      items={categories}
                     >
-                      {categories.map((c: any) => (
-                        <SelectItem key={c.id} textValue={c.name}>{c.name}</SelectItem>
-                      ))}
+                      {(c) => (
+                        <SelectItem
+                          key={c.id!}
+                          textValue={categoryLabel(t, c.name)}
+                        >
+                          {categoryLabel(t, c.name)}
+                        </SelectItem>
+                      )}
                     </Select>
                   )}
                 />
@@ -207,16 +229,27 @@ export function ProductFormModal({ isOpen, onOpenChange, product }: ProductFormM
                     <Select
                       {...selectFieldProps()}
                       label={t("products.form.unit")}
+                      placeholder={t("products.form.unit_placeholder")}
+                      isLoading={unitsLoading}
                       selectedKeys={field.value ? new Set([field.value]) : new Set()}
                       onSelectionChange={(keys) => {
                         const val = Array.from(keys)[0] as string;
                         field.onChange(val || null);
                       }}
                       variant="bordered"
+                      items={units}
                     >
-                      {units.map((u: any) => (
-                        <SelectItem key={u.id} textValue={`${u.name} (${u.abbreviation})`}>{u.name} ({u.abbreviation})</SelectItem>
-                      ))}
+                      {(u) => {
+                        const label = unitLabel(t, u.name);
+                        const withAbbr = u.abbreviation
+                          ? `${label} (${u.abbreviation})`
+                          : label;
+                        return (
+                          <SelectItem key={u.id!} textValue={withAbbr}>
+                            {withAbbr}
+                          </SelectItem>
+                        );
+                      }}
                     </Select>
                   )}
                 />
@@ -227,16 +260,24 @@ export function ProductFormModal({ isOpen, onOpenChange, product }: ProductFormM
                     <Select
                       {...selectFieldProps()}
                       label={t("products.form.tax_rate")}
+                      placeholder={t("products.form.tax_placeholder")}
+                      isLoading={settingsLoading}
                       selectedKeys={field.value ? new Set([field.value]) : new Set()}
                       onSelectionChange={(keys) => {
                         const val = Array.from(keys)[0] as string;
                         field.onChange(val || null);
                       }}
                       variant="bordered"
+                      items={taxes}
                     >
-                      {(settings?.taxes || []).map((t: any) => (
-                        <SelectItem key={t.id} textValue={`${t.name} (${t.rate}%)`}>{t.name} ({t.rate}%)</SelectItem>
-                      ))}
+                      {(tax) => (
+                        <SelectItem
+                          key={tax.id}
+                          textValue={taxOptionLabel(t, tax)}
+                        >
+                          {taxOptionLabel(t, tax)}
+                        </SelectItem>
+                      )}
                     </Select>
                   )}
                 />
@@ -260,7 +301,7 @@ export function ProductFormModal({ isOpen, onOpenChange, product }: ProductFormM
               <Button variant="light" onPress={onClose}>
                 {tc("actions.cancel")}
               </Button>
-              <Button color="primary" type="submit" isLoading={busy}>
+              <Button color="primary" type="submit" isLoading={busy || catalogLoading}>
                 {isEdit ? tc("actions.save") : tc("actions.create")}
               </Button>
             </ModalFooter>

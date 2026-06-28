@@ -22,7 +22,9 @@ import type { Bill, CreateBillDTO, UpdateBillDTO } from "../schemas/bill";
 import type { Account, CreateAccountDTO, UpdateAccountDTO } from "../schemas/account";
 import type { JournalEntry, CreateJournalEntryDTO, UpdateJournalEntryDTO } from "../schemas/journal";
 import type { Product, CreateProductDTO, UpdateProductDTO, ProductCategory, ProductUnit } from "../schemas/product";
+import type { Payment, CreatePaymentDTO } from "../schemas/payment";
 import type { BillingSettings } from "../schemas/settings";
+import { DEFAULT_TAXES } from "../data/product-defaults";
 
 export interface BillingListOptions {
   orderByField?: string;
@@ -115,6 +117,41 @@ export const BillingService = {
   products: createBillingCollectionService<Product, CreateProductDTO, UpdateProductDTO>("products", "ProductService"),
   productCategories: createBillingCollectionService<ProductCategory, Partial<ProductCategory>, Partial<ProductCategory>>("product_categories", "ProductCategoryService"),
   productUnits: createBillingCollectionService<ProductUnit, Partial<ProductUnit>, Partial<ProductUnit>>("product_units", "ProductUnitService"),
+  payments: createBillingCollectionService<Payment, CreatePaymentDTO, Partial<CreatePaymentDTO>>("payments", "PaymentService"),
+
+  async reserveInvoiceNumber(companyId: string): Promise<string> {
+    const settingsRes = await BillingService.settings.get(companyId);
+    const seq = settingsRes.data.invoiceSequence;
+    const { formatSequenceNumber } = await import("../utils/accounting-engine");
+    const invoiceNumber = formatSequenceNumber(seq);
+    await BillingService.settings.update(companyId, {
+      invoiceSequence: { ...seq, nextNumber: seq.nextNumber + 1 },
+    });
+    return invoiceNumber;
+  },
+
+  async postJournalWithBalances(
+    companyId: string,
+    journal: CreateJournalEntryDTO
+  ): Promise<JournalEntry> {
+    const { aggregateBalanceDeltas } = await import("../utils/accounting-engine");
+    const accountsRes = await BillingService.accounts.getAll(companyId);
+    const deltas = aggregateBalanceDeltas(accountsRes.data, journal.lines);
+
+    const journalRes = await BillingService.journals.create(companyId, journal);
+
+    await Promise.all(
+      Array.from(deltas.entries()).map(async ([accountId, delta]) => {
+        const account = accountsRes.data.find((a) => a.id === accountId);
+        if (!account) return;
+        await BillingService.accounts.update(companyId, accountId, {
+          currentBalance: (account.currentBalance ?? 0) + delta,
+        });
+      })
+    );
+
+    return journalRes.data;
+  },
   
   
   settings: {
@@ -127,15 +164,19 @@ export const BillingService = {
             data: {
               companyProfile: { name: "", address: "", email: "" },
               currencies: [{ code: "USD", symbol: "$", name: "US Dollar", isDefault: true }],
-              taxes: [],
+              taxes: DEFAULT_TAXES,
               paymentMethods: [],
               invoiceSequence: { prefix: "INV-", nextNumber: 1, padding: 4 }
             } as BillingSettings,
             message: "Defaults returned"
           };
         }
+        const data = docSnap.data() as BillingSettings;
         return {
-          data: docSnap.data() as BillingSettings,
+          data: {
+            ...data,
+            taxes: data.taxes?.length ? data.taxes : DEFAULT_TAXES,
+          },
           message: "Success",
         };
       })());

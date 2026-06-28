@@ -9,6 +9,7 @@ const MOCK_ACCOUNTS: CreateAccountDTO[] = [
   { code: "1200", name: "Accounts Receivable", type: "asset", subType: "accounts_receivable", isSystemAccount: true, isActive: true, currentBalance: 12000, currency: "USD" },
   { code: "1500", name: "Inventory Asset", type: "asset", subType: "inventory", isSystemAccount: true, isActive: true, currentBalance: 30000, currency: "USD" },
   { code: "2000", name: "Accounts Payable", type: "liability", subType: "accounts_payable", isSystemAccount: true, isActive: true, currentBalance: 4500, currency: "USD" },
+  { code: "2100", name: "Tax Payable", type: "liability", subType: "current_liability", isSystemAccount: true, isActive: true, currentBalance: 0, currency: "USD" },
   { code: "3000", name: "Owner's Equity", type: "equity", subType: "equity", isSystemAccount: true, isActive: true, currentBalance: 42500, currency: "USD" },
   { code: "4000", name: "Sales Revenue", type: "income", subType: "operating_income", isSystemAccount: true, isActive: true, currentBalance: 0, currency: "USD" },
   { code: "5000", name: "Cost of Goods Sold", type: "expense", subType: "cost_of_goods_sold", isSystemAccount: true, isActive: true, currentBalance: 0, currency: "USD" },

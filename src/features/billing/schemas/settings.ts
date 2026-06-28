@@ -19,9 +19,10 @@ export const currencySchema = z.object({
 
 export const taxSettingsSchema = z.object({
   id: z.string(),
-  name: z.string(), // e.g., VAT, Sales Tax
-  rate: z.number().min(0).max(100), // Percentage
+  name: z.string().min(1, "Tax name is required"),
+  rate: z.number().min(0).max(100),
   isDefault: z.boolean().default(false),
+  isActive: z.boolean().default(true),
 });
 
 export const paymentMethodSchema = z.object({
