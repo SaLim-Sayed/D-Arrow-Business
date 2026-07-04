@@ -17,9 +17,13 @@ async function postInvoiceIfNeeded(
   if (!wasDraft) return;
   if (invoice.status !== "sent" && invoice.status !== "paid") return;
 
-  const accountsRes = await BillingService.accounts.getAll(companyId);
-  const journal = buildInvoiceJournalEntry(invoice, accountsRes.data);
-  await BillingService.postJournalWithBalances(companyId, journal);
+  try {
+    // Import dynamically to avoid circular dependencies if any
+    const { automationService } = await import("@/features/accounting/services/automationService");
+    await automationService.postInvoiceToAccounting(invoice);
+  } catch (error) {
+    console.error("Failed to post invoice to accounting module:", error);
+  }
 }
 
 export function useInvoices() {

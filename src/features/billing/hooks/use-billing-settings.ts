@@ -24,10 +24,16 @@ export function useUpdateBillingSettingsMutation() {
 
   return useMutation({
     mutationFn: async (data: Partial<BillingSettings>) => {
-      const res = await BillingService.settings.update(companyId!, data);
+      if (!companyId) {
+        throw new Error("Company not selected");
+      }
+      const res = await BillingService.settings.update(companyId, data);
       return res.data;
     },
-    onSuccess: () => {
+    onSuccess: (saved) => {
+      if (companyId) {
+        queryClient.setQueryData(["billing", "settings", companyId], saved);
+      }
       queryClient.invalidateQueries({ queryKey: ["billing", "settings"] });
     },
   });

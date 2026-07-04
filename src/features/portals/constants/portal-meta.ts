@@ -1,5 +1,5 @@
 import type { PortalId } from "@/lib/portal-permissions";
-import { CheckSquare, Handshake, ListTodo, CreditCard } from "lucide-react";
+import { CheckSquare, Handshake, ListTodo, Calculator } from "lucide-react";
 
 export const PORTAL_META: Record<
   PortalId,
@@ -33,7 +33,7 @@ export const PORTAL_META: Record<
     statKey: "portals.people.stat",
   },
   billing: {
-    icon: CreditCard,
+    icon: Calculator,
     titleKey: "portals.billing.title",
     descKey: "portals.billing.description",
     shortKey: "portals.billing.short",

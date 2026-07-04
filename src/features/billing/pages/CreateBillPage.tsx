@@ -240,7 +240,7 @@ export default function CreateBillPage() {
           </CardHeader>
           <Divider />
           <CardBody className="p-0 overflow-x-auto">
-            <table className="w-full text-left min-w-[800px]">
+            <table className="w-full min-w-[800px] text-start">
               <thead className="bg-default-100/50 text-sm font-medium text-default-600">
                 <tr>
                   <th className="p-4 w-[25%]">

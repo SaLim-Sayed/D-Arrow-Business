@@ -32,6 +32,7 @@ export const documentTypeSchema = z.enum([
   "quotation",
   "estimate",
   "proposal",
+  "sales_order",
   "purchase_order",
   "receipt",
   "credit_note",

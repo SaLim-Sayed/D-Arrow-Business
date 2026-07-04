@@ -308,7 +308,7 @@ export default function CreateInvoicePage() {
           </CardHeader>
           <Divider />
           <CardBody className="p-0 overflow-x-auto">
-            <table className="w-full text-left min-w-[800px]">
+            <table className="w-full min-w-[800px] text-start">
               <thead className="bg-default-100/50 text-sm font-medium text-default-600">
                 <tr>
                   <th className="p-4 w-[30%]">{t("invoices.create.product_item") || "Product / Item"}</th>
@@ -387,7 +387,7 @@ export default function CreateInvoicePage() {
                       <td className="p-4 align-top text-end font-medium text-default-700">
                         <span dir="ltr">{formatCurrency(lineTotal, "USD")}</span>
                       </td>
-                      <td className="p-4 align-top text-right">
+                      <td className="p-4 align-top text-end">
                         <Button
                           isIconOnly
                           variant="light"

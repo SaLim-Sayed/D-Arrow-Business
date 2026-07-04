@@ -1,14 +1,20 @@
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Button, Divider } from "@heroui/react";
-import { ChevronRight, Edit2 } from "lucide-react";
+import { CreditCard, Edit2 } from "lucide-react";
 import { useBill } from "../hooks/use-bills";
+import { usePayments } from "../hooks/use-payments";
 import { useContactsQuery } from "@/features/crm/hooks/use-contacts";
 import { contactDisplayName } from "@/features/crm/utils/contacts-list.utils";
 import { useAccounts } from "../hooks/use-accounts";
 import { cn, formatCurrency } from "@/lib/utils";
 import { getBillAmountDue } from "../utils/aged-reports";
+import { billingDateLocale } from "../utils/locale";
 import type { Bill } from "../schemas/bill";
+import { AccountingPageHeader } from "../components/accounting-ui";
+import { BillingDocumentGuide } from "../components/BillingDocumentGuide";
+import { RecordPaymentModal } from "../components/RecordPaymentModal";
 
 function billStatusClass(status: Bill["status"]) {
   if (status === "paid") return "bg-success/10 text-success";
@@ -22,13 +28,15 @@ export default function BillDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { t, i18n } = useTranslation("billing");
+  const [paymentOpen, setPaymentOpen] = useState(false);
 
   const { data: bill, isLoading } = useBill(id);
+  const { data: payments = [] } = usePayments({ billId: id });
   const { data: contactsRes } = useContactsQuery();
   const contacts = contactsRes?.data ?? [];
   const { data: accounts = [] } = useAccounts();
 
-  const dateLocale = i18n.language.startsWith("ar") ? "ar-SA" : undefined;
+  const dateLocale = billingDateLocale(i18n.language);
 
   const getVendorName = (vendorId: string) => {
     const contact = contacts.find((c) => c.id === vendorId);
@@ -64,51 +72,54 @@ export default function BillDetailPage() {
   const amountDue = getBillAmountDue(bill);
 
   return (
-    <div className="pb-20 animate-in fade-in duration-300">
-      <nav className="mb-3 flex items-center gap-1 text-sm text-default-500">
-        <Link to="/billing" className="hover:text-primary">
-          {t("module_name")}
-        </Link>
-        <ChevronRight className="h-3.5 w-3.5 rtl:rotate-180" />
-        <Link to="/billing/bills" className="hover:text-primary">
-          {t("bills.title")}
-        </Link>
-        <ChevronRight className="h-3.5 w-3.5 rtl:rotate-180" />
-        <span className="font-medium text-default-800" dir="ltr">
-          {bill.billNumber}
-        </span>
-      </nav>
-
-      <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <div className="flex flex-wrap items-center gap-2">
-            <h1 className="text-xl font-bold text-default-900" dir="ltr">
-              {bill.billNumber}
-            </h1>
-            <span
-              className={cn(
-                "rounded px-2 py-0.5 text-xs font-medium",
-                billStatusClass(bill.status)
+    <div className="animate-in fade-in pb-24 duration-300">
+      <AccountingPageHeader
+        title={bill.billNumber}
+        description={bill.issueDate.toLocaleDateString(dateLocale)}
+        breadcrumbItems={[
+          { label: t("module_name"), to: "/billing" },
+          { label: t("bills.title"), to: "/billing/bills" },
+          { label: bill.billNumber },
+        ]}
+        action={
+          <>
+            {amountDue > 0 &&
+              bill.status !== "draft" &&
+              bill.status !== "cancelled" && (
+                <Button
+                  size="sm"
+                  color="danger"
+                  variant="flat"
+                  startContent={<CreditCard className="h-4 w-4" />}
+                  onPress={() => setPaymentOpen(true)}
+                >
+                  {t("bills.detail.record_payment")}
+                </Button>
               )}
-            >
-              {t(`bills.status.${bill.status}`)}
-            </span>
-          </div>
-          <p className="mt-1 text-sm text-default-500">
-            {bill.issueDate.toLocaleDateString(dateLocale)}
-          </p>
-        </div>
-        {bill.status === "draft" && (
-          <Button
-            size="sm"
-            color="primary"
-            variant="flat"
-            startContent={<Edit2 className="h-4 w-4" />}
-            onPress={() => navigate(`/billing/bills/${bill.id}/edit`)}
-          >
-            {t("bills.detail.edit")}
-          </Button>
-        )}
+            {bill.status === "draft" && (
+              <Button
+                size="sm"
+                color="primary"
+                variant="flat"
+                startContent={<Edit2 className="h-4 w-4" />}
+                onPress={() => navigate(`/billing/bills/${bill.id}/edit`)}
+              >
+                {t("bills.detail.edit")}
+              </Button>
+            )}
+          </>
+        }
+      />
+
+      <div className="mb-4 flex flex-wrap items-center gap-2">
+        <span
+          className={cn(
+            "rounded px-2 py-0.5 text-xs font-medium",
+            billStatusClass(bill.status)
+          )}
+        >
+          {t(`bills.status.${bill.status}`)}
+        </span>
       </div>
 
       <div className="overflow-hidden rounded-lg border border-default-200 bg-content1 shadow-sm">
@@ -213,8 +224,46 @@ export default function BillDetailPage() {
                 {formatCurrency(bill.grandTotal, bill.currency)}
               </span>
             </div>
+            {(bill.amountPaid ?? 0) > 0 && (
+              <>
+                <div className="flex justify-between gap-4 text-sm font-medium text-success">
+                  <span>{t("bills.detail.paid")}</span>
+                  <span className="tabular-nums" dir="ltr">
+                    -{formatCurrency(bill.amountPaid ?? 0, bill.currency)}
+                  </span>
+                </div>
+                <div className="flex justify-between gap-4 rounded-lg bg-danger/5 px-3 py-2 text-base font-bold text-danger">
+                  <span>{t("bills.detail.balance_due")}</span>
+                  <span className="tabular-nums" dir="ltr">
+                    {formatCurrency(amountDue, bill.currency)}
+                  </span>
+                </div>
+              </>
+            )}
           </div>
         </div>
+
+        {payments.length > 0 && (
+          <div className="border-t border-default-200 px-4 py-4">
+            <p className="mb-3 text-xs font-semibold uppercase text-default-400">
+              {t("payments.history")}
+            </p>
+            <div className="space-y-2">
+              {payments.map((p) => (
+                <div key={p.id} className="flex justify-between text-sm">
+                  <span>
+                    {p.date.toLocaleDateString(dateLocale)}
+                    {p.methodName ? ` — ${p.methodName}` : ""}
+                    {p.reference ? ` (${p.reference})` : ""}
+                  </span>
+                  <span className="font-medium text-danger" dir="ltr">
+                    {formatCurrency(p.amount, p.currency)}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {bill.notes && (
           <div className="border-t border-default-200 px-4 py-4">
@@ -227,6 +276,14 @@ export default function BillDetailPage() {
           </div>
         )}
       </div>
+
+      <BillingDocumentGuide variant="bill" className="mt-4" />
+
+      <RecordPaymentModal
+        bill={bill}
+        isOpen={paymentOpen}
+        onOpenChange={setPaymentOpen}
+      />
     </div>
   );
 }

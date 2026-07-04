@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import {
   Button,
   Checkbox,
@@ -11,12 +11,15 @@ import {
   Spinner,
 } from "@heroui/react";
 import {
-  ChevronRight,
+  AlertCircle,
+  CheckCircle2,
+  Clock,
   Download,
   Eye,
   Filter,
   Plus,
   Search,
+  TrendingUp,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
@@ -26,7 +29,18 @@ import { useContactsQuery } from "@/features/crm/hooks/use-contacts";
 import { contactDisplayName } from "@/features/crm/utils/contacts-list.utils";
 import type { Bill } from "../schemas/bill";
 import { downloadBillsCsv } from "../utils/bill-export";
+import { getBillAmountDue } from "../utils/aged-reports";
+import { billingDateLocale } from "../utils/locale";
+import { useBillingSettings } from "../hooks/use-billing-settings";
 import { BillingDocumentGuide } from "../components/BillingDocumentGuide";
+import {
+  AccountingListShell,
+  AccountingMetricCards,
+  AccountingPageHeader,
+  billStatusClass,
+  ContactAvatar,
+  StatusFilterChips,
+} from "../components/accounting-ui";
 
 type StatusFilter = "all" | Bill["status"];
 
@@ -38,13 +52,6 @@ const STATUS_ORDER: Bill["status"][] = [
   "cancelled",
 ];
 
-function billStatusColor(status: Bill["status"]) {
-  if (status === "paid") return "bg-success/10 text-success";
-  if (status === "overdue") return "bg-danger/10 text-danger";
-  if (status === "open") return "bg-warning/10 text-warning-700 dark:text-warning";
-  if (status === "cancelled") return "bg-default-100 text-default-400";
-  return "bg-default-100 text-default-500";
-}
 
 function BillRow({
   bill,
@@ -52,6 +59,7 @@ function BillRow({
   onToggle,
   onView,
   vendorName,
+  amountDue,
   t,
   locale,
 }: {
@@ -60,19 +68,21 @@ function BillRow({
   onToggle: () => void;
   onView: () => void;
   vendorName: string;
+  amountDue: number;
   t: (key: string, opts?: Record<string, unknown>) => string;
   locale: string;
 }) {
-  const dateLocale = locale.startsWith("ar") ? "ar-SA" : undefined;
+  const dateLocale = billingDateLocale(locale);
 
   return (
     <tr
+      onClick={onView}
       className={cn(
-        "border-b border-default-100 text-sm transition-colors hover:bg-primary/[0.03]",
+        "cursor-pointer border-b border-default-100 text-sm transition-colors hover:bg-primary/[0.03]",
         selected && "bg-primary/[0.06]"
       )}
     >
-      <td className="w-10 px-3 py-2">
+      <td className="w-10 px-3 py-2" onClick={(e) => e.stopPropagation()}>
         <Checkbox
           size="sm"
           isSelected={selected}
@@ -93,7 +103,12 @@ function BillRow({
           {bill.billNumber}
         </button>
       </td>
-      <td className="px-3 py-2 font-medium text-default-800">{vendorName}</td>
+      <td className="px-3 py-2 font-medium text-default-800">
+        <div className="flex items-center gap-2">
+          <ContactAvatar name={vendorName} />
+          <span className="truncate">{vendorName}</span>
+        </div>
+      </td>
       <td className="hidden whitespace-nowrap px-3 py-2 text-default-500 md:table-cell">
         {bill.dueDate.toLocaleDateString(dateLocale)}
       </td>
@@ -102,17 +117,28 @@ function BillRow({
           {formatCurrency(bill.grandTotal, bill.currency)}
         </span>
       </td>
+      <td className="whitespace-nowrap px-3 py-2 text-end">
+        <span
+          className={cn(
+            "tabular-nums font-semibold",
+            amountDue > 0 ? "text-danger" : "text-success"
+          )}
+          dir="ltr"
+        >
+          {formatCurrency(amountDue, bill.currency)}
+        </span>
+      </td>
       <td className="px-3 py-2">
         <span
           className={cn(
             "inline-block rounded px-1.5 py-0.5 text-xs font-medium",
-            billStatusColor(bill.status)
+            billStatusClass(bill.status)
           )}
         >
           {t(`bills.status.${bill.status}`)}
         </span>
       </td>
-      <td className="w-12 px-2 py-2">
+      <td className="w-12 px-2 py-2" onClick={(e) => e.stopPropagation()}>
         <Button
           isIconOnly
           size="sm"
@@ -132,10 +158,14 @@ export default function BillsPage() {
   const navigate = useNavigate();
   const { data: bills = [], isLoading } = useBills();
   const { data: contactsRes } = useContactsQuery();
+  const { data: settings } = useBillingSettings();
   const contacts = contactsRes?.data ?? [];
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+
+  const currency =
+    settings?.currencies?.find((c) => c.isDefault)?.code ?? "SAR";
 
   const getVendorName = (vendorId: string) => {
     const contact = contacts.find((c) => c.id === vendorId);
@@ -146,16 +176,33 @@ export default function BillsPage() {
     return vendorId;
   };
 
+  const metrics = useMemo(() => {
+    const outstanding = bills
+      .filter((b) => b.status === "open" || b.status === "overdue")
+      .reduce((sum, b) => sum + getBillAmountDue(b), 0);
+    const overdue = bills
+      .filter((b) => b.status === "overdue")
+      .reduce((sum, b) => sum + getBillAmountDue(b), 0);
+    const paid = bills.reduce((sum, b) => sum + (b.amountPaid ?? 0), 0);
+    const drafts = bills.filter((b) => b.status === "draft").length;
+    return { outstanding, overdue, paid, drafts };
+  }, [bills]);
+
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
-    return bills.filter((b) => {
-      if (statusFilter !== "all" && b.status !== statusFilter) return false;
-      if (!q) return true;
-      return (
-        b.billNumber.toLowerCase().includes(q) ||
-        getVendorName(b.vendorId).toLowerCase().includes(q)
+    return [...bills]
+      .filter((b) => {
+        if (statusFilter !== "all" && b.status !== statusFilter) return false;
+        if (!q) return true;
+        return (
+          b.billNumber.toLowerCase().includes(q) ||
+          getVendorName(b.vendorId).toLowerCase().includes(q)
+        );
+      })
+      .sort(
+        (a, b) =>
+          new Date(b.issueDate).getTime() - new Date(a.issueDate).getTime()
       );
-    });
   }, [bills, search, statusFilter, contacts, t]);
 
   const allSelected =
@@ -188,7 +235,7 @@ export default function BillsPage() {
       return;
     }
 
-    const dateLocale = i18n.language.startsWith("ar") ? "ar-SA" : undefined;
+    const dateLocale = billingDateLocale(i18n.language);
 
     downloadBillsCsv(
       toExport,
@@ -198,6 +245,7 @@ export default function BillsPage() {
         t("bills.columns.vendor"),
         t("bills.columns.due_date"),
         t("bills.columns.amount"),
+        t("bills.columns.amount_due"),
         t("bills.columns.status"),
       ],
       (b) => [
@@ -206,6 +254,7 @@ export default function BillsPage() {
         getVendorName(b.vendorId),
         b.dueDate.toLocaleDateString(dateLocale),
         b.grandTotal,
+        getBillAmountDue(b),
         t(`bills.status.${b.status}`),
       ]
     );
@@ -221,35 +270,61 @@ export default function BillsPage() {
   ];
 
   return (
-    <div className="pb-20 animate-in fade-in duration-300">
-      <nav className="mb-3 flex items-center gap-1 text-sm text-default-500">
-        <Link to="/billing" className="hover:text-primary">
-          {t("module_name")}
-        </Link>
-        <ChevronRight className="h-3.5 w-3.5 rtl:rotate-180" />
-        <span className="font-medium text-default-800">{t("bills.title")}</span>
-      </nav>
+    <div className="animate-in fade-in pb-24 duration-300">
+      <AccountingPageHeader
+        title={t("bills.title")}
+        description={t("bills.description")}
+        breadcrumbItems={[
+          { label: t("module_name"), to: "/billing" },
+          { label: t("bills.title") },
+        ]}
+      />
 
-      <div className="mb-4">
-        <h1 className="text-2xl font-bold tracking-tight text-default-900">
-          {t("bills.title")}
-        </h1>
-        <p className="mt-1 text-sm text-default-500">{t("bills.description")}</p>
-      </div>
+      <AccountingMetricCards
+        items={[
+          {
+            key: "outstanding",
+            label: t("bills.metrics.outstanding"),
+            value: formatCurrency(metrics.outstanding, currency),
+            icon: TrendingUp,
+            className: "text-danger bg-danger/10",
+          },
+          {
+            key: "overdue",
+            label: t("bills.metrics.overdue"),
+            value: formatCurrency(metrics.overdue, currency),
+            icon: AlertCircle,
+            className: "text-danger bg-danger/10",
+          },
+          {
+            key: "paid",
+            label: t("bills.metrics.paid"),
+            value: formatCurrency(metrics.paid, currency),
+            icon: CheckCircle2,
+            className: "text-success bg-success/10",
+          },
+          {
+            key: "drafts",
+            label: t("bills.metrics.drafts"),
+            value: String(metrics.drafts),
+            icon: Clock,
+            className: "text-default-600 bg-default-100",
+          },
+        ]}
+      />
 
-      <div className="overflow-hidden rounded-lg border border-default-200 bg-content1 shadow-sm">
-        <div className="border-b border-default-200 bg-default-50/90">
-          <div className="flex flex-wrap items-center gap-2 px-3 py-2">
+      <AccountingListShell
+        toolbar={
+          <>
             <Button
               size="sm"
-              color="primary"
+              color="danger"
               className="font-semibold"
               startContent={<Plus className="h-4 w-4" />}
               onPress={() => navigate("/billing/bills/new")}
             >
               {t("bills.add")}
             </Button>
-
             <Button
               size="sm"
               variant="flat"
@@ -258,13 +333,11 @@ export default function BillsPage() {
             >
               {t("bills.export")}
             </Button>
-
             <div className="mx-1 hidden h-5 w-px bg-default-200 sm:block" />
-
             <Input
               size="sm"
               variant="flat"
-              className="min-w-[200px] flex-1 max-w-xl"
+              className="min-w-[200px] max-w-xl flex-1"
               placeholder={t("bills.search")}
               value={search}
               onValueChange={setSearch}
@@ -274,7 +347,6 @@ export default function BillsPage() {
                   "bg-white dark:bg-content1 shadow-none border border-default-200",
               }}
             />
-
             <Dropdown>
               <DropdownTrigger>
                 <Button
@@ -299,30 +371,29 @@ export default function BillsPage() {
                 ))}
               </DropdownMenu>
             </Dropdown>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-1.5 border-t border-default-100 px-3 py-1.5">
-            {statusChips.map(({ key, label }) => (
-              <button
-                key={key}
-                type="button"
-                onClick={() => setStatusFilter(key)}
-                className={cn(
-                  "rounded-md px-2.5 py-1 text-xs font-medium transition-colors",
-                  statusFilter === key
-                    ? "bg-primary text-white"
-                    : "bg-white text-default-600 hover:bg-default-100 dark:bg-content1"
-                )}
-              >
-                {label}
-              </button>
-            ))}
-            <span className="ms-auto text-xs text-default-400">
-              {t("bills.billCount", { count: filtered.length })}
+          </>
+        }
+        filterBar={
+          <StatusFilterChips
+            chips={statusChips}
+            active={statusFilter}
+            onChange={setStatusFilter}
+            countLabel={t("bills.billCount", { count: filtered.length })}
+          />
+        }
+        footer={
+          <>
+            <span>
+              {selectedIds.size > 0
+                ? t("bills.selectedCount", { count: selectedIds.size })
+                : t("bills.billCount", { count: filtered.length })}
             </span>
-          </div>
-        </div>
-
+            <span dir="ltr">
+              {filtered.length > 0 ? `1-${filtered.length} / ${filtered.length}` : "0 / 0"}
+            </span>
+          </>
+        }
+      >
         <div className="overflow-x-auto">
           {isLoading ? (
             <div className="flex justify-center py-16">
@@ -333,34 +404,21 @@ export default function BillsPage() {
               {t("bills.empty")}
             </div>
           ) : (
-            <table className="w-full min-w-[760px] border-collapse text-start">
+            <table className="w-full min-w-[880px] border-collapse text-sm">
               <thead>
-                <tr className="border-b border-default-200 bg-default-50/50 text-xs uppercase tracking-wide text-default-500">
+                <tr className="border-b border-default-200 bg-default-50/80 text-xs font-semibold uppercase tracking-wide text-default-500">
                   <th className="w-10 px-3 py-2.5">
-                    <Checkbox
-                      size="sm"
-                      isSelected={allSelected}
-                      onValueChange={toggleAll}
-                    />
+                    <Checkbox size="sm" isSelected={allSelected} onValueChange={toggleAll} />
                   </th>
-                  <th className="px-3 py-2.5 font-semibold">
-                    {t("bills.columns.date")}
-                  </th>
-                  <th className="px-3 py-2.5 font-semibold">
-                    {t("bills.columns.bill_number")}
-                  </th>
-                  <th className="px-3 py-2.5 font-semibold">
-                    {t("bills.columns.vendor")}
-                  </th>
-                  <th className="hidden px-3 py-2.5 font-semibold md:table-cell">
+                  <th className="px-3 py-2.5 text-start">{t("bills.columns.date")}</th>
+                  <th className="px-3 py-2.5 text-start">{t("bills.columns.bill_number")}</th>
+                  <th className="px-3 py-2.5 text-start">{t("bills.columns.vendor")}</th>
+                  <th className="hidden px-3 py-2.5 text-start md:table-cell">
                     {t("bills.columns.due_date")}
                   </th>
-                  <th className="px-3 py-2.5 text-end font-semibold">
-                    {t("bills.columns.amount")}
-                  </th>
-                  <th className="px-3 py-2.5 font-semibold">
-                    {t("bills.columns.status")}
-                  </th>
+                  <th className="px-3 py-2.5 text-end">{t("bills.columns.amount")}</th>
+                  <th className="px-3 py-2.5 text-end">{t("bills.columns.amount_due")}</th>
+                  <th className="px-3 py-2.5 text-start">{t("bills.columns.status")}</th>
                   <th className="w-12 px-2 py-2.5" />
                 </tr>
               </thead>
@@ -373,6 +431,7 @@ export default function BillsPage() {
                     onToggle={() => bill.id && toggleOne(bill.id)}
                     onView={() => navigate(`/billing/bills/${bill.id}`)}
                     vendorName={getVendorName(bill.vendorId)}
+                    amountDue={getBillAmountDue(bill)}
                     t={t}
                     locale={i18n.language}
                   />
@@ -381,16 +440,7 @@ export default function BillsPage() {
             </table>
           )}
         </div>
-
-        <div className="flex items-center justify-between border-t border-default-200 bg-default-50/50 px-4 py-2 text-xs text-default-500">
-          <span>
-            {selectedIds.size > 0
-              ? t("bills.selectedCount", { count: selectedIds.size })
-              : t("bills.billCount", { count: filtered.length })}
-          </span>
-          <span>1 / 1</span>
-        </div>
-      </div>
+      </AccountingListShell>
 
       <BillingDocumentGuide variant="bill" className="mt-4" />
     </div>

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Button, Input, Spinner } from "@heroui/react";
 import {
   Building2,
@@ -8,12 +8,12 @@ import {
   ShieldAlert,
   Wallet,
 } from "lucide-react";
-import { useForm, useFieldArray } from "react-hook-form";
+import { useForm, useFieldArray, type FieldErrors } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import { billingSettingsSchema } from "../schemas/settings";
+import { createBillingSettingsSchema } from "../schemas/settings";
 import { useSeedBillingDataMutation } from "../hooks/use-seed-billing";
 import {
   useBillingSettings,
@@ -21,7 +21,15 @@ import {
 } from "../hooks/use-billing-settings";
 import { TaxRatesEditor } from "../components/TaxRatesEditor";
 import { normalizeTaxesForSave } from "../utils/tax-utils";
-import { ReportPageHeader } from "../components/report-ui";
+import { AccountingPageHeader } from "../components/accounting-ui";
+import { ZatcaComplianceBanner } from "../components/DaftraWorkflowGuide";
+import { DEFAULT_TAXES } from "../data/product-defaults";
+import type { BillingSettings } from "../schemas/settings";
+import {
+  normalizeBillingSettingsFromFirestore,
+  prepareBillingSettingsForSave,
+} from "../utils/settings-payload";
+import { useCompany } from "@/features/companies/context/company-context";
 
 type SettingsTab = "general" | "financial" | "advanced";
 
@@ -39,6 +47,24 @@ const inputClassNames = {
   inputWrapper:
     "bg-white dark:bg-content1 shadow-none border border-default-200",
 };
+
+function normalizeSettingsForForm(settings: BillingSettings): BillingSettings {
+  return normalizeBillingSettingsFromFirestore(settings);
+}
+
+function firstFormError(errors: FieldErrors): string | undefined {
+  for (const value of Object.values(errors)) {
+    if (!value) continue;
+    if (typeof value === "object" && "message" in value && value.message) {
+      return String(value.message);
+    }
+    if (typeof value === "object") {
+      const nested = firstFormError(value as FieldErrors);
+      if (nested) return nested;
+    }
+  }
+  return undefined;
+}
 
 function SettingsSection({
   title,
@@ -67,8 +93,24 @@ export default function SettingsPage() {
   const { t: tc } = useTranslation("common");
   const [activeTab, setActiveTab] = useState<SettingsTab>("general");
   const seedMutation = useSeedBillingDataMutation();
+  const { companyId } = useCompany();
   const { data: settings, isLoading } = useBillingSettings();
   const updateSettings = useUpdateBillingSettingsMutation();
+
+  const settingsSchema = useMemo(
+    () =>
+      createBillingSettingsSchema({
+        companyNameRequired: t("settings.validation.company_name"),
+        addressRequired: t("settings.validation.address"),
+        invalidEmail: t("settings.validation.email"),
+        invalidUrl: t("settings.validation.url"),
+        taxNameRequired: t("settings.validation.tax_name"),
+        currencyRequired: t("settings.validation.currency"),
+        sequenceNumberMin: t("settings.validation.next_number"),
+        sequencePaddingMin: t("settings.validation.padding"),
+      }),
+    [t]
+  );
 
   const {
     register,
@@ -79,7 +121,7 @@ export default function SettingsPage() {
     setValue,
     formState: { errors, isSubmitting, isDirty },
   } = useForm<any>({
-    resolver: zodResolver(billingSettingsSchema),
+    resolver: zodResolver(settingsSchema),
     defaultValues: {
       companyProfile: {
         name: "",
@@ -100,10 +142,13 @@ export default function SettingsPage() {
   });
 
   useEffect(() => {
-    if (settings) {
-      reset(settings);
+    // Avoid wiping in-progress edits when React Query refetches in the background.
+    if (settings && !isDirty) {
+      reset(normalizeSettingsForForm(settings));
     }
-  }, [settings, reset]);
+  }, [settings, reset, isDirty]);
+
+  const watchedTaxNumber = watch("companyProfile.taxNumber");
 
   const { fields: taxFields, append: appendTax, remove: removeTax } = useFieldArray({
     control,
@@ -118,16 +163,42 @@ export default function SettingsPage() {
     "0"
   )}`;
 
-  const onSubmit = async (data: any) => {
+  const onSubmit = async (data: BillingSettings) => {
+    if (!companyId) {
+      toast.error(t("settings.save_no_company"));
+      return;
+    }
     try {
-      const payload = {
+      const payload = prepareBillingSettingsForSave({
         ...data,
-        taxes: normalizeTaxesForSave(data.taxes ?? []),
-      };
-      await updateSettings.mutateAsync(payload);
+        taxes: normalizeTaxesForSave(data.taxes ?? DEFAULT_TAXES),
+      });
+      const saved = await updateSettings.mutateAsync(payload);
+      reset(
+        normalizeSettingsForForm({
+          ...payload,
+          ...saved,
+        })
+      );
       toast.success(t("settings.saved_successfully"));
-    } catch {
-      toast.error(tc("errors.somethingWentWrong"));
+    } catch (err) {
+      console.error("Failed to save billing settings", err);
+      toast.error(
+        err instanceof Error && err.message
+          ? err.message
+          : t("settings.save_failed")
+      );
+    }
+  };
+
+  const onInvalid = (formErrors: FieldErrors) => {
+    console.warn("Billing settings validation failed", formErrors);
+    const message = firstFormError(formErrors);
+    toast.error(message ?? t("settings.validation_failed"));
+    if (formErrors.companyProfile || formErrors.invoiceSequence) {
+      setActiveTab("general");
+    } else if (formErrors.taxes) {
+      setActiveTab("financial");
     }
   };
 
@@ -141,12 +212,21 @@ export default function SettingsPage() {
 
   return (
     <div className="animate-in fade-in pb-24 duration-300">
-      <ReportPageHeader
+      <AccountingPageHeader
         title={t("settings.title")}
         description={t("settings.subtitle")}
+        breadcrumbItems={[
+          { label: t("module_name"), to: "/billing" },
+          { label: t("settings.title") },
+        ]}
       />
 
-      <form onSubmit={handleSubmit(onSubmit)}>
+      <ZatcaComplianceBanner
+        taxNumber={watchedTaxNumber || settings?.companyProfile?.taxNumber}
+        className="mb-5"
+      />
+
+      <form onSubmit={handleSubmit(onSubmit, onInvalid)}>
         <div className="overflow-hidden rounded-lg border border-default-200 bg-content1 shadow-sm">
           <div className="flex flex-wrap items-center gap-2 border-b border-default-200 bg-default-50/90 px-3 py-2">
             <div className="flex min-w-0 flex-1 gap-1 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
@@ -201,9 +281,11 @@ export default function SettingsPage() {
                       size="sm"
                       label={t("settings.tax_number")}
                       placeholder={t("settings.placeholders.tax_number")}
+                      description={t("settings.tax_number_hint")}
                       {...register("companyProfile.taxNumber")}
                       variant="flat"
                       classNames={inputClassNames}
+                      dir="ltr"
                     />
                   </div>
                   <Input
@@ -261,6 +343,10 @@ export default function SettingsPage() {
                       {...register("invoiceSequence.nextNumber", {
                         valueAsNumber: true,
                       })}
+                      isInvalid={!!(errors?.invoiceSequence as any)?.nextNumber}
+                      errorMessage={
+                        (errors?.invoiceSequence as any)?.nextNumber?.message
+                      }
                       variant="flat"
                       classNames={inputClassNames}
                       dir="ltr"
@@ -273,6 +359,10 @@ export default function SettingsPage() {
                       {...register("invoiceSequence.padding", {
                         valueAsNumber: true,
                       })}
+                      isInvalid={!!(errors?.invoiceSequence as any)?.padding}
+                      errorMessage={
+                        (errors?.invoiceSequence as any)?.padding?.message
+                      }
                       variant="flat"
                       classNames={inputClassNames}
                       dir="ltr"

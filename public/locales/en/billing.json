@@ -1,14 +1,110 @@
 {
-  "module_name": "Billing",
+  "module_name": "Accounting",
   "nav": {
-    "dashboard": "Dashboard",
-    "reports": "Reports",
-    "invoices": "Invoices",
-    "bills": "Bills",
+    "home": "Accounting",
+    "overview": "Overview",
+    "dashboard": "Overview",
+    "reports": "Financial Reports",
+    "invoices": "Customer Invoices",
+    "bills": "Vendor Bills",
     "products": "Products & Services",
     "accounts": "Chart of Accounts",
     "journals": "Manual Journals",
     "settings": "Settings"
+  },
+  "landing": {
+    "title": "Accounting",
+    "subtitle": "Manage invoices, vendor bills, journals, and financial reports — like Odoo and Daftra in one place.",
+    "apps_title": "Applications",
+    "apps_hint": "Choose a module to get started",
+    "footer": "D-Arrow Business — Accounting Module",
+    "apps": {
+      "invoices": {
+        "title": "Customer Invoices",
+        "desc": "Issue sales invoices and track customer payments"
+      },
+      "bills": {
+        "title": "Vendor Bills",
+        "desc": "Record purchase invoices and accounts payable"
+      },
+      "reports": {
+        "title": "Financial Reports",
+        "desc": "P&L, balance sheet, trial balance, and aging"
+      },
+      "overview": {
+        "title": "Overview Dashboard",
+        "desc": "Charts, KPIs, and recent activity"
+      },
+      "products": {
+        "title": "Products & Services",
+        "desc": "Catalog, prices, and tax rates"
+      },
+      "accounts": {
+        "title": "Chart of Accounts",
+        "desc": "Assets, liabilities, income, and expenses"
+      },
+      "journals": {
+        "title": "Journal Entries",
+        "desc": "Manual and automatic accounting entries"
+      },
+      "settings": {
+        "title": "Settings",
+        "desc": "Company profile, taxes, and invoice numbering"
+      }
+    }
+  },
+  "daftra": {
+    "landing": {
+      "subtitle": "Complete accounting like Daftra — sales invoices, vendor bills, journals, ZATCA QR, and financial reports in one hub."
+    },
+    "quick": {
+      "new_invoice": "New Sales Invoice",
+      "new_bill": "New Vendor Bill",
+      "quotations": "Quotations",
+      "reports": "Financial Reports"
+    },
+    "sections": {
+      "sales": "Sales",
+      "sales_desc": "Customer invoices, quotations, and products",
+      "purchases": "Purchases",
+      "purchases_desc": "Vendor bills and accounts payable",
+      "accounting": "Accounting",
+      "accounting_desc": "Chart of accounts, journal entries, and settings",
+      "reports": "Reports & Analytics",
+      "reports_desc": "Financial statements and dashboard overview"
+    },
+    "apps": {
+      "quotations": {
+        "title": "Quotations",
+        "desc": "Create quotes and convert to invoices"
+      }
+    },
+    "zatca": {
+      "enabled": "ZATCA Phase 1 — QR enabled",
+      "enabled_desc": "Tax invoices include a ZATCA QR code (VAT: {{taxNumber}})",
+      "disabled": "ZATCA QR not configured",
+      "disabled_desc": "Add your 15-digit VAT number in settings to enable ZATCA QR on invoices",
+      "setup": "Configure VAT number",
+      "view_settings": "View settings",
+      "badge": "ZATCA"
+    },
+    "guide": {
+      "title": "How it works (Daftra-style workflow)",
+      "subtitle": "Two main cycles — sales and purchases — with automatic journal entries",
+      "dismiss": "Dismiss guide",
+      "sales_title": "Sales cycle",
+      "sales_step1": "Create a quotation in CRM (optional)",
+      "sales_step2": "Issue a sales invoice to the customer",
+      "sales_step3": "Record customer payment — journal entry posts automatically",
+      "sales_step4": "ZATCA QR appears on tax invoices when VAT number is set",
+      "purchase_title": "Purchase cycle",
+      "purchase_step1": "Record a vendor bill with expense accounts",
+      "purchase_step2": "Journal entry posts to accounts payable automatically",
+      "purchase_step3": "Track outstanding payables in AP aging report",
+      "purchase_step4": "Record vendor payment when paying — journal entry posts automatically",
+      "footer": "Configure company profile, tax rates, and invoice numbering in",
+      "settings_link": "Accounting Settings"
+    }
   },
   "dashboard": {
     "description": "Overview of your financial and invoicing status.",
@@ -31,7 +127,7 @@
     "view_reports": "Financial Reports"
   },
   "settings": {
-    "title": "Billing Settings",
+    "title": "Accounting Settings",
     "subtitle": "Manage company profile and billing preferences",
     "tab_general": "General",
     "tab_financial": "Financial",
@@ -42,14 +138,28 @@
     "next_number": "Next Number",
     "padding": "Number Padding",
     "saved_successfully": "Settings saved successfully",
+    "save_failed": "Could not save settings — check your connection and try again",
+    "save_no_company": "Could not save — no company selected",
     "company_name": "Company Name",
     "tax_number": "Tax Number (VAT)",
+    "tax_number_hint": "15 digits to enable ZATCA QR — you can save without it",
+    "validation_failed": "Could not save — check required fields",
+    "validation": {
+      "company_name": "Company name is required (at least 2 characters)",
+      "address": "Address is required",
+      "email": "Invalid email address",
+      "url": "Invalid URL",
+      "tax_name": "Tax name is required",
+      "currency": "At least one currency is required",
+      "next_number": "Next number must be at least 1",
+      "padding": "Number padding must be at least 1"
+    },
     "address": "Address",
     "email": "Email",
     "phone": "Phone Number",
     "placeholders": {
       "company_name": "e.g. Acme Corp",
-      "tax_number": "e.g. 1234567890",
+      "tax_number": "e.g. 300000000000003 (15 digits)",
       "address": "Full business address",
       "email": "billing@example.com",
       "phone": "+1 234 567 8900",
@@ -275,7 +385,7 @@
     }
   },
   "invoices": {
-    "title": "Invoices",
+    "title": "Customer Invoices",
     "description": "Sales invoices you issue to customers — they owe you (accounts receivable).",
     "add": "New Invoice",
     "view": "View invoice",
@@ -309,7 +419,8 @@
       "invoice_number": "Invoice #",
       "customer": "Customer",
       "due_date": "Due Date",
-      "amount": "Amount",
+      "amount": "Total",
+      "amount_due": "Amount Due",
       "status": "Status",
       "actions": "Actions"
     },
@@ -350,6 +461,15 @@
       "loading": "Loading invoice..."
     },
     "detail": {
+      "loading": "Loading invoice...",
+      "document_title": "Invoice",
+      "vat_number": "VAT",
+      "line_discount": "Discount",
+      "download_pdf": "Download PDF",
+      "print": "Print",
+      "edit_invoice": "Edit Invoice",
+      "email_subject": "Invoice {{number}}",
+      "email_body": "Please find invoice {{number}} for {{amount}}.",
       "issue_date": "Issue Date",
       "due_date": "Due Date",
       "record_payment": "Record Payment",
@@ -377,7 +497,9 @@
   },
   "payments": {
     "record_title": "Record Payment",
-    "due": "due",
+    "record_vendor_title": "Record Vendor Payment",
+    "due": "Amount due",
+    "amount_due_label": "Amount due",
     "amount": "Amount",
     "date": "Payment Date",
     "method": "Payment Method",
@@ -386,6 +508,7 @@
     "record": "Record Payment",
     "recorded": "Payment recorded",
     "failed": "Failed to record payment",
+    "exceeds_due": "Amount exceeds the balance due",
     "history": "Payment History",
     "methods": {
       "bank_transfer": "Bank transfer",
@@ -397,7 +520,10 @@
   },
   "actions": {
     "edit": "Edit",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "download_pdf": "Download PDF",
+    "print": "Print",
+    "back": "Back"
   },
   "bills": {
     "title": "Vendor Bills",
@@ -423,12 +549,19 @@
       "overdue": "Overdue",
       "cancelled": "Cancelled"
     },
+    "metrics": {
+      "outstanding": "Accounts Payable",
+      "overdue": "Overdue Bills",
+      "paid": "Total Paid",
+      "drafts": "Draft Bills"
+    },
     "columns": {
       "date": "Date",
       "bill_number": "Bill #",
       "vendor": "Vendor",
       "due_date": "Due Date",
-      "amount": "Amount",
+      "amount": "Total",
+      "amount_due": "Amount Due",
       "status": "Status",
       "actions": "Actions"
     },
@@ -460,7 +593,7 @@
     },
     "detail": {
       "not_found": "Bill not found",
-      "loading": "Loading bill...",
+      "loading": "Loading vendor bill...",
       "edit": "Edit",
       "vendor": "Vendor",
       "due_date": "Due Date",
@@ -474,7 +607,10 @@
       "subtotal": "Subtotal",
       "total_tax": "Tax",
       "total": "Total",
-      "notes": "Notes"
+      "notes": "Notes",
+      "record_payment": "Record Payment",
+      "paid": "Paid",
+      "balance_due": "Balance Due"
     }
   },
   "document_guide": {

@@ -42,6 +42,7 @@ import { HomePage } from "@/features/marketing/pages/home-page";
 
 // Billing Imports
 import { BillingLayout } from "@/features/billing/components/BillingLayout";
+import AccountingLandingPage from "@/features/billing/pages/AccountingLandingPage";
 import BillingDashboardPage from "@/features/billing/pages/BillingDashboardPage";
 import SettingsPage from "@/features/billing/pages/SettingsPage";
 import ProductsPage from "@/features/billing/pages/ProductsPage";
@@ -149,7 +150,8 @@ export const router = createBrowserRouter([
             path: "billing",
             element: <BillingLayout />,
             children: [
-              { index: true, element: <BillingDashboardPage /> },
+              { index: true, element: <AccountingLandingPage /> },
+              { path: "overview", element: <BillingDashboardPage /> },
               { path: "reports", element: <ReportsPage /> },
               { path: "invoices", element: <InvoicesPage /> },
               { path: "invoices/new", element: <CreateInvoicePage /> },

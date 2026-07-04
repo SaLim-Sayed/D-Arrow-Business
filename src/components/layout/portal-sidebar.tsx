@@ -122,29 +122,31 @@ export function PortalSidebar({ portal }: PortalSidebarProps) {
                   className={({ isActive }) =>
                     cn(
                       "group flex items-center gap-3 rounded-2xl px-4 py-3.5 text-sm font-medium transition-all duration-300",
-                      "hover:bg-default-100/80 hover:scale-[1.02] active:scale-[0.98]",
+                      "active:scale-[0.98]",
                       isActive
-                        ? "bg-primary text-secondary shadow-glow opacity-100"
-                        : "text-default-500 hover:bg-default-100",
+                        ? "bg-primary text-primary-foreground shadow-sm hover:bg-primary/90 hover:scale-[1.02]"
+                        : "text-default-600 hover:bg-default-100 hover:text-default-900 hover:scale-[1.02]",
                       sidebarCollapsed && "justify-center px-0"
                     )
                   }
                 >
                   {({ isActive }) => (
                     <>
-                      <div
+                      <Icon
                         className={cn(
-                          "transition-all duration-300 group-hover:scale-110",
-                          isActive && "scale-110 text-white"
+                          "h-5 w-5 shrink-0 transition-all duration-300 group-hover:scale-110",
+                          isActive
+                            ? "text-primary-foreground"
+                            : "text-default-500 group-hover:text-default-900"
                         )}
-                      >
-                        <Icon className="h-5 w-5" />
-                      </div>
+                      />
                       {!sidebarCollapsed && (
                         <span
                           className={cn(
                             "truncate font-bold tracking-tight",
-                            isActive ? "text-white" : "text-default-700"
+                            isActive
+                              ? "text-primary-foreground"
+                              : "text-default-700 group-hover:text-default-900"
                           )}
                         >
                           {label}

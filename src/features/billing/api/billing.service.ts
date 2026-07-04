@@ -14,7 +14,7 @@ import {
 import { db } from "@/lib/firebase";
 import type { ApiResponse } from "@/types/api.types";
 import { withLogging } from "@/lib/service-utils";
-import { mapDocWithTimestamps, stripUndefined } from "@/features/crm/utils/firestore-mappers";
+import { mapDocWithTimestamps, stripUndefined, deepStripUndefined } from "@/features/crm/utils/firestore-mappers";
 
 // Import Schemas
 import type { Invoice, CreateInvoiceDTO, UpdateInvoiceDTO } from "../schemas/invoice";
@@ -25,6 +25,7 @@ import type { Product, CreateProductDTO, UpdateProductDTO, ProductCategory, Prod
 import type { Payment, CreatePaymentDTO } from "../schemas/payment";
 import type { BillingSettings } from "../schemas/settings";
 import { DEFAULT_TAXES } from "../data/product-defaults";
+import { normalizeBillingSettingsFromFirestore } from "../utils/settings-payload";
 
 // Import Generic Document System
 import { GenericDocumentService } from "./generic-document.service";
@@ -182,7 +183,7 @@ export const BillingService = {
         if (!docSnap.exists()) {
           // Return some defaults if not set
           return {
-            data: {
+            data: normalizeBillingSettingsFromFirestore({
               companyProfile: { name: "", address: "", email: "" },
               currencies: [{ code: "USD", symbol: "$", name: "US Dollar", isDefault: true }],
               taxes: DEFAULT_TAXES,
@@ -191,16 +192,16 @@ export const BillingService = {
               quotationSequence: { prefix: "QUO-", nextNumber: 1, padding: 4 },
               estimateSequence: { prefix: "EST-", nextNumber: 1, padding: 4 },
               proposalSequence: { prefix: "PRP-", nextNumber: 1, padding: 4 },
-            } as BillingSettings,
+            } as BillingSettings),
             message: "Defaults returned"
           };
         }
         const data = docSnap.data() as BillingSettings;
         return {
-          data: {
+          data: normalizeBillingSettingsFromFirestore({
             ...data,
             taxes: data.taxes?.length ? data.taxes : DEFAULT_TAXES,
-          },
+          }),
           message: "Success",
         };
       })());
@@ -208,13 +209,19 @@ export const BillingService = {
     async update(companyId: string, data: Partial<BillingSettings>): Promise<ApiResponse<BillingSettings>> {
       return withLogging("BillingSettingsService", "update", (async () => {
         const docRef = doc(db, "companies", companyId, "settings", "billing");
-        const clean = stripUndefined({ ...data, updatedAt: serverTimestamp() } as Record<string, unknown>);
-        // Use setDoc with merge: true to avoid overwriting unrelated settings
+        const normalized = normalizeBillingSettingsFromFirestore({
+          ...(await BillingService.settings.get(companyId)).data,
+          ...data,
+        } as BillingSettings);
+        const clean = deepStripUndefined({
+          ...normalized,
+          updatedAt: serverTimestamp(),
+        } as Record<string, unknown>);
         const { setDoc } = await import("firebase/firestore");
         await setDoc(docRef, clean, { merge: true });
         const updated = await getDoc(docRef);
         return {
-          data: updated.data() as BillingSettings,
+          data: normalizeBillingSettingsFromFirestore(updated.data() as BillingSettings),
           message: "Updated successfully",
         };
       })());

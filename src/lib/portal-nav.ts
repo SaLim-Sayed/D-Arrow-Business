@@ -19,6 +19,7 @@ import {
   FileSpreadsheet,
   ReceiptText,
   PieChart,
+  LayoutGrid,
   type LucideIcon,
 } from "lucide-react";
 
@@ -55,10 +56,11 @@ export const PEOPLE_NAV: PortalNavItem[] = [
 ];
 
 export const BILLING_NAV: PortalNavItem[] = [
-  { labelKey: "nav.dashboard", path: "/billing", icon: LayoutDashboard, end: true, namespace: "billing" },
-  { labelKey: "nav.reports", path: "/billing/reports", icon: PieChart, namespace: "billing" },
+  { labelKey: "nav.home", path: "/billing", icon: LayoutGrid, end: true, namespace: "billing" },
+  { labelKey: "nav.overview", path: "/billing/overview", icon: LayoutDashboard, namespace: "billing" },
   { labelKey: "nav.invoices", path: "/billing/invoices", icon: FileSpreadsheet, namespace: "billing" },
   { labelKey: "nav.bills", path: "/billing/bills", icon: ReceiptText, namespace: "billing" },
+  { labelKey: "nav.reports", path: "/billing/reports", icon: PieChart, namespace: "billing" },
   { labelKey: "nav.products", path: "/billing/products", icon: Package, namespace: "billing" },
   { labelKey: "nav.journals", path: "/billing/journals", icon: BookA, namespace: "billing" },
   { labelKey: "nav.accounts", path: "/billing/accounts", icon: BookCopy, namespace: "billing" },

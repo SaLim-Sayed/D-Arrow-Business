@@ -269,6 +269,53 @@ export function buildPaymentJournalEntry(
   };
 }
 
+export function buildVendorPaymentJournalEntry(
+  payment: Payment,
+  bill: Bill,
+  accounts: Account[]
+): CreateJournalEntryDTO {
+  const ap = requireAccount(accounts, "accounts_payable", "2000");
+  const bank =
+    findAccountBySubType(accounts, "bank") ??
+    findAccountBySubType(accounts, "cash") ??
+    requireAccount(accounts, "cash", "1000");
+
+  const lines: JournalLine[] = [
+    {
+      id: lineId(),
+      accountId: ap.id!,
+      debit: payment.amount,
+      credit: 0,
+      taxAmount: 0,
+      description: `Payment ${payment.reference ?? bill.billNumber}`,
+      partnerId: bill.vendorId,
+    },
+    {
+      id: lineId(),
+      accountId: bank.id!,
+      debit: 0,
+      credit: payment.amount,
+      taxAmount: 0,
+      description: `Payment ${bill.billNumber}`,
+      partnerId: bill.vendorId,
+    },
+  ];
+
+  return {
+    journalNumber: `JE-VPAY-${bill.billNumber}-${Date.now()}`,
+    date: payment.date,
+    reference: payment.reference ?? bill.billNumber,
+    notes: `Vendor payment for ${bill.billNumber}`,
+    sourceType: "payment",
+    sourceId: payment.id,
+    totalDebit: payment.amount,
+    totalCredit: payment.amount,
+    currency: payment.currency,
+    status: "posted",
+    lines,
+  };
+}
+
 /**
  * Build journal entry for Sales Order confirmation
  * In Odoo, sales orders don't typically create journal entries until invoiced,

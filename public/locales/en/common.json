@@ -46,11 +46,11 @@
       "denied": "You do not have access to the People portal."
     },
     "billing": {
-      "title": "Billing & Invoices",
-      "short": "Billing",
-      "description": "Products, invoices, payments, and settings",
+      "title": "Accounting",
+      "short": "Accounting",
+      "description": "Invoices, bills, journals, and financial reports",
       "stat": "{{count}} unpaid invoices",
-      "denied": "You do not have access to the Billing portal."
+      "denied": "You do not have access to the Accounting portal."
     },
     "noPortals": "No portals are assigned to your account. Contact your super admin."
   },

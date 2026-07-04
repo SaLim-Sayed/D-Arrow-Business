@@ -16,8 +16,13 @@ import { toast } from "sonner";
 import { AppDatePicker } from "@/components/shared/app-date-picker";
 import { parseDate } from "@internationalized/date";
 import type { Invoice } from "../schemas/invoice";
-import { useRecordPaymentMutation } from "../hooks/use-payments";
+import type { Bill } from "../schemas/bill";
+import {
+  useRecordPaymentMutation,
+  useRecordVendorPaymentMutation,
+} from "../hooks/use-payments";
 import { getInvoiceAmountDue } from "../utils/accounting-engine";
+import { getBillAmountDue } from "../utils/aged-reports";
 import { formatCurrency } from "@/lib/utils";
 
 const PAYMENT_METHODS = [
@@ -39,18 +44,22 @@ interface PaymentFormValues {
 }
 
 interface RecordPaymentModalProps {
-  invoice: Invoice | null;
+  invoice?: Invoice | null;
+  bill?: Bill | null;
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
 export function RecordPaymentModal({
   invoice,
+  bill,
   isOpen,
   onOpenChange,
 }: RecordPaymentModalProps) {
   const { t } = useTranslation("billing");
-  const recordPayment = useRecordPaymentMutation();
+  const recordCustomerPayment = useRecordPaymentMutation();
+  const recordVendorPayment = useRecordVendorPaymentMutation();
+  const isVendor = !!bill;
 
   const {
     register,
@@ -69,40 +78,62 @@ export function RecordPaymentModal({
   });
 
   useEffect(() => {
-    if (invoice && isOpen) {
+    if (!isOpen) return;
+    const amountDue = invoice
+      ? getInvoiceAmountDue(invoice)
+      : bill
+        ? getBillAmountDue(bill)
+        : 0;
+    if (invoice || bill) {
       reset({
-        amount: getInvoiceAmountDue(invoice),
+        amount: amountDue,
         date: new Date(),
         reference: "",
         methodKey: "bank_transfer",
         notes: "",
       });
     }
-  }, [invoice, isOpen, reset]);
+  }, [invoice, bill, isOpen, reset]);
 
   const onSubmit = async (values: PaymentFormValues) => {
-    if (!invoice?.id) return;
+    const paymentPayload = {
+      amount: values.amount,
+      date: values.date,
+      reference: values.reference || undefined,
+      methodName: t(`payments.methods.${values.methodKey}`),
+      notes: values.notes || undefined,
+    };
+
     try {
-      await recordPayment.mutateAsync({
-        invoice,
-        payment: {
-          amount: values.amount,
-          date: values.date,
-          reference: values.reference || undefined,
-          methodName: t(`payments.methods.${values.methodKey}`),
-          notes: values.notes || undefined,
-        },
-      });
+      if (invoice?.id) {
+        await recordCustomerPayment.mutateAsync({ invoice, payment: paymentPayload });
+      } else if (bill?.id) {
+        await recordVendorPayment.mutateAsync({ bill, payment: paymentPayload });
+      } else {
+        return;
+      }
       toast.success(t("payments.recorded"));
       onOpenChange(false);
     } catch (err) {
-      toast.error(
-        err instanceof Error ? err.message : t("payments.failed")
-      );
+      const msg =
+        err instanceof Error && err.message === "Payment exceeds amount due"
+          ? t("payments.exceeds_due")
+          : err instanceof Error
+            ? err.message
+            : t("payments.failed");
+      toast.error(msg);
     }
   };
 
-  const amountDue = invoice ? getInvoiceAmountDue(invoice) : 0;
+  const amountDue = invoice
+    ? getInvoiceAmountDue(invoice)
+    : bill
+      ? getBillAmountDue(bill)
+      : 0;
+  const docNumber = invoice?.invoiceNumber ?? bill?.billNumber;
+  const currency = invoice?.currency ?? bill?.currency ?? "USD";
+  const isPending =
+    recordCustomerPayment.isPending || recordVendorPayment.isPending;
 
   return (
     <Modal isOpen={isOpen} onOpenChange={onOpenChange} size="md">
@@ -110,12 +141,15 @@ export function RecordPaymentModal({
         {(onClose) => (
           <form onSubmit={handleSubmit(onSubmit)}>
             <ModalHeader>
-              {t("payments.record_title")}
-              {invoice && (
+              {isVendor
+                ? t("payments.record_vendor_title")
+                : t("payments.record_title")}
+              {docNumber && (
                 <p className="mt-1 text-sm font-normal text-default-500">
-                  {invoice.invoiceNumber} —{" "}
-                  <span dir="ltr">{formatCurrency(amountDue, invoice.currency)}</span>{" "}
-                  {t("payments.due")}
+                  <span dir="ltr">{docNumber}</span>
+                  {" · "}
+                  {t("payments.amount_due_label")}:{" "}
+                  <span dir="ltr">{formatCurrency(amountDue, currency)}</span>
                 </p>
               )}
             </ModalHeader>
@@ -205,9 +239,9 @@ export function RecordPaymentModal({
                 {t("actions.cancel")}
               </Button>
               <Button
-                color="success"
+                color={isVendor ? "danger" : "success"}
                 type="submit"
-                isLoading={isSubmitting || recordPayment.isPending}
+                isLoading={isSubmitting || isPending}
               >
                 {t("payments.record")}
               </Button>

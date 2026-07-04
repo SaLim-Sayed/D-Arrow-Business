@@ -27,7 +27,9 @@ import {
 import { cn, formatCurrency } from "@/lib/utils";
 import { useInvoices } from "../hooks/use-invoices";
 import { getInvoiceAmountDue } from "../utils/accounting-engine";
-import { ReportPageHeader } from "../components/report-ui";
+import { AccountingPageHeader } from "../components/accounting-ui";
+import { ZatcaComplianceBanner } from "../components/DaftraWorkflowGuide";
+import { useBillingSettings } from "../hooks/use-billing-settings";
 import type { Invoice } from "../schemas/invoice";
 
 const STATUS_COLORS: Record<string, string> = {
@@ -162,6 +164,7 @@ export default function BillingDashboardPage() {
   const { t, i18n } = useTranslation("billing");
   const navigate = useNavigate();
   const { data: invoices = [] } = useInvoices();
+  const { data: settings } = useBillingSettings();
   const locale = i18n.language;
 
   const totalOutstanding = invoices
@@ -240,9 +243,18 @@ export default function BillingDashboardPage() {
 
   return (
     <div className="animate-in fade-in pb-24 duration-300">
-      <ReportPageHeader
-        title={t("nav.dashboard")}
+      <AccountingPageHeader
+        title={t("nav.overview")}
         description={t("dashboard.description")}
+        breadcrumbItems={[
+          { label: t("module_name"), to: "/billing" },
+          { label: t("nav.overview") },
+        ]}
+      />
+
+      <ZatcaComplianceBanner
+        taxNumber={settings?.companyProfile?.taxNumber}
+        className="mb-5"
       />
 
       <div className="mb-4 grid grid-cols-2 gap-2 lg:grid-cols-4">
