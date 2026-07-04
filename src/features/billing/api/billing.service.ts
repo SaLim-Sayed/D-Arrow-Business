@@ -26,6 +26,9 @@ import type { Payment, CreatePaymentDTO } from "../schemas/payment";
 import type { BillingSettings } from "../schemas/settings";
 import { DEFAULT_TAXES } from "../data/product-defaults";
 
+// Import Generic Document System
+import { GenericDocumentService } from "./generic-document.service";
+
 export interface BillingListOptions {
   orderByField?: string;
   orderDirection?: "asc" | "desc";
@@ -118,6 +121,9 @@ export const BillingService = {
   productCategories: createBillingCollectionService<ProductCategory, Partial<ProductCategory>, Partial<ProductCategory>>("product_categories", "ProductCategoryService"),
   productUnits: createBillingCollectionService<ProductUnit, Partial<ProductUnit>, Partial<ProductUnit>>("product_units", "ProductUnitService"),
   payments: createBillingCollectionService<Payment, CreatePaymentDTO, Partial<CreatePaymentDTO>>("payments", "PaymentService"),
+  
+  // Generic Document System
+  documents: GenericDocumentService,
 
   async reserveInvoiceNumber(companyId: string): Promise<string> {
     const settingsRes = await BillingService.settings.get(companyId);
@@ -128,6 +134,21 @@ export const BillingService = {
       invoiceSequence: { ...seq, nextNumber: seq.nextNumber + 1 },
     });
     return invoiceNumber;
+  },
+
+  async reserveDocumentNumber(companyId: string, documentType: "invoice" | "quotation" | "estimate" | "proposal"): Promise<string> {
+    const settingsRes = await BillingService.settings.get(companyId);
+    const sequenceKey = `${documentType}Sequence` as keyof BillingSettings;
+    const seq = settingsRes.data[sequenceKey] as any || { prefix: `${documentType.toUpperCase()}-`, nextNumber: 1, padding: 4 };
+    
+    const { formatSequenceNumber } = await import("../utils/accounting-engine");
+    const documentNumber = formatSequenceNumber(seq);
+    
+    await BillingService.settings.update(companyId, {
+      [sequenceKey]: { ...seq, nextNumber: seq.nextNumber + 1 },
+    } as Partial<BillingSettings>);
+    
+    return documentNumber;
   },
 
   async postJournalWithBalances(
@@ -166,7 +187,10 @@ export const BillingService = {
               currencies: [{ code: "USD", symbol: "$", name: "US Dollar", isDefault: true }],
               taxes: DEFAULT_TAXES,
               paymentMethods: [],
-              invoiceSequence: { prefix: "INV-", nextNumber: 1, padding: 4 }
+              invoiceSequence: { prefix: "INV-", nextNumber: 1, padding: 4 },
+              quotationSequence: { prefix: "QUO-", nextNumber: 1, padding: 4 },
+              estimateSequence: { prefix: "EST-", nextNumber: 1, padding: 4 },
+              proposalSequence: { prefix: "PRP-", nextNumber: 1, padding: 4 },
             } as BillingSettings,
             message: "Defaults returned"
           };

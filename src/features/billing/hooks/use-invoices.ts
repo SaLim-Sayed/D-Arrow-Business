@@ -7,6 +7,7 @@ import {
   buildInvoiceJournalEntry,
   syncInvoiceStatuses,
 } from "../utils/accounting-engine";
+import { createGenericDocumentFromInvoiceData } from "../utils/migrate-to-generic";
 
 async function postInvoiceIfNeeded(
   companyId: string,
@@ -50,9 +51,10 @@ export function useInvoices() {
   });
 }
 
-export function useCreateInvoiceMutation() {
+export function useCreateInvoiceMutation(options?: { useGenericSystem?: boolean }) {
   const queryClient = useQueryClient();
   const { companyId } = useCompany();
+  const useGeneric = options?.useGenericSystem ?? false;
 
   return useMutation({
     mutationFn: async (data: CreateInvoiceDTO) => {
@@ -73,14 +75,27 @@ export function useCreateInvoiceMutation() {
         };
       }
 
+      // Create the invoice in the legacy system
       const res = await BillingService.invoices.create(companyId!, payload);
       const newInvoice = convertTimestampsToDates(res.data) as Invoice;
+
+      // Optionally create in the generic document system as well
+      if (useGeneric && newInvoice.id) {
+        try {
+          const genericDoc = createGenericDocumentFromInvoiceData(newInvoice, "invoice");
+          await BillingService.documents.create(companyId!, genericDoc as any);
+        } catch (error) {
+          console.error("Failed to create generic document:", error);
+          // Don't fail the invoice creation if generic document creation fails
+        }
+      }
 
       await postInvoiceIfNeeded(companyId!, newInvoice, true);
       return newInvoice;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["billing", "invoices"] });
+      queryClient.invalidateQueries({ queryKey: ["billing", "documents"] });
       queryClient.invalidateQueries({ queryKey: ["billing", "journals"] });
       queryClient.invalidateQueries({ queryKey: ["billing", "accounts"] });
       queryClient.invalidateQueries({ queryKey: ["billing", "settings"] });
@@ -103,9 +118,10 @@ export function useInvoice(id?: string) {
   });
 }
 
-export function useUpdateInvoiceMutation() {
+export function useUpdateInvoiceMutation(options?: { useGenericSystem?: boolean }) {
   const queryClient = useQueryClient();
   const { companyId } = useCompany();
+  const useGeneric = options?.useGenericSystem ?? false;
 
   return useMutation({
     mutationFn: async ({ id, data }: { id: string; data: UpdateInvoiceDTO }) => {
@@ -133,6 +149,35 @@ export function useUpdateInvoiceMutation() {
       const res = await BillingService.invoices.update(companyId!, id, patch);
       const updatedInvoice = convertTimestampsToDates(res.data) as Invoice;
 
+      // Optionally update in the generic document system as well
+      if (useGeneric) {
+        try {
+          // Try to find the corresponding generic document
+          const genericDocs = await BillingService.documents.getByEntity(
+            companyId!,
+            "contact",
+            updatedInvoice.customerId,
+            "invoice"
+          );
+          
+          const existingGenericDoc = genericDocs.data.find(
+            doc => doc.documentNumber === updatedInvoice.invoiceNumber
+          );
+          
+          if (existingGenericDoc) {
+            const updatedGenericDoc = createGenericDocumentFromInvoiceData(updatedInvoice, "invoice");
+            await BillingService.documents.update(companyId!, existingGenericDoc.id!, updatedGenericDoc as any);
+          } else {
+            // Create if it doesn't exist
+            const genericDoc = createGenericDocumentFromInvoiceData(updatedInvoice, "invoice");
+            await BillingService.documents.create(companyId!, genericDoc);
+          }
+        } catch (error) {
+          console.error("Failed to update generic document:", error);
+          // Don't fail the invoice update if generic document update fails
+        }
+      }
+
       await postInvoiceIfNeeded(companyId!, updatedInvoice, isPosting);
       return updatedInvoice;
     },
@@ -141,6 +186,7 @@ export function useUpdateInvoiceMutation() {
       queryClient.invalidateQueries({
         queryKey: ["billing", "invoices", variables.id],
       });
+      queryClient.invalidateQueries({ queryKey: ["billing", "documents"] });
       queryClient.invalidateQueries({ queryKey: ["billing", "journals"] });
       queryClient.invalidateQueries({ queryKey: ["billing", "accounts"] });
       queryClient.invalidateQueries({ queryKey: ["billing", "settings"] });

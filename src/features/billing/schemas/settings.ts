@@ -32,11 +32,27 @@ export const paymentMethodSchema = z.object({
   isActive: z.boolean().default(true),
 });
 
-export const invoiceSequenceSchema = z.object({
-  prefix: z.string().default('INV-'),
+export const documentSequenceSchema = z.object({
+  prefix: z.string().default('DOC-'),
   nextNumber: z.number().int().min(1).default(1),
   suffix: z.string().optional(),
   padding: z.number().int().min(1).default(4), // e.g., padding 4 means 0001
+});
+
+export const invoiceSequenceSchema = documentSequenceSchema.extend({
+  prefix: z.string().default('INV-'),
+});
+
+export const quotationSequenceSchema = documentSequenceSchema.extend({
+  prefix: z.string().default('QUO-'),
+});
+
+export const estimateSequenceSchema = documentSequenceSchema.extend({
+  prefix: z.string().default('EST-'),
+});
+
+export const proposalSequenceSchema = documentSequenceSchema.extend({
+  prefix: z.string().default('PRP-'),
 });
 
 export const billingSettingsSchema = z.object({
@@ -45,11 +61,18 @@ export const billingSettingsSchema = z.object({
   taxes: z.array(taxSettingsSchema),
   paymentMethods: z.array(paymentMethodSchema),
   invoiceSequence: invoiceSequenceSchema,
+  quotationSequence: quotationSequenceSchema.optional(),
+  estimateSequence: estimateSequenceSchema.optional(),
+  proposalSequence: proposalSequenceSchema.optional(),
 });
 
 export type CompanyProfile = z.infer<typeof companyProfileSchema>;
 export type Currency = z.infer<typeof currencySchema>;
 export type TaxSettings = z.infer<typeof taxSettingsSchema>;
 export type PaymentMethod = z.infer<typeof paymentMethodSchema>;
+export type DocumentSequence = z.infer<typeof documentSequenceSchema>;
 export type InvoiceSequence = z.infer<typeof invoiceSequenceSchema>;
+export type QuotationSequence = z.infer<typeof quotationSequenceSchema>;
+export type EstimateSequence = z.infer<typeof estimateSequenceSchema>;
+export type ProposalSequence = z.infer<typeof proposalSequenceSchema>;
 export type BillingSettings = z.infer<typeof billingSettingsSchema>;

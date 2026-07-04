@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>تقرير تقدم — وحدة المحاسبة والفوترة</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;600;700&display=swap" rel="stylesheet" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: "Noto Sans Arabic", sans-serif;
+      font-size: 11pt;
+      line-height: 1.7;
+      color: #1a1a1a;
+      background: #fff;
+      padding: 0;
+    }
+    .page {
+      max-width: 210mm;
+      margin: 0 auto;
+      padding: 18mm 16mm;
+    }
+    .header {
+      text-align: center;
+      border-bottom: 3px solid #006fee;
+      padding-bottom: 14px;
+      margin-bottom: 22px;
+    }
+    .header h1 {
+      font-size: 20pt;
+      font-weight: 700;
+      color: #006fee;
+      margin-bottom: 10px;
+    }
+    .meta {
+      display: flex;
+      justify-content: center;
+      gap: 28px;
+      flex-wrap: wrap;
+      font-size: 10pt;
+      color: #52525b;
+    }
+    .meta strong { color: #18181b; }
+    section { margin-bottom: 20px; }
+    h2 {
+      font-size: 13pt;
+      font-weight: 700;
+      color: #006fee;
+      border-right: 4px solid #006fee;
+      padding-right: 10px;
+      margin-bottom: 10px;
+    }
+    h3 {
+      font-size: 11pt;
+      font-weight: 600;
+      color: #27272a;
+      margin: 12px 0 6px;
+    }
+    p { margin-bottom: 8px; text-align: justify; }
+    ul { margin: 6px 0 10px 0; padding-right: 20px; }
+    li { margin-bottom: 4px; }
+    .routes {
+      background: #f4f4f5;
+      border-radius: 8px;
+      padding: 12px 16px;
+      font-size: 10pt;
+      font-family: ui-monospace, monospace;
+      direction: ltr;
+      text-align: left;
+    }
+    .routes div { margin-bottom: 4px; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 10pt;
+      margin: 10px 0;
+    }
+    th, td {
+      border: 1px solid #e4e4e7;
+      padding: 8px 10px;
+      text-align: right;
+    }
+    th {
+      background: #f4f4f5;
+      font-weight: 600;
+      color: #3f3f46;
+    }
+    .priority-high { color: #e11d48; font-weight: 600; }
+    .priority-med { color: #d97706; font-weight: 600; }
+    .priority-low { color: #71717a; }
+    .footer {
+      margin-top: 24px;
+      padding-top: 14px;
+      border-top: 2px solid #e4e4e7;
+      text-align: center;
+      font-size: 9pt;
+      color: #71717a;
+    }
+    .highlight-box {
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      border-radius: 8px;
+      padding: 12px 14px;
+      margin-top: 8px;
+    }
+    @media print {
+      body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .page { padding: 12mm; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header class="header">
+      <h1>تقرير تقدم — وحدة المحاسبة والفوترة</h1>
+      <div class="meta">
+        <span><strong>المشروع:</strong> D-Arrow Business</span>
+        <span><strong>التاريخ:</strong> 24 مايو 2026</span>
+        <span><strong>الغرض:</strong> مشاركة حالة التطوير مع الإدارة</span>
+      </div>
+    </header>
+
+    <section>
+      <h2>1. الملخص التنفيذي</h2>
+      <p>
+        تم بناء وحدة محاسبة وفوترة متكاملة داخل النظام، بأسلوب عملي قريب من أنظمة ERP
+        مثل Odoo. الوحدة تغطي دورة العمل المالية الأساسية: من إعداد الشركة ودليل
+        الحسابات، مروراً بإصدار الفواتير وترحيل القيود، وصولاً إلى التقارير المالية
+        ولوحة المتابعة.
+      </p>
+      <p>
+        الوحدة <strong>جاهزة للاستخدام التشغيلي</strong> في معظم السيناريوهات اليومية،
+        مع بعض التحسينات المقترحة للمرحلة القادمة.
+      </p>
+    </section>
+
+    <section>
+      <h2>2. ما تم إنجازه</h2>
+
+      <h3>أ) البنية المحاسبية</h3>
+      <ul>
+        <li>دليل الحسابات: شجرة حسابات كاملة مع بحث وفلترة وعرض شجري</li>
+        <li>القيود اليومية: قيود يدوية + قيود تلقائية عند العمليات المالية</li>
+        <li>محرك المحاسبة: ترحيل القيود وتحديث الأرصدة تلقائياً</li>
+        <li>ترقيم الفواتير: تسلسل تلقائي قابل للتخصيص (مثال: INV-0001)</li>
+      </ul>
+
+      <h3>ب) فواتير المبيعات (الإيرادات)</h3>
+      <ul>
+        <li>إنشاء وتعديل وعرض فواتير العملاء مع الخصم وضريبة القيمة المضافة</li>
+        <li>حالات: مسودة، مرسلة، مدفوعة، متأخرة، ملغاة</li>
+        <li>تسجيل دفعات العملاء مع قيد محاسبي تلقائي</li>
+        <li>تصدير PDF وإرسال عبر البريد — تحديث تلقائي للمتأخرات</li>
+      </ul>
+
+      <h3>ج) فواتير المشتريات (المصروفات)</h3>
+      <ul>
+        <li>إنشاء وتعديل وعرض فواتير الموردين</li>
+        <li>ربط كل بند بحساب مصروف — ترحيل قيد تلقائي</li>
+        <li>صفحة تفاصيل منظمة لكل فاتورة مورد</li>
+      </ul>
+
+      <h3>د) التقارير المالية</h3>
+      <ul>
+        <li>قائمة الدخل (P&L) — الميزانية العمومية — ميزان المراجعة</li>
+        <li>أعمار الذمم المدينة (AR) والدائنة (AP)</li>
+        <li>تصدير CSV + دليل توضيحي مدمج</li>
+      </ul>
+
+      <h3>هـ) لوحة التحكم والإعدادات</h3>
+      <ul>
+        <li>مؤشرات ورسوم بيانية شهرية وإجراءات سريعة</li>
+        <li>إعدادات الشركة، العملات، الضرائب، طرق الدفع، ترقيم الفواتير</li>
+      </ul>
+
+      <h3>و) التكامل مع باقي النظام</h3>
+      <ul>
+        <li>ربط الفواتير بجهات الاتصال من CRM</li>
+        <li>تحويل عرض السعر إلى فاتورة مبيعات</li>
+        <li>واجهة عربية كاملة مع دلائل توضيحية</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>3. تحسينات تجربة المستخدم</h2>
+      <ul>
+        <li>تصميم موحّد على نمط Odoo</li>
+        <li>دلائل توضيحية للفواتير والتقارير المالية</li>
+        <li>دعم كامل للعربية واتجاه RTL</li>
+        <li>النظام منشور ويعمل على Vercel</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>4. الصفحات المتاحة في النظام</h2>
+      <div class="routes">
+        <div>/billing → لوحة التحكم</div>
+        <div>/billing/invoices → فواتير المبيعات</div>
+        <div>/billing/bills → فواتير المشتريات</div>
+        <div>/billing/products → المنتجات والخدمات</div>
+        <div>/billing/accounts → دليل الحسابات</div>
+        <div>/billing/journals → القيود اليومية</div>
+        <div>/billing/reports → التقارير المالية</div>
+        <div>/billing/settings → الإعدادات</div>
+      </div>
+    </section>
+
+    <section>
+      <h2>5. ما لم يُنجز بعد (المرحلة القادمة)</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>البند</th>
+            <th>الأولوية</th>
+            <th>الملاحظة</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>تسجيل دفعات الموردين</td>
+            <td class="priority-high">عالية</td>
+            <td>متوفر للعملاء فقط حالياً</td>
+          </tr>
+          <tr>
+            <td>دفتر أستاذ لكل حساب</td>
+            <td class="priority-med">متوسطة</td>
+            <td>القيود موجودة، ينقص عرض مفلتر</td>
+          </tr>
+          <tr>
+            <td>تصدير Excel</td>
+            <td class="priority-med">متوسطة</td>
+            <td>CSV متوفر حالياً</td>
+          </tr>
+          <tr>
+            <td>إرسال بريد تلقائي من السيرفر</td>
+            <td class="priority-low">منخفضة</td>
+            <td>mailto يعمل يدوياً</td>
+          </tr>
+          <tr>
+            <td>تحسينات تفاصيل فاتورة المبيعات</td>
+            <td class="priority-low">منخفضة</td>
+            <td>تفاصيل فاتورة المورد أوضح</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>6. القيمة المحققة للأعمال</h2>
+      <ol style="padding-right: 20px;">
+        <li>تقليل العمل اليدوي: القيود تُنشأ تلقائياً عند إصدار الفواتير وتحصيل المدفوعات</li>
+        <li>رؤية مالية فورية: لوحة تحكم وتقارير جاهزة دون جداول خارجية</li>
+        <li>امتثال محاسبي أساسي: دليل حسابات + ميزان مراجعة + قوائم مالية</li>
+        <li>تكامل تشغيلي: من عرض السعر في CRM إلى الفاتورة والتحصيل</li>
+        <li>جاهزية للتوسع: إضافة دفعات الموردين وتقارير إضافية بسهولة</li>
+      </ol>
+    </section>
+
+    <section>
+      <h2>7. التوصية</h2>
+      <div class="highlight-box">
+        <p>الوحدة جاهزة للتجربة التشغيلية مع الفريق المالي أو المحاسب، مع التركيز على:</p>
+        <ul>
+          <li>إصدار فواتير مبيعات وتحصيلها</li>
+          <li>تسجيل فواتير مشتريات</li>
+          <li>مراجعة التقارير الشهرية</li>
+        </ul>
+        <p><strong>الخطوة التالية المقترحة:</strong> إكمال دفعات الموردين ودفتر الأستاذ لإغلاق دورة المحاسبة بالكامل.</p>
+      </div>
+    </section>
+
+    <footer class="footer">
+      تم إعداد هذا التقرير بناءً على حالة التطوير الحالية — D-Arrow Business
+    </footer>
+  </div>
+</body>
+</html>

@@ -4,6 +4,8 @@ import type { Bill } from "../schemas/bill";
 import type { CreateJournalEntryDTO, JournalLine } from "../schemas/journal";
 import type { InvoiceSequence } from "../schemas/settings";
 import type { Payment } from "../schemas/payment";
+import type { SalesOrder } from "../schemas/sales-workflow";
+import type { PurchaseOrder } from "../schemas/purchase-workflow";
 
 function lineId() {
   return `jel_${Math.random().toString(36).slice(2, 11)}`;
@@ -114,14 +116,18 @@ export function buildInvoiceJournalEntry(
       accountId: ar.id!,
       debit: invoice.grandTotal,
       credit: 0,
+      taxAmount: 0,
       description: `Receivable ${invoice.invoiceNumber}`,
+      partnerId: invoice.customerId,
     },
     {
       id: lineId(),
       accountId: revenue.id!,
       debit: 0,
       credit: invoice.subTotal - invoice.totalDiscount,
+      taxAmount: 0,
       description: `Revenue ${invoice.invoiceNumber}`,
+      partnerId: invoice.customerId,
     },
   ];
 
@@ -131,7 +137,9 @@ export function buildInvoiceJournalEntry(
       accountId: tax.id!,
       debit: 0,
       credit: invoice.totalTax,
+      taxAmount: invoice.totalTax,
       description: `Tax ${invoice.invoiceNumber}`,
+      partnerId: invoice.customerId,
     });
   }
 
@@ -148,7 +156,7 @@ export function buildInvoiceJournalEntry(
     totalDebit,
     totalCredit,
     currency: invoice.currency,
-    status: "published",
+    status: "posted",
     lines,
   };
 }
@@ -163,7 +171,9 @@ export function buildBillJournalEntry(
     accountId: item.accountId,
     debit: item.total,
     credit: 0,
+    taxAmount: 0,
     description: `${bill.billNumber} — ${item.description}`,
+    partnerId: bill.vendorId,
   }));
 
   if (bill.totalTax > 0) {
@@ -176,7 +186,9 @@ export function buildBillJournalEntry(
         accountId: taxAsset.id,
         debit: bill.totalTax,
         credit: 0,
+        taxAmount: bill.totalTax,
         description: `Tax ${bill.billNumber}`,
+        partnerId: bill.vendorId,
       });
     }
   }
@@ -187,7 +199,9 @@ export function buildBillJournalEntry(
     accountId: ap.id!,
     debit: 0,
     credit: expenseDebit,
+    taxAmount: 0,
     description: `Payable ${bill.billNumber}`,
+    partnerId: bill.vendorId,
   });
 
   const totalDebit = lines.reduce((s, l) => s + l.debit, 0);
@@ -203,7 +217,7 @@ export function buildBillJournalEntry(
     totalDebit,
     totalCredit,
     currency: bill.currency,
-    status: "published",
+    status: "posted",
     lines,
   };
 }
@@ -225,14 +239,18 @@ export function buildPaymentJournalEntry(
       accountId: bank.id!,
       debit: payment.amount,
       credit: 0,
+      taxAmount: 0,
       description: `Payment ${payment.reference ?? invoice.invoiceNumber}`,
+      partnerId: invoice.customerId,
     },
     {
       id: lineId(),
       accountId: ar.id!,
       debit: 0,
       credit: payment.amount,
+      taxAmount: 0,
       description: `Payment ${invoice.invoiceNumber}`,
+      partnerId: invoice.customerId,
     },
   ];
 
@@ -246,7 +264,135 @@ export function buildPaymentJournalEntry(
     totalDebit: payment.amount,
     totalCredit: payment.amount,
     currency: payment.currency,
-    status: "published",
+    status: "posted",
+    lines,
+  };
+}
+
+/**
+ * Build journal entry for Sales Order confirmation
+ * In Odoo, sales orders don't typically create journal entries until invoiced,
+ * but this can be used for advance payments or deposits
+ */
+export function buildSalesOrderJournalEntry(
+  salesOrder: SalesOrder,
+  accounts: Account[]
+): CreateJournalEntryDTO {
+  const ar = requireAccount(accounts, "accounts_receivable", "1200");
+  const revenue = requireAccount(accounts, "service_revenue", "4100");
+  const tax = requireAccount(accounts, "tax_payable", "2100");
+
+  const lines: JournalLine[] = [
+    {
+      id: lineId(),
+      accountId: ar.id!,
+      debit: salesOrder.grandTotal,
+      credit: 0,
+      taxAmount: 0,
+      description: `Receivable ${salesOrder.orderNumber}`,
+      partnerId: salesOrder.customerId,
+    },
+    {
+      id: lineId(),
+      accountId: revenue.id!,
+      debit: 0,
+      credit: salesOrder.subTotal - salesOrder.totalDiscount,
+      taxAmount: 0,
+      description: `Revenue ${salesOrder.orderNumber}`,
+      partnerId: salesOrder.customerId,
+    },
+  ];
+
+  if (salesOrder.totalTax > 0) {
+    lines.push({
+      id: lineId(),
+      accountId: tax.id!,
+      debit: 0,
+      credit: salesOrder.totalTax,
+      taxAmount: salesOrder.totalTax,
+      description: `Tax ${salesOrder.orderNumber}`,
+      partnerId: salesOrder.customerId,
+    });
+  }
+
+  const totalDebit = lines.reduce((s, l) => s + l.debit, 0);
+  const totalCredit = lines.reduce((s, l) => s + l.credit, 0);
+
+  return {
+    journalNumber: `JE-SO-${salesOrder.orderNumber}`,
+    date: salesOrder.orderDate,
+    reference: salesOrder.orderNumber,
+    notes: `Posted from sales order ${salesOrder.orderNumber}`,
+    sourceType: "manual",
+    sourceId: salesOrder.id,
+    totalDebit,
+    totalCredit,
+    currency: salesOrder.currency,
+    status: "posted",
+    lines,
+  };
+}
+
+/**
+ * Build journal entry for Purchase Order confirmation
+ * Similar to sales orders, purchase orders don't typically create journal entries
+ * until billed, but this can be used for advance payments
+ */
+export function buildPurchaseOrderJournalEntry(
+  purchaseOrder: PurchaseOrder,
+  accounts: Account[]
+): CreateJournalEntryDTO {
+  const ap = requireAccount(accounts, "accounts_payable", "2000");
+  const lines: JournalLine[] = purchaseOrder.items.map((item) => ({
+    id: lineId(),
+    accountId: item.accountId || requireAccount(accounts, "operating_expense", "5400").id!,
+    debit: item.total,
+    credit: 0,
+    taxAmount: 0,
+    description: `${purchaseOrder.orderNumber} — ${item.description}`,
+    partnerId: purchaseOrder.vendorId,
+  }));
+
+  if (purchaseOrder.totalTax > 0) {
+    const taxAsset = findAccountByCode(accounts, "1500") ?? findAccountBySubType(accounts, "current_asset");
+    if (taxAsset?.id) {
+      lines.push({
+        id: lineId(),
+        accountId: taxAsset.id,
+        debit: purchaseOrder.totalTax,
+        credit: 0,
+        taxAmount: purchaseOrder.totalTax,
+        description: `Tax ${purchaseOrder.orderNumber}`,
+        partnerId: purchaseOrder.vendorId,
+      });
+    }
+  }
+
+  const expenseDebit = lines.reduce((s, l) => s + l.debit, 0);
+  lines.push({
+    id: lineId(),
+    accountId: ap.id!,
+    debit: 0,
+    credit: expenseDebit,
+    taxAmount: 0,
+    description: `Payable ${purchaseOrder.orderNumber}`,
+    partnerId: purchaseOrder.vendorId,
+  });
+
+  const totalDebit = lines.reduce((s, l) => s + l.debit, 0);
+  const totalCredit = lines.reduce((s, l) => s + l.credit, 0);
+
+  return {
+    journalNumber: `JE-PO-${purchaseOrder.orderNumber}`,
+    date: purchaseOrder.orderDate,
+    reference: purchaseOrder.orderNumber,
+    notes: `Posted from purchase order ${purchaseOrder.orderNumber}`,
+    sourceType: "manual",
+    sourceId: purchaseOrder.id,
+    totalDebit,
+    totalCredit,
+    currency: purchaseOrder.currency,
+    status: "posted",
     lines,
   };
 }
