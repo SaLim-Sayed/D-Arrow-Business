@@ -2,10 +2,12 @@ import type { Account, AccountSubType } from "../schemas/account";
 import type { Invoice } from "../schemas/invoice";
 import type { Bill } from "../schemas/bill";
 import type { CreateJournalEntryDTO, JournalLine } from "../schemas/journal";
-import type { InvoiceSequence } from "../schemas/settings";
 import type { Payment } from "../schemas/payment";
 import type { SalesOrder } from "../schemas/sales-workflow";
 import type { PurchaseOrder } from "../schemas/purchase-workflow";
+import { formatSequenceNumber } from "./invoice-sequence";
+
+export { formatSequenceNumber };
 
 function lineId() {
   return `jel_${Math.random().toString(36).slice(2, 11)}`;
@@ -37,11 +39,6 @@ export function requireAccount(
     throw new Error(`Missing system account for ${subType}`);
   }
   return account;
-}
-
-export function formatSequenceNumber(seq: InvoiceSequence): string {
-  const padded = String(seq.nextNumber).padStart(seq.padding, "0");
-  return `${seq.prefix}${padded}${seq.suffix ?? ""}`;
 }
 
 export function getInvoiceAmountDue(invoice: Invoice): number {

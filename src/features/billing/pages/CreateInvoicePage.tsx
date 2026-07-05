@@ -25,12 +25,16 @@ import { useBillingSettings } from "../hooks/use-billing-settings";
 import { useCreateInvoiceMutation, useUpdateInvoiceMutation, useInvoice } from "../hooks/use-invoices";
 import { invoiceSchema, type CreateInvoiceDTO } from "../schemas/invoice";
 import { quotationDataToInvoiceForm } from "../utils/accounting-engine";
-import { formatCurrency } from "@/lib/utils";
+import { BillingMoney } from "../components/BillingMoney";
 import { LineTaxRateSelect } from "../components/LineTaxRateSelect";
 import {
   getDefaultTax,
   getTaxRateForProduct,
 } from "../utils/tax-utils";
+import {
+  DEFAULT_BILLING_CURRENCY,
+  getDefaultBillingCurrency,
+} from "../utils/billing-currency";
 
 export default function CreateInvoicePage() {
   const { t } = useTranslation("billing");
@@ -82,7 +86,7 @@ export default function CreateInvoicePage() {
     defaultValues: {
       invoiceNumber: "DRAFT",
       status: "draft",
-      currency: "USD",
+      currency: DEFAULT_BILLING_CURRENCY,
       issueDate: new Date(),
       dueDate: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000),
       items: [{
@@ -135,6 +139,12 @@ export default function CreateInvoicePage() {
   }, [isEditing, existingInvoice, control]);
 
   useEffect(() => {
+    if (!isEditing && !fromQuotation && billingSettings) {
+      setValue("currency", getDefaultBillingCurrency(billingSettings));
+    }
+  }, [billingSettings, fromQuotation, isEditing, setValue]);
+
+  useEffect(() => {
     if (isEditing || fromQuotation || !defaultTax) return;
     const items = watch("items");
     if (
@@ -148,6 +158,7 @@ export default function CreateInvoicePage() {
   }, [defaultTax, fromQuotation, isEditing, setValue, watch]);
 
   const watchItems = watch("items");
+  const currency = watch("currency") ?? DEFAULT_BILLING_CURRENCY;
 
   // Dynamic calculations
   // Dynamic calculations
@@ -385,7 +396,7 @@ export default function CreateInvoicePage() {
                         />
                       </td>
                       <td className="p-4 align-top text-end font-medium text-default-700">
-                        <span dir="ltr">{formatCurrency(lineTotal, "USD")}</span>
+                        <BillingMoney amount={lineTotal} currency={currency} />
                       </td>
                       <td className="p-4 align-top text-end">
                         <Button
@@ -439,24 +450,24 @@ export default function CreateInvoicePage() {
             <CardBody className="p-6 space-y-4">
               <div className="flex justify-between text-sm text-default-600">
                 <span>{t("invoices.create.sub_total")}</span>
-                <span className="font-medium" dir="ltr">{formatCurrency(subTotal, "USD")}</span>
+                <BillingMoney amount={subTotal} currency={currency} className="font-medium" />
               </div>
               {totalDiscount > 0 && (
                 <div className="flex justify-between text-sm text-danger">
                   <span>{t("invoices.create.discount")}</span>
-                  <span dir="ltr">-{formatCurrency(totalDiscount, "USD")}</span>
+                  <BillingMoney amount={-totalDiscount} currency={currency} />
                 </div>
               )}
               {totalTax > 0 && (
                 <div className="flex justify-between text-sm text-default-600">
                   <span>{t("invoices.create.total_tax")}</span>
-                  <span className="font-medium" dir="ltr">{formatCurrency(totalTax, "USD")}</span>
+                  <BillingMoney amount={totalTax} currency={currency} className="font-medium" />
                 </div>
               )}
               <Divider />
               <div className="flex justify-between text-lg font-bold">
                 <span>{t("invoices.create.total")}</span>
-                <span dir="ltr">{formatCurrency(grandTotal, "USD")}</span>
+                <BillingMoney amount={grandTotal} currency={currency} />
               </div>
             </CardBody>
           </Card>

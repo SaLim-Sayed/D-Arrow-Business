@@ -456,6 +456,8 @@
     "noSavedQuotes": "لا توجد عروض محفوظة بعد",
     "editingSaved": "تعديل عرض محفوظ",
     "unsavedDraft": "مسودة جديدة — لم تُحفظ بعد",
+    "convertToInvoice": "تحويل إلى فاتورة",
+    "contactRequiredForInvoice": "اختر جهة اتصال من CRM لإنشاء الفاتورة",
     "pdf": {
       "title": "عرض سعر",
       "date": "التاريخ",

@@ -23,8 +23,11 @@ import {
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
-import { cn, formatCurrency } from "@/lib/utils";
+import { cn } from "@/lib/utils";
+import { BillingMoney } from "../components/BillingMoney";
 import { useInvoices } from "../hooks/use-invoices";
+import { useBillingSettings } from "../hooks/use-billing-settings";
+import { getDefaultBillingCurrency } from "../utils/billing-currency";
 import { useContactsQuery } from "@/features/crm/hooks/use-contacts";
 import { contactDisplayName } from "@/features/crm/utils/contacts-list.utils";
 import type { Invoice } from "../schemas/invoice";
@@ -57,6 +60,8 @@ export default function InvoicesPage() {
   const { data: invoices = [], isLoading } = useInvoices();
   const { data: contactsRes } = useContactsQuery();
   const contacts = contactsRes?.data ?? [];
+  const { data: settings } = useBillingSettings();
+  const currency = getDefaultBillingCurrency(settings);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -179,21 +184,21 @@ export default function InvoicesPage() {
           {
             key: "outstanding",
             label: t("invoices.metrics.outstanding"),
-            value: formatCurrency(metrics.outstanding, "USD"),
+            value: <BillingMoney amount={metrics.outstanding} currency={currency} />,
             icon: TrendingUp,
             className: "text-primary bg-primary/10",
           },
           {
             key: "overdue",
             label: t("invoices.metrics.overdue"),
-            value: formatCurrency(metrics.overdue, "USD"),
+            value: <BillingMoney amount={metrics.overdue} currency={currency} />,
             icon: AlertCircle,
             className: "text-danger bg-danger/10",
           },
           {
             key: "paid",
             label: t("invoices.metrics.paid"),
-            value: formatCurrency(metrics.paid, "USD"),
+            value: <BillingMoney amount={metrics.paid} currency={currency} />,
             icon: CheckCircle2,
             className: "text-success bg-success/10",
           },
@@ -359,20 +364,21 @@ export default function InvoicesPage() {
                         {invoice.dueDate.toLocaleDateString(dateLocale)}
                       </td>
                       <td className="whitespace-nowrap px-3 py-2.5 text-end">
-                        <span className="font-medium tabular-nums text-default-900" dir="ltr">
-                          {formatCurrency(invoice.grandTotal, invoice.currency)}
-                        </span>
+                        <BillingMoney
+                          amount={invoice.grandTotal}
+                          currency={invoice.currency}
+                          className="font-medium text-default-900"
+                        />
                       </td>
                       <td className="whitespace-nowrap px-3 py-2.5 text-end">
-                        <span
+                        <BillingMoney
+                          amount={amountDue}
+                          currency={invoice.currency}
                           className={cn(
-                            "font-semibold tabular-nums",
+                            "font-semibold",
                             amountDue > 0 ? "text-danger" : "text-success"
                           )}
-                          dir="ltr"
-                        >
-                          {formatCurrency(amountDue, invoice.currency)}
-                        </span>
+                        />
                       </td>
                       <td className="px-3 py-2.5">
                         <span

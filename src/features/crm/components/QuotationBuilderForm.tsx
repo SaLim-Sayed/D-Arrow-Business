@@ -425,7 +425,7 @@ export function QuotationBuilderForm() {
 
   const handleConvertToInvoice = () => {
     if (!selectedContactId) {
-      toast.error(t("quotation.contactRequiredForInvoice") || "Select a CRM contact to create an invoice");
+      toast.error(t("quotation.contactRequiredForInvoice"));
       return;
     }
     if (quotationData.items.length === 0) {
@@ -521,7 +521,7 @@ export function QuotationBuilderForm() {
               startContent={<Receipt className="h-4 w-4" />}
               onPress={handleConvertToInvoice}
             >
-              {t("quotation.convertToInvoice") || "Create Invoice"}
+              {t("quotation.convertToInvoice")}
             </Button>
             <Button
               color="primary"

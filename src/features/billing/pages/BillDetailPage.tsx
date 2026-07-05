@@ -8,7 +8,8 @@ import { usePayments } from "../hooks/use-payments";
 import { useContactsQuery } from "@/features/crm/hooks/use-contacts";
 import { contactDisplayName } from "@/features/crm/utils/contacts-list.utils";
 import { useAccounts } from "../hooks/use-accounts";
-import { cn, formatCurrency } from "@/lib/utils";
+import { cn } from "@/lib/utils";
+import { BillingMoney } from "../components/BillingMoney";
 import { getBillAmountDue } from "../utils/aged-reports";
 import { billingDateLocale } from "../utils/locale";
 import type { Bill } from "../schemas/bill";
@@ -144,8 +145,8 @@ export default function BillDetailPage() {
             <p className="text-xs font-semibold uppercase text-default-500">
               {t("bills.detail.amount_due")}
             </p>
-            <p className="mt-1 text-xl font-bold text-danger" dir="ltr">
-              {formatCurrency(amountDue, bill.currency)}
+            <p className="mt-1 text-xl font-bold text-danger">
+              <BillingMoney amount={amountDue} currency={bill.currency} />
             </p>
           </div>
         </div>
@@ -186,14 +187,14 @@ export default function BillDetailPage() {
                   <td className="px-4 py-3 text-end tabular-nums" dir="ltr">
                     {item.quantity}
                   </td>
-                  <td className="px-4 py-3 text-end tabular-nums" dir="ltr">
-                    {formatCurrency(item.unitPrice, bill.currency)}
+                  <td className="px-4 py-3 text-end">
+                    <BillingMoney amount={item.unitPrice} currency={bill.currency} />
                   </td>
                   <td className="hidden px-4 py-3 text-end tabular-nums sm:table-cell" dir="ltr">
                     {item.taxRate > 0 ? `${item.taxRate}%` : "—"}
                   </td>
-                  <td className="px-4 py-3 text-end font-medium tabular-nums" dir="ltr">
-                    {formatCurrency(item.total, bill.currency)}
+                  <td className="px-4 py-3 text-end font-medium">
+                    <BillingMoney amount={item.total} currency={bill.currency} />
                   </td>
                 </tr>
               ))}
@@ -205,38 +206,28 @@ export default function BillDetailPage() {
           <div className="w-full max-w-xs space-y-2 text-sm">
             <div className="flex justify-between gap-4">
               <span className="text-default-500">{t("bills.detail.subtotal")}</span>
-              <span className="tabular-nums font-medium" dir="ltr">
-                {formatCurrency(bill.subTotal, bill.currency)}
-              </span>
+              <BillingMoney amount={bill.subTotal} currency={bill.currency} className="font-medium" />
             </div>
             {bill.totalTax > 0 && (
               <div className="flex justify-between gap-4">
                 <span className="text-default-500">{t("bills.detail.total_tax")}</span>
-                <span className="tabular-nums font-medium" dir="ltr">
-                  {formatCurrency(bill.totalTax, bill.currency)}
-                </span>
+                <BillingMoney amount={bill.totalTax} currency={bill.currency} className="font-medium" />
               </div>
             )}
             <Divider />
             <div className="flex justify-between gap-4 text-base font-bold">
               <span>{t("bills.detail.total")}</span>
-              <span className="tabular-nums" dir="ltr">
-                {formatCurrency(bill.grandTotal, bill.currency)}
-              </span>
+              <BillingMoney amount={bill.grandTotal} currency={bill.currency} />
             </div>
             {(bill.amountPaid ?? 0) > 0 && (
               <>
                 <div className="flex justify-between gap-4 text-sm font-medium text-success">
                   <span>{t("bills.detail.paid")}</span>
-                  <span className="tabular-nums" dir="ltr">
-                    -{formatCurrency(bill.amountPaid ?? 0, bill.currency)}
-                  </span>
+                  <BillingMoney amount={-(bill.amountPaid ?? 0)} currency={bill.currency} />
                 </div>
                 <div className="flex justify-between gap-4 rounded-lg bg-danger/5 px-3 py-2 text-base font-bold text-danger">
                   <span>{t("bills.detail.balance_due")}</span>
-                  <span className="tabular-nums" dir="ltr">
-                    {formatCurrency(amountDue, bill.currency)}
-                  </span>
+                  <BillingMoney amount={amountDue} currency={bill.currency} />
                 </div>
               </>
             )}
@@ -256,9 +247,11 @@ export default function BillDetailPage() {
                     {p.methodName ? ` — ${p.methodName}` : ""}
                     {p.reference ? ` (${p.reference})` : ""}
                   </span>
-                  <span className="font-medium text-danger" dir="ltr">
-                    {formatCurrency(p.amount, p.currency)}
-                  </span>
+                  <BillingMoney
+                    amount={p.amount}
+                    currency={p.currency}
+                    className="font-medium text-danger"
+                  />
                 </div>
               ))}
             </div>

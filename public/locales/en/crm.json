@@ -460,6 +460,8 @@
     "noSavedQuotes": "No saved quotations yet",
     "editingSaved": "Editing saved quotation",
     "unsavedDraft": "New draft — not saved yet",
+    "convertToInvoice": "Convert to Invoice",
+    "contactRequiredForInvoice": "Select a CRM contact to create an invoice",
     "pdf": {
       "title": "Quotation",
       "date": "Date",

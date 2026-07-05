@@ -1,4 +1,5 @@
 import type { BillingSettings, TaxSettings } from "../schemas/settings";
+import { DEFAULT_BILLING_CURRENCY_ENTRY } from "./billing-currency";
 import { DEFAULT_TAXES } from "../data/product-defaults";
 
 function finiteNumber(value: unknown, fallback: number): number {
@@ -53,7 +54,7 @@ export function prepareBillingSettingsForSave(
             name: c.name,
             isDefault: c.isDefault ?? false,
           }))
-        : [{ code: "SAR", symbol: "ر.س", name: "Saudi Riyal", isDefault: true }],
+        : [{ ...DEFAULT_BILLING_CURRENCY_ENTRY }],
     taxes: normalizeTaxes(data.taxes),
     paymentMethods: (data.paymentMethods ?? []).map((m) => ({
       id: m.id,

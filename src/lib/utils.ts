@@ -37,16 +37,16 @@ export function isSarCurrency(currency?: string | null) {
   return code === "SAR" || code === "ريال";
 }
 
-/** Returns a valid ISO 4217 code, defaulting to USD when invalid. */
+/** Returns a valid ISO 4217 code, defaulting to SAR when invalid. */
 export function normalizeCurrencyCode(currency: string | null | undefined): string {
   const code = (currency ?? "").trim().toUpperCase();
-  if (!ISO_CURRENCY_CODE.test(code)) return "USD";
+  if (!ISO_CURRENCY_CODE.test(code)) return "SAR";
 
   try {
     new Intl.NumberFormat(undefined, { style: "currency", currency: code });
     return code;
   } catch {
-    return "USD";
+    return "SAR";
   }
 }
 
@@ -65,7 +65,7 @@ export function formatCurrency(
       minimumFractionDigits: 0,
       ...options,
     });
-    return currentLang.startsWith("ar") ? `${formatted} ر.س` : `${formatted} SAR`;
+    return `${formatted} SAR`;
   }
 
   const absFormatted = new Intl.NumberFormat(

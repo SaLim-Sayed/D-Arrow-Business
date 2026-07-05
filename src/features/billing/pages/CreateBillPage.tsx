@@ -27,10 +27,14 @@ import {
   useBill,
 } from "../hooks/use-bills";
 import { billSchema, type CreateBillDTO } from "../schemas/bill";
-import { formatCurrency } from "@/lib/utils";
+import { BillingMoney } from "../components/BillingMoney";
 import { useBillingSettings } from "../hooks/use-billing-settings";
 import { LineTaxRateSelect } from "../components/LineTaxRateSelect";
 import { getDefaultTax } from "../utils/tax-utils";
+import {
+  DEFAULT_BILLING_CURRENCY,
+  getDefaultBillingCurrency,
+} from "../utils/billing-currency";
 
 export default function CreateBillPage() {
   const { t } = useTranslation("billing");
@@ -64,7 +68,7 @@ export default function CreateBillPage() {
     defaultValues: {
       billNumber: "DRAFT",
       status: "draft",
-      currency: "USD",
+      currency: DEFAULT_BILLING_CURRENCY,
       issueDate: new Date(),
       dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
       items: [
@@ -86,6 +90,7 @@ export default function CreateBillPage() {
 
   const { fields, append, remove } = useFieldArray({ control, name: "items" });
   const watchItems = watch("items");
+  const currency = watch("currency") ?? DEFAULT_BILLING_CURRENCY;
 
   useEffect(() => {
     if (isEditing && existingBill) {
@@ -96,6 +101,12 @@ export default function CreateBillPage() {
       } as any);
     }
   }, [isEditing, existingBill, control]);
+
+  useEffect(() => {
+    if (!isEditing && billingSettings) {
+      setValue("currency", getDefaultBillingCurrency(billingSettings));
+    }
+  }, [billingSettings, isEditing, setValue]);
 
   useEffect(() => {
     if (isEditing || !defaultTax) return;
@@ -339,7 +350,7 @@ export default function CreateBillPage() {
                         />
                       </td>
                       <td className="p-4 text-end font-medium">
-                        <span dir="ltr">{formatCurrency(lineTotal, "USD")}</span>
+                        <BillingMoney amount={lineTotal} currency={currency} />
                       </td>
                       <td className="p-4">
                         <Button
@@ -392,16 +403,16 @@ export default function CreateBillPage() {
             <CardBody className="space-y-3">
               <div className="flex justify-between text-sm">
                 <span>{t("bills.create.subtotal")}</span>
-                <span dir="ltr">{formatCurrency(subTotal, "USD")}</span>
+                <BillingMoney amount={subTotal} currency={currency} />
               </div>
               <div className="flex justify-between text-sm">
                 <span>{t("bills.create.total_tax")}</span>
-                <span dir="ltr">{formatCurrency(totalTax, "USD")}</span>
+                <BillingMoney amount={totalTax} currency={currency} />
               </div>
               <Divider />
               <div className="flex justify-between font-bold text-lg">
                 <span>{t("bills.create.total")}</span>
-                <span dir="ltr">{formatCurrency(grandTotal, "USD")}</span>
+                <BillingMoney amount={grandTotal} currency={currency} />
               </div>
             </CardBody>
           </Card>

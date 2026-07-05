@@ -23,14 +23,32 @@ async function waitForImages(root: HTMLElement): Promise<void> {
 }
 
 async function waitForRender(element: HTMLElement): Promise<void> {
+  await document.fonts.load('400 12px "IBM Plex Sans Arabic"');
+  await document.fonts.load('700 12px "IBM Plex Sans Arabic"');
+  await document.fonts.load('700 22px "IBM Plex Sans Arabic"');
   await document.fonts.ready;
   await waitForImages(element);
   await new Promise((resolve) => requestAnimationFrame(() => resolve(undefined)));
   await new Promise((resolve) => requestAnimationFrame(() => resolve(undefined)));
 }
 
+function normalizePrintClone(root: HTMLElement): void {
+  root.style.letterSpacing = "normal";
+  root.style.fontFamily =
+    '"IBM Plex Sans Arabic", Tahoma, "Segoe UI", Arial, sans-serif';
+
+  root.querySelectorAll<HTMLElement>("*").forEach((el) => {
+    el.style.letterSpacing = "normal";
+    const weight = Number.parseInt(el.style.fontWeight || "0", 10);
+    if (weight > 700) {
+      el.style.fontWeight = "700";
+    }
+  });
+}
+
 function resolveCaptureTarget(element: HTMLElement): HTMLElement {
   const inner =
+    element.querySelector<HTMLElement>("[data-invoice-print]") ??
     element.querySelector<HTMLElement>("[data-quotation-print]") ??
     (element.firstElementChild as HTMLElement | null);
   return inner ?? element;
@@ -48,7 +66,9 @@ function prepareForCapture(root: HTMLElement): () => void {
   root.style.position = "fixed";
   root.style.left = "0";
   root.style.top = "0";
-  root.style.zIndex = "-1";
+  root.style.zIndex = "9999";
+  root.style.opacity = "1";
+  root.style.pointerEvents = "none";
 
   return () => {
     root.style.position = saved.position;
@@ -74,6 +94,9 @@ export async function generateQuotationPdf(
       useCORS: true,
       backgroundColor: "#ffffff",
       logging: false,
+      onclone: (_doc, cloned) => {
+        normalizePrintClone(cloned);
+      },
     });
 
     if (canvas.width === 0 || canvas.height === 0) {

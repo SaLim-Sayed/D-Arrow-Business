@@ -29,6 +29,7 @@ import {
   normalizeBillingSettingsFromFirestore,
   prepareBillingSettingsForSave,
 } from "../utils/settings-payload";
+import { DEFAULT_BILLING_CURRENCY_ENTRY } from "../utils/billing-currency";
 import { useCompany } from "@/features/companies/context/company-context";
 
 type SettingsTab = "general" | "financial" | "advanced";
@@ -133,9 +134,7 @@ export default function SettingsPage() {
         nextNumber: 1,
         padding: 4,
       },
-      currencies: [
-        { code: "USD", symbol: "$", name: "US Dollar", isDefault: true },
-      ],
+      currencies: [{ ...DEFAULT_BILLING_CURRENCY_ENTRY }],
       taxes: [],
       paymentMethods: [],
     },

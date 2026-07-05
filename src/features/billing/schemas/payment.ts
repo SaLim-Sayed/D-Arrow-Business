@@ -11,7 +11,7 @@ export const paymentSchema = z.object({
   methodName: z.string().optional(),
   reference: z.string().optional(),
   notes: z.string().optional(),
-  currency: z.string().default("USD"),
+  currency: z.string().default("SAR"),
   createdAt: z.date().optional(),
   updatedAt: z.date().optional(),
 });

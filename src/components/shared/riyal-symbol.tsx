@@ -47,6 +47,8 @@ interface MoneyAmountProps {
   locale?: string;
   /** rtl for Arabic PDF/UI so the icon reads after the number */
   priceDirection?: "ltr" | "rtl";
+  maximumFractionDigits?: number;
+  minimumFractionDigits?: number;
 }
 
 /** Amount with official Saudi Riyal icon when currency is SAR */
@@ -58,8 +60,13 @@ export function MoneyAmount({
   symbolSize = 14,
   locale = "en-US",
   priceDirection = "ltr",
+  maximumFractionDigits = 2,
+  minimumFractionDigits = 0,
 }: MoneyAmountProps) {
-  const formatted = amount.toLocaleString(locale, { maximumFractionDigits: 0 });
+  const formatted = amount.toLocaleString(locale, {
+    maximumFractionDigits,
+    minimumFractionDigits,
+  });
 
   if (isSarCurrency(currency)) {
     return (

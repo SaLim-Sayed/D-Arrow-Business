@@ -27,7 +27,7 @@ export const billSchema = z.object({
   grandTotal: z.number().min(0),
   amountPaid: z.number().min(0).optional(),
   notes: z.string().optional(),
-  currency: z.string().default("USD"),
+  currency: z.string().default("SAR"),
   createdAt: z.date().optional(),
   updatedAt: z.date().optional(),
 });

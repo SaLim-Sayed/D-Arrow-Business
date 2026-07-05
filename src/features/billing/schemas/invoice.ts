@@ -35,7 +35,7 @@ export const invoiceSchema = z.object({
   notes: z.string().optional(),
   termsAndConditions: z.string().optional(),
 
-  currency: z.string().default("USD"),
+  currency: z.string().default("SAR"),
   createdAt: z.date().optional(),
   updatedAt: z.date().optional(),
 });

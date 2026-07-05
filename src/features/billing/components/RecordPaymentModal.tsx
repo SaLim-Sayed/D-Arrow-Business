@@ -23,7 +23,8 @@ import {
 } from "../hooks/use-payments";
 import { getInvoiceAmountDue } from "../utils/accounting-engine";
 import { getBillAmountDue } from "../utils/aged-reports";
-import { formatCurrency } from "@/lib/utils";
+import { BillingMoney } from "../components/BillingMoney";
+import { DEFAULT_BILLING_CURRENCY } from "../utils/billing-currency";
 
 const PAYMENT_METHODS = [
   "bank_transfer",
@@ -131,7 +132,7 @@ export function RecordPaymentModal({
       ? getBillAmountDue(bill)
       : 0;
   const docNumber = invoice?.invoiceNumber ?? bill?.billNumber;
-  const currency = invoice?.currency ?? bill?.currency ?? "USD";
+  const currency = invoice?.currency ?? bill?.currency ?? DEFAULT_BILLING_CURRENCY;
   const isPending =
     recordCustomerPayment.isPending || recordVendorPayment.isPending;
 
@@ -149,7 +150,7 @@ export function RecordPaymentModal({
                   <span dir="ltr">{docNumber}</span>
                   {" · "}
                   {t("payments.amount_due_label")}:{" "}
-                  <span dir="ltr">{formatCurrency(amountDue, currency)}</span>
+                  <BillingMoney amount={amountDue} currency={currency} />
                 </p>
               )}
             </ModalHeader>

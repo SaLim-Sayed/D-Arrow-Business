@@ -76,7 +76,7 @@ export function AccountingMetricCards({
   items: {
     key: string;
     label: string;
-    value: string | number;
+    value: React.ReactNode;
     icon: React.ElementType;
     className: string;
     onPress?: () => void;
@@ -101,7 +101,7 @@ export function AccountingMetricCards({
             </div>
             <div className="min-w-0">
               <p className="truncate text-xs text-default-500">{label}</p>
-              <p className="truncate text-base font-bold tabular-nums text-default-900" dir="ltr">
+              <p className="truncate text-base font-bold tabular-nums text-default-900">
                 {value}
               </p>
             </div>

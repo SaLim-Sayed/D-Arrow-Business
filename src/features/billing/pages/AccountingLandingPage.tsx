@@ -20,7 +20,7 @@ import {
   Clock,
   Wallet,
 } from "lucide-react";
-import { formatCurrency } from "@/lib/utils";
+import { BillingMoney } from "../components/BillingMoney";
 import { useInvoices } from "../hooks/use-invoices";
 import { useBills } from "../hooks/use-bills";
 import { useBillingSettings } from "../hooks/use-billing-settings";
@@ -120,7 +120,7 @@ export default function AccountingLandingPage() {
           {
             key: "outstanding",
             label: t("dashboard.outstanding"),
-            value: formatCurrency(metrics.outstanding, currency),
+            value: <BillingMoney amount={metrics.outstanding} currency={currency} />,
             icon: TrendingUp,
             className: "text-primary bg-primary/10",
             onPress: () => navigate("/billing/invoices"),
@@ -128,7 +128,7 @@ export default function AccountingLandingPage() {
           {
             key: "overdue",
             label: t("dashboard.overdue"),
-            value: formatCurrency(metrics.overdue, currency),
+            value: <BillingMoney amount={metrics.overdue} currency={currency} />,
             icon: AlertCircle,
             className: "text-danger bg-danger/10",
             onPress: () => navigate("/billing/invoices"),
@@ -136,7 +136,7 @@ export default function AccountingLandingPage() {
           {
             key: "received",
             label: t("dashboard.total_received"),
-            value: formatCurrency(metrics.received, currency),
+            value: <BillingMoney amount={metrics.received} currency={currency} />,
             icon: CheckCircle2,
             className: "text-success bg-success/10",
             onPress: () => navigate("/billing/overview"),

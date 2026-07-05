@@ -23,7 +23,8 @@ import {
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
-import { cn, formatCurrency } from "@/lib/utils";
+import { cn } from "@/lib/utils";
+import { BillingMoney } from "../components/BillingMoney";
 import { useBills } from "../hooks/use-bills";
 import { useContactsQuery } from "@/features/crm/hooks/use-contacts";
 import { contactDisplayName } from "@/features/crm/utils/contacts-list.utils";
@@ -113,20 +114,21 @@ function BillRow({
         {bill.dueDate.toLocaleDateString(dateLocale)}
       </td>
       <td className="whitespace-nowrap px-3 py-2 text-end">
-        <span className="tabular-nums font-medium text-default-900" dir="ltr">
-          {formatCurrency(bill.grandTotal, bill.currency)}
-        </span>
+        <BillingMoney
+          amount={bill.grandTotal}
+          currency={bill.currency}
+          className="font-medium text-default-900"
+        />
       </td>
       <td className="whitespace-nowrap px-3 py-2 text-end">
-        <span
+        <BillingMoney
+          amount={amountDue}
+          currency={bill.currency}
           className={cn(
-            "tabular-nums font-semibold",
+            "font-semibold",
             amountDue > 0 ? "text-danger" : "text-success"
           )}
-          dir="ltr"
-        >
-          {formatCurrency(amountDue, bill.currency)}
-        </span>
+        />
       </td>
       <td className="px-3 py-2">
         <span
@@ -285,21 +287,21 @@ export default function BillsPage() {
           {
             key: "outstanding",
             label: t("bills.metrics.outstanding"),
-            value: formatCurrency(metrics.outstanding, currency),
+            value: <BillingMoney amount={metrics.outstanding} currency={currency} />,
             icon: TrendingUp,
             className: "text-danger bg-danger/10",
           },
           {
             key: "overdue",
             label: t("bills.metrics.overdue"),
-            value: formatCurrency(metrics.overdue, currency),
+            value: <BillingMoney amount={metrics.overdue} currency={currency} />,
             icon: AlertCircle,
             className: "text-danger bg-danger/10",
           },
           {
             key: "paid",
             label: t("bills.metrics.paid"),
-            value: formatCurrency(metrics.paid, currency),
+            value: <BillingMoney amount={metrics.paid} currency={currency} />,
             icon: CheckCircle2,
             className: "text-success bg-success/10",
           },
