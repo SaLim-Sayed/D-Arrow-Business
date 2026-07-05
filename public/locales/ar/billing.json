@@ -370,8 +370,8 @@
     },
     "status": {
       "draft": "مسودة",
-      "published": "مرحّل",
-      "void": "ملغى"
+      "posted": "مرحّل",
+      "cancelled": "ملغى"
     },
     "source": {
       "manual": "يدوي",

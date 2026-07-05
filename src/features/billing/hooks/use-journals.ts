@@ -35,7 +35,7 @@ export function useCreateJournalMutation() {
 
       const payload = {
         ...data,
-        status: data.status ?? "published",
+        status: data.status ?? "posted",
         totalDebit: totalDebits,
         totalCredit: totalCredits,
         lines: data.lines.map(l => ({ ...l, id: l.id || `jel_${Math.random().toString(36).slice(2)}` }))

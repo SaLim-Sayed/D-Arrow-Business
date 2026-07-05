@@ -363,8 +363,8 @@
     },
     "status": {
       "draft": "Draft",
-      "published": "Posted",
-      "void": "Void"
+      "posted": "Posted",
+      "cancelled": "Cancelled"
     },
     "source": {
       "manual": "Manual",

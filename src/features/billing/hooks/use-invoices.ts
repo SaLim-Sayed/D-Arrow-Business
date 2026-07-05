@@ -4,13 +4,12 @@ import { BillingService } from "../api/billing.service";
 import { useCompany } from "@/features/companies/context/company-context";
 import { convertTimestampsToDates } from "../utils/timestamp";
 import {
-  buildInvoiceJournalEntry,
   syncInvoiceStatuses,
 } from "../utils/accounting-engine";
 import { createGenericDocumentFromInvoiceData } from "../utils/migrate-to-generic";
 
 async function postInvoiceIfNeeded(
-  companyId: string,
+  _companyId: string,
   invoice: Invoice,
   wasDraft: boolean
 ) {

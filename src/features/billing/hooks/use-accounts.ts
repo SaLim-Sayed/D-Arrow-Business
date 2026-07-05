@@ -4,16 +4,26 @@ import { BillingService } from "../api/billing.service";
 import { useCompany } from "@/features/companies/context/company-context";
 
 // Mock Data for Standard Chart of Accounts Seed
+const withAccountDefaults = (
+  account: Omit<CreateAccountDTO, "reconcile" | "allowManualEntries" | "deprecated"> &
+    Partial<Pick<CreateAccountDTO, "reconcile">>
+): CreateAccountDTO => ({
+  allowManualEntries: true,
+  deprecated: false,
+  reconcile: false,
+  ...account,
+});
+
 const MOCK_ACCOUNTS: CreateAccountDTO[] = [
-  { code: "1000", name: "Cash on Hand", type: "asset", subType: "cash", isSystemAccount: true, isActive: true, currentBalance: 5000, currency: "USD" },
-  { code: "1200", name: "Accounts Receivable", type: "asset", subType: "accounts_receivable", isSystemAccount: true, isActive: true, currentBalance: 12000, currency: "USD" },
-  { code: "1500", name: "Inventory Asset", type: "asset", subType: "inventory", isSystemAccount: true, isActive: true, currentBalance: 30000, currency: "USD" },
-  { code: "2000", name: "Accounts Payable", type: "liability", subType: "accounts_payable", isSystemAccount: true, isActive: true, currentBalance: 4500, currency: "USD" },
-  { code: "2100", name: "Tax Payable", type: "liability", subType: "current_liability", isSystemAccount: true, isActive: true, currentBalance: 0, currency: "USD" },
-  { code: "3000", name: "Owner's Equity", type: "equity", subType: "equity", isSystemAccount: true, isActive: true, currentBalance: 42500, currency: "USD" },
-  { code: "4000", name: "Sales Revenue", type: "income", subType: "operating_income", isSystemAccount: true, isActive: true, currentBalance: 0, currency: "USD" },
-  { code: "5000", name: "Cost of Goods Sold", type: "expense", subType: "cost_of_goods_sold", isSystemAccount: true, isActive: true, currentBalance: 0, currency: "USD" },
-  { code: "6000", name: "Bank Fees", type: "expense", subType: "operating_expense", isSystemAccount: false, isActive: true, currentBalance: 0, currency: "USD" },
+  withAccountDefaults({ code: "1000", name: "Cash on Hand", type: "asset", subType: "cash", isSystemAccount: true, isActive: true, currentBalance: 5000, currency: "USD", reconcile: true }),
+  withAccountDefaults({ code: "1200", name: "Accounts Receivable", type: "asset", subType: "accounts_receivable", isSystemAccount: true, isActive: true, currentBalance: 12000, currency: "USD", reconcile: true }),
+  withAccountDefaults({ code: "1500", name: "Inventory Asset", type: "asset", subType: "inventory", isSystemAccount: true, isActive: true, currentBalance: 30000, currency: "USD" }),
+  withAccountDefaults({ code: "2000", name: "Accounts Payable", type: "liability", subType: "accounts_payable", isSystemAccount: true, isActive: true, currentBalance: 4500, currency: "USD" }),
+  withAccountDefaults({ code: "2100", name: "Tax Payable", type: "liability", subType: "current_liability", isSystemAccount: true, isActive: true, currentBalance: 0, currency: "USD" }),
+  withAccountDefaults({ code: "3000", name: "Owner's Equity", type: "equity", subType: "equity", isSystemAccount: true, isActive: true, currentBalance: 42500, currency: "USD" }),
+  withAccountDefaults({ code: "4000", name: "Sales Revenue", type: "income", subType: "operating_income", isSystemAccount: true, isActive: true, currentBalance: 0, currency: "USD" }),
+  withAccountDefaults({ code: "5000", name: "Cost of Goods Sold", type: "expense", subType: "cost_of_goods_sold", isSystemAccount: true, isActive: true, currentBalance: 0, currency: "USD" }),
+  withAccountDefaults({ code: "6000", name: "Bank Fees", type: "expense", subType: "operating_expense", isSystemAccount: false, isActive: true, currentBalance: 0, currency: "USD" }),
 ];
 
 export function useAccounts() {

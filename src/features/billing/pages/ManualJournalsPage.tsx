@@ -33,7 +33,7 @@ import { downloadJournalsCsv } from "../utils/journal-export";
 type StatusFilter = "all" | JournalEntry["status"];
 type SourceFilter = "all" | JournalEntry["sourceType"];
 
-const STATUS_ORDER: JournalEntry["status"][] = ["draft", "published", "void"];
+const STATUS_ORDER: JournalEntry["status"][] = ["draft", "posted", "cancelled"];
 const SOURCE_ORDER: JournalEntry["sourceType"][] = [
   "manual",
   "invoice",
@@ -43,8 +43,8 @@ const SOURCE_ORDER: JournalEntry["sourceType"][] = [
 ];
 
 function statusColor(status: JournalEntry["status"]) {
-  if (status === "published") return "bg-success/10 text-success";
-  if (status === "void") return "bg-danger/10 text-danger";
+  if (status === "posted") return "bg-success/10 text-success";
+  if (status === "cancelled") return "bg-danger/10 text-danger";
   return "bg-warning/10 text-warning-700 dark:text-warning";
 }
 

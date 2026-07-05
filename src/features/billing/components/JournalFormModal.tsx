@@ -37,6 +37,14 @@ interface JournalFormModalProps {
   journalToEdit?: JournalEntry | null;
 }
 
+const EMPTY_JOURNAL_LINE: JournalLine = {
+  accountId: "",
+  debit: 0,
+  credit: 0,
+  description: "",
+  taxAmount: 0,
+};
+
 export function JournalFormModal({
   isOpen,
   onClose,
@@ -54,8 +62,8 @@ export function JournalFormModal({
   const [reference, setReference] = useState("");
   const [notes, setNotes] = useState("");
   const [lines, setLines] = useState<JournalLine[]>([
-    { accountId: "", debit: 0, credit: 0, description: "" },
-    { accountId: "", debit: 0, credit: 0, description: "" },
+    { ...EMPTY_JOURNAL_LINE },
+    { ...EMPTY_JOURNAL_LINE },
   ]);
 
   useEffect(() => {
@@ -71,17 +79,14 @@ export function JournalFormModal({
       setReference("");
       setNotes("");
       setLines([
-        { accountId: "", debit: 0, credit: 0, description: "" },
-        { accountId: "", debit: 0, credit: 0, description: "" },
+        { ...EMPTY_JOURNAL_LINE },
+        { ...EMPTY_JOURNAL_LINE },
       ]);
     }
   }, [journalToEdit, isOpen]);
 
   const addLine = () => {
-    setLines([
-      ...lines,
-      { accountId: "", debit: 0, credit: 0, description: "" },
-    ]);
+    setLines([...lines, { ...EMPTY_JOURNAL_LINE }]);
   };
 
   const removeLine = (index: number) => {
@@ -130,11 +135,12 @@ export function JournalFormModal({
         ...l,
         debit: Number(l.debit) || 0,
         credit: Number(l.credit) || 0,
+        taxAmount: Number(l.taxAmount) || 0,
       })),
       totalDebit,
       totalCredit,
       currency: "USD",
-      status: "published",
+      status: "posted",
       sourceType: "manual",
     };
 
