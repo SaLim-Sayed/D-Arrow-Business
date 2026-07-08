@@ -4,9 +4,51 @@
     "dashboard": "Task Dashboard",
     "back": "Back"
   },
+  "landing": {
+    "title": "Tasks",
+    "subtitle": "Plan sprints, track work on a board or list, assign owners, and monitor team progress — all in one hub.",
+    "footer": "D-Arrow Business — Tasks Portal",
+    "quick": {
+      "newTask": "New Task",
+      "openBoard": "Open Board",
+      "openList": "Open List",
+      "openSprints": "Sprints"
+    },
+    "sections": {
+      "work": "Work",
+      "work_desc": "Kanban board and list views for daily execution",
+      "planning": "Planning",
+      "planning_desc": "Sprints, goals, and focused work cycles",
+      "insights": "Insights",
+      "insights_desc": "Charts, metrics, and recent activity"
+    },
+    "apps": {
+      "dashboard": {
+        "title": "Task Dashboard",
+        "desc": "KPIs, charts, and a snapshot of team workload"
+      },
+      "board": {
+        "title": "Task Board",
+        "desc": "Drag tasks across columns by status — To Do, In Progress, Review, Done"
+      },
+      "list": {
+        "title": "Task List",
+        "desc": "Sortable table with filters for assignee, sprint, status, and priority"
+      },
+      "sprints": {
+        "title": "Sprints",
+        "desc": "Plan iteration cycles, set goals, and group tasks by sprint"
+      },
+      "newTask": {
+        "title": "Create Task",
+        "desc": "Add a main task or subtask with assignee, due date, and attachments"
+      }
+    }
+  },
   "dashboard": {
     "title": "Task Dashboard",
     "subtitle": "Overview of your team's performance and activities.",
+    "description": "KPIs, charts, and recent tasks — your command center for team work.",
     "totalTasks": "Total Tasks",
     "inProgress": "In Progress",
     "overdue": "Overdue",
@@ -27,13 +69,15 @@
   "workspace": {
     "title": "Tasks",
     "subtitle": "Browse tasks on a Kanban board or list view with advanced filters.",
+    "description": "Switch between board and list views to manage open work.",
     "views": {
       "list": "List",
       "board": "Board"
     }
   },
   "list": {
-    "title": "Tasks",
+    "title": "Task List",
+    "description": "All tasks in a filterable table — search, sort, and open details quickly.",
     "newTask": "New Task",
     "searchPlaceholder": "Search tasks...",
     "columns": {
@@ -48,11 +92,47 @@
   },
   "board": {
     "title": "Task Board",
+    "description": "Visual Kanban workflow — move cards between status columns as work progresses.",
+    "scrollStart": "Scroll columns backward",
+    "scrollEnd": "Scroll columns forward",
+    "jumpToColumn": "Jump to {{status}} column",
+    "dropHere": "Drop task here",
+    "addTask": "Add task",
+    "collapseColumn": "Collapse {{status}} column",
+    "expandColumn": "Expand {{status}} column",
+    "scrollProgress": "Board horizontal scroll position",
+    "keyboardHint": "Keys: 1–4 columns · ← → scroll · Home/End · Esc exit focus",
+    "expandAll": "Expand all columns",
+    "collapseAll": "Collapse all columns",
+    "scrollColumnUp": "Scroll column up",
+    "scrollColumnDown": "Scroll column down",
+    "moveSuccess": "Moved \"{{title}}\" to {{status}}",
+    "undo": "Undo",
+    "sort": {
+      "label": "Sort cards in columns",
+      "updated": "Recently updated",
+      "priority": "Priority",
+      "dueDate": "Due date"
+    },
+    "density": {
+      "compact": "Compact cards",
+      "comfortable": "Comfortable cards"
+    },
+    "focusMode": {
+      "enter": "Focus {{status}} column",
+      "exit": "Show all columns ({{status}} focused)"
+    },
+    "stats": {
+      "total": "{{count}} tasks",
+      "inProgress": "{{count}} in progress",
+      "overdue": "{{count}} overdue"
+    },
     "emptyTitle": "No items available",
     "emptySubtitle": "Add an item to this status and track them across status"
   },
   "detail": {
     "title": "Task Details",
+    "description": "Full task record — description, comments, history, attachments, and subtasks.",
     "notFound": "Task not found",
     "description": "Description",
     "noDescription": "No description provided",
@@ -204,6 +284,7 @@
       "filesSelected_other": "{{count}} files selected"
     },
     "createHint": "Fill in the details below. Only the title is required.",
+    "pageDescription": "Create a work item, assign an owner, set dates, and attach files.",
     "checkFields": "Please check the form fields and try again."
   },
   "type": {
@@ -267,6 +348,7 @@
   "sprints": {
     "title": "Sprints",
     "subtitle": "Manage your team iteration cycles and goals.",
+    "description": "Define sprint windows and goals, then filter the board and list by active sprint.",
     "newSprint": "New Sprint",
     "editSprint": "Edit Sprint",
     "createSprint": "Create New Sprint",

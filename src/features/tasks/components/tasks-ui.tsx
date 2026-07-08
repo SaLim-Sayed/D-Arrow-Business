@@ -9,19 +9,26 @@ export function TasksPageHeader({
   breadcrumbLabel,
   breadcrumbTo = "/tasks",
   action,
+  compact = false,
 }: {
   title: string;
   description?: string;
   breadcrumbLabel?: string;
   breadcrumbTo?: string;
   action?: React.ReactNode;
+  compact?: boolean;
 }) {
   const { t } = useTranslation("tasks");
   const rootLabel = breadcrumbLabel ?? t("module_name");
 
   return (
     <>
-      <nav className="mb-3 flex items-center gap-1 text-sm text-default-500">
+      <nav
+        className={cn(
+          "flex items-center gap-1 text-sm text-default-500",
+          compact ? "mb-1.5" : "mb-3"
+        )}
+      >
         <Link to={breadcrumbTo} className="hover:text-primary">
           {rootLabel}
         </Link>
@@ -32,10 +39,22 @@ export function TasksPageHeader({
           </>
         )}
       </nav>
-      <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
+      <div
+        className={cn(
+          "flex flex-wrap items-start justify-between gap-3",
+          compact ? "mb-2" : "mb-4"
+        )}
+      >
         <div className="min-w-0">
-          <h1 className="text-2xl font-bold tracking-tight text-default-900">{title}</h1>
-          {description && (
+          <h1
+            className={cn(
+              "font-bold tracking-tight text-default-900",
+              compact ? "text-lg" : "text-2xl"
+            )}
+          >
+            {title}
+          </h1>
+          {!compact && description && (
             <p className="mt-1 max-w-2xl text-sm text-default-500">{description}</p>
           )}
         </div>
@@ -173,10 +192,13 @@ export function TasksShell({
   toolbar,
   children,
   className,
+  bleed = false,
 }: {
   toolbar?: React.ReactNode;
   children: React.ReactNode;
   className?: string;
+  /** Full-height board layout without inner padding */
+  bleed?: boolean;
 }) {
   return (
     <div
@@ -186,11 +208,139 @@ export function TasksShell({
       )}
     >
       {toolbar && (
-        <div className="border-b border-default-200 bg-default-50/90 px-3 py-2">
+        <div
+          className={cn(
+            "shrink-0 border-b border-default-200 bg-default-50/90 px-3",
+            bleed ? "py-1.5" : "py-2"
+          )}
+        >
           {toolbar}
         </div>
       )}
-      <div className="p-4 md:p-5">{children}</div>
+      <div
+        className={cn(
+          bleed ? "flex min-h-0 flex-1 flex-col" : "p-4 md:p-5"
+        )}
+      >
+        {children}
+      </div>
     </div>
+  );
+}
+
+export function TasksAppTile({
+  to,
+  icon: Icon,
+  title,
+  description,
+  badge,
+  iconClassName,
+}: {
+  to: string;
+  icon: React.ElementType;
+  title: string;
+  description: string;
+  badge?: string | number;
+  iconClassName?: string;
+}) {
+  return (
+    <Link
+      to={to}
+      className="group flex flex-col rounded-xl border border-default-200 bg-content1 p-4 shadow-sm transition-all hover:border-primary/40 hover:bg-primary/[0.02] hover:shadow-md"
+    >
+      <div className="mb-3 flex items-start justify-between gap-2">
+        <div
+          className={cn(
+            "flex h-11 w-11 items-center justify-center rounded-xl",
+            iconClassName ?? "bg-primary/10 text-primary"
+          )}
+        >
+          <Icon className="h-5 w-5" />
+        </div>
+        {badge !== undefined && badge !== "" && (
+          <span className="rounded-full bg-default-100 px-2 py-0.5 text-xs font-semibold tabular-nums text-default-600">
+            {badge}
+          </span>
+        )}
+      </div>
+      <h3 className="text-sm font-bold text-default-900 group-hover:text-primary">{title}</h3>
+      <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-default-500">{description}</p>
+    </Link>
+  );
+}
+
+export function TasksModuleSection({
+  title,
+  description,
+  icon: Icon,
+  iconClassName,
+  children,
+}: {
+  title: string;
+  description?: string;
+  icon: React.ElementType;
+  iconClassName?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <section className="mb-6">
+      <div className="mb-3 flex items-center gap-2.5">
+        <div
+          className={cn(
+            "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg",
+            iconClassName ?? "bg-primary/10 text-primary"
+          )}
+        >
+          <Icon className="h-4 w-4" />
+        </div>
+        <div className="min-w-0">
+          <h2 className="text-sm font-bold text-default-900">{title}</h2>
+          {description && (
+            <p className="text-xs text-default-500">{description}</p>
+          )}
+        </div>
+      </div>
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        {children}
+      </div>
+    </section>
+  );
+}
+
+export function TasksQuickAction({
+  to,
+  icon: Icon,
+  label,
+  color = "primary",
+  onPress,
+}: {
+  to?: string;
+  icon: React.ElementType;
+  label: string;
+  color?: "primary" | "default";
+  onPress?: () => void;
+}) {
+  const className = cn(
+    "inline-flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold transition-colors shadow-sm",
+    color === "primary" &&
+      "bg-primary text-primary-foreground hover:bg-primary/90",
+    color === "default" &&
+      "border border-default-200 bg-content1 text-default-800 hover:bg-default-50"
+  );
+
+  if (to) {
+    return (
+      <Link to={to} className={className}>
+        <Icon className="h-4 w-4" />
+        {label}
+      </Link>
+    );
+  }
+
+  return (
+    <button type="button" onClick={onPress} className={className}>
+      <Icon className="h-4 w-4" />
+      {label}
+    </button>
   );
 }

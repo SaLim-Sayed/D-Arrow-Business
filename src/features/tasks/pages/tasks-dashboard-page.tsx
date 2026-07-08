@@ -5,15 +5,25 @@ import { TaskStatsCards } from "../components/task-stats-cards";
 import { TaskCharts } from "../components/task-chart";
 import { LoadingSpinner } from "@/components/shared/loading-spinner";
 import { Button } from "@heroui/react";
-import { CalendarRange, Kanban, Plus, List } from "lucide-react";
+import {
+  CalendarRange,
+  Kanban,
+  LayoutDashboard,
+  List,
+  ListTodo,
+  Plus,
+  Target,
+} from "lucide-react";
 import { formatDate } from "@/lib/utils";
 import { cn } from "@/lib/utils";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { useTasksWorkspaceNavigation } from "../hooks/use-tasks-workspace-navigation";
 import type { TaskStatus } from "../types/task.types";
 import {
-  TasksPageHeader,
+  TasksAppTile,
+  TasksModuleSection,
   TasksPanel,
+  TasksQuickAction,
 } from "../components/tasks-ui";
 
 export function TasksDashboardPage() {
@@ -33,62 +43,122 @@ export function TasksDashboardPage() {
     )
     .slice(0, 5);
 
+  const openTasks = tasks.filter((task) => task.status !== "done").length;
+  const activeSprints = new Set(
+    tasks.map((task) => task.sprintId).filter(Boolean)
+  ).size;
+
   return (
     <div className="animate-in fade-in pb-24 duration-300">
-      <TasksPageHeader
-        title={t("dashboard.title")}
-        description={t("dashboard.subtitle")}
-      />
+      <div className="mb-5 overflow-hidden rounded-xl border border-default-200 bg-gradient-to-br from-primary/[0.08] via-sky-500/[0.04] to-content1 p-6 shadow-sm md:p-8">
+        <div className="flex items-start gap-4">
+          <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-md">
+            <ListTodo className="h-7 w-7" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <h1 className="text-2xl font-bold tracking-tight text-default-900 md:text-3xl">
+              {t("landing.title")}
+            </h1>
+            <p className="mt-2 max-w-2xl text-sm leading-relaxed text-default-600 md:text-base">
+              {t("landing.subtitle")}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div className="mb-5 flex flex-wrap gap-2">
+        <TasksQuickAction
+          to="/tasks/new"
+          icon={Plus}
+          label={t("landing.quick.newTask")}
+          color="primary"
+        />
+        <TasksQuickAction
+          to="/tasks/work"
+          icon={Kanban}
+          label={t("landing.quick.openBoard")}
+          color="default"
+        />
+        <TasksQuickAction
+          to="/tasks/work/list"
+          icon={List}
+          label={t("landing.quick.openList")}
+          color="default"
+        />
+        <TasksQuickAction
+          to="/tasks/sprints"
+          icon={CalendarRange}
+          label={t("landing.quick.openSprints")}
+          color="default"
+        />
+      </div>
 
       <TaskStatsCards tasks={tasks} />
 
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-        <TasksPanel title={t("dashboard.quickActions")}>
-          <div className="flex flex-col gap-2">
-            <Button
-              as={Link}
-              to="/tasks/new"
-              color="primary"
-              size="sm"
-              className="justify-start font-semibold"
-              startContent={<Plus className="h-4 w-4" />}
-            >
-              {t("list.newTask")}
-            </Button>
-            <Button
-              as={Link}
-              to="/tasks/work"
-              size="sm"
-              variant="flat"
-              className="justify-start font-medium"
-              startContent={<Kanban className="h-4 w-4" />}
-            >
-              {t("dashboard.openBoard")}
-            </Button>
-            <Button
-              as={Link}
-              to="/tasks/work/list"
-              size="sm"
-              variant="flat"
-              className="justify-start font-medium"
-              startContent={<List className="h-4 w-4" />}
-            >
-              {t("dashboard.openList")}
-            </Button>
-            <Button
-              as={Link}
-              to="/tasks/sprints"
-              size="sm"
-              variant="flat"
-              className="justify-start font-medium"
-              startContent={<CalendarRange className="h-4 w-4" />}
-            >
-              {t("dashboard.openSprints")}
-            </Button>
-          </div>
-        </TasksPanel>
+      <TasksModuleSection
+        title={t("landing.sections.work")}
+        description={t("landing.sections.work_desc")}
+        icon={Kanban}
+        iconClassName="bg-primary/10 text-primary"
+      >
+        <TasksAppTile
+          to="/tasks/work"
+          icon={Kanban}
+          title={t("landing.apps.board.title")}
+          description={t("landing.apps.board.desc")}
+          badge={openTasks || undefined}
+          iconClassName="bg-primary/10 text-primary"
+        />
+        <TasksAppTile
+          to="/tasks/work/list"
+          icon={List}
+          title={t("landing.apps.list.title")}
+          description={t("landing.apps.list.desc")}
+          badge={openTasks || undefined}
+          iconClassName="bg-sky-500/10 text-sky-600"
+        />
+      </TasksModuleSection>
 
-        <div className="lg:col-span-2">
+      <TasksModuleSection
+        title={t("landing.sections.planning")}
+        description={t("landing.sections.planning_desc")}
+        icon={Target}
+        iconClassName="bg-violet-500/10 text-violet-600"
+      >
+        <TasksAppTile
+          to="/tasks/sprints"
+          icon={CalendarRange}
+          title={t("landing.apps.sprints.title")}
+          description={t("landing.apps.sprints.desc")}
+          badge={activeSprints || undefined}
+          iconClassName="bg-violet-500/10 text-violet-600"
+        />
+        <TasksAppTile
+          to="/tasks/new"
+          icon={Plus}
+          title={t("landing.apps.newTask.title")}
+          description={t("landing.apps.newTask.desc")}
+          iconClassName="bg-emerald-500/10 text-emerald-600"
+        />
+      </TasksModuleSection>
+
+      <TasksModuleSection
+        title={t("landing.sections.insights")}
+        description={t("landing.sections.insights_desc")}
+        icon={LayoutDashboard}
+        iconClassName="bg-amber-500/10 text-amber-600"
+      >
+        <TasksAppTile
+          to="/tasks"
+          icon={LayoutDashboard}
+          title={t("landing.apps.dashboard.title")}
+          description={t("landing.apps.dashboard.desc")}
+          iconClassName="bg-amber-500/10 text-amber-600"
+        />
+      </TasksModuleSection>
+
+      <div className="mb-4 grid grid-cols-1 gap-4 lg:grid-cols-3">
+        <div className="lg:col-span-3">
           <TaskCharts tasks={tasks} />
         </div>
       </div>
@@ -144,6 +214,8 @@ export function TasksDashboardPage() {
           )}
         </TasksPanel>
       </div>
+
+      <p className="mt-6 text-center text-xs text-default-400">{t("landing.footer")}</p>
     </div>
   );
 }

@@ -53,17 +53,22 @@ export function TasksWorkspacePage() {
     <div
       className={cn(
         "animate-in fade-in duration-300",
-        isBoard && "flex h-[calc(100dvh-var(--header-height)-2rem)] flex-col"
+        isBoard &&
+          "flex h-[calc(100dvh-var(--header-height)-env(safe-area-inset-bottom,0px))] min-h-0 flex-col -mb-4 md:-mb-6"
       )}
     >
-      <TasksPageHeader
-        title={t("workspace.title")}
-        description={t("workspace.subtitle")}
-        breadcrumbLabel={t("nav.dashboard")}
-        breadcrumbTo="/tasks"
-      />
+      <div className={cn(isBoard && "shrink-0")}>
+        <TasksPageHeader
+          compact={isBoard}
+          title={isList ? t("list.title") : t("board.title")}
+          description={isList ? t("list.description") : t("board.description")}
+          breadcrumbLabel={t("nav.dashboard")}
+          breadcrumbTo="/tasks"
+        />
+      </div>
 
       <TasksShell
+        bleed={isBoard}
         className={cn(isBoard && "flex min-h-0 flex-1 flex-col")}
         toolbar={
           <div className="flex flex-wrap items-center gap-2">
@@ -94,7 +99,9 @@ export function TasksWorkspacePage() {
       >
         <div
           className={cn(
-            isBoard ? "-mx-1 -mb-1 flex min-h-0 flex-1 flex-col px-1" : "-mx-1 px-1"
+            isBoard
+              ? "flex min-h-0 flex-1 flex-col px-2 pb-1 pt-0"
+              : "-mx-1 px-1"
           )}
         >
           {isBoard ? <KanbanBoard /> : <TasksListView />}

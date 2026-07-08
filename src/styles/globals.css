@@ -44,6 +44,46 @@
     display: none;
   }
 
+  .kanban-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: rgb(161 161 170 / 0.55) transparent;
+    scroll-behavior: smooth;
+  }
+
+  .kanban-scroll::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  .kanban-scroll::-webkit-scrollbar-track {
+    background: transparent;
+    margin: 4px;
+  }
+
+  .kanban-scroll::-webkit-scrollbar-thumb {
+    @apply rounded-full bg-default-300/60;
+  }
+
+  .kanban-scroll::-webkit-scrollbar-thumb:hover {
+    @apply bg-default-400/70;
+  }
+
+  .kanban-scroll-x {
+    overscroll-behavior-x: contain;
+    -webkit-overflow-scrolling: touch;
+    scroll-padding-inline: 0.5rem;
+  }
+
+  .kanban-column-scroll {
+    overscroll-behavior-y: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .kanban-column-collapsed-label {
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
+  }
+
   .animate-shimmer {
     background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.08) 50%, transparent 100%);
     background-size: 200% 100%;

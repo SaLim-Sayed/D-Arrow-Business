@@ -137,7 +137,7 @@ export function SprintsPage() {
     <div className="animate-in fade-in pb-24 duration-300">
       <TasksPageHeader
         title={t("sprints.title")}
-        description={t("sprints.subtitle")}
+        description={t("sprints.description")}
         breadcrumbLabel={t("nav.dashboard")}
         breadcrumbTo="/tasks"
         action={

@@ -22,33 +22,35 @@
     "pickerSubtitle": "Select a portal to get started",
     "allApps": "All apps",
     "switchPortal": "Switch portal",
+    "dragHint": "Drag to move · Click to switch · Double-click to reset",
+    "dragHintCustom": "Drag to reposition · Double-click to reset position",
     "active": "Active",
     "deniedTitle": "Access denied",
     "tasks": {
       "title": "Tasks",
       "short": "Tasks",
-      "description": "Delivery, projects, and sprint planning",
+      "description": "Comprehensive task and project management with development cycles, progress tracking, and efficient work organization",
       "stat": "{{count}} open tasks",
       "denied": "You do not have access to the Tasks portal."
     },
     "crm": {
       "title": "CRM",
       "short": "CRM",
-      "description": "Leads, contacts, deals, and sales pipeline",
+      "description": "Integrated customer relationship management system with lead tracking, deal management, and automated sales pipeline",
       "stat": "{{count}} leads",
       "denied": "You do not have access to the CRM portal."
     },
     "people": {
       "title": "People & HR",
       "short": "People",
-      "description": "Employees, leave, approvals, and performance",
+      "description": "Comprehensive human resources management including employee management, leave requests, approval system, and performance evaluation",
       "stat": "{{count}} pending approvals",
       "denied": "You do not have access to the People portal."
     },
     "billing": {
       "title": "Accounting",
       "short": "Accounting",
-      "description": "Invoices, bills, journals, and financial reports",
+      "description": "Integrated accounting system with invoice management, journal entries, financial reporting, and payment tracking",
       "stat": "{{count}} unpaid invoices",
       "denied": "You do not have access to the Accounting portal."
     },

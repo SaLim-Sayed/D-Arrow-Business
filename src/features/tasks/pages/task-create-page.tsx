@@ -7,11 +7,14 @@ import { Button, Chip } from "@heroui/react";
 import { ArrowLeft, Layers, ListTodo } from "lucide-react";
 import { TasksPageHeader, TasksShell } from "../components/tasks-ui";
 
+import { normalizeTaskStatusValue } from "../utils/task-field-normalizers";
+
 export function TaskCreatePage() {
   const { t } = useTranslation("tasks");
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const parentId = searchParams.get("parentId");
+  const initialStatus = normalizeTaskStatusValue(searchParams.get("status") ?? "todo");
   const createTask = useCreateTask();
   const { data: parentTaskResponse } = useTaskQuery(parentId ?? "");
   const parentTask = parentId ? parentTaskResponse?.data : null;
@@ -23,7 +26,7 @@ export function TaskCreatePage() {
     <div className="mx-auto max-w-4xl animate-in fade-in pb-24 duration-300">
       <TasksPageHeader
         title={title}
-        description={parentId ? t("form.createSubtaskFor") : t("form.createHint")}
+        description={parentId ? t("form.createSubtaskFor") : t("form.pageDescription")}
         breadcrumbLabel={t("nav.dashboard")}
         breadcrumbTo="/tasks"
         action={
@@ -72,6 +75,7 @@ export function TaskCreatePage() {
         </div>
         <TaskForm
           parentTaskId={parentId}
+          defaultValues={parentId ? undefined : { status: initialStatus }}
           onSubmit={(data) => {
             createTask.mutate(data, {
               onSuccess: () => {

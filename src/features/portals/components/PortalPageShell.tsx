@@ -37,7 +37,12 @@ export function PortalPageShell({
             : "max-w-7xl"
       )}
     >
-      <div className="md:hidden sticky top-[var(--header-height)] z-30 -mx-4 px-4 py-2.5 glass border-b border-default-100/80 mb-4 shadow-sm">
+      <div
+        className={cn(
+          "md:hidden sticky top-[var(--header-height)] z-30 -mx-4 px-4 py-2 glass border-b border-default-100/80 shadow-sm",
+          fullBleed ? "mb-2" : "mb-4"
+        )}
+      >
         <PortalSubNav portal={portal} />
       </div>
 
@@ -47,7 +52,7 @@ export function PortalPageShell({
         </div>
       )}
 
-      <div className={cn(fullBleed && "min-h-[calc(100dvh-var(--header-height))]")}>
+      <div className={cn(fullBleed && "h-[calc(100dvh-var(--header-height))]")}>
         {children}
       </div>
     </div>

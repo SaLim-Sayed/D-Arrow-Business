@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { LayoutGrid } from "lucide-react";
-import { Button, Tooltip } from "@heroui/react";
+import { GripVertical, LayoutGrid } from "lucide-react";
+import { Tooltip } from "@heroui/react";
 import { cn } from "@/lib/utils";
 import { Logo } from "@/components/shared/logo";
 import { useAccessiblePortals } from "@/features/portals/hooks/use-portals";
@@ -11,19 +11,183 @@ import { PORTAL_META } from "@/features/portals/constants/portal-meta";
 import { PortalPickerDrawer } from "@/features/portals/components/PortalPickerDrawer";
 import { useLayoutStore } from "@/stores/layout.store";
 
+const DRAG_THRESHOLD_PX = 8;
+const FAB_EDGE_PAD = 8;
+
+function clampFabPosition(x: number, y: number, width: number, height: number) {
+  const maxX = Math.max(FAB_EDGE_PAD, window.innerWidth - width - FAB_EDGE_PAD);
+  const maxY = Math.max(FAB_EDGE_PAD, window.innerHeight - height - FAB_EDGE_PAD);
+  return {
+    x: Math.min(Math.max(FAB_EDGE_PAD, x), maxX),
+    y: Math.min(Math.max(FAB_EDGE_PAD, y), maxY),
+  };
+}
+
 export function PortalFloatingButton() {
   const { t, i18n } = useTranslation();
   const location = useLocation();
   const portals = useAccessiblePortals();
   const current = getPortalFromPath(location.pathname);
-  const { portalPickerOpen, setPortalPickerOpen } = useLayoutStore();
+  const {
+    portalPickerOpen,
+    setPortalPickerOpen,
+    portalFabPosition,
+    setPortalFabPosition,
+  } = useLayoutStore();
   const [localOpen, setLocalOpen] = useState(false);
-  const isRtl = i18n.language === "ar";
+  const [isDragging, setIsDragging] = useState(false);
+  const [livePosition, setLivePosition] = useState<{ x: number; y: number } | null>(
+    null
+  );
 
+  const fabRef = useRef<HTMLDivElement>(null);
+  const dragRef = useRef({
+    pointerId: -1,
+    startX: 0,
+    startY: 0,
+    originX: 0,
+    originY: 0,
+    moved: false,
+  });
+  const dragPositionRef = useRef<{ x: number; y: number } | null>(null);
+  const openTimerRef = useRef<number | null>(null);
+
+  const isRtl = i18n.language === "ar";
   const drawerOpen = portalPickerOpen || localOpen;
+  const position = livePosition ?? portalFabPosition;
+
   const setDrawerOpen = (open: boolean) => {
     setLocalOpen(open);
     setPortalPickerOpen(open);
+  };
+
+  const openDrawer = () => {
+    setLocalOpen(true);
+    setPortalPickerOpen(true);
+  };
+
+  const scheduleOpenDrawer = () => {
+    if (openTimerRef.current != null) {
+      window.clearTimeout(openTimerRef.current);
+    }
+    openTimerRef.current = window.setTimeout(() => {
+      openTimerRef.current = null;
+      openDrawer();
+    }, 220);
+  };
+
+  useEffect(
+    () => () => {
+      if (openTimerRef.current != null) {
+        window.clearTimeout(openTimerRef.current);
+      }
+    },
+    []
+  );
+
+  const persistPosition = (next: { x: number; y: number }) => {
+    const el = fabRef.current;
+    if (!el) {
+      setPortalFabPosition(next);
+      return;
+    }
+    const rect = el.getBoundingClientRect();
+    setPortalFabPosition(clampFabPosition(next.x, next.y, rect.width, rect.height));
+  };
+
+  useEffect(() => {
+    if (!portalFabPosition) return;
+
+    const onResize = () => {
+      const el = fabRef.current;
+      if (!el) return;
+      const rect = el.getBoundingClientRect();
+      setPortalFabPosition(
+        clampFabPosition(portalFabPosition.x, portalFabPosition.y, rect.width, rect.height)
+      );
+    };
+
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, [portalFabPosition, setPortalFabPosition]);
+
+  const onPointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
+    if (event.button !== 0) return;
+
+    const el = fabRef.current;
+    if (!el) return;
+
+    const rect = el.getBoundingClientRect();
+    const origin =
+      position ?? clampFabPosition(rect.left, rect.top, rect.width, rect.height);
+
+    dragRef.current = {
+      pointerId: event.pointerId,
+      startX: event.clientX,
+      startY: event.clientY,
+      originX: origin.x,
+      originY: origin.y,
+      moved: false,
+    };
+
+    event.currentTarget.setPointerCapture(event.pointerId);
+  };
+
+  const onPointerMove = (event: React.PointerEvent<HTMLDivElement>) => {
+    if (dragRef.current.pointerId !== event.pointerId) return;
+
+    const dx = event.clientX - dragRef.current.startX;
+    const dy = event.clientY - dragRef.current.startY;
+
+    if (!dragRef.current.moved && Math.hypot(dx, dy) >= DRAG_THRESHOLD_PX) {
+      dragRef.current.moved = true;
+      setIsDragging(true);
+    }
+
+    if (!dragRef.current.moved) return;
+
+    const el = fabRef.current;
+    if (!el) return;
+
+    const rect = el.getBoundingClientRect();
+    const next = clampFabPosition(
+      dragRef.current.originX + dx,
+      dragRef.current.originY + dy,
+      rect.width,
+      rect.height
+    );
+    dragPositionRef.current = next;
+    setLivePosition(next);
+  };
+
+  const finishDrag = (event: React.PointerEvent<HTMLDivElement>) => {
+    if (dragRef.current.pointerId !== event.pointerId) return;
+
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    }
+
+    const wasDrag = dragRef.current.moved;
+    dragRef.current.pointerId = -1;
+
+    if (wasDrag && dragPositionRef.current) {
+      persistPosition(dragPositionRef.current);
+    } else if (!wasDrag) {
+      scheduleOpenDrawer();
+    }
+
+    dragPositionRef.current = null;
+    setLivePosition(null);
+    setIsDragging(false);
+  };
+
+  const onDoubleClick = () => {
+    if (openTimerRef.current != null) {
+      window.clearTimeout(openTimerRef.current);
+      openTimerRef.current = null;
+    }
+    setPortalFabPosition(null);
+    setLivePosition(null);
   };
 
   if (portals.length <= 1) return null;
@@ -37,54 +201,83 @@ export function PortalFloatingButton() {
   const ActiveIcon = activeMeta?.icon ?? LayoutGrid;
   const label = activeMeta ? t(activeMeta.shortKey) : t("portals.allApps");
 
-  const openDrawer = () => setDrawerOpen(true);
-
   return (
     <>
       <div
+        ref={fabRef}
+        role="button"
+        tabIndex={0}
+        aria-label={t("portals.switchPortal")}
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+        onPointerUp={finishDrag}
+        onPointerCancel={finishDrag}
+        onDoubleClick={onDoubleClick}
+        onKeyDown={(event) => {
+          if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            openDrawer();
+          }
+        }}
+        style={
+          position
+            ? { left: position.x, top: position.y }
+            : undefined
+        }
         className={cn(
-          "fixed z-[200] flex flex-col items-center gap-1",
-          "bottom-[max(1rem,env(safe-area-inset-bottom))]",
-          isRtl ? "left-4" : "right-4",
-          "md:bottom-6",
-          isRtl ? "md:left-6" : "md:right-6"
+          "fixed z-[200] flex touch-none select-none flex-col items-center gap-1 outline-none",
+          "focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+          position
+            ? "cursor-grab"
+            : cn(
+                "bottom-[max(1rem,env(safe-area-inset-bottom))] md:bottom-6",
+                isRtl ? "left-4 md:left-6" : "right-4 md:right-6"
+              ),
+          isDragging && "cursor-grabbing scale-[1.03] z-[201]"
         )}
       >
-        {/* Mobile: compact FAB with brand logo */}
-        <Button
-          isIconOnly
-          color="primary"
-          onPress={openDrawer}
-          aria-label={t("portals.switchPortal")}
-          className={cn(
-            "md:hidden h-14 w-14 rounded-full shadow-2xl shadow-primary/40",
-            "ring-4 ring-background/80 backdrop-blur-sm",
-            "hover:scale-105 active:scale-95 transition-transform"
-          )}
+        <Tooltip
+          content={
+            position
+              ? t("portals.dragHintCustom")
+              : t("portals.dragHint")
+          }
+          placement="top"
+          isDisabled={isDragging}
         >
-          <span className="flex h-9 w-9 items-center justify-center rounded-full bg-white dark:bg-default-100">
-            <Logo size="sm" variant="icon" className="h-7 w-7 [&_img]:h-7" />
-          </span>
-        </Button>
-
-        {/* Desktop: pill with portal icon + label */}
-        <Tooltip content={t("portals.switchPortal")} placement="top">
-          <Button
-            color="primary"
-            onPress={openDrawer}
-            aria-label={t("portals.switchPortal")}
+          <div
             className={cn(
-              "hidden md:flex h-14 min-w-14 rounded-full font-bold",
-              "shadow-xl shadow-primary/35 px-4 gap-2",
-              "hover:scale-105 active:scale-95 transition-transform"
+              "group relative flex items-center gap-2 rounded-full bg-primary text-primary-foreground shadow-xl shadow-primary/35 transition-transform",
+              "hover:scale-105 active:scale-95",
+              "md:h-14 md:min-w-14 md:px-4 md:font-bold",
+              "h-14 w-14 justify-center md:w-auto",
+              "ring-4 ring-background/80 backdrop-blur-sm md:ring-0"
             )}
-            startContent={<ActiveIcon className="h-5 w-5 shrink-0" />}
           >
-            <span className="max-w-[120px] truncate">{label}</span>
-          </Button>
+            <span
+              className={cn(
+                "absolute -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-content1 text-default-400 shadow-sm",
+                "opacity-0 transition-opacity group-hover:opacity-100",
+                isDragging && "opacity-100",
+                isRtl ? "-left-1" : "-right-1"
+              )}
+              aria-hidden
+            >
+              <GripVertical className="h-3 w-3" />
+            </span>
+
+            <span className="flex h-9 w-9 items-center justify-center rounded-full bg-white dark:bg-default-100 md:hidden">
+              <Logo size="sm" variant="icon" className="h-7 w-7 [&_img]:h-7" />
+            </span>
+
+            <span className="hidden md:inline-flex md:items-center md:gap-2">
+              <ActiveIcon className="h-5 w-5 shrink-0" />
+              <span className="max-w-[120px] truncate">{label}</span>
+            </span>
+          </div>
         </Tooltip>
 
-        <span className="md:hidden text-[10px] font-bold uppercase tracking-wider text-default-500 pointer-events-none">
+        <span className="pointer-events-none text-[10px] font-bold uppercase tracking-wider text-default-500 md:hidden">
           {t("portals.allApps")}
         </span>
       </div>
