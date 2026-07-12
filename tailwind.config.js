@@ -10,6 +10,15 @@ export default {
   theme: {
     extend: {
       // Colors are handled by heroui plugin themes below
+      keyframes: {
+        "pulse-slow": {
+          "0%, 100%": { opacity: "0.4", transform: "scale(1)" },
+          "50%": { opacity: "0.65", transform: "scale(1.08)" },
+        },
+      },
+      animation: {
+        "pulse-slow": "pulse-slow 3.5s ease-in-out infinite",
+      },
     },
   },
   darkMode: "class",

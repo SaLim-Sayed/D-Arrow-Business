@@ -20,9 +20,11 @@ const MOCK_ACCOUNTS: CreateAccountDTO[] = [
   withAccountDefaults({ code: "1500", name: "Inventory Asset", type: "asset", subType: "inventory", isSystemAccount: true, isActive: true, currentBalance: 30000, currency: "USD" }),
   withAccountDefaults({ code: "2000", name: "Accounts Payable", type: "liability", subType: "accounts_payable", isSystemAccount: true, isActive: true, currentBalance: 4500, currency: "USD" }),
   withAccountDefaults({ code: "2100", name: "Tax Payable", type: "liability", subType: "current_liability", isSystemAccount: true, isActive: true, currentBalance: 0, currency: "USD" }),
+  withAccountDefaults({ code: "2500", name: "Zakat Payable", type: "liability", subType: "zakat_payable", isSystemAccount: true, isActive: true, currentBalance: 0, currency: "USD" }),
   withAccountDefaults({ code: "3000", name: "Owner's Equity", type: "equity", subType: "equity", isSystemAccount: true, isActive: true, currentBalance: 42500, currency: "USD" }),
   withAccountDefaults({ code: "4000", name: "Sales Revenue", type: "income", subType: "operating_income", isSystemAccount: true, isActive: true, currentBalance: 0, currency: "USD" }),
   withAccountDefaults({ code: "5000", name: "Cost of Goods Sold", type: "expense", subType: "cost_of_goods_sold", isSystemAccount: true, isActive: true, currentBalance: 0, currency: "USD" }),
+  withAccountDefaults({ code: "5600", name: "Zakat Expense", type: "expense", subType: "zakat_expense", isSystemAccount: true, isActive: true, currentBalance: 0, currency: "USD" }),
   withAccountDefaults({ code: "6000", name: "Bank Fees", type: "expense", subType: "operating_expense", isSystemAccount: false, isActive: true, currentBalance: 0, currency: "USD" }),
 ];
 

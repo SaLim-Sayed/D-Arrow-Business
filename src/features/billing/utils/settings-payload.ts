@@ -92,6 +92,13 @@ export function prepareBillingSettingsForSave(
           suffix: data.proposalSequence.suffix?.trim() || undefined,
         }
       : undefined,
+    zakatSequence: {
+      prefix: data.zakatSequence?.prefix ?? "ZKT-",
+      nextNumber: finiteNumber(data.zakatSequence?.nextNumber, 1),
+      padding: finiteNumber(data.zakatSequence?.padding, 4),
+      suffix: data.zakatSequence?.suffix?.trim() || undefined,
+    },
+    zakatRate: finiteNumber(data.zakatRate, 2.5),
   };
 }
 

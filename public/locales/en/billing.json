@@ -10,6 +10,7 @@
     "products": "Products & Services",
     "accounts": "Chart of Accounts",
     "journals": "Manual Journals",
+    "zakat": "Zakat",
     "settings": "Settings"
   },
   "landing": {
@@ -46,6 +47,10 @@
       "journals": {
         "title": "Journal Entries",
         "desc": "Manual and automatic accounting entries"
+      },
+      "zakat": {
+        "title": "Zakat",
+        "desc": "Calculate, accrue, and pay Zakat"
       },
       "settings": {
         "title": "Settings",
@@ -183,7 +188,10 @@
     "loading": "Loading settings...",
     "sequence_help": "Used to auto-generate invoice numbers when posting. The next number advances automatically and will not roll back when you save settings.",
     "sequence_preview": "Next number preview",
-    "unsaved_hint": "You have unsaved changes — click Save."
+    "unsaved_hint": "You have unsaved changes — click Save.",
+    "zakat_settings": "Zakat",
+    "zakat_settings_desc": "Configure the default Zakat rate and document numbering used when accruing Zakat.",
+    "zakat_rate": "Zakat Rate"
   },
   "products": {
     "title": "Products & Services",
@@ -324,13 +332,16 @@
       "credit_card": "Credit Card",
       "current_liability": "Current Liability",
       "long_term_liability": "Long Term Liability",
+      "tax_payable": "Tax Payable",
+      "zakat_payable": "Zakat Payable",
       "equity": "Equity",
       "retained_earnings": "Retained Earnings",
       "operating_income": "Operating Income",
       "other_income": "Other Income",
       "operating_expense": "Operating Expense",
       "cost_of_goods_sold": "Cost of Goods Sold",
-      "other_expense": "Other Expense"
+      "other_expense": "Other Expense",
+      "zakat_expense": "Zakat Expense"
     },
     "names": {
       "Cash on Hand": "Cash on Hand",
@@ -340,7 +351,9 @@
       "Owner's Equity": "Owner's Equity",
       "Sales Revenue": "Sales Revenue",
       "Cost of Goods Sold": "Cost of Goods Sold",
-      "Bank Fees": "Bank Fees"
+      "Bank Fees": "Bank Fees",
+      "Zakat Payable": "Zakat Payable",
+      "Zakat Expense": "Zakat Expense"
     }
   },
   "journals": {
@@ -713,5 +726,45 @@
       "ar": "Who hasn't paid you? From unpaid sales invoices.",
       "ap": "Who haven't you paid? From unpaid vendor bills."
     }
+  },
+  "zakat": {
+    "title": "Zakat",
+    "description": "Calculate, accrue, and pay Zakat on eligible assets at your configured rate, per Islamic accounting principles.",
+    "accrue": "Accrue Zakat",
+    "accrue_title": "Accrue Zakat",
+    "accrue_confirm": "Post Accrual",
+    "accrue_success": "Zakat accrued and journal entry posted.",
+    "accrue_failed": "Could not accrue Zakat.",
+    "fiscal_year": "Fiscal Year",
+    "period_end": "Period End Date",
+    "rate": "Zakat Rate",
+    "rate_hint": "Defaults to the rate configured in Accounting Settings — override for this accrual only.",
+    "configure_rate": "Configure Rate",
+    "notes": "Notes",
+    "eligible_assets": "Eligible Assets",
+    "zakat_base": "Zakat Base",
+    "zakat_due": "Zakat Due",
+    "formula_help": "Zakat base = eligible assets (cash, bank, receivables, inventory) − current liabilities. Zakat due = base × configured rate, if positive. The rate and document numbering are configurable in Accounting Settings.",
+    "empty": "No Zakat records yet — accrue Zakat for the current fiscal year to get started.",
+    "columns": {
+      "fiscal_year": "Fiscal Year",
+      "period_end": "Period End",
+      "base": "Zakat Base",
+      "due": "Zakat Due",
+      "status": "Status"
+    },
+    "status": {
+      "draft": "Draft",
+      "accrued": "Accrued",
+      "paid": "Paid"
+    },
+    "record_payment": "Record Payment",
+    "payment_title": "Record Zakat Payment",
+    "payment_confirm": "Record Payment",
+    "payment_success": "Zakat payment recorded and journal entry posted.",
+    "payment_failed": "Could not record Zakat payment.",
+    "payment_date": "Payment Date",
+    "bank_account": "Pay From Account",
+    "select_bank_account": "Select a bank or cash account to pay from."
   }
 }

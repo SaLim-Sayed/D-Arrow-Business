@@ -55,6 +55,7 @@ import BillsPage from "@/features/billing/pages/BillsPage";
 import CreateBillPage from "@/features/billing/pages/CreateBillPage";
 import BillDetailPage from "@/features/billing/pages/BillDetailPage";
 import ReportsPage from "@/features/billing/pages/ReportsPage";
+import ZakatPage from "@/features/billing/pages/ZakatPage";
 
 export const router = createBrowserRouter([
   {
@@ -163,6 +164,7 @@ export const router = createBrowserRouter([
               { path: "bills/:id", element: <BillDetailPage /> },
               { path: "accounts", element: <ChartOfAccountsPage /> },
               { path: "journals", element: <ManualJournalsPage /> },
+              { path: "zakat", element: <ZakatPage /> },
               { path: "products", element: <ProductsPage /> },
               { path: "settings", element: <SettingsPage /> },
             ],

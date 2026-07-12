@@ -105,6 +105,14 @@ export function createBillingSettingsSchema(v: BillingSettingsValidationMessages
     proposalSequence: documentSequenceSchema
       .extend({ prefix: z.string().default("PRP-") })
       .optional(),
+    zakatSequence: documentSequenceSchema
+      .extend({ prefix: z.string().default("ZKT-") })
+      .optional(),
+    // Percentage (e.g. 2.5 for 2.5%), configurable per company/jurisdiction.
+    zakatRate: z.preprocess(
+      (val) => (Number.isFinite(Number(val)) ? Number(val) : 2.5),
+      z.number().min(0).max(100)
+    ).default(2.5),
   });
 }
 
@@ -140,3 +148,4 @@ export type DocumentSequence = InvoiceSequence;
 export type QuotationSequence = NonNullable<BillingSettings["quotationSequence"]>;
 export type EstimateSequence = NonNullable<BillingSettings["estimateSequence"]>;
 export type ProposalSequence = NonNullable<BillingSettings["proposalSequence"]>;
+export type ZakatSequence = NonNullable<BillingSettings["zakatSequence"]>;

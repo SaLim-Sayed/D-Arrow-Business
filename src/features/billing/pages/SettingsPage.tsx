@@ -134,6 +134,12 @@ export default function SettingsPage() {
         nextNumber: 1,
         padding: 4,
       },
+      zakatSequence: {
+        prefix: "ZKT-",
+        nextNumber: 1,
+        padding: 4,
+      },
+      zakatRate: 2.5,
       currencies: [{ ...DEFAULT_BILLING_CURRENCY_ENTRY }],
       taxes: [],
       paymentMethods: [],
@@ -159,6 +165,14 @@ export default function SettingsPage() {
   const sequencePadding = watch("invoiceSequence.padding") ?? 4;
   const sequencePreview = `${sequencePrefix}${String(sequenceNext).padStart(
     Math.max(1, Number(sequencePadding) || 1),
+    "0"
+  )}`;
+
+  const zakatPrefix = watch("zakatSequence.prefix") ?? "ZKT-";
+  const zakatNext = watch("zakatSequence.nextNumber") ?? 1;
+  const zakatPadding = watch("zakatSequence.padding") ?? 4;
+  const zakatSequencePreview = `${zakatPrefix}${String(zakatNext).padStart(
+    Math.max(1, Number(zakatPadding) || 1),
     "0"
   )}`;
 
@@ -379,16 +393,75 @@ export default function SettingsPage() {
             )}
 
             {activeTab === "financial" && (
-              <div className="space-y-3">
-                <p className="text-xs text-default-500">{t("settings.financial_desc")}</p>
-                <TaxRatesEditor
-                  register={register}
-                  watch={watch}
-                  setValue={setValue}
-                  taxFields={taxFields}
-                  appendTax={appendTax}
-                  removeTax={removeTax}
-                />
+              <div className="space-y-4">
+                <div className="space-y-3">
+                  <p className="text-xs text-default-500">{t("settings.financial_desc")}</p>
+                  <TaxRatesEditor
+                    register={register}
+                    watch={watch}
+                    setValue={setValue}
+                    taxFields={taxFields}
+                    appendTax={appendTax}
+                    removeTax={removeTax}
+                  />
+                </div>
+
+                <SettingsSection
+                  title={t("settings.zakat_settings")}
+                  description={t("settings.zakat_settings_desc")}
+                >
+                  <Input
+                    size="sm"
+                    label={t("settings.zakat_rate")}
+                    type="number"
+                    step="0.1"
+                    min={0}
+                    max={100}
+                    endContent={<span className="text-xs text-default-400">%</span>}
+                    {...register("zakatRate", { valueAsNumber: true })}
+                    isInvalid={!!(errors as any)?.zakatRate}
+                    errorMessage={(errors as any)?.zakatRate?.message}
+                    variant="flat"
+                    classNames={inputClassNames}
+                    dir="ltr"
+                  />
+                  <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+                    <Input
+                      size="sm"
+                      label={t("settings.prefix")}
+                      placeholder="ZKT-"
+                      {...register("zakatSequence.prefix")}
+                      variant="flat"
+                      classNames={inputClassNames}
+                      dir="ltr"
+                    />
+                    <Input
+                      size="sm"
+                      label={t("settings.next_number")}
+                      type="number"
+                      {...register("zakatSequence.nextNumber", { valueAsNumber: true })}
+                      variant="flat"
+                      classNames={inputClassNames}
+                      dir="ltr"
+                    />
+                    <Input
+                      size="sm"
+                      label={t("settings.padding")}
+                      type="number"
+                      {...register("zakatSequence.padding", { valueAsNumber: true })}
+                      variant="flat"
+                      classNames={inputClassNames}
+                      dir="ltr"
+                    />
+                  </div>
+                  <div className="flex items-center gap-2 rounded-md border border-primary/20 bg-primary/[0.04] px-3 py-2 text-sm">
+                    <Hash className="h-4 w-4 shrink-0 text-primary" />
+                    <span className="text-default-600">{t("settings.sequence_preview")}:</span>
+                    <span className="font-mono font-bold text-primary" dir="ltr">
+                      {zakatSequencePreview}
+                    </span>
+                  </div>
+                </SettingsSection>
               </div>
             )}
 

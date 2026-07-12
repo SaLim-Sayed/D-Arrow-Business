@@ -245,35 +245,59 @@ export function PortalFloatingButton() {
           placement="top"
           isDisabled={isDragging}
         >
-          <div
-            className={cn(
-              "group relative flex items-center gap-2 rounded-full bg-primary text-primary-foreground shadow-xl shadow-primary/35 transition-transform",
-              "hover:scale-105 active:scale-95",
-              "md:h-14 md:min-w-14 md:px-4 md:font-bold",
-              "h-14 w-14 justify-center md:w-auto",
-              "ring-4 ring-background/80 backdrop-blur-sm md:ring-0"
-            )}
-          >
+          <div className="relative">
+            {/* Soft ambient glow, breathing gently behind the button */}
             <span
               className={cn(
-                "absolute -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-content1 text-default-400 shadow-sm",
-                "opacity-0 transition-opacity group-hover:opacity-100",
-                isDragging && "opacity-100",
-                isRtl ? "-left-1" : "-right-1"
+                "pointer-events-none absolute inset-0 -z-10 rounded-full bg-gradient-to-br from-primary to-secondary blur-lg",
+                "opacity-40 animate-pulse-slow",
+                "group-hover:opacity-60"
               )}
               aria-hidden
+            />
+
+            <div
+              className={cn(
+                "group relative flex items-center gap-2 overflow-hidden rounded-full",
+                "bg-gradient-to-br from-primary via-primary to-secondary text-primary-foreground",
+                "shadow-xl shadow-primary/40 transition-all duration-300",
+                "hover:scale-105 hover:shadow-2xl hover:shadow-secondary/40 active:scale-95",
+                "md:h-14 md:min-w-14 md:px-4 md:font-bold",
+                "h-14 w-14 justify-center md:w-auto",
+                "ring-4 ring-background/80 backdrop-blur-sm md:ring-0"
+              )}
             >
-              <GripVertical className="h-3 w-3" />
-            </span>
+              {/* Diagonal shine that sweeps across on hover */}
+              <span
+                className={cn(
+                  "pointer-events-none absolute inset-y-0 -left-1/2 w-1/3 -skew-x-12 bg-white/30",
+                  "-translate-x-[150%] transition-transform duration-700 ease-out",
+                  "group-hover:translate-x-[250%]"
+                )}
+                aria-hidden
+              />
 
-            <span className="flex h-9 w-9 items-center justify-center rounded-full bg-white dark:bg-default-100 md:hidden">
-              <Logo size="sm" variant="icon" className="h-7 w-7 [&_img]:h-7" />
-            </span>
+              <span
+                className={cn(
+                  "absolute -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-content1 text-default-400 shadow-sm",
+                  "opacity-0 transition-opacity group-hover:opacity-100",
+                  isDragging && "opacity-100",
+                  isRtl ? "-left-1" : "-right-1"
+                )}
+                aria-hidden
+              >
+                <GripVertical className="h-3 w-3" />
+              </span>
 
-            <span className="hidden md:inline-flex md:items-center md:gap-2">
-              <ActiveIcon className="h-5 w-5 shrink-0" />
-              <span className="max-w-[120px] truncate">{label}</span>
-            </span>
+              <span className="flex h-9 w-9 items-center justify-center rounded-full bg-white dark:bg-default-100 md:hidden">
+                <Logo size="sm" variant="icon" className="h-7 w-7 [&_img]:h-7" />
+              </span>
+
+              <span className="hidden md:inline-flex md:items-center md:gap-2">
+                <ActiveIcon className="h-5 w-5 shrink-0 transition-transform duration-300 group-hover:rotate-12" />
+                <span className="max-w-[120px] truncate">{label}</span>
+              </span>
+            </div>
           </div>
         </Tooltip>
 

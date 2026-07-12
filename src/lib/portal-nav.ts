@@ -20,6 +20,7 @@ import {
   ReceiptText,
   PieChart,
   LayoutGrid,
+  HandCoins,
   type LucideIcon,
 } from "lucide-react";
 
@@ -64,6 +65,7 @@ export const BILLING_NAV: PortalNavItem[] = [
   { labelKey: "nav.products", path: "/billing/products", icon: Package, namespace: "billing" },
   { labelKey: "nav.journals", path: "/billing/journals", icon: BookA, namespace: "billing" },
   { labelKey: "nav.accounts", path: "/billing/accounts", icon: BookCopy, namespace: "billing" },
+  { labelKey: "nav.zakat", path: "/billing/zakat", icon: HandCoins, namespace: "billing" },
   { labelKey: "nav.settings", path: "/billing/settings", icon: Settings, namespace: "billing" },
 ];
 

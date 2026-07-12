@@ -7,6 +7,7 @@ import {
   Calculator,
   FileSpreadsheet,
   FileText,
+  HandCoins,
   LayoutDashboard,
   Package,
   PieChart,
@@ -220,6 +221,13 @@ export default function AccountingLandingPage() {
           title={t("landing.apps.journals.title")}
           description={t("landing.apps.journals.desc")}
           iconClassName="bg-orange-500/10 text-orange-600"
+        />
+        <AccountingAppTile
+          to="/billing/zakat"
+          icon={HandCoins}
+          title={t("landing.apps.zakat.title")}
+          description={t("landing.apps.zakat.desc")}
+          iconClassName="bg-teal-500/10 text-teal-600"
         />
         <AccountingAppTile
           to="/billing/settings"

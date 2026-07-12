@@ -24,6 +24,7 @@ export const ACCOUNT_SUB_TYPES = [
   "accounts_payable",
   "credit_card",
   "tax_payable",
+  "zakat_payable",
   "accrued_expenses",
   "other_current_liability",
   // Equity
@@ -42,6 +43,7 @@ export const ACCOUNT_SUB_TYPES = [
   "salary_expense",
   "rent_expense",
   "utility_expense",
+  "zakat_expense",
 ] as const;
 
 export const accountSchema = z.object({
@@ -221,7 +223,19 @@ export const DEFAULT_CHART_OF_ACCOUNTS: Omit<CreateAccountDTO, "isActive">[] = [
     allowManualEntries: true,
     deprecated: false,
   },
-  
+  {
+    code: "2500",
+    name: "Zakat Payable",
+    type: "liability",
+    subType: "zakat_payable",
+    isSystemAccount: true,
+    currency: "USD",
+    currentBalance: 0,
+    reconcile: false,
+    allowManualEntries: true,
+    deprecated: false,
+  },
+
   // EQUITY (3000-3999)
   {
     code: "3000",
@@ -353,6 +367,18 @@ export const DEFAULT_CHART_OF_ACCOUNTS: Omit<CreateAccountDTO, "isActive">[] = [
     type: "expense",
     subType: "other_expense",
     isSystemAccount: false,
+    currency: "USD",
+    currentBalance: 0,
+    reconcile: false,
+    allowManualEntries: true,
+    deprecated: false,
+  },
+  {
+    code: "5600",
+    name: "Zakat Expense",
+    type: "expense",
+    subType: "zakat_expense",
+    isSystemAccount: true,
     currency: "USD",
     currentBalance: 0,
     reconcile: false,

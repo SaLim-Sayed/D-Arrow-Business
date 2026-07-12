@@ -24,6 +24,7 @@ import type { Account, CreateAccountDTO, UpdateAccountDTO } from "../schemas/acc
 import type { JournalEntry, CreateJournalEntryDTO, UpdateJournalEntryDTO } from "../schemas/journal";
 import type { Product, CreateProductDTO, UpdateProductDTO, ProductCategory, ProductUnit } from "../schemas/product";
 import type { Payment, CreatePaymentDTO } from "../schemas/payment";
+import type { ZakatRecord, CreateZakatRecordDTO, UpdateZakatRecordDTO } from "../schemas/zakat";
 import type { BillingSettings } from "../schemas/settings";
 import { DEFAULT_BILLING_CURRENCY_ENTRY } from "../utils/billing-currency";
 import { DEFAULT_TAXES } from "../data/product-defaults";
@@ -178,6 +179,7 @@ export const BillingService = {
   productCategories: createBillingCollectionService<ProductCategory, Partial<ProductCategory>, Partial<ProductCategory>>("product_categories", "ProductCategoryService"),
   productUnits: createBillingCollectionService<ProductUnit, Partial<ProductUnit>, Partial<ProductUnit>>("product_units", "ProductUnitService"),
   payments: createBillingCollectionService<Payment, CreatePaymentDTO, Partial<CreatePaymentDTO>>("payments", "PaymentService"),
+  zakatRecords: createBillingCollectionService<ZakatRecord, CreateZakatRecordDTO, UpdateZakatRecordDTO>("zakatRecords", "ZakatRecordService"),
   
   // Generic Document System
   documents: GenericDocumentService,
@@ -209,7 +211,7 @@ export const BillingService = {
     });
   },
 
-  async reserveDocumentNumber(companyId: string, documentType: "invoice" | "quotation" | "estimate" | "proposal"): Promise<string> {
+  async reserveDocumentNumber(companyId: string, documentType: "invoice" | "quotation" | "estimate" | "proposal" | "zakat"): Promise<string> {
     const sequenceKey = `${documentType}Sequence` as keyof BillingSettings;
     const docRef = doc(db, "companies", companyId, "settings", "billing");
 
@@ -226,8 +228,8 @@ export const BillingService = {
       const seq = (settings?.[sequenceKey] as DocumentSequence | undefined) ?? defaultSeq;
 
       const { formatSequenceNumber } = await import("../utils/invoice-sequence");
-      let nextNum = Math.max(1, Number(seq.nextNumber) || 1);
-      let documentNumber = formatSequenceNumber({ ...seq, nextNumber: nextNum });
+      const nextNum = Math.max(1, Number(seq.nextNumber) || 1);
+      const documentNumber = formatSequenceNumber({ ...seq, nextNumber: nextNum });
 
       tx.set(
         docRef,
@@ -282,6 +284,8 @@ export const BillingService = {
               quotationSequence: { prefix: "QUO-", nextNumber: 1, padding: 4 },
               estimateSequence: { prefix: "EST-", nextNumber: 1, padding: 4 },
               proposalSequence: { prefix: "PRP-", nextNumber: 1, padding: 4 },
+              zakatSequence: { prefix: "ZKT-", nextNumber: 1, padding: 4 },
+              zakatRate: 2.5,
             } as BillingSettings),
             message: "Defaults returned"
           };
