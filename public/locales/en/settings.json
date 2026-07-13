@@ -22,6 +22,7 @@
     "fields": {
       "name": "Company name",
       "nameAr": "Company name (Arabic)",
+      "logoUrl": "Logo URL",
       "commercialRegister": "Commercial register",
       "commercialRegisterHint": "Official commercial registration number (السجل التجاري)",
       "taxNumber": "Tax number",
@@ -31,7 +32,8 @@
       "address": "Address",
       "city": "City",
       "country": "Country",
-      "defaultCurrency": "Default currency"
+      "defaultCurrency": "Default currency",
+      "superAdminOnly": "Only a super admin can change this"
     },
     "branding": {
       "title": "Branding",
@@ -39,7 +41,13 @@
       "primary": "Primary color",
       "secondary": "Secondary color",
       "reset": "Reset to default",
-      "save": "Save colors"
+      "save": "Save colors",
+      "presets": {
+        "sunset": "Sunset",
+        "ocean": "Ocean Breeze",
+        "violet": "Violet Bloom",
+        "slate": "Slate Steel"
+      }
     }
   },
   "pricing": {

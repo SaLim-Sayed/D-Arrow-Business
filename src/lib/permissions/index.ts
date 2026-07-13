@@ -7,6 +7,7 @@ export type Permission =
   | "portals.billing"
   | "company.view"
   | "company.manage"
+  | "company.identity"
   | "pricing.view"
   | "pricing.manage"
   | "users.manage_roles"
@@ -42,6 +43,7 @@ const ALL_PERMISSIONS: Permission[] = [
   "portals.billing",
   "company.view",
   "company.manage",
+  "company.identity",
   "pricing.view",
   "pricing.manage",
   "users.manage_roles",
@@ -65,7 +67,9 @@ const ALL_PERMISSIONS: Permission[] = [
 
 export const ROLE_PERMISSIONS: Record<UserRole, readonly Permission[]> = {
   super_admin: ALL_PERMISSIONS,
-  admin: ALL_PERMISSIONS.filter((p) => p !== "admin.seed"),
+  admin: ALL_PERMISSIONS.filter(
+    (p) => p !== "admin.seed" && p !== "company.identity"
+  ),
   manager: [
     "portals.tasks",
     "portals.crm",

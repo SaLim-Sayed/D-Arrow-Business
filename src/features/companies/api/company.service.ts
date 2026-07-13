@@ -30,6 +30,7 @@ function mapCompanyDoc(
     city: data.city as string | undefined,
     country: data.country as string | undefined,
     defaultCurrency: (data.defaultCurrency as string) ?? "USD",
+    logoUrl: data.logoUrl as string | undefined,
     brandColor: data.brandColor as string | undefined,
     brandSecondaryColor: data.brandSecondaryColor as string | undefined,
     createdAt: (data.createdAt as string) ?? new Date().toISOString(),

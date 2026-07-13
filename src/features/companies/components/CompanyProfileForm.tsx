@@ -20,11 +20,59 @@ import { useCompanyProfile, useUpdateCompanyProfileMutation } from "../hooks/use
 import { LoadingSpinner } from "@/components/shared/loading-spinner";
 import { selectFieldProps } from "@/components/shared/select-field";
 import { useAppPermissions } from "../hooks/use-app-permissions";
-import { BRAND_PRIMARY_HEX, BRAND_SECONDARY_HEX } from "@/theme/brand-colors";
+import { BRAND_PRIMARY_HEX, BRAND_SECONDARY_HEX, THEME_PRESETS } from "@/theme/brand-colors";
+import { cn } from "@/lib/utils";
 
 const CURRENCIES = ["USD", "EUR", "SAR", "AED", "EGP"];
 
 const HEX_PATTERN = /^#[0-9a-fA-F]{6}$/;
+
+function ThemePresetPicker({
+  activePrimary,
+  activeSecondary,
+  onSelect,
+  disabled,
+}: {
+  activePrimary: string;
+  activeSecondary: string;
+  onSelect: (primary: string, secondary: string) => void;
+  disabled?: boolean;
+}) {
+  const { t } = useTranslation("settings");
+
+  return (
+    <div className="flex flex-wrap gap-2">
+      {THEME_PRESETS.map((preset) => {
+        const isActive =
+          activePrimary.toLowerCase() === preset.primary.toLowerCase() &&
+          activeSecondary.toLowerCase() === preset.secondary.toLowerCase();
+        return (
+          <button
+            key={preset.id}
+            type="button"
+            disabled={disabled}
+            onClick={() => onSelect(preset.primary, preset.secondary)}
+            className={cn(
+              "flex items-center gap-2 rounded-full border px-2.5 py-1.5 text-xs font-medium transition-all",
+              isActive
+                ? "border-primary ring-2 ring-primary/30"
+                : "border-default-200 hover:border-default-300",
+              disabled && "cursor-not-allowed opacity-60"
+            )}
+          >
+            <span
+              className="h-4 w-4 shrink-0 rounded-full"
+              style={{
+                background: `linear-gradient(135deg, ${preset.primary} 50%, ${preset.secondary} 50%)`,
+              }}
+            />
+            {t(`company.branding.presets.${preset.nameKey}`)}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
 
 function ColorField({
   label,
@@ -83,8 +131,12 @@ export function CompanyProfileForm({ readOnly }: CompanyProfileFormProps) {
   // the main "Save" button below — saving colors shouldn't require the rest
   // of the company profile (e.g. commercial register) to be filled in/valid.
   const saveColors = useUpdateCompanyProfileMutation();
-  const { canManageCompany } = useAppPermissions();
+  const { canManageCompany, canManageCompanyIdentity } = useAppPermissions();
   const editable = canManageCompany && !readOnly;
+  // Company name and logo are locked to super_admin — a regular company
+  // admin can manage everything else (contact info, branding colors, etc.)
+  // but shouldn't be able to rename the company or swap its logo.
+  const canEditIdentity = canManageCompanyIdentity && !readOnly;
 
   const {
     register,
@@ -94,6 +146,7 @@ export function CompanyProfileForm({ readOnly }: CompanyProfileFormProps) {
     setValue,
     getValues,
     trigger,
+    watch,
     formState: { errors, isSubmitting },
   } = useForm<CompanyProfileFormValues>({
     resolver: zodResolver(companyProfileSchema),
@@ -109,6 +162,7 @@ export function CompanyProfileForm({ readOnly }: CompanyProfileFormProps) {
       city: "",
       country: "",
       defaultCurrency: "USD",
+      logoUrl: "",
       brandColor: "",
       brandSecondaryColor: "",
     },
@@ -128,6 +182,7 @@ export function CompanyProfileForm({ readOnly }: CompanyProfileFormProps) {
         city: profile.city ?? "",
         country: profile.country ?? "",
         defaultCurrency: profile.defaultCurrency ?? "USD",
+        logoUrl: profile.logoUrl ?? "",
         brandColor: profile.brandColor ?? "",
         brandSecondaryColor: profile.brandSecondaryColor ?? "",
       });
@@ -137,6 +192,11 @@ export function CompanyProfileForm({ readOnly }: CompanyProfileFormProps) {
   const onSubmit = async (values: CompanyProfileFormValues) => {
     await updateProfile.mutateAsync({
       ...values,
+      // Identity fields are read-only in the UI for non-super_admin users, but
+      // guard the write too so a crafted submit can't smuggle changes through.
+      name: canEditIdentity ? values.name : undefined,
+      nameAr: canEditIdentity ? values.nameAr : undefined,
+      logoUrl: canEditIdentity ? values.logoUrl || undefined : undefined,
       email: values.email || undefined,
       brandColor: values.brandColor || undefined,
       brandSecondaryColor: values.brandSecondaryColor || undefined,
@@ -173,7 +233,8 @@ export function CompanyProfileForm({ readOnly }: CompanyProfileFormProps) {
             <Input
               label={t("company.fields.name")}
               variant="bordered"
-              isReadOnly={!editable}
+              isReadOnly={!canEditIdentity}
+              description={!canEditIdentity ? t("company.fields.superAdminOnly") : undefined}
               {...register("name")}
               isInvalid={!!errors.name}
               errorMessage={errors.name?.message}
@@ -182,8 +243,38 @@ export function CompanyProfileForm({ readOnly }: CompanyProfileFormProps) {
               label={t("company.fields.nameAr")}
               variant="bordered"
               dir="rtl"
-              isReadOnly={!editable}
+              isReadOnly={!canEditIdentity}
+              description={!canEditIdentity ? t("company.fields.superAdminOnly") : undefined}
               {...register("nameAr")}
+            />
+            <Controller
+              name="logoUrl"
+              control={control}
+              render={({ field }) => (
+                <div className="flex items-end gap-3 md:col-span-2">
+                  {field.value && (
+                    <img
+                      src={field.value}
+                      alt=""
+                      className="h-10 w-10 shrink-0 rounded-lg border border-default-200 object-contain"
+                      onError={(e) => {
+                        e.currentTarget.style.display = "none";
+                      }}
+                    />
+                  )}
+                  <Input
+                    label={t("company.fields.logoUrl")}
+                    variant="bordered"
+                    dir="ltr"
+                    isReadOnly={!canEditIdentity}
+                    description={!canEditIdentity ? t("company.fields.superAdminOnly") : undefined}
+                    isInvalid={!!errors.logoUrl}
+                    errorMessage={errors.logoUrl?.message}
+                    className="flex-1"
+                    {...field}
+                  />
+                </div>
+              )}
             />
             <Input
               label={t("company.fields.commercialRegister")}
@@ -302,7 +393,16 @@ export function CompanyProfileForm({ readOnly }: CompanyProfileFormProps) {
                 </div>
               )}
             </div>
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <ThemePresetPicker
+              activePrimary={watch("brandColor") || BRAND_PRIMARY_HEX}
+              activeSecondary={watch("brandSecondaryColor") || BRAND_SECONDARY_HEX}
+              disabled={!editable}
+              onSelect={(primary, secondary) => {
+                setValue("brandColor", primary, { shouldDirty: true });
+                setValue("brandSecondaryColor", secondary, { shouldDirty: true });
+              }}
+            />
+            <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
               <Controller
                 name="brandColor"
                 control={control}

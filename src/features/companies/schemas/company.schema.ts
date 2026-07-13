@@ -21,6 +21,7 @@ export const companyProfileSchema = z.object({
   city: z.string().optional(),
   country: z.string().optional(),
   defaultCurrency: z.string().length(3, "Use ISO currency code"),
+  logoUrl: z.string().url().optional().or(z.literal("")),
   brandColor: hexColorSchema,
   brandSecondaryColor: hexColorSchema,
 });

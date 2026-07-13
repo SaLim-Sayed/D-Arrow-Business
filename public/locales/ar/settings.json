@@ -22,6 +22,7 @@
     "fields": {
       "name": "اسم الشركة",
       "nameAr": "اسم الشركة (عربي)",
+      "logoUrl": "رابط الشعار",
       "commercialRegister": "السجل التجاري",
       "commercialRegisterHint": "رقم السجل التجاري الرسمي",
       "taxNumber": "الرقم الضريبي",
@@ -31,7 +32,8 @@
       "address": "العنوان",
       "city": "المدينة",
       "country": "الدولة",
-      "defaultCurrency": "العملة الافتراضية"
+      "defaultCurrency": "العملة الافتراضية",
+      "superAdminOnly": "يمكن للمدير العام فقط تغيير هذا الحقل"
     },
     "branding": {
       "title": "الهوية البصرية",
@@ -39,7 +41,13 @@
       "primary": "اللون الأساسي",
       "secondary": "اللون الثانوي",
       "reset": "إعادة للافتراضي",
-      "save": "حفظ الألوان"
+      "save": "حفظ الألوان",
+      "presets": {
+        "sunset": "الغروب",
+        "ocean": "نسيم المحيط",
+        "violet": "بنفسجي",
+        "slate": "رمادي أردوازي"
+      }
     }
   },
   "pricing": {

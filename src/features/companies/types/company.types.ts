@@ -11,6 +11,8 @@ export interface CompanyProfile {
   city?: string;
   country?: string;
   defaultCurrency: string;
+  /** URL of the company's logo image. Editable by super_admin only. */
+  logoUrl?: string;
   /** Hex color, e.g. "#ff6b4a" — overrides the app's default primary brand color for this company. */
   brandColor?: string;
   /** Hex color, e.g. "#d53a81" — overrides the app's default secondary brand color for this company. */

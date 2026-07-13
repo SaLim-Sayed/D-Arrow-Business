@@ -133,3 +133,22 @@ export function buildCustomBrandPalette(primaryHex?: string, secondaryHex?: stri
     secondary: buildColorScale(secondaryHex ?? BRAND_SECONDARY_HEX, "#FFFFFF"),
   };
 }
+
+/**
+ * Curated primary/secondary presets offered as one-click theme choices in the
+ * company branding picker — each hue kept clearly distinct from the fixed
+ * success/warning/danger tokens so status colors never get confused with brand.
+ */
+export interface ThemePreset {
+  id: string;
+  nameKey: string;
+  primary: string;
+  secondary: string;
+}
+
+export const THEME_PRESETS: ThemePreset[] = [
+  { id: "sunset", nameKey: "sunset", primary: "#ff6b4a", secondary: "#d53a81" },
+  { id: "ocean", nameKey: "ocean", primary: "#2f6fed", secondary: "#14b8a6" },
+  { id: "violet", nameKey: "violet", primary: "#6d28d9", secondary: "#db2777" },
+  { id: "slate", nameKey: "slate", primary: "#3b5570", secondary: "#0891b2" },
+];

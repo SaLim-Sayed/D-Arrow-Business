@@ -24,6 +24,7 @@ export function useAppPermissions() {
     canAny: (permissions: readonly Permission[]) =>
       hasAnyEffectivePermission(ctx, permissions),
     canManageCompany: hasEffectivePermission(ctx, "company.manage"),
+    canManageCompanyIdentity: hasEffectivePermission(ctx, "company.identity"),
     canViewCompany: hasEffectivePermission(ctx, "company.view"),
     canManagePricing: hasEffectivePermission(ctx, "pricing.manage"),
     canViewPricing: hasEffectivePermission(ctx, "pricing.view"),
