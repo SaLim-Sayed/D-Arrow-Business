@@ -1,3 +1,5 @@
+import { BRAND_PRIMARY_HEX, BRAND_SECONDARY_HEX } from "@/theme/brand-colors";
+
 /** D Arrow quotation PDF theme */
 export const QUOTATION_THEME = {
   tableHeaderBg: "#E8A0A0",
@@ -5,7 +7,7 @@ export const QUOTATION_THEME = {
   tableBorder: "#333",
   totalRowBg: "#C8C8C8",
   accentRed: "#E65C65",
-  gradientBar: "linear-gradient(90deg, #e8621e 0%, #d4145a 45%, #e8621e 100%)",
+  gradientBar: `linear-gradient(90deg, ${BRAND_PRIMARY_HEX} 0%, ${BRAND_SECONDARY_HEX} 45%, ${BRAND_PRIMARY_HEX} 100%)`,
 };
 
 export const QUOTATION_LOGO = "/DR_LOGO__2_-2-01-removebg-preview.png";

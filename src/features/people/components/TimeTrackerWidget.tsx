@@ -76,7 +76,7 @@ export function TimeTrackerWidget({ variant = "compact" }: TimeTrackerWidgetProp
                       size="lg"
                       color="warning"
                       variant="flat"
-                      className="h-16 w-16 md:h-20 md:w-20 rounded-[2rem] bg-orange-400/10 text-orange-400 hover:scale-105 active:scale-95 transition-all"
+                      className="h-16 w-16 md:h-20 md:w-20 rounded-[2rem] bg-warning/10 text-warning hover:scale-105 active:scale-95 transition-all"
                       onPress={handleTakeBreak}
                       isLoading={isShiftLoading}
                     >
@@ -126,10 +126,10 @@ export function TimeTrackerWidget({ variant = "compact" }: TimeTrackerWidgetProp
             <span className="text-[10px] font-black uppercase text-default-400 tracking-[0.2em] mb-0 md:mb-1">{t("time_tracker.system")}</span>
             <div className="flex items-center gap-3">
               <div className="relative flex h-3 w-3">
-                <span className={`absolute inline-flex h-full w-full rounded-full opacity-75 ${isCheckedIn ? 'bg-success animate-ping' : isOnBreak ? 'bg-orange-400 animate-pulse' : 'bg-default-300'}`}></span>
-                <span className={`relative inline-flex rounded-full h-3 w-3 ${isCheckedIn ? 'bg-success' : isOnBreak ? 'bg-orange-400' : 'bg-default-400'}`}></span>
+                <span className={`absolute inline-flex h-full w-full rounded-full opacity-75 ${isCheckedIn ? 'bg-success animate-ping' : isOnBreak ? 'bg-warning animate-pulse' : 'bg-default-300'}`}></span>
+                <span className={`relative inline-flex rounded-full h-3 w-3 ${isCheckedIn ? 'bg-success' : isOnBreak ? 'bg-warning' : 'bg-default-400'}`}></span>
               </div>
-              <span className={`text-sm font-black uppercase tracking-tight ${isCheckedIn ? 'text-success' : isOnBreak ? 'text-orange-400' : 'text-default-400'}`}>
+              <span className={`text-sm font-black uppercase tracking-tight ${isCheckedIn ? 'text-success' : isOnBreak ? 'text-warning' : 'text-default-400'}`}>
                 {isCheckedIn ? t("time_tracker.on_duty") : isOnBreak ? t("time_tracker.on_break") : t("time_tracker.off_duty")}
               </span>
             </div>
@@ -246,10 +246,10 @@ export function TimeTrackerWidget({ variant = "compact" }: TimeTrackerWidgetProp
               </span>
               <div className="flex items-center gap-0.5 sm:gap-2">
                 <div className="relative flex h-1 w-1 sm:h-2 sm:w-2">
-                  <span className={`absolute inline-flex h-full w-full rounded-full opacity-75 ${isCheckedIn ? 'bg-success animate-ping' : isOnBreak ? 'bg-orange-400 animate-pulse' : 'bg-default-300'}`}></span>
-                  <span className={`relative inline-flex rounded-full h-1 w-1 sm:h-2 sm:w-2 ${isCheckedIn ? 'bg-success' : isOnBreak ? 'bg-orange-400' : 'bg-default-400'}`}></span>
+                  <span className={`absolute inline-flex h-full w-full rounded-full opacity-75 ${isCheckedIn ? 'bg-success animate-ping' : isOnBreak ? 'bg-warning animate-pulse' : 'bg-default-300'}`}></span>
+                  <span className={`relative inline-flex rounded-full h-1 w-1 sm:h-2 sm:w-2 ${isCheckedIn ? 'bg-success' : isOnBreak ? 'bg-warning' : 'bg-default-400'}`}></span>
                 </div>
-                <span className={`text-[7px] sm:text-[11px] font-black uppercase tracking-tight leading-none ${isCheckedIn ? 'text-success' : isOnBreak ? 'text-orange-400' : 'text-default-400'}`}>
+                <span className={`text-[7px] sm:text-[11px] font-black uppercase tracking-tight leading-none ${isCheckedIn ? 'text-success' : isOnBreak ? 'text-warning' : 'text-default-400'}`}>
                   {isCheckedIn ? t("time_tracker.on") : isOnBreak ? t("time_tracker.break") : t("time_tracker.off")}
                 </span>
               </div>
@@ -262,7 +262,7 @@ export function TimeTrackerWidget({ variant = "compact" }: TimeTrackerWidgetProp
                     isIconOnly 
                     size="sm" 
                     variant={isOnBreak ? "shadow" : "light"} 
-                    className={`min-w-unit-5 w-5 h-5 sm:min-w-unit-8 sm:w-8 sm:h-8 rounded sm:rounded-lg transition-all ${isCheckedIn ? 'text-orange-400 hover:bg-orange-400/10' : isOnBreak ? 'bg-orange-400 text-white' : 'text-default-300 opacity-50'}`}
+                    className={`min-w-unit-5 w-5 h-5 sm:min-w-unit-8 sm:w-8 sm:h-8 rounded sm:rounded-lg transition-all ${isCheckedIn ? 'text-warning hover:bg-warning/10' : isOnBreak ? 'bg-warning text-warning-foreground' : 'text-default-300 opacity-50'}`}
                     onPress={isOnBreak ? handleCheckIn : handleTakeBreak}
                     disabled={!isCheckedIn && !isOnBreak}
                   >
@@ -270,7 +270,7 @@ export function TimeTrackerWidget({ variant = "compact" }: TimeTrackerWidgetProp
                   </Button>
                </Tooltip>
                <Tooltip content={t("time_tracker.productivity_mode")}>
-                  <Button isIconOnly size="sm" variant="light" className={`min-w-unit-5 w-5 h-5 sm:min-w-unit-8 sm:w-8 sm:h-8 rounded sm:rounded-lg ${isCheckedIn ? 'text-yellow-500 animate-pulse' : 'text-default-300'}`}>
+                  <Button isIconOnly size="sm" variant="light" className={`min-w-unit-5 w-5 h-5 sm:min-w-unit-8 sm:w-8 sm:h-8 rounded sm:rounded-lg ${isCheckedIn ? 'text-warning animate-pulse' : 'text-default-300'}`}>
                     <Zap className="w-2.5 h-2.5 sm:w-4 sm:h-4" fill={isCheckedIn ? "currentColor" : "none"} />
                   </Button>
                </Tooltip>

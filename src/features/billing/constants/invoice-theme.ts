@@ -1,3 +1,5 @@
+import { BRAND_PRIMARY_HEX, BRAND_SECONDARY_HEX } from "@/theme/brand-colors";
+
 /** Compact modern invoice layout — D-Arrow branding. */
 export const INVOICE_LOGO = "/DR_LOGO__2_-2-01-removebg-preview.png";
 
@@ -6,18 +8,18 @@ export const INVOICE_FONT =
   '"IBM Plex Sans Arabic", Tahoma, "Segoe UI", Arial, sans-serif';
 
 export const INVOICE_THEME = {
-  primary: "#ff6b4a",
-  secondary: "#d53a81",
-  primaryDark: "#d53a81",
+  primary: BRAND_PRIMARY_HEX,
+  secondary: BRAND_SECONDARY_HEX,
+  primaryDark: BRAND_SECONDARY_HEX,
   accent: "#E65C65",
   headerBg: "#FFE8E3",
-  border: "#ff6b4a",
+  border: BRAND_PRIMARY_HEX,
   borderLight: "#FFCAB8",
-  label: "#d53a81",
+  label: BRAND_SECONDARY_HEX,
   text: "#111116",
   muted: "#5C6B7A",
-  totalBg: "linear-gradient(90deg, #ff6b4a 0%, #d53a81 100%)",
+  totalBg: `linear-gradient(90deg, ${BRAND_PRIMARY_HEX} 0%, ${BRAND_SECONDARY_HEX} 100%)`,
   totalText: "#FFFFFF",
   placeholderBg: "#FFF5F3",
-  gradientBar: "linear-gradient(90deg, #ff6b4a 0%, #d53a81 45%, #ff6b4a 100%)",
+  gradientBar: `linear-gradient(90deg, ${BRAND_PRIMARY_HEX} 0%, ${BRAND_SECONDARY_HEX} 45%, ${BRAND_PRIMARY_HEX} 100%)`,
 } as const;

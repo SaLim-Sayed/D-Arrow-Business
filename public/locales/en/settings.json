@@ -32,6 +32,14 @@
       "city": "City",
       "country": "Country",
       "defaultCurrency": "Default currency"
+    },
+    "branding": {
+      "title": "Branding",
+      "subtitle": "Customize the app's accent colors for your company. Leave blank to use the default D-Arrow palette.",
+      "primary": "Primary color",
+      "secondary": "Secondary color",
+      "reset": "Reset to default",
+      "save": "Save colors"
     }
   },
   "pricing": {

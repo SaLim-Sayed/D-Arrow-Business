@@ -11,7 +11,7 @@ import {
   Select,
   SelectItem,
 } from "@heroui/react";
-import { Building2, Save } from "lucide-react";
+import { Building2, Palette, RotateCcw, Save } from "lucide-react";
 import {
   companyProfileSchema,
   type CompanyProfileFormValues,
@@ -20,8 +20,56 @@ import { useCompanyProfile, useUpdateCompanyProfileMutation } from "../hooks/use
 import { LoadingSpinner } from "@/components/shared/loading-spinner";
 import { selectFieldProps } from "@/components/shared/select-field";
 import { useAppPermissions } from "../hooks/use-app-permissions";
+import { BRAND_PRIMARY_HEX, BRAND_SECONDARY_HEX } from "@/theme/brand-colors";
 
 const CURRENCIES = ["USD", "EUR", "SAR", "AED", "EGP"];
+
+const HEX_PATTERN = /^#[0-9a-fA-F]{6}$/;
+
+function ColorField({
+  label,
+  value,
+  fallback,
+  onChange,
+  disabled,
+}: {
+  label: string;
+  value: string;
+  fallback: string;
+  onChange: (hex: string) => void;
+  disabled?: boolean;
+}) {
+  const swatchValue = HEX_PATTERN.test(value) ? value : fallback;
+
+  return (
+    <div className="flex items-end gap-3">
+      <label className="relative shrink-0 cursor-pointer">
+        <span
+          className="block h-10 w-10 rounded-lg border border-default-200 shadow-sm"
+          style={{ backgroundColor: swatchValue }}
+        />
+        <input
+          type="color"
+          value={swatchValue}
+          onChange={(e) => onChange(e.target.value)}
+          disabled={disabled}
+          className="absolute inset-0 h-full w-full cursor-pointer opacity-0 disabled:cursor-not-allowed"
+          aria-label={label}
+        />
+      </label>
+      <Input
+        label={label}
+        variant="bordered"
+        dir="ltr"
+        value={value}
+        placeholder={fallback}
+        isReadOnly={disabled}
+        onValueChange={onChange}
+        className="flex-1"
+      />
+    </div>
+  );
+}
 
 interface CompanyProfileFormProps {
   readOnly?: boolean;
@@ -31,6 +79,10 @@ export function CompanyProfileForm({ readOnly }: CompanyProfileFormProps) {
   const { t } = useTranslation("settings");
   const { data: profile, isLoading } = useCompanyProfile();
   const updateProfile = useUpdateCompanyProfileMutation();
+  // Separate mutation instance so its pending/loading state doesn't couple to
+  // the main "Save" button below — saving colors shouldn't require the rest
+  // of the company profile (e.g. commercial register) to be filled in/valid.
+  const saveColors = useUpdateCompanyProfileMutation();
   const { canManageCompany } = useAppPermissions();
   const editable = canManageCompany && !readOnly;
 
@@ -39,6 +91,9 @@ export function CompanyProfileForm({ readOnly }: CompanyProfileFormProps) {
     handleSubmit,
     control,
     reset,
+    setValue,
+    getValues,
+    trigger,
     formState: { errors, isSubmitting },
   } = useForm<CompanyProfileFormValues>({
     resolver: zodResolver(companyProfileSchema),
@@ -54,6 +109,8 @@ export function CompanyProfileForm({ readOnly }: CompanyProfileFormProps) {
       city: "",
       country: "",
       defaultCurrency: "USD",
+      brandColor: "",
+      brandSecondaryColor: "",
     },
   });
 
@@ -71,6 +128,8 @@ export function CompanyProfileForm({ readOnly }: CompanyProfileFormProps) {
         city: profile.city ?? "",
         country: profile.country ?? "",
         defaultCurrency: profile.defaultCurrency ?? "USD",
+        brandColor: profile.brandColor ?? "",
+        brandSecondaryColor: profile.brandSecondaryColor ?? "",
       });
     }
   }, [profile, reset]);
@@ -79,6 +138,21 @@ export function CompanyProfileForm({ readOnly }: CompanyProfileFormProps) {
     await updateProfile.mutateAsync({
       ...values,
       email: values.email || undefined,
+      brandColor: values.brandColor || undefined,
+      brandSecondaryColor: values.brandSecondaryColor || undefined,
+    });
+  };
+
+  // Saves only the brand colors — validates just those two fields and sends a
+  // partial update, so it works even if other required company fields (e.g.
+  // commercial register) are blank or invalid.
+  const handleSaveColors = async () => {
+    const valid = await trigger(["brandColor", "brandSecondaryColor"]);
+    if (!valid) return;
+    const { brandColor, brandSecondaryColor } = getValues();
+    await saveColors.mutateAsync({
+      brandColor: brandColor || undefined,
+      brandSecondaryColor: brandSecondaryColor || undefined,
     });
   };
 
@@ -189,6 +263,73 @@ export function CompanyProfileForm({ readOnly }: CompanyProfileFormProps) {
                 </Select>
               )}
             />
+          </div>
+
+          <div className="border-t border-default-100 pt-6">
+            <div className="mb-3 flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <Palette className="h-4 w-4 text-primary" />
+                <div>
+                  <h3 className="text-sm font-bold">{t("company.branding.title")}</h3>
+                  <p className="text-xs text-default-500">{t("company.branding.subtitle")}</p>
+                </div>
+              </div>
+              {editable && (
+                <div className="flex items-center gap-2">
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="light"
+                    startContent={<RotateCcw className="h-3.5 w-3.5" />}
+                    onPress={() => {
+                      setValue("brandColor", "", { shouldDirty: true });
+                      setValue("brandSecondaryColor", "", { shouldDirty: true });
+                    }}
+                  >
+                    {t("company.branding.reset")}
+                  </Button>
+                  <Button
+                    type="button"
+                    size="sm"
+                    color="primary"
+                    variant="flat"
+                    startContent={<Save className="h-3.5 w-3.5" />}
+                    isLoading={saveColors.isPending}
+                    onPress={handleSaveColors}
+                  >
+                    {t("company.branding.save")}
+                  </Button>
+                </div>
+              )}
+            </div>
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              <Controller
+                name="brandColor"
+                control={control}
+                render={({ field }) => (
+                  <ColorField
+                    label={t("company.branding.primary")}
+                    value={field.value ?? ""}
+                    fallback={BRAND_PRIMARY_HEX}
+                    onChange={field.onChange}
+                    disabled={!editable}
+                  />
+                )}
+              />
+              <Controller
+                name="brandSecondaryColor"
+                control={control}
+                render={({ field }) => (
+                  <ColorField
+                    label={t("company.branding.secondary")}
+                    value={field.value ?? ""}
+                    fallback={BRAND_SECONDARY_HEX}
+                    onChange={field.onChange}
+                    disabled={!editable}
+                  />
+                )}
+              />
+            </div>
           </div>
 
           {editable && (

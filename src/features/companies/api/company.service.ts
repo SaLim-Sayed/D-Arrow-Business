@@ -8,6 +8,7 @@ import {
 import { db } from "@/lib/firebase";
 import type { ApiResponse } from "@/types/api.types";
 import { withLogging } from "@/lib/service-utils";
+import { stripUndefined } from "@/features/crm/utils/firestore-mappers";
 import type { CompanyProfile, UpdateCompanyProfileDTO } from "../types/company.types";
 
 const SERVICE_NAME = "CompanyService";
@@ -29,6 +30,8 @@ function mapCompanyDoc(
     city: data.city as string | undefined,
     country: data.country as string | undefined,
     defaultCurrency: (data.defaultCurrency as string) ?? "USD",
+    brandColor: data.brandColor as string | undefined,
+    brandSecondaryColor: data.brandSecondaryColor as string | undefined,
     createdAt: (data.createdAt as string) ?? new Date().toISOString(),
     updatedAt: (data.updatedAt as string) ?? new Date().toISOString(),
   };
@@ -54,12 +57,12 @@ export const CompanyService = {
   ): Promise<ApiResponse<CompanyProfile>> {
     return withLogging(SERVICE_NAME, "createProfile", (async () => {
       const ref = doc(db, "companies", companyId);
-      const payload = {
+      const payload = stripUndefined({
         ...data,
         defaultCurrency: data.defaultCurrency ?? "USD",
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
-      };
+      } as Record<string, unknown>);
       await setDoc(ref, payload);
       const snap = await getDoc(ref);
       return {
@@ -83,10 +86,13 @@ export const CompanyService = {
           ...data,
         });
       }
-      await updateDoc(ref, {
-        ...data,
-        updatedAt: serverTimestamp(),
-      });
+      await updateDoc(
+        ref,
+        stripUndefined({
+          ...data,
+          updatedAt: serverTimestamp(),
+        } as Record<string, unknown>)
+      );
       const updated = await getDoc(ref);
       return {
         data: mapCompanyDoc(companyId, updated.data() as Record<string, unknown>),

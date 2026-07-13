@@ -8,7 +8,7 @@
   }
   
   .glass-card {
-    @apply bg-white/80 dark:bg-[#161430]/80 backdrop-blur-xl border border-white/20 dark:border-white/10 shadow-xl;
+    @apply bg-white/80 dark:bg-content1/80 backdrop-blur-xl border border-white/20 dark:border-white/10 shadow-xl;
   }
 
   .text-gradient {
@@ -16,19 +16,21 @@
   }
 
   .bg-dashboard-gradient {
-    @apply bg-gradient-to-br from-[#F8F9FB] to-[#E2E8F0] dark:from-[#0b0a1d] dark:to-[#161430];
+    @apply bg-gradient-to-br from-[#F8F9FB] to-[#E2E8F0] dark:from-background dark:to-content1;
   }
 
   .shadow-premium {
     @apply shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.2)];
   }
-  
+
+  /* References the live --heroui-primary CSS variable (not a hardcoded hex)
+     so the glow follows the active theme, including per-company brand overrides. */
   .shadow-glow {
-    @apply shadow-[0_0_20px_rgba(255,107,74,0.3)] dark:shadow-[0_0_20px_rgba(255,107,74,0.2)];
+    @apply shadow-[0_0_20px_hsl(var(--heroui-primary)/0.3)] dark:shadow-[0_0_20px_hsl(var(--heroui-primary)/0.2)];
   }
 
   .bg-primary-gradient {
-    @apply bg-gradient-to-r from-[#ff6b4a] to-[#d53a81];
+    @apply bg-gradient-to-r from-primary to-secondary;
   }
 
   .card-hover-lift {
@@ -139,7 +141,7 @@
 
 /* Custom Sidebar Colors to match HeroUI Theme */
 .bg-sidebar {
-  @apply bg-white/50 dark:bg-[#0b0a1d]/50 backdrop-blur-xl;
+  @apply bg-white/50 dark:bg-background/50 backdrop-blur-xl;
 }
 
 .text-sidebar-foreground {

@@ -1,4 +1,5 @@
 import { heroui } from "@heroui/theme";
+import { brandPalette } from "./src/theme/brand-colors.ts";
 
 /** @type {import('tailwindcss').Config} */
 export default {
@@ -41,14 +42,11 @@ export default {
           colors: {
             background: "#fcfcfd",
             foreground: "#111116",
-            primary: {
-              DEFAULT: "#ff6b4a",
-              foreground: "#FFFFFF",
-            },
-            secondary: {
-              DEFAULT: "#d53a81",
-              foreground: "#FFFFFF",
-            },
+            primary: brandPalette.primary,
+            secondary: brandPalette.secondary,
+            success: brandPalette.success,
+            warning: brandPalette.warning,
+            danger: brandPalette.danger,
             focus: "#ff6b4a",
           },
         },
@@ -56,14 +54,11 @@ export default {
           colors: {
             background: "#0b0a1d",
             foreground: "#FFFFFF",
-            primary: {
-              DEFAULT: "#ff6b4a",
-              foreground: "#FFFFFF",
-            },
-            secondary: {
-              DEFAULT: "#d53a81",
-              foreground: "#FFFFFF",
-            },
+            primary: brandPalette.primary,
+            secondary: brandPalette.secondary,
+            success: brandPalette.success,
+            warning: brandPalette.warning,
+            danger: brandPalette.danger,
             focus: "#ff6b4a",
             content1: "#161430",
             content2: "#1e1b3d",
