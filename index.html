@@ -2,6 +2,28 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <script>
+      // Reapply the last-known company brand color instantly on page load,
+      // before React/Firestore have a chance to run — otherwise every
+      // refresh would briefly flash the default palette first. The actual
+      // color values are computed and cached by src/theme/apply-brand-theme.ts;
+      // this script only replays them, it doesn't compute anything itself.
+      (function () {
+        try {
+          var raw = localStorage.getItem("d-arrow-brand-theme-vars");
+          if (!raw) return;
+          var vars = JSON.parse(raw);
+          var root = document.documentElement;
+          for (var name in vars) {
+            if (Object.prototype.hasOwnProperty.call(vars, name)) {
+              root.style.setProperty(name, vars[name]);
+            }
+          }
+        } catch (e) {
+          // Corrupt/unavailable cache — fall back to the compiled default palette.
+        }
+      })();
+    </script>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>D-Arrow Business</title>

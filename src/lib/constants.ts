@@ -9,6 +9,12 @@ export const STORAGE_KEYS = {
   AUTH_STORE: "d-arrow-auth-store",
   TASKS_STORE: "d-arrow-tasks-store",
   LAST_PORTAL: "d-arrow-last-portal",
+  // Caches the last-applied company brand CSS variables so a page refresh can
+  // reapply them instantly (see index.html's inline script), before the
+  // Firestore company-profile fetch resolves. This exact string is also
+  // hardcoded in index.html's inline script (which can't import this module,
+  // since it must run before any bundled JS) — keep both in sync if changed.
+  BRAND_THEME_VARS: "d-arrow-brand-theme-vars",
 } as const;
 
 export const QUERY_KEYS = {
