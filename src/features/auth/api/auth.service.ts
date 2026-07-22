@@ -21,6 +21,8 @@ import type {
   User,
 } from "../types/auth.types";
 import { mapFirestoreUser } from "../utils/map-user";
+import { InvitesService } from "@/features/companies/api/invites.service";
+import { STORAGE_KEYS } from "@/lib/constants";
 
 const SERVICE_NAME = "AuthService";
 const googleProvider = new GoogleAuthProvider();
@@ -198,6 +200,83 @@ export const AuthService = {
           refreshToken: firebaseUser.refreshToken,
         },
         message: "Registration successful",
+      };
+    })());
+  },
+
+  async acceptInvite(input: {
+    token: string;
+    name: string;
+    password: string;
+  }): Promise<ApiResponse<LoginResponse>> {
+    return withLogging(SERVICE_NAME, "acceptInvite", (async () => {
+      const invite = await InvitesService.getByToken(input.token);
+      if (!invite) {
+        throw new Error("INVITE_NOT_FOUND");
+      }
+      if (invite.status === "expired" || new Date(invite.expiresAt).getTime() < Date.now()) {
+        throw new Error("INVITE_EXPIRED");
+      }
+      if (invite.status === "revoked") {
+        throw new Error("INVITE_REVOKED");
+      }
+      if (invite.status === "accepted") {
+        throw new Error("INVITE_ACCEPTED");
+      }
+      if (invite.status !== "pending") {
+        throw new Error("INVITE_INVALID");
+      }
+
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        invite.email,
+        input.password
+      );
+      const firebaseUser = userCredential.user;
+
+      await updateProfile(firebaseUser, {
+        displayName: input.name.trim(),
+      });
+
+      const userData: User = {
+        id: firebaseUser.uid,
+        email: invite.email,
+        name: input.name.trim(),
+        nameAr: "",
+        avatar:
+          firebaseUser.photoURL ||
+          `https://avatar.vercel.sh/${firebaseUser.uid}`,
+        role: invite.role,
+        companyId: invite.companyId,
+        companyName: invite.companyName,
+        portalAccess: invite.portalAccess ?? undefined,
+        portalSubRoles: invite.portalSubRoles ?? undefined,
+      };
+
+      await setDoc(doc(db, "users", firebaseUser.uid), {
+        ...userData,
+        portalAccess: invite.portalAccess ?? [],
+        portalSubRoles: invite.portalSubRoles ?? {},
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      });
+
+      await InvitesService.markAccepted(input.token, firebaseUser.uid);
+
+      const idToken = await getIdToken(firebaseUser);
+      try {
+        localStorage.setItem(STORAGE_KEYS.REFRESH_TOKEN, firebaseUser.refreshToken);
+      } catch {
+        // ignore
+      }
+
+      return {
+        data: {
+          user: userData,
+          accessToken: idToken,
+          refreshToken: firebaseUser.refreshToken,
+        },
+        message: "Invite accepted",
       };
     })());
   },

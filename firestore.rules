@@ -2,32 +2,83 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    
-    // User profiles: Users can only read/write their own profile
-    match /users/{userId} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
+
+    function signedIn() {
+      return request.auth != null;
     }
 
-    // Helper: Check if user belongs to a company
+    function userDoc() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
     function belongsToCompany(companyId) {
-      return request.auth != null && 
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.companyId == companyId;
+      return signedIn() && userDoc().companyId == companyId;
     }
 
-    // Company Data: Leads, Projects, Tasks are isolated by companyId
+    function isCompanyAdmin(companyId) {
+      return belongsToCompany(companyId)
+        && userDoc().role in ['super_admin', 'admin'];
+    }
+
+    // User profiles
+    match /users/{userId} {
+      // Own profile, or teammates in the same company
+      allow read: if signedIn() && (
+        request.auth.uid == userId
+        || resource.data.companyId == userDoc().companyId
+      );
+
+      // New account (register / invite accept / Google)
+      allow create: if signedIn() && request.auth.uid == userId;
+
+      // Self update, or company admin updating teammates
+      allow update: if signedIn() && (
+        request.auth.uid == userId
+        || isCompanyAdmin(resource.data.companyId)
+      );
+
+      allow delete: if isCompanyAdmin(resource.data.companyId);
+    }
+
+    // Team invitations (token = document id)
+    match /invites/{token} {
+      // Accept page loads a single pending invite by token (pre-auth)
+      allow get: if resource.data.status == 'pending'
+        || (signedIn() && isCompanyAdmin(resource.data.companyId));
+
+      // Admins list pending invites for their company (query must filter companyId)
+      allow list: if signedIn() && isCompanyAdmin(resource.data.companyId);
+
+      allow create: if signedIn()
+        && isCompanyAdmin(request.resource.data.companyId)
+        && request.resource.data.status == 'pending'
+        && request.resource.data.email is string
+        && request.resource.data.token == token;
+
+      allow update: if signedIn() && (
+        isCompanyAdmin(resource.data.companyId)
+        || (
+          resource.data.status == 'pending'
+          && request.resource.data.status == 'accepted'
+          && request.auth.uid == request.resource.data.acceptedBy
+        )
+      );
+
+      allow delete: if signedIn() && isCompanyAdmin(resource.data.companyId);
+    }
+
+    // OTP password-reset codes (EmailJS flow)
+    match /otpResets/{id} {
+      allow read, write: if true;
+    }
+
     match /companies/{companyId} {
-      // Allow read/write for any authenticated user belonging to the company
       allow read, write: if belongsToCompany(companyId);
-      
+      allow create: if signedIn();
+
       match /{allSubcollections=**} {
         allow read, write: if belongsToCompany(companyId);
       }
-    }
-
-    // Allow creating the first user/company document if it doesn't exist
-    // This is a simplified rule for registration flow
-    match /companies/{companyId} {
-      allow create: if request.auth != null;
     }
   }
 }
