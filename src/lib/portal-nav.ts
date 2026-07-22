@@ -21,6 +21,7 @@ import {
   PieChart,
   LayoutGrid,
   HandCoins,
+  Inbox,
   type LucideIcon,
 } from "lucide-react";
 
@@ -29,7 +30,7 @@ export interface PortalNavItem {
   path: string;
   icon: LucideIcon;
   end?: boolean;
-  namespace?: "common" | "crm" | "billing";
+  namespace?: "common" | "crm" | "billing" | "chat";
 }
 
 export const TASKS_NAV: PortalNavItem[] = [
@@ -69,6 +70,10 @@ export const BILLING_NAV: PortalNavItem[] = [
   { labelKey: "nav.settings", path: "/billing/settings", icon: Settings, namespace: "billing" },
 ];
 
+export const CHAT_NAV: PortalNavItem[] = [
+  { labelKey: "nav.inbox", path: "/chat", icon: Inbox, end: true, namespace: "chat" },
+];
+
 export function getNavForPortal(portal: PortalId): PortalNavItem[] {
   switch (portal) {
     case "tasks":
@@ -79,6 +84,8 @@ export function getNavForPortal(portal: PortalId): PortalNavItem[] {
       return PEOPLE_NAV;
     case "billing":
       return BILLING_NAV;
+    case "chat":
+      return CHAT_NAV;
     default:
       return [];
   }

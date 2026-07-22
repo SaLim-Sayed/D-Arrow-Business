@@ -5,6 +5,7 @@ export type Permission =
   | "portals.crm"
   | "portals.people"
   | "portals.billing"
+  | "portals.chat"
   | "company.view"
   | "company.manage"
   | "company.identity"
@@ -41,6 +42,7 @@ const ALL_PERMISSIONS: Permission[] = [
   "portals.crm",
   "portals.people",
   "portals.billing",
+  "portals.chat",
   "company.view",
   "company.manage",
   "company.identity",
@@ -75,6 +77,7 @@ export const ROLE_PERMISSIONS: Record<UserRole, readonly Permission[]> = {
     "portals.crm",
     "portals.people",
     "portals.billing",
+    "portals.chat",
     "company.view",
     "pricing.view",
     "pricing.manage",
@@ -97,6 +100,7 @@ export const ROLE_PERMISSIONS: Record<UserRole, readonly Permission[]> = {
     "portals.crm",
     "portals.people",
     "portals.billing",
+    "portals.chat",
     "company.view",
     "pricing.view",
     "people.view",
@@ -106,7 +110,13 @@ export const ROLE_PERMISSIONS: Record<UserRole, readonly Permission[]> = {
     "tasks.create",
     "tasks.edit",
   ],
-  viewer: ["portals.crm", "company.view", "pricing.view", "crm.view"],
+  viewer: [
+    "portals.crm",
+    "portals.chat",
+    "company.view",
+    "pricing.view",
+    "crm.view",
+  ],
 };
 
 export function hasPermission(
@@ -134,15 +144,15 @@ export function isManagerRole(role: UserRole | undefined): boolean {
 
 export function canAccessPortal(
   role: UserRole | undefined,
-  portal: "tasks" | "crm" | "people" | "billing"
+  portal: "tasks" | "crm" | "people" | "billing" | "chat"
 ): boolean {
   return hasPermission(role, `portals.${portal}` as Permission);
 }
 
 export function getAccessiblePortals(
   role: UserRole | undefined
-): Array<"tasks" | "crm" | "people" | "billing"> {
-  return (["tasks", "crm", "people", "billing"] as const).filter((p) =>
+): Array<"tasks" | "crm" | "people" | "billing" | "chat"> {
+  return (["tasks", "crm", "people", "billing", "chat"] as const).filter((p) =>
     canAccessPortal(role, p)
   );
 }

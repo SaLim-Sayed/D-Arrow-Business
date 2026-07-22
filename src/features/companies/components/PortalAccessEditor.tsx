@@ -56,6 +56,7 @@ function pruneSubRoles(
 ): PortalSubRoles {
   const next: PortalSubRoles = {};
   for (const portal of portals) {
+    if (portal === "chat") continue;
     const value = subRoles[portal];
     if (!value) continue;
     if (portal === "tasks") next.tasks = value as TasksSubRole;
@@ -150,7 +151,7 @@ export function PortalAccessEditor({ member }: PortalAccessEditorProps) {
             >
               <span className="text-xs font-semibold">{portalTitle(portal)}</span>
             </Checkbox>
-            {isOn && subRole ? (
+            {isOn && subRole && options.length > 0 ? (
               <Select
                 {...selectFieldProps({ compact: true })}
                 size="sm"

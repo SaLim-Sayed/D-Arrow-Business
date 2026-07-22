@@ -56,6 +56,8 @@ import CreateBillPage from "@/features/billing/pages/CreateBillPage";
 import BillDetailPage from "@/features/billing/pages/BillDetailPage";
 import ReportsPage from "@/features/billing/pages/ReportsPage";
 import ZakatPage from "@/features/billing/pages/ZakatPage";
+import { ChatLayout } from "@/features/chat/components/ChatLayout";
+import { ChatPage } from "@/features/chat/pages/ChatPage";
 
 export const router = createBrowserRouter([
   {
@@ -167,6 +169,14 @@ export const router = createBrowserRouter([
               { path: "zakat", element: <ZakatPage /> },
               { path: "products", element: <ProductsPage /> },
               { path: "settings", element: <SettingsPage /> },
+            ],
+          },
+          {
+            path: "chat",
+            element: <ChatLayout />,
+            children: [
+              { index: true, element: <ChatPage /> },
+              { path: ":conversationId", element: <ChatPage /> },
             ],
           },
           {

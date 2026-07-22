@@ -10,7 +10,15 @@ import {
 
 export function getLastPortal(): PortalId | null {
   const v = localStorage.getItem(STORAGE_KEYS.LAST_PORTAL);
-  if (v === "tasks" || v === "crm" || v === "people") return v;
+  if (
+    v === "tasks" ||
+    v === "crm" ||
+    v === "people" ||
+    v === "billing" ||
+    v === "chat"
+  ) {
+    return v;
+  }
   return null;
 }
 

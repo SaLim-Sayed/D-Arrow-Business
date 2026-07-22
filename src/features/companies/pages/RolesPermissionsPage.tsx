@@ -18,7 +18,13 @@ const ROLE_ORDER: UserRole[] = [
 const PERMISSION_GROUPS: { titleKey: string; keys: Permission[] }[] = [
   {
     titleKey: "roles.groups.portals",
-    keys: ["portals.tasks", "portals.crm", "portals.people"],
+    keys: [
+      "portals.tasks",
+      "portals.crm",
+      "portals.people",
+      "portals.billing",
+      "portals.chat",
+    ],
   },
   {
     titleKey: "roles.groups.company",

@@ -3,7 +3,7 @@ import { cn } from "@/lib/utils";
 import type { PortalId } from "@/lib/portal-permissions";
 import { PortalSubNav } from "@/features/portals/components/PortalSubNav";
 
-const FULL_BLEED_PATHS = ["/crm/deals"];
+const FULL_BLEED_PATHS = ["/crm/deals", "/chat"];
 
 function isFullBleedPath(pathname: string) {
   if (FULL_BLEED_PATHS.some((p) => pathname.startsWith(p))) return true;

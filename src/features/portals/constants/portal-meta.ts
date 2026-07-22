@@ -1,5 +1,5 @@
 import type { PortalId } from "@/lib/portal-permissions";
-import { CheckSquare, Handshake, ListTodo, Calculator } from "lucide-react";
+import { CheckSquare, Handshake, ListTodo, Calculator, MessageSquare } from "lucide-react";
 
 export const PORTAL_META: Record<
   PortalId,
@@ -38,5 +38,12 @@ export const PORTAL_META: Record<
     descKey: "portals.billing.description",
     shortKey: "portals.billing.short",
     statKey: "portals.billing.stat",
+  },
+  chat: {
+    icon: MessageSquare,
+    titleKey: "portals.chat.title",
+    descKey: "portals.chat.description",
+    shortKey: "portals.chat.short",
+    statKey: "portals.chat.stat",
   },
 };

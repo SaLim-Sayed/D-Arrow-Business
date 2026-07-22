@@ -13,6 +13,7 @@ export function MobileSidebar() {
   const { t } = useTranslation();
   const { t: tCrm } = useTranslation("crm");
   const { t: tBilling } = useTranslation("billing");
+  const { t: tChat } = useTranslation("chat");
   const { setMobileSidebarOpen, setPortalPickerOpen } = useLayoutStore();
   const location = useLocation();
   const portals = useAccessiblePortals();
@@ -22,7 +23,8 @@ export function MobileSidebar() {
     portal === "tasks" ||
     portal === "crm" ||
     portal === "people" ||
-    portal === "billing"
+    portal === "billing" ||
+    portal === "chat"
       ? getNavForPortal(portal)
       : [];
 
@@ -35,7 +37,9 @@ export function MobileSidebar() {
           ? t("portals.people.short")
           : portal === "billing"
             ? t("portals.billing.short")
-            : t("appName");
+            : portal === "chat"
+              ? t("portals.chat.short")
+              : t("appName");
 
   return (
     <div className="flex h-full flex-col bg-sidebar">
@@ -54,7 +58,9 @@ export function MobileSidebar() {
               ? tCrm(item.labelKey)
               : item.namespace === "billing"
                 ? tBilling(item.labelKey)
-                : t(item.labelKey);
+                : item.namespace === "chat"
+                  ? tChat(item.labelKey)
+                  : t(item.labelKey);
           return (
             <NavLink
               key={item.path}

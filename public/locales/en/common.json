@@ -54,6 +54,13 @@
       "stat": "{{count}} unpaid invoices",
       "denied": "You do not have access to the Accounting portal."
     },
+    "chat": {
+      "title": "Chat",
+      "short": "Chat",
+      "description": "Real-time team messaging with direct messages, presence, and typing indicators",
+      "stat": "{{count}} conversations",
+      "denied": "You do not have access to the Chat portal."
+    },
     "noPortals": "No portals are assigned to your account. Contact your super admin."
   },
   "actions": {

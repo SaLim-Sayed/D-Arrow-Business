@@ -129,6 +129,8 @@
       "portals.tasks": "Tasks portal",
       "portals.crm": "CRM portal",
       "portals.people": "People portal",
+      "portals.billing": "Accounting portal",
+      "portals.chat": "Chat portal",
       "company.view": "View company",
       "company.manage": "Manage company",
       "pricing.view": "View prices",

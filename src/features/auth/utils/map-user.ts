@@ -5,7 +5,12 @@ import { parsePortalSubRoles } from "@/lib/permissions/sub-roles";
 export function parsePortalAccess(raw: unknown): PortalId[] | undefined {
   if (!Array.isArray(raw)) return undefined;
   const valid = raw.filter(
-    (p): p is PortalId => p === "tasks" || p === "crm" || p === "people"
+    (p): p is PortalId =>
+      p === "tasks" ||
+      p === "crm" ||
+      p === "people" ||
+      p === "billing" ||
+      p === "chat"
   );
   return valid.length ? valid : undefined;
 }

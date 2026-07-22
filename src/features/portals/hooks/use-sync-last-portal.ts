@@ -8,7 +8,13 @@ export function useSyncLastPortal() {
 
   useEffect(() => {
     const portal = getPortalFromPath(pathname);
-    if (portal === "tasks" || portal === "crm" || portal === "people") {
+    if (
+      portal === "tasks" ||
+      portal === "crm" ||
+      portal === "people" ||
+      portal === "billing" ||
+      portal === "chat"
+    ) {
       setLastPortal(portal);
     }
   }, [pathname]);

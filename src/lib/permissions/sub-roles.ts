@@ -76,6 +76,7 @@ export const PORTAL_SUB_ROLE_OPTIONS: Record<PortalId, readonly PortalSubRole[]>
   crm: ["admin", "manager", "sales", "viewer"],
   people: ["admin", "manager", "hr", "employee"],
   billing: ["admin", "manager", "accountant"],
+  chat: [],
 };
 
 const DEFAULT_SUB_ROLES_BY_GLOBAL: Partial<
@@ -101,6 +102,8 @@ export function getSubRolePermissions(
       return PEOPLE_SUB_ROLE_PERMISSIONS[subRole as PeopleSubRole] ?? [];
     case "billing":
       return BILLING_SUB_ROLE_PERMISSIONS[subRole as BillingSubRole] ?? [];
+    case "chat":
+      return [];
     default:
       return [];
   }
@@ -110,6 +113,7 @@ export function getDefaultSubRole(
   portal: PortalId,
   globalRole: import("@/features/auth/types/auth.types").UserRole
 ): PortalSubRole | undefined {
+  if (portal === "chat") return undefined;
   return DEFAULT_SUB_ROLES_BY_GLOBAL[globalRole]?.[portal];
 }
 
@@ -118,6 +122,7 @@ export function resolvePortalSubRole(
   globalRole: import("@/features/auth/types/auth.types").UserRole,
   portalSubRoles?: PortalSubRoles | null
 ): PortalSubRole | undefined {
+  if (portal === "chat") return undefined;
   return portalSubRoles?.[portal] ?? getDefaultSubRole(portal, globalRole);
 }
 
@@ -126,6 +131,7 @@ export function permissionPortal(permission: Permission): PortalId | null {
   if (permission.startsWith("crm.")) return "crm";
   if (permission.startsWith("people.")) return "people";
   if (permission.startsWith("portals.billing")) return "billing";
+  if (permission.startsWith("portals.chat")) return "chat";
   return null;
 }
 

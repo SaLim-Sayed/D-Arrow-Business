@@ -18,6 +18,8 @@ export function usePortalStat(portal: PortalId): number | null {
         .length;
     case "billing":
       return 0; // TODO: Return pending invoices count
+    case "chat":
+      return null;
     default:
       return null;
   }

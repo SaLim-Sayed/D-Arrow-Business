@@ -11,6 +11,7 @@ interface PortalSubNavProps {
 export function PortalSubNav({ portal }: PortalSubNavProps) {
   const { t } = useTranslation();
   const { t: tCrm } = useTranslation("crm");
+  const { t: tChat } = useTranslation("chat");
   const links = getNavForPortal(portal);
 
   return (
@@ -30,7 +31,11 @@ export function PortalSubNav({ portal }: PortalSubNavProps) {
           }
         >
           <Icon className="w-4 h-4" />
-          {namespace === "crm" ? tCrm(labelKey) : t(labelKey)}
+          {namespace === "crm"
+            ? tCrm(labelKey)
+            : namespace === "chat"
+              ? tChat(labelKey)
+              : t(labelKey)}
         </NavLink>
       ))}
     </nav>

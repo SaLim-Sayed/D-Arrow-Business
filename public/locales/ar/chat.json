@@ -1,0 +1,38 @@
+{
+  "nav": {
+    "inbox": "الوارد"
+  },
+  "inbox": {
+    "title": "الوارد",
+    "empty": "لا توجد محادثات بعد",
+    "emptyHint": "ابدأ رسالة مباشرة مع زميل في الفريق",
+    "searchPeople": "البحث عن أشخاص…",
+    "newMessage": "رسالة جديدة",
+    "startConversation": "بدء محادثة",
+    "noPeople": "لم يتم العثور على زملاء",
+    "you": "أنت"
+  },
+  "conversation": {
+    "select": "اختر محادثة",
+    "selectHint": "اختر محادثة من الوارد أو ابدأ رسالة جديدة",
+    "typing": "{{names}} يكتبون…",
+    "typingOne": "{{name}} يكتب…",
+    "edited": "تم التعديل",
+    "deleted": "تم حذف هذه الرسالة",
+    "placeholder": "اكتب رسالة…",
+    "send": "إرسال",
+    "edit": "تعديل",
+    "delete": "حذف",
+    "save": "حفظ",
+    "cancel": "إلغاء",
+    "online": "متصل",
+    "away": "بعيد",
+    "busy": "مشغول",
+    "offline": "غير متصل",
+    "lastSeen": "آخر ظهور {{time}}"
+  },
+  "errors": {
+    "sendFailed": "فشل إرسال الرسالة",
+    "startFailed": "فشل بدء المحادثة"
+  }
+}

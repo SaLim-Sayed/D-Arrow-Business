@@ -9,6 +9,7 @@ const PORTAL_I18N: Record<PortalId, string> = {
   crm: "portals.crm.denied",
   people: "portals.people.denied",
   billing: "portals.billing.denied",
+  chat: "portals.chat.denied",
 };
 
 export function PortalGuard({
