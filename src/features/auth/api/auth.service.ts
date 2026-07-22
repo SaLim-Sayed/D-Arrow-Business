@@ -7,6 +7,8 @@ import {
   sendPasswordResetEmail,
   verifyPasswordResetCode,
   confirmPasswordReset,
+  GoogleAuthProvider,
+  signInWithPopup,
 } from "firebase/auth";
 import { auth, db } from "@/lib/firebase";
 import { doc, getDoc, setDoc } from "firebase/firestore";
@@ -21,6 +23,33 @@ import type {
 import { mapFirestoreUser } from "../utils/map-user";
 
 const SERVICE_NAME = "AuthService";
+const googleProvider = new GoogleAuthProvider();
+
+async function buildLoginResponse(
+  firebaseUser: {
+    uid: string;
+    email: string | null;
+    displayName: string | null;
+    photoURL: string | null;
+    refreshToken: string;
+    getIdToken: (forceRefresh?: boolean) => Promise<string>;
+  },
+  userData: Record<string, unknown> | undefined
+): Promise<LoginResponse> {
+  const idToken = await firebaseUser.getIdToken();
+  const user = mapFirestoreUser(firebaseUser.uid, userData, {
+    email: firebaseUser.email || "",
+    name: firebaseUser.displayName || "",
+    avatar: firebaseUser.photoURL || "",
+    companyName: "D-Arrow Business",
+  });
+
+  return {
+    user,
+    accessToken: idToken,
+    refreshToken: firebaseUser.refreshToken,
+  };
+}
 
 /**
  * Authentication Service
@@ -36,16 +65,12 @@ export const AuthService = {
       );
       
       const firebaseUser = userCredential.user;
-      const idToken = await getIdToken(firebaseUser);
-      const refreshToken = firebaseUser.refreshToken;
 
-      // Get additional user data from Firestore
       const userDocRef = doc(db, "users", firebaseUser.uid);
       const userDoc = await getDoc(userDocRef);
-      let userData = userDoc.data() as any;
+      let userData = userDoc.data() as Record<string, unknown> | undefined;
 
       if (!userDoc.exists()) {
-        // Create default user profile in Firestore if it doesn't exist
         const defaultUserData: Partial<User> = {
           email: firebaseUser.email || "",
           name: firebaseUser.displayName || firebaseUser.email?.split("@")[0] || "User",
@@ -60,22 +85,65 @@ export const AuthService = {
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
         });
-        userData = defaultUserData as User;
+        userData = defaultUserData as Record<string, unknown>;
       }
 
-      const user: User = mapFirestoreUser(firebaseUser.uid, userData, {
-        email: firebaseUser.email || "",
-        name: firebaseUser.displayName || "",
-        avatar: firebaseUser.photoURL || "",
-        companyName: "D-Arrow Business",
-      });
+      return {
+        data: await buildLoginResponse(firebaseUser, userData),
+        message: "Login successful",
+      };
+    })());
+  },
+
+  async loginWithGoogle(): Promise<ApiResponse<LoginResponse>> {
+    return withLogging(SERVICE_NAME, "loginWithGoogle", (async () => {
+      const userCredential = await signInWithPopup(auth, googleProvider);
+      const firebaseUser = userCredential.user;
+      const userDocRef = doc(db, "users", firebaseUser.uid);
+      const userDoc = await getDoc(userDocRef);
+      let userData = userDoc.data() as Record<string, unknown> | undefined;
+
+      if (!userDoc.exists()) {
+        const displayName =
+          firebaseUser.displayName ||
+          firebaseUser.email?.split("@")[0] ||
+          "User";
+        const companyName = `${displayName}'s Workspace`;
+        const companyId =
+          `co-${firebaseUser.uid}`.toLowerCase().replace(/[^a-z0-9-]/g, "-");
+
+        const newUser: User = {
+          id: firebaseUser.uid,
+          email: firebaseUser.email || "",
+          name: displayName,
+          nameAr: "",
+          avatar:
+            firebaseUser.photoURL ||
+            `https://avatar.vercel.sh/${firebaseUser.uid}`,
+          role: "admin",
+          companyId,
+          companyName,
+        };
+
+        await setDoc(userDocRef, {
+          ...newUser,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        });
+
+        await setDoc(doc(db, "companies", companyId), {
+          name: companyName,
+          commercialRegister: "",
+          defaultCurrency: "EGP",
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        });
+
+        userData = newUser as unknown as Record<string, unknown>;
+      }
 
       return {
-        data: {
-          user,
-          accessToken: idToken,
-          refreshToken: refreshToken,
-        },
+        data: await buildLoginResponse(firebaseUser, userData),
         message: "Login successful",
       };
     })());
@@ -91,7 +159,6 @@ export const AuthService = {
 
       const firebaseUser = userCredential.user;
 
-      // Update profile with name
       await updateProfile(firebaseUser, {
         displayName: data.name
       });
@@ -104,12 +171,11 @@ export const AuthService = {
         name: data.name,
         nameAr: "",
         avatar: `https://avatar.vercel.sh/${firebaseUser.uid}`,
-        role: "admin", // First user is admin
+        role: "admin",
         companyId: data.companyName.toLowerCase().replace(/\s+/g, "-") || "default-company",
         companyName: data.companyName,
       };
 
-      // Create user document in Firestore
       await setDoc(doc(db, "users", firebaseUser.uid), {
         ...userData,
         companyName: data.companyName,
@@ -189,7 +255,6 @@ export const AuthService = {
     );
   },
 
-  /** Verify an oobCode from the reset email — returns the email it belongs to */
   async verifyResetCode(oobCode: string): Promise<string> {
     return withLogging(
       SERVICE_NAME,
@@ -198,7 +263,6 @@ export const AuthService = {
     );
   },
 
-  /** Apply the new password using the oobCode from the reset email */
   async confirmReset(oobCode: string, newPassword: string): Promise<void> {
     return withLogging(
       SERVICE_NAME,

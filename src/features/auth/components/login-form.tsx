@@ -8,6 +8,7 @@ import { Link, useNavigate } from "react-router-dom";
 import * as z from "zod";
 import { cn } from "@/lib/utils";
 import { useAuth } from "../context/auth-context";
+import { GoogleSignInButton } from "./google-sign-in-button";
 
 const loginSchema = z.object({
   email: z.string().email("Invalid email address"),
@@ -160,6 +161,14 @@ export function LoginForm() {
       >
         {isSubmitting ? t("login.loading") : t("login.submit")}
       </Button>
+
+      <div className="relative flex items-center gap-3 py-1">
+        <div className="h-px flex-1 bg-default-200" />
+        <span className="text-xs font-medium text-default-400">{t("login.or")}</span>
+        <div className="h-px flex-1 bg-default-200" />
+      </div>
+
+      <GoogleSignInButton />
 
       <p className="text-center text-sm text-default-500">
         {t("login.dontHaveAccount")}{" "}

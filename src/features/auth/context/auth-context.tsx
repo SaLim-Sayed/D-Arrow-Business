@@ -12,6 +12,7 @@ interface AuthContextValue {
   isAuthenticated: boolean;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
+  loginWithGoogle: () => Promise<void>;
   logout: () => void;
   updateUser: (partial: Partial<User>) => void;
 }
@@ -19,7 +20,16 @@ interface AuthContextValue {
 const AuthContext = createContext<AuthContextValue | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const { user, isAuthenticated, isLoading, login, logout, initialize, updateUser } = useAuthStore();
+  const {
+    user,
+    isAuthenticated,
+    isLoading,
+    login,
+    loginWithGoogle,
+    logout,
+    initialize,
+    updateUser,
+  } = useAuthStore();
 
   useEffect(() => {
     const unsubscribe = initialize();
@@ -33,6 +43,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isAuthenticated,
         isLoading,
         login,
+        loginWithGoogle,
         logout,
         updateUser,
       }}

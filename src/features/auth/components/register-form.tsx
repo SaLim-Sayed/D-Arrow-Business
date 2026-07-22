@@ -19,6 +19,7 @@ import * as z from "zod";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/stores/auth.store";
 import { AuthService } from "../api/auth.service";
+import { GoogleSignInButton } from "./google-sign-in-button";
 
 const inputClassNames = {
   label: "font-semibold text-default-700 pb-1",
@@ -247,6 +248,14 @@ export function RegisterForm() {
       >
         {isSubmitting ? t("register.loading") : t("register.submit")}
       </Button>
+
+      <div className="relative flex items-center gap-3 py-1">
+        <div className="h-px flex-1 bg-default-200" />
+        <span className="text-xs font-medium text-default-400">{t("login.or")}</span>
+        <div className="h-px flex-1 bg-default-200" />
+      </div>
+
+      <GoogleSignInButton />
 
       <p className="text-center text-sm text-default-500">
         {t("register.alreadyHaveAccount")}{" "}
