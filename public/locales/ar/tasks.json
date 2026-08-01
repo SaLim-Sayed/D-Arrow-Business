@@ -141,6 +141,12 @@
     "addComment": "أضف تعليقاً...",
     "postComment": "نشر",
     "noComments": "لا توجد تعليقات بعد",
+    "editComment": "تعديل التعليق",
+    "deleteComment": "حذف التعليق",
+    "deleteCommentConfirm": "هل أنت متأكد من حذف هذا التعليق؟",
+    "saveComment": "حفظ",
+    "cancelEdit": "إلغاء",
+    "edited": "تم التعديل",
     "details": "التفاصيل",
     "noDueDate": "لا يوجد تاريخ استحقاق",
     "history": "السجل",
@@ -380,6 +386,11 @@
     "deleted": "تم حذف المهمة بنجاح",
     "createFailed": "فشل إنشاء المهمة",
     "updateFailed": "فشل تحديث المهمة",
-    "deleteFailed": "فشل حذف المهمة"
+    "deleteFailed": "فشل حذف المهمة",
+    "commentUpdated": "تم تحديث التعليق",
+    "commentDeleted": "تم حذف التعليق",
+    "commentAddFailed": "فشل إضافة التعليق",
+    "commentUpdateFailed": "فشل تحديث التعليق",
+    "commentDeleteFailed": "فشل حذف التعليق"
   }
 }

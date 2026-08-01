@@ -122,4 +122,5 @@ export interface Comment {
   author?: User;
   content: string;
   createdAt: string;
+  updatedAt?: string;
 }

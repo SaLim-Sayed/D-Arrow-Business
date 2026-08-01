@@ -11,9 +11,14 @@ import { generateZatcaQr } from "../utils/zatca";
 import { billingDateLocale } from "../utils/locale";
 import { INVOICE_LOGO, INVOICE_THEME, INVOICE_FONT } from "../constants/invoice-theme";
 import {
+  invoiceLineBeforeTax,
   invoiceLineVat,
   invoiceVatPercent,
 } from "../utils/invoice-line-utils";
+import {
+  resolveZatcaInvoiceKind,
+  zatcaInvoiceTitleKey,
+} from "../utils/invoice-type";
 
 interface InvoicePrintDocumentProps {
   invoice: Invoice;
@@ -226,13 +231,20 @@ export function InvoicePrintDocument({
   const profile = settings?.companyProfile;
   const companyName = profile?.name || company?.legalName || company?.name || "—";
   const companyAddress = profile?.address || company?.address;
-  const companyCr = company?.commercialRegister;
-  const companyVat = profile?.taxNumber;
+  const companyCr =
+    profile?.commercialRegister?.trim() ||
+    company?.commercialRegister?.trim() ||
+    undefined;
+  const companyVat = profile?.taxNumber || company?.taxNumber;
+  const companyPhone = profile?.phone || company?.phone;
   const logoSrc = profile?.logoUrl?.trim() || INVOICE_LOGO;
 
   const customerName = customer
     ? contactDisplayName(customer)
     : t("invoices.detail.unknown_customer");
+
+  const invoiceKind = resolveZatcaInvoiceKind(invoice, customer);
+  const documentTitle = t(zatcaInvoiceTitleKey(invoiceKind));
 
   const showQr = !!companyVat && invoice.totalTax > 0 && invoice.status !== "draft";
   const qrValue = showQr
@@ -246,24 +258,27 @@ export function InvoicePrintDocument({
     : "";
 
   const vatPercent = invoiceVatPercent(invoice.subTotal, invoice.totalTax);
-  const documentTitle =
-    invoice.totalTax > 0
-      ? t("invoices.detail.tax_invoice_title")
-      : t("invoices.detail.document_title");
+  const issueDateTime = invoice.issueDate.toLocaleString(dateLocale, {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 
   const cellBorder = `1px solid ${INVOICE_THEME.borderLight}`;
   const thStyle: React.CSSProperties = {
     border: cellBorder,
-    padding: "8px 6px",
+    padding: "7px 4px",
     background: INVOICE_THEME.headerBg,
     color: INVOICE_THEME.primaryDark,
     fontWeight: 700,
-    fontSize: "10px",
+    fontSize: "9px",
     textAlign: "center",
   };
   const tdStyle: React.CSSProperties = {
     border: cellBorder,
-    padding: "8px 6px",
+    padding: "7px 4px",
     fontSize: "10px",
     verticalAlign: "middle",
     background: "#fff",
@@ -351,7 +366,7 @@ export function InvoicePrintDocument({
             style={{
               margin: "0 0 12px",
               textAlign: "center",
-              fontSize: "22px",
+              fontSize: "20px",
               fontWeight: 700,
               color: INVOICE_THEME.primary,
               lineHeight: 1.4,
@@ -368,8 +383,8 @@ export function InvoicePrintDocument({
               numeric
             />
             <MetaCell
-              label={t("invoices.detail.issue_date")}
-              value={invoice.issueDate.toLocaleDateString(dateLocale)}
+              label={t("invoices.detail.issue_datetime")}
+              value={issueDateTime}
               align="center"
               numeric
             />
@@ -421,7 +436,7 @@ export function InvoicePrintDocument({
         <PartyBox
           title={t("invoices.detail.seller")}
           name={companyName}
-          phone={profile?.phone}
+          phone={companyPhone}
           email={profile?.email}
           cr={companyCr}
           vat={companyVat}
@@ -444,7 +459,7 @@ export function InvoicePrintDocument({
         />
       </div>
 
-      {/* Line items */}
+      {/* Line items — ZATCA columns */}
       <table
         dir={dir}
         style={{
@@ -455,41 +470,64 @@ export function InvoicePrintDocument({
       >
         <thead>
           <tr>
-            <th style={{ ...thStyle, width: "38%", textAlign: align }}>
+            <th style={{ ...thStyle, width: "26%", textAlign: align }}>
               {t("invoices.detail.item_description")}
             </th>
-            <th style={{ ...thStyle, width: "10%" }}>{t("invoices.detail.qty")}</th>
-            <th style={{ ...thStyle, width: "16%" }}>
+            <th style={{ ...thStyle, width: "10%" }}>
               {t("invoices.detail.unit_price")}
             </th>
+            <th style={{ ...thStyle, width: "8%" }}>{t("invoices.detail.qty")}</th>
+            <th style={{ ...thStyle, width: "14%" }}>
+              {t("invoices.detail.line_excl_vat")}
+            </th>
+            <th style={{ ...thStyle, width: "10%" }}>
+              {t("invoices.detail.line_vat_rate")}
+            </th>
             <th style={{ ...thStyle, width: "14%" }}>{t("invoices.detail.line_vat")}</th>
-            <th style={{ ...thStyle, width: "16%" }}>{t("invoices.detail.amount")}</th>
+            <th style={{ ...thStyle, width: "14%" }}>
+              {t("invoices.detail.line_incl_vat")}
+            </th>
           </tr>
         </thead>
         <tbody>
-          {invoice.items.map((item, idx) => (
-            <tr key={item.id ?? idx}>
-              <td style={{ ...tdStyle, textAlign: align }}>
-                <div style={{ fontWeight: 600 }}>{item.description}</div>
-                {item.discount > 0 && (
-                  <div style={{ fontSize: "9px", color: INVOICE_THEME.accent, marginTop: "2px" }}>
-                    {t("invoices.detail.line_discount")}:{" "}
-                    <PrintMoney amount={item.discount} size={9} />
-                  </div>
+          {invoice.items.map((item, idx) => {
+            const excl = invoiceLineBeforeTax(item);
+            const vat = invoiceLineVat(item);
+            const incl = excl + vat;
+            return (
+              <tr key={item.id ?? idx}>
+                <td style={{ ...tdStyle, textAlign: align }}>
+                  <div style={{ fontWeight: 600 }}>{item.description}</div>
+                  {item.discount > 0 && (
+                    <div
+                      style={{
+                        fontSize: "9px",
+                        color: INVOICE_THEME.accent,
+                        marginTop: "2px",
+                      }}
+                    >
+                      {t("invoices.detail.line_discount")}:{" "}
+                      <PrintMoney amount={item.discount} size={9} />
+                    </div>
+                  )}
+                </td>
+                <MoneyCell amount={item.unitPrice} />
+                <td style={{ ...tdStyle, textAlign: "center" }} dir="ltr">
+                  {item.quantity}
+                </td>
+                <MoneyCell amount={excl} />
+                <td style={{ ...tdStyle, textAlign: "center" }} dir="ltr">
+                  {item.taxRate > 0 ? `${item.taxRate}%` : "—"}
+                </td>
+                {item.taxRate > 0 ? (
+                  <MoneyCell amount={vat} />
+                ) : (
+                  <td style={{ ...tdStyle, textAlign: "center" }}>—</td>
                 )}
-              </td>
-              <td style={{ ...tdStyle, textAlign: "center" }} dir="ltr">
-                {item.quantity}
-              </td>
-              <MoneyCell amount={item.unitPrice} />
-              {item.taxRate > 0 ? (
-                <MoneyCell amount={invoiceLineVat(item)} />
-              ) : (
-                <td style={{ ...tdStyle, textAlign: "center" }}>—</td>
-              )}
-              <MoneyCell amount={item.total} bold />
-            </tr>
-          ))}
+                <MoneyCell amount={incl} bold />
+              </tr>
+            );
+          })}
         </tbody>
       </table>
 
@@ -504,31 +542,6 @@ export function InvoicePrintDocument({
         <div style={{ width: "52%", minWidth: "240px" }}>
           <table style={{ width: "100%", borderCollapse: "collapse" }}>
             <tbody>
-              <tr>
-                <td
-                  style={{
-                    border: cellBorder,
-                    padding: "8px 10px",
-                    fontWeight: 700,
-                    fontSize: "10px",
-                    textAlign: align,
-                  }}
-                >
-                  {t("invoices.detail.subtotal")}
-                </td>
-                <td
-                  style={{
-                    border: cellBorder,
-                    padding: "8px 10px",
-                    textAlign: "center",
-                    fontWeight: 600,
-                  }}
-                >
-                  <div style={{ display: "flex", justifyContent: "center" }}>
-                    <PrintMoney amount={invoice.subTotal} />
-                  </div>
-                </td>
-              </tr>
               {invoice.totalDiscount > 0 && (
                 <tr>
                   <td
@@ -557,6 +570,36 @@ export function InvoicePrintDocument({
                   </td>
                 </tr>
               )}
+              <tr>
+                <td
+                  style={{
+                    border: cellBorder,
+                    padding: "8px 10px",
+                    fontWeight: 700,
+                    fontSize: "10px",
+                    textAlign: align,
+                  }}
+                >
+                  {t("invoices.detail.subtotal")}
+                </td>
+                <td
+                  style={{
+                    border: cellBorder,
+                    padding: "8px 10px",
+                    textAlign: "center",
+                    fontWeight: 600,
+                  }}
+                >
+                  <div style={{ display: "flex", justifyContent: "center" }}>
+                    <PrintMoney
+                      amount={Math.max(
+                        0,
+                        invoice.subTotal - (invoice.totalDiscount || 0)
+                      )}
+                    />
+                  </div>
+                </td>
+              </tr>
               {invoice.totalTax > 0 && (
                 <tr>
                   <td

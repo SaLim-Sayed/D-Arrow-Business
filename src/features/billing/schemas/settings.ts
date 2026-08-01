@@ -40,6 +40,8 @@ export function createBillingSettingsSchema(v: BillingSettingsValidationMessages
     name: z.string().min(2, v.companyNameRequired),
     logoUrl: optionalUrlField(v.invalidUrl),
     address: z.string().min(2, v.addressRequired),
+    /** Commercial registration (السجل التجاري) — required on ZATCA tax invoices */
+    commercialRegister: z.string().optional(),
     taxNumber: z.string().optional(),
     email: z
       .union([z.string().email(v.invalidEmail), z.literal("")])

@@ -31,6 +31,7 @@ import {
 } from "../utils/settings-payload";
 import { DEFAULT_BILLING_CURRENCY_ENTRY } from "../utils/billing-currency";
 import { useCompany } from "@/features/companies/context/company-context";
+import { useCompanyProfile } from "@/features/companies/hooks/use-company-profile";
 
 type SettingsTab = "general" | "financial" | "advanced";
 
@@ -95,6 +96,7 @@ export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState<SettingsTab>("general");
   const seedMutation = useSeedBillingDataMutation();
   const { companyId } = useCompany();
+  const { data: company } = useCompanyProfile();
   const { data: settings, isLoading } = useBillingSettings();
   const updateSettings = useUpdateBillingSettingsMutation();
 
@@ -149,9 +151,18 @@ export default function SettingsPage() {
   useEffect(() => {
     // Avoid wiping in-progress edits when React Query refetches in the background.
     if (settings && !isDirty) {
-      reset(normalizeSettingsForForm(settings));
+      const normalized = normalizeSettingsForForm(settings);
+      // Prefill CR from company identity when billing settings omit it.
+      if (
+        !normalized.companyProfile.commercialRegister &&
+        company?.commercialRegister?.trim()
+      ) {
+        normalized.companyProfile.commercialRegister =
+          company.commercialRegister.trim();
+      }
+      reset(normalized);
     }
-  }, [settings, reset, isDirty]);
+  }, [settings, reset, isDirty, company?.commercialRegister]);
 
   const watchedTaxNumber = watch("companyProfile.taxNumber");
 
@@ -289,6 +300,16 @@ export default function SettingsPage() {
                       errorMessage={(errors?.companyProfile as any)?.name?.message}
                       variant="flat"
                       classNames={inputClassNames}
+                    />
+                    <Input
+                      size="sm"
+                      label={t("settings.commercial_register")}
+                      placeholder={t("settings.placeholders.commercial_register")}
+                      description={t("settings.commercial_register_hint")}
+                      {...register("companyProfile.commercialRegister")}
+                      variant="flat"
+                      classNames={inputClassNames}
+                      dir="ltr"
                     />
                     <Input
                       size="sm"

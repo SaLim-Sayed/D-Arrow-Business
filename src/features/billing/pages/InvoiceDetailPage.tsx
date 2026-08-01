@@ -143,8 +143,14 @@ export default function InvoiceDetailPage() {
                 )}
             </h1>
             <p className="text-sm text-default-500">
-              {t("invoices.detail.issue_date")}:{" "}
-              {invoice.issueDate.toLocaleDateString(dateLocale)}
+              {t("invoices.detail.issue_datetime")}:{" "}
+              {invoice.issueDate.toLocaleString(dateLocale, {
+                year: "numeric",
+                month: "2-digit",
+                day: "2-digit",
+                hour: "2-digit",
+                minute: "2-digit",
+              })}
             </p>
           </div>
         </div>

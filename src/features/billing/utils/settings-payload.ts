@@ -42,6 +42,7 @@ export function prepareBillingSettingsForSave(
       address: profile.address?.trim() ?? "",
       email: profile.email?.trim() ?? "",
       phone: profile.phone?.trim() || undefined,
+      commercialRegister: profile.commercialRegister?.trim() || undefined,
       taxNumber: profile.taxNumber?.trim() || undefined,
       logoUrl: optionalUrl(profile.logoUrl),
       website: optionalUrl(profile.website),

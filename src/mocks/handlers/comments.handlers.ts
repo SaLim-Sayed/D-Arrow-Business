@@ -45,12 +45,14 @@ export const commentsHandlers = [
       );
     }
 
+    const now = new Date().toISOString();
     const newComment: Comment = {
       id: `cmt-${String(mockComments.length + 1).padStart(3, "0")}`,
       taskId,
       authorId: "usr-001",
       content: body.content,
-      createdAt: new Date().toISOString(),
+      createdAt: now,
+      updatedAt: now,
     };
 
     mockComments.push(newComment);
@@ -60,5 +62,51 @@ export const commentsHandlers = [
       { data: enrichComment(newComment), message: "Comment added" },
       { status: 201 }
     );
+  }),
+
+  // PATCH /api/tasks/:taskId/comments/:commentId
+  http.patch("/api/tasks/:taskId/comments/:commentId", async ({ params, request }) => {
+    await delay(200);
+    const body = (await request.json()) as { content: string };
+    const comment = mockComments.find((c) => c.id === params.commentId);
+
+    if (!comment || comment.taskId !== params.taskId) {
+      return HttpResponse.json(
+        { message: "Comment not found", statusCode: 404 },
+        { status: 404 }
+      );
+    }
+
+    comment.content = body.content;
+    comment.updatedAt = new Date().toISOString();
+
+    return HttpResponse.json({
+      data: enrichComment(comment),
+      message: "Comment updated",
+    });
+  }),
+
+  // DELETE /api/tasks/:taskId/comments/:commentId
+  http.delete("/api/tasks/:taskId/comments/:commentId", async ({ params }) => {
+    await delay(200);
+    const index = mockComments.findIndex((c) => c.id === params.commentId);
+
+    if (index === -1 || mockComments[index].taskId !== params.taskId) {
+      return HttpResponse.json(
+        { message: "Comment not found", statusCode: 404 },
+        { status: 404 }
+      );
+    }
+
+    mockComments.splice(index, 1);
+    const task = mockTasks.find((t) => t.id === params.taskId);
+    if (task && task.commentsCount > 0) {
+      task.commentsCount -= 1;
+    }
+
+    return HttpResponse.json({
+      data: null,
+      message: "Comment deleted",
+    });
   }),
 ];
