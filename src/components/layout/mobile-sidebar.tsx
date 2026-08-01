@@ -6,7 +6,7 @@ import { NavLink, useLocation } from "react-router-dom";
 import { Logo } from "../shared/logo";
 import { LanguageSwitcherRow } from "./language-switcher";
 import { getPortalFromPath } from "@/lib/portal-permissions";
-import { getNavForPortal } from "@/lib/portal-nav";
+import { usePortalNav } from "@/features/portals/hooks/use-portal-nav";
 import { useAccessiblePortals } from "@/features/portals/hooks/use-portals";
 
 export function MobileSidebar() {
@@ -18,6 +18,15 @@ export function MobileSidebar() {
   const location = useLocation();
   const portals = useAccessiblePortals();
   const portal = getPortalFromPath(location.pathname);
+  const portalNav = usePortalNav(
+    portal === "tasks" ||
+      portal === "crm" ||
+      portal === "people" ||
+      portal === "billing" ||
+      portal === "chat"
+      ? portal
+      : "crm"
+  );
 
   const navItems =
     portal === "tasks" ||
@@ -25,7 +34,7 @@ export function MobileSidebar() {
     portal === "people" ||
     portal === "billing" ||
     portal === "chat"
-      ? getNavForPortal(portal)
+      ? portalNav
       : [];
 
   const portalTitle =

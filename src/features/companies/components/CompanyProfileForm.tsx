@@ -23,7 +23,7 @@ import { useAppPermissions } from "../hooks/use-app-permissions";
 import { BRAND_PRIMARY_HEX, BRAND_SECONDARY_HEX, THEME_PRESETS } from "@/theme/brand-colors";
 import { cn } from "@/lib/utils";
 
-const CURRENCIES = ["USD", "EUR", "SAR", "AED", "EGP"];
+const CURRENCIES = ["SAR", "AED", "USD", "EUR"];
 
 const HEX_PATTERN = /^#[0-9a-fA-F]{6}$/;
 
@@ -161,7 +161,7 @@ export function CompanyProfileForm({ readOnly }: CompanyProfileFormProps) {
       address: "",
       city: "",
       country: "",
-      defaultCurrency: "USD",
+      defaultCurrency: "SAR",
       logoUrl: "",
       brandColor: "",
       brandSecondaryColor: "",
@@ -181,7 +181,7 @@ export function CompanyProfileForm({ readOnly }: CompanyProfileFormProps) {
         address: profile.address ?? "",
         city: profile.city ?? "",
         country: profile.country ?? "",
-        defaultCurrency: profile.defaultCurrency ?? "USD",
+        defaultCurrency: profile.defaultCurrency ?? "SAR",
         logoUrl: profile.logoUrl ?? "",
         brandColor: profile.brandColor ?? "",
         brandSecondaryColor: profile.brandSecondaryColor ?? "",

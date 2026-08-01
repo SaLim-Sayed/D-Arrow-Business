@@ -6,6 +6,7 @@ export const CRM_PERMISSIONS = {
   manageContacts: ["super_admin", "admin", "manager"] as UserRole[],
   manageDeals: ["super_admin", "admin", "manager"] as UserRole[],
   manageCrmTasks: ["super_admin", "admin", "manager", "employee"] as UserRole[],
+  manageContracts: ["super_admin", "admin", "manager"] as UserRole[],
   delete: ["super_admin", "admin"] as UserRole[],
 } as const;
 

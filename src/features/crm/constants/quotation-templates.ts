@@ -90,15 +90,6 @@ export const QUOTATION_OPTIONAL_ADDONS: Omit<QuotationLineItem, "id">[] = [
     optional: true,
   },
   {
-    nameAr: "نسخة إلكترونية لموقع الكتب",
-    nameEn: "Digital book site copy",
-    descriptionAr: "إتاحة نسخة إلكترونية من موقع الكتب للقراءة أو التحميل.",
-    descriptionEn: "Provide a digital copy of the book site for reading or download.",
-    quantity: 1,
-    unitPrice: 0,
-    optional: true,
-  },
-  {
     nameAr: "تاريخ انتهاء عروض الكتب",
     nameEn: "Book offer expiry dates",
     descriptionAr: "عرض تاريخ انتهاء عروض الكتب والعروض الخاصة.",

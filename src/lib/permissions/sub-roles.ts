@@ -35,6 +35,7 @@ const CRM_SUB_ROLE_PERMISSIONS: Record<CrmSubRole, readonly Permission[]> = {
     "crm.manage_contacts",
     "crm.manage_deals",
     "crm.manage_tasks",
+    "crm.manage_contracts",
     "crm.delete",
   ],
   manager: [
@@ -43,6 +44,7 @@ const CRM_SUB_ROLE_PERMISSIONS: Record<CrmSubRole, readonly Permission[]> = {
     "crm.manage_contacts",
     "crm.manage_deals",
     "crm.manage_tasks",
+    "crm.manage_contracts",
   ],
   sales: ["crm.view", "crm.manage_leads", "crm.manage_tasks"],
   viewer: ["crm.view"],

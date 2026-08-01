@@ -10,7 +10,7 @@ import {
 import { useTranslation } from "react-i18next";
 import { NavLink } from "react-router-dom";
 import type { PortalId } from "@/lib/portal-permissions";
-import { getNavForPortal } from "@/lib/portal-nav";
+import { usePortalNav } from "@/features/portals/hooks/use-portal-nav";
 import { useAccessiblePortals } from "@/features/portals/hooks/use-portals";
 
 const PORTAL_META: Record<PortalId, { titleKey: string }> = {
@@ -31,7 +31,7 @@ export function PortalSidebar({ portal }: PortalSidebarProps) {
   const { t: tBilling } = useTranslation("billing");
   const { t: tChat } = useTranslation("chat");
   const { sidebarCollapsed, toggleSidebar, setPortalPickerOpen } = useLayoutStore();
-  const navItems = getNavForPortal(portal);
+  const navItems = usePortalNav(portal);
   const meta = PORTAL_META[portal];
   const isRtl = i18n.language === "ar";
   const portals = useAccessiblePortals();

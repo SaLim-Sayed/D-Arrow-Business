@@ -13,6 +13,13 @@ import type { CompanyProfile, UpdateCompanyProfileDTO } from "../types/company.t
 
 const SERVICE_NAME = "CompanyService";
 
+/** App currency is Saudi Riyal; map legacy EGP/empty to SAR. */
+function resolveDefaultCurrency(code?: string | null): string {
+  const normalized = (code ?? "").trim().toUpperCase();
+  if (!normalized || normalized === "EGP") return "SAR";
+  return normalized;
+}
+
 function mapCompanyDoc(
   companyId: string,
   data: Record<string, unknown>
@@ -29,7 +36,7 @@ function mapCompanyDoc(
     address: data.address as string | undefined,
     city: data.city as string | undefined,
     country: data.country as string | undefined,
-    defaultCurrency: (data.defaultCurrency as string) ?? "USD",
+    defaultCurrency: resolveDefaultCurrency(data.defaultCurrency as string | undefined),
     logoUrl: data.logoUrl as string | undefined,
     brandColor: data.brandColor as string | undefined,
     brandSecondaryColor: data.brandSecondaryColor as string | undefined,
@@ -60,7 +67,7 @@ export const CompanyService = {
       const ref = doc(db, "companies", companyId);
       const payload = stripUndefined({
         ...data,
-        defaultCurrency: data.defaultCurrency ?? "USD",
+        defaultCurrency: data.defaultCurrency ?? "SAR",
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
       } as Record<string, unknown>);

@@ -136,7 +136,7 @@ export const AuthService = {
         await setDoc(doc(db, "companies", companyId), {
           name: companyName,
           commercialRegister: "",
-          defaultCurrency: "EGP",
+          defaultCurrency: "SAR",
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
         });
@@ -188,7 +188,7 @@ export const AuthService = {
       await setDoc(doc(db, "companies", userData.companyId), {
         name: data.companyName,
         commercialRegister: data.commercialRegister?.trim() || "",
-        defaultCurrency: "EGP",
+        defaultCurrency: "SAR",
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       });

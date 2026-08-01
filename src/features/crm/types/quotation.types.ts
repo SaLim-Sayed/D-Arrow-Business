@@ -53,6 +53,19 @@ export interface QuotationTotals {
   total: number;
 }
 
+/** One editable line in the quotation builder */
+export interface QuotationDraftLine {
+  id: string;
+  /** Catalog/template id: priceId | "base" | "addon-N" | null for custom */
+  sourceId: string | null;
+  nameAr: string;
+  nameEn?: string;
+  descriptionAr?: string;
+  descriptionEn?: string;
+  unitPrice: number;
+  quantity: number;
+}
+
 /** Serializable quotation form state for persistence */
 export interface QuotationFormDraft {
   quoteNumber: string;
@@ -61,6 +74,21 @@ export interface QuotationFormDraft {
   clientName: string;
   clientCr: string;
   recipientTitle: QuotationRecipientTitle;
+  selectedContactId: string;
+  lines: QuotationDraftLine[];
+  notesByLocale: Partial<Record<"ar" | "en", string>>;
+  vatRate: number;
+  pricesIncludeVat: boolean;
+}
+
+/** Legacy checkbox-based draft shape (pre line-items UI) */
+export interface LegacyQuotationFormDraft {
+  quoteNumber: string;
+  quoteDateIso: string;
+  validityMonths: number;
+  clientName: string;
+  clientCr: string;
+  recipientTitle?: QuotationRecipientTitle;
   selectedContactId: string;
   includeBase: boolean;
   basePrice: number;

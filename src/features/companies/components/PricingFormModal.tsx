@@ -55,7 +55,7 @@ export function PricingFormModal({
       sku: "",
       description: "",
       unitPrice: 0,
-      currency: company?.defaultCurrency ?? "USD",
+      currency: company?.defaultCurrency ?? "SAR",
       taxRate: 0,
       status: "active",
     },
@@ -81,7 +81,7 @@ export function PricingFormModal({
               sku: "",
               description: "",
               unitPrice: 0,
-              currency: company?.defaultCurrency ?? "USD",
+              currency: company?.defaultCurrency ?? "SAR",
               taxRate: 0,
               status: "active",
             }

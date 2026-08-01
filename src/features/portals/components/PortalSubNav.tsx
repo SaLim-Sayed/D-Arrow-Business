@@ -1,7 +1,7 @@
 import { NavLink } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
-import { getNavForPortal } from "@/lib/portal-nav";
+import { usePortalNav } from "@/features/portals/hooks/use-portal-nav";
 import type { PortalId } from "@/lib/portal-permissions";
 
 interface PortalSubNavProps {
@@ -12,7 +12,7 @@ export function PortalSubNav({ portal }: PortalSubNavProps) {
   const { t } = useTranslation();
   const { t: tCrm } = useTranslation("crm");
   const { t: tChat } = useTranslation("chat");
-  const links = getNavForPortal(portal);
+  const links = usePortalNav(portal);
 
   return (
     <nav className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">

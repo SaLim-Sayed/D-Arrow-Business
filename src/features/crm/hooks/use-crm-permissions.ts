@@ -15,6 +15,7 @@ export function useCrmPermissions() {
     canManageContacts: hasEffectivePermission(ctx, "crm.manage_contacts"),
     canManageDeals: hasEffectivePermission(ctx, "crm.manage_deals"),
     canManageCrmTasks: hasEffectivePermission(ctx, "crm.manage_tasks"),
+    canManageContracts: hasEffectivePermission(ctx, "crm.manage_contracts"),
     canDeleteCrm: hasEffectivePermission(ctx, "crm.delete"),
   };
 }

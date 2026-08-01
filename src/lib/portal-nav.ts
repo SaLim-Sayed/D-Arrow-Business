@@ -8,6 +8,7 @@ import {
   Handshake,
   BarChart3,
   FileText,
+  ScrollText,
   Calendar,
   CheckSquare,
   Timer,
@@ -31,6 +32,8 @@ export interface PortalNavItem {
   icon: LucideIcon;
   end?: boolean;
   namespace?: "common" | "crm" | "billing" | "chat";
+  /** If set, item is shown only when the user has this permission. */
+  permission?: import("@/lib/permissions").Permission;
 }
 
 export const TASKS_NAV: PortalNavItem[] = [
@@ -46,6 +49,13 @@ export const CRM_NAV: PortalNavItem[] = [
   { labelKey: "nav.deals", path: "/crm/deals", icon: Handshake, namespace: "crm" },
   { labelKey: "nav.crmTasks", path: "/crm/tasks", icon: ListTodo, namespace: "crm" },
   { labelKey: "nav.quotations", path: "/crm/quotations", icon: FileText, namespace: "crm" },
+  {
+    labelKey: "nav.contracts",
+    path: "/crm/contracts",
+    icon: ScrollText,
+    namespace: "crm",
+    permission: "crm.manage_contracts",
+  },
   { labelKey: "nav.reports", path: "/crm/reports", icon: BarChart3, namespace: "crm" },
 ];
 

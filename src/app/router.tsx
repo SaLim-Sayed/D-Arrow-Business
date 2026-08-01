@@ -24,6 +24,7 @@ import { DealDetailPage } from "@/features/crm/pages/DealDetailPage";
 import { CrmTasksPage } from "@/features/crm/pages/CrmTasksPage";
 import { CrmReportsPage } from "@/features/crm/pages/CrmReportsPage";
 import { QuotationPage } from "@/features/crm/pages/QuotationPage";
+import { ContractPage } from "@/features/crm/pages/ContractPage";
 import { PeopleLayout } from "@/features/people/components/PeopleLayout";
 import { SeedPage } from "@/features/admin/pages/SeedPage";
 import PeopleDashboardPage from "@/features/people/pages/PeopleDashboardPage";
@@ -128,6 +129,7 @@ export const router = createBrowserRouter([
               { path: "deals/:dealId", element: <DealDetailPage /> },
               { path: "tasks", element: <CrmTasksPage /> },
               { path: "quotations", element: <QuotationPage /> },
+              { path: "contracts", element: <ContractPage /> },
               { path: "reports", element: <CrmReportsPage /> },
             ],
           },

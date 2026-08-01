@@ -6,7 +6,7 @@ const base = createCrmCollectionService<Deal, CreateDealDTO, UpdateDealDTO>(
   CRM_COLLECTIONS.deals,
   "DealsService",
   {
-    currency: "USD",
+    currency: "SAR",
     stage: "lead",
     probability: 1,
     amount: 0,

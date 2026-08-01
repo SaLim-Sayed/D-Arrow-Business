@@ -13,34 +13,44 @@ import {
 } from "@heroui/react";
 import { AppDatePicker } from "@/components/shared/app-date-picker";
 import { parseDate } from "@internationalized/date";
-import { FileDown, Eye, Save, Trash2, Receipt } from "lucide-react";
+import { FileDown, Eye, Save, Trash2, Receipt, Plus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useCompanyProfile } from "@/features/companies/hooks/use-company-profile";
 import { usePricingList } from "@/features/companies/hooks/use-pricing";
 import { useContactsQuery } from "@/features/crm/hooks/use-contacts";
 import { contactDisplayName } from "@/features/crm/utils/contacts-list.utils";
 import { selectFieldProps } from "@/components/shared/select-field";
-import {
-  QUOTATION_BASE_PACKAGE,
-  QUOTATION_OPTIONAL_ADDONS,
-} from "../constants/quotation-templates";
 import { QuotationPrintDocument } from "./QuotationPrintDocument";
 import { QuotationPriceInput } from "./QuotationPriceInput";
 import { QuotationSavedMenu } from "./QuotationSavedMenu";
 import { generateQuotationPdf } from "../utils/generate-quotation-pdf";
 import {
   calculateQuotationTotals,
-  formatQuoteNumber,
   formatQuotationDateFromIso,
-  toQuotationDateIso,
 } from "../utils/quotation-calculations";
-import { resolveQuotationLocale, itemDescription, itemServiceName, catalogItemName } from "../utils/quotation-direction";
+import {
+  resolveQuotationLocale,
+  itemServiceName,
+} from "../utils/quotation-direction";
 import type { QuotationLocale } from "../utils/quotation-direction";
-import type { QuotationData, QuotationLineItem, QuotationFormDraft, QuotationRecipientTitle } from "../types/quotation.types";
+import type {
+  QuotationData,
+  QuotationDraftLine,
+  QuotationFormDraft,
+  QuotationLineItem,
+  QuotationRecipientTitle,
+} from "../types/quotation.types";
 import { QUOTATION_RECIPIENT_TITLES } from "../utils/quotation-recipient-title";
 import {
-  createDefaultQuotationFormDraft,
+  buildQuotationCatalogOptions,
   buildQuotationTitle,
+  createCustomLine,
+  createDefaultQuotationFormDraft,
+  createLineFromCatalogOption,
+  lineDisplayDescription,
+  normalizeQuotationDraft,
+  updateLineDescription,
+  updateLineName,
 } from "../utils/quotation-form-state";
 import {
   useQuotationsQuery,
@@ -56,9 +66,11 @@ function buildCompanyInfo(
 ): QuotationData["company"] {
   const city = profile?.city?.trim();
   const country = profile?.country?.trim() || "المملكة العربية السعودية";
-  const addressAr = [profile?.address, city, country].filter(Boolean).join("، ") ||
+  const addressAr =
+    [profile?.address, city, country].filter(Boolean).join("، ") ||
     "الأحساء، المملكة العربية السعودية";
-  const addressEn = [profile?.address, city, country].filter(Boolean).join(", ") ||
+  const addressEn =
+    [profile?.address, city, country].filter(Boolean).join(", ") ||
     "Al Ahsa, Kingdom of Saudi Arabia";
 
   return {
@@ -91,32 +103,36 @@ export function QuotationBuilderForm() {
     [prices]
   );
 
-  const [quoteNumber, setQuoteNumber] = useState(() => formatQuoteNumber());
-  const [quoteDateIso, setQuoteDateIso] = useState(() => toQuotationDateIso());
-  const [validityMonths, setValidityMonths] = useState(3);
+  const catalogOptions = useMemo(
+    () => buildQuotationCatalogOptions(activePrices),
+    [activePrices]
+  );
+
+  const defaultDraft = useMemo(() => createDefaultQuotationFormDraft(), []);
+
+  const [quoteNumber, setQuoteNumber] = useState(defaultDraft.quoteNumber);
+  const [quoteDateIso, setQuoteDateIso] = useState(defaultDraft.quoteDateIso);
+  const [validityMonths, setValidityMonths] = useState(defaultDraft.validityMonths);
   const [clientName, setClientName] = useState("");
   const [clientCr, setClientCr] = useState("");
-  const [recipientTitle, setRecipientTitle] = useState<QuotationRecipientTitle>("mr");
+  const [recipientTitle, setRecipientTitle] =
+    useState<QuotationRecipientTitle>("mr");
   const [selectedContactId, setSelectedContactId] = useState<string>("");
-  const [includeBase, setIncludeBase] = useState(true);
-  const [basePrice, setBasePrice] = useState(9000);
-  const [selectedPriceIds, setSelectedPriceIds] = useState<Set<string>>(new Set());
-  const [selectedAddonIds, setSelectedAddonIds] = useState<Set<string>>(new Set());
-  const [addonPrices, setAddonPrices] = useState<Record<string, number>>({});
-  const [itemDescriptions, setItemDescriptions] = useState<
-    Record<string, Partial<Record<QuotationLocale, string>>>
-  >({});
+  const [lines, setLines] = useState<QuotationDraftLine[]>(defaultDraft.lines);
   const [notesByLocale, setNotesByLocale] = useState<
     Partial<Record<QuotationLocale, string>>
   >({});
-  const notesTouchedByLocale = useRef<Partial<Record<QuotationLocale, boolean>>>({});
+  const notesTouchedByLocale = useRef<Partial<Record<QuotationLocale, boolean>>>(
+    {}
+  );
   const [vatRate, setVatRate] = useState(15);
   const [pricesIncludeVat, setPricesIncludeVat] = useState(true);
   const [showPreview, setShowPreview] = useState(false);
   const [exporting, setExporting] = useState(false);
   const [savedQuotationId, setSavedQuotationId] = useState<string | null>(null);
 
-  const { data: savedQuotationsRes, isLoading: isLoadingSaved } = useQuotationsQuery();
+  const { data: savedQuotationsRes, isLoading: isLoadingSaved } =
+    useQuotationsQuery();
   const savedQuotations = savedQuotationsRes?.data ?? [];
   const createQuotation = useCreateQuotationMutation();
   const updateQuotation = useUpdateQuotationMutation();
@@ -143,113 +159,24 @@ export function QuotationBuilderForm() {
 
   const notesValue = notesByLocale[quoteLocale] ?? defaultNotes;
 
-  const addonItems = useMemo(
-    () =>
-      QUOTATION_OPTIONAL_ADDONS.map((addon, i) => ({
-        ...addon,
-        id: `addon-${i}`,
-      })),
-    []
-  );
-
-  const setItemDescription = (id: string, value: string) => {
-    setItemDescriptions((prev) => ({
-      ...prev,
-      [id]: { ...prev[id], [quoteLocale]: value },
-    }));
-  };
-
-  const displayDescription = (
-    id: string,
-    item: {
-      descriptionAr?: string;
-      descriptionEn?: string;
-      description?: string;
-    }
-  ) => itemDescriptions[id]?.[quoteLocale] ?? itemDescription(item, quoteLocale);
-
-  const applyItemDescription = (
-    id: string,
-    item: {
-      descriptionAr?: string;
-      descriptionEn?: string;
-      description?: string;
-    }
-  ) => {
-    const custom = itemDescriptions[id]?.[quoteLocale]?.trim();
-    if (custom) {
-      return quoteLocale === "ar"
-        ? { descriptionAr: custom, descriptionEn: item.descriptionEn, description: item.description }
-        : { descriptionEn: custom, descriptionAr: item.descriptionAr, description: item.description };
-    }
-    return {
-      descriptionAr: item.descriptionAr,
-      descriptionEn: item.descriptionEn,
-      description: item.description,
-    };
-  };
-
   const quotationData = useMemo((): QuotationData => {
-    const items: QuotationLineItem[] = [];
-
-    const selectedAddons = addonItems.filter((a) => selectedAddonIds.has(a.id));
-    const getAddonPrice = (id: string, fallback: number) =>
-      addonPrices[id] ?? fallback;
-
-    if (includeBase) {
-      const bundledLines = selectedAddons
-        .filter((a) => getAddonPrice(a.id, a.unitPrice) === 0)
-        .map((a) => {
-          const custom = itemDescriptions[a.id]?.[quoteLocale]?.trim();
-          return custom || itemDescription(a, quoteLocale);
-        })
-        .filter(Boolean);
-
-      items.push({
-        id: "base",
-        nameAr: QUOTATION_BASE_PACKAGE.nameAr,
-        nameEn: QUOTATION_BASE_PACKAGE.nameEn,
-        ...applyItemDescription("base", QUOTATION_BASE_PACKAGE),
-        descriptionLines: bundledLines.length ? bundledLines : undefined,
-        quantity: 1,
-        unitPrice: basePrice,
-      });
-
-      for (const addon of selectedAddons) {
-        const price = getAddonPrice(addon.id, addon.unitPrice);
-        if (price > 0) {
-          items.push({
-            ...addon,
-            ...applyItemDescription(addon.id, addon),
-            unitPrice: price,
-          });
-        }
-      }
-    } else {
-      for (const addon of selectedAddons) {
-        items.push({
-          ...addon,
-          ...applyItemDescription(addon.id, addon),
-          unitPrice: getAddonPrice(addon.id, addon.unitPrice),
-        });
-      }
-    }
-
-    for (const price of activePrices) {
-      if (!selectedPriceIds.has(price.id)) continue;
-      items.push({
-        id: price.id,
-        nameAr: price.nameAr || price.name,
-        nameEn: price.name,
-        ...applyItemDescription(price.id, {
-          description: price.description,
-          descriptionAr: price.description,
-          descriptionEn: price.description,
-        }),
-        quantity: 1,
-        unitPrice: price.unitPrice,
-      });
-    }
+    const items: QuotationLineItem[] = lines
+      .filter((line) => {
+        const name = itemServiceName(line, quoteLocale).trim();
+        const desc = lineDisplayDescription(line, quoteLocale).trim();
+        return name.length > 0 || desc.length > 0 || line.unitPrice > 0;
+      })
+      .map((line) => ({
+        id: line.id,
+        nameAr: line.nameAr || line.descriptionAr || "",
+        nameEn: line.nameEn || line.descriptionEn || line.nameAr,
+        descriptionAr: line.descriptionAr,
+        descriptionEn: line.descriptionEn,
+        description:
+          quoteLocale === "ar" ? line.descriptionAr : line.descriptionEn,
+        quantity: line.quantity || 1,
+        unitPrice: line.unitPrice,
+      }));
 
     return {
       quoteNumber,
@@ -262,24 +189,17 @@ export function QuotationBuilderForm() {
         recipientTitle,
       },
       items,
-      currency: company?.defaultCurrency || "SAR",
+      currency: "SAR",
       vatRate,
       pricesIncludeVat,
       notes: notesValue.trim() || defaultNotes,
     };
   }, [
-    includeBase,
-    basePrice,
-    activePrices,
-    selectedPriceIds,
-    addonItems,
-    selectedAddonIds,
-    addonPrices,
-    itemDescriptions,
+    lines,
     quoteNumber,
     quoteDateIso,
     validityMonths,
-    notesByLocale,
+    notesValue,
     defaultNotes,
     company,
     clientName,
@@ -304,44 +224,45 @@ export function QuotationBuilderForm() {
     }
   };
 
-  const togglePrice = (id: string, checked: boolean) => {
-    setSelectedPriceIds((prev) => {
-      const next = new Set(prev);
-      if (checked) next.add(id);
-      else next.delete(id);
-      return next;
-    });
+  const updateLine = (lineId: string, updater: (line: QuotationDraftLine) => QuotationDraftLine) => {
+    setLines((prev) => prev.map((line) => (line.id === lineId ? updater(line) : line)));
   };
 
-  const toggleAddon = (id: string, checked: boolean) => {
-    setSelectedAddonIds((prev) => {
-      const next = new Set(prev);
-      if (checked) next.add(id);
-      else next.delete(id);
-      return next;
-    });
+  const selectableOptions = useMemo(
+    () => catalogOptions.filter((o) => o.group !== "custom"),
+    [catalogOptions]
+  );
+
+  const handlePickCatalogItem = (optionId: string) => {
+    const option = selectableOptions.find((o) => o.id === optionId);
+    if (!option) return;
+    setLines((prev) => [...prev, createLineFromCatalogOption(option)]);
+  };
+
+  const handleAddNewItem = () => {
+    setLines((prev) => [...prev, createCustomLine()]);
+  };
+
+  const handleRemoveLine = (lineId: string) => {
+    setLines((prev) => prev.filter((line) => line.id !== lineId));
   };
 
   const applyDraft = (draft: QuotationFormDraft) => {
-    setQuoteNumber(draft.quoteNumber);
-    setQuoteDateIso(draft.quoteDateIso);
-    setValidityMonths(draft.validityMonths);
-    setClientName(draft.clientName);
-    setClientCr(draft.clientCr);
-    setRecipientTitle(draft.recipientTitle ?? "mr");
-    setSelectedContactId(draft.selectedContactId);
-    setIncludeBase(draft.includeBase);
-    setBasePrice(draft.basePrice);
-    setSelectedPriceIds(new Set(draft.selectedPriceIds));
-    setSelectedAddonIds(new Set(draft.selectedAddonIds));
-    setAddonPrices(draft.addonPrices);
-    setItemDescriptions(draft.itemDescriptions);
-    setNotesByLocale(draft.notesByLocale);
-    setVatRate(draft.vatRate);
-    setPricesIncludeVat(draft.pricesIncludeVat);
+    const normalized = normalizeQuotationDraft(draft, activePrices);
+    setQuoteNumber(normalized.quoteNumber);
+    setQuoteDateIso(normalized.quoteDateIso);
+    setValidityMonths(normalized.validityMonths);
+    setClientName(normalized.clientName);
+    setClientCr(normalized.clientCr);
+    setRecipientTitle(normalized.recipientTitle ?? "mr");
+    setSelectedContactId(normalized.selectedContactId);
+    setLines(normalized.lines);
+    setNotesByLocale(normalized.notesByLocale);
+    setVatRate(normalized.vatRate);
+    setPricesIncludeVat(normalized.pricesIncludeVat);
     notesTouchedByLocale.current = {
-      ar: !!draft.notesByLocale?.ar,
-      en: !!draft.notesByLocale?.en,
+      ar: !!normalized.notesByLocale?.ar,
+      en: !!normalized.notesByLocale?.en,
     };
   };
 
@@ -353,12 +274,7 @@ export function QuotationBuilderForm() {
     clientCr,
     recipientTitle,
     selectedContactId,
-    includeBase,
-    basePrice,
-    selectedPriceIds: [...selectedPriceIds],
-    selectedAddonIds: [...selectedAddonIds],
-    addonPrices,
-    itemDescriptions,
+    lines,
     notesByLocale,
     vatRate,
     pricesIncludeVat,
@@ -374,7 +290,7 @@ export function QuotationBuilderForm() {
     const saved = savedQuotations.find((q) => q.id === id);
     if (!saved) return;
     setSavedQuotationId(saved.id);
-    applyDraft(saved.form);
+    applyDraft(normalizeQuotationDraft(saved.form, activePrices));
     setShowPreview(false);
   };
 
@@ -487,6 +403,13 @@ export function QuotationBuilderForm() {
     }
   };
 
+  const optionLabel = (optionId: string) => {
+    const option = selectableOptions.find((o) => o.id === optionId);
+    if (!option) return t("quotation.selectItem");
+    const name = quoteLocale === "ar" ? option.nameAr : option.nameEn;
+    return name;
+  };
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-[minmax(260px,300px)_1fr] gap-4 items-start">
       <QuotationSavedMenu
@@ -498,365 +421,372 @@ export function QuotationBuilderForm() {
       />
 
       <div className="space-y-6 min-w-0">
-      <Card className="border border-default-100">
-        <CardBody className="gap-4 p-4">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div className="min-w-0">
-              <p className="text-sm font-bold">
-                {savedQuotationId
-                  ? savedQuotations.find((q) => q.id === savedQuotationId)?.title ??
-                    t("quotation.newQuote")
-                  : t("quotation.newQuote")}
-              </p>
-              <p className="text-xs text-default-400">
-                {savedQuotationId
-                  ? t("quotation.editingSaved")
-                  : t("quotation.unsavedDraft")}
-              </p>
+        <Card className="border border-default-100">
+          <CardBody className="gap-4 p-4">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="min-w-0">
+                <p className="text-sm font-bold">
+                  {savedQuotationId
+                    ? savedQuotations.find((q) => q.id === savedQuotationId)
+                        ?.title ?? t("quotation.newQuote")
+                    : t("quotation.newQuote")}
+                </p>
+                <p className="text-xs text-default-400">
+                  {savedQuotationId
+                    ? t("quotation.editingSaved")
+                    : t("quotation.unsavedDraft")}
+                </p>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  color="secondary"
+                  variant="flat"
+                  startContent={<Receipt className="h-4 w-4" />}
+                  onPress={handleConvertToInvoice}
+                >
+                  {t("quotation.convertToInvoice")}
+                </Button>
+                <Button
+                  color="primary"
+                  variant="flat"
+                  startContent={<Save className="h-4 w-4" />}
+                  isLoading={isSaving}
+                  onPress={handleSave}
+                >
+                  {t("quotation.save")}
+                </Button>
+                {savedQuotationId && (
+                  <Button
+                    color="danger"
+                    variant="light"
+                    startContent={<Trash2 className="h-4 w-4" />}
+                    isLoading={deleteQuotation.isPending}
+                    onPress={handleDelete}
+                  >
+                    {t("quotation.delete")}
+                  </Button>
+                )}
+              </div>
             </div>
-            <div className="flex flex-wrap gap-2">
-            <Button
-              color="secondary"
-              variant="flat"
-              startContent={<Receipt className="h-4 w-4" />}
-              onPress={handleConvertToInvoice}
-            >
-              {t("quotation.convertToInvoice")}
-            </Button>
-            <Button
-              color="primary"
-              variant="flat"
-              startContent={<Save className="h-4 w-4" />}
-              isLoading={isSaving}
-              onPress={handleSave}
-            >
-              {t("quotation.save")}
-            </Button>
-            {savedQuotationId && (
-              <Button
-                color="danger"
-                variant="light"
-                startContent={<Trash2 className="h-4 w-4" />}
-                isLoading={deleteQuotation.isPending}
-                onPress={handleDelete}
-              >
-                {t("quotation.delete")}
-              </Button>
-            )}
+          </CardBody>
+        </Card>
+
+        <Card className="border border-default-100">
+          <CardBody className="gap-5 p-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <Input
+                label={t("quotation.quoteNumber")}
+                value={quoteNumber}
+                onValueChange={setQuoteNumber}
+              />
+              <AppDatePicker
+                label={t("quotation.quoteDate")}
+                value={parseDate(quoteDateIso)}
+                onChange={(date: { toString(): string } | null) => {
+                  if (date) setQuoteDateIso(date.toString());
+                }}
+                showMonthAndYearPickers
+                className="w-full"
+              />
+              <Input
+                label={t("quotation.validityMonths")}
+                type="number"
+                min={1}
+                max={12}
+                value={String(validityMonths)}
+                onValueChange={(v) => setValidityMonths(Number(v) || 3)}
+              />
+              <Input
+                label={t("quotation.vatRate")}
+                type="number"
+                min={0}
+                max={100}
+                value={String(vatRate)}
+                onValueChange={(v) => setVatRate(Number(v) || 15)}
+              />
             </div>
-          </div>
-        </CardBody>
-      </Card>
 
-      <Card className="border border-default-100">
-        <CardBody className="gap-5 p-6">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <Input
-              label={t("quotation.quoteNumber")}
-              value={quoteNumber}
-              onValueChange={setQuoteNumber}
-            />
-            <AppDatePicker
-              label={t("quotation.quoteDate")}
-              value={parseDate(quoteDateIso)}
-              onChange={(date: { toString(): string } | null) => {
-                if (date) setQuoteDateIso(date.toString());
-              }}
-              showMonthAndYearPickers
-              className="w-full"
-            />
-            <Input
-              label={t("quotation.validityMonths")}
-              type="number"
-              min={1}
-              max={12}
-              value={String(validityMonths)}
-              onValueChange={(v) => setValidityMonths(Number(v) || 3)}
-            />
-            <Input
-              label={t("quotation.vatRate")}
-              type="number"
-              min={0}
-              max={100}
-              value={String(vatRate)}
-              onValueChange={(v) => setVatRate(Number(v) || 15)}
-            />
-          </div>
+            <Divider />
 
-          <Divider />
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            <Select
-              {...selectFieldProps()}
-              label={t("quotation.selectContact")}
-              selectedKeys={selectedContactId ? [selectedContactId] : []}
-              onSelectionChange={(keys) => {
-                const id = Array.from(keys)[0] as string;
-                if (id) onContactSelect(id);
-              }}
-            >
-              {contacts.map((c) => (
-                <SelectItem key={c.id} textValue={contactDisplayName(c)}>{contactDisplayName(c)}</SelectItem>
-              ))}
-            </Select>
-            <div className="flex gap-2 items-center sm:col-span-2 lg:col-span-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               <Select
                 {...selectFieldProps()}
-                label={t("quotation.recipientTitle.label")}
-                className="w-[140px] shrink-0"
-                selectedKeys={[recipientTitle]}
+                label={t("quotation.selectContact")}
+                selectedKeys={selectedContactId ? [selectedContactId] : []}
                 onSelectionChange={(keys) => {
-                  const value = Array.from(keys)[0] as QuotationRecipientTitle;
-                  if (value) setRecipientTitle(value);
+                  const id = Array.from(keys)[0] as string;
+                  if (id) onContactSelect(id);
                 }}
               >
-                {QUOTATION_RECIPIENT_TITLES.map((title) => (
-                  <SelectItem key={title} textValue={t(`quotation.pdf.recipientTitle.${title}`)}>
-                    {t(`quotation.pdf.recipientTitle.${title}`)}
+                {contacts.map((c) => (
+                  <SelectItem key={c.id} textValue={contactDisplayName(c)}>
+                    {contactDisplayName(c)}
                   </SelectItem>
                 ))}
               </Select>
-              <Input
-                label={t("quotation.clientName")}
-                className="flex-1 min-w-0"
-                value={clientName}
-                onValueChange={setClientName}
-                isRequired
-              />
-            </div>
-            <Input
-              label={t("quotation.clientCr")}
-              value={clientCr}
-              onValueChange={setClientCr}
-              placeholder="7053575184"
-            />
-          </div>
-
-          <Divider />
-
-          {/* Base package */}
-          <div>
-            <p className="text-sm font-bold mb-3">{t("quotation.basePackage")}</p>
-            <div className="flex flex-wrap items-center gap-4">
-              <Checkbox isSelected={includeBase} onValueChange={setIncludeBase}>
-                {itemServiceName(QUOTATION_BASE_PACKAGE, quoteLocale)}
-              </Checkbox>
-              {includeBase && (
-                <QuotationPriceInput
-                  label={t("quotation.price")}
-                  className="max-w-[180px]"
-                  value={basePrice}
-                  onChange={setBasePrice}
-                  currency={company?.defaultCurrency || "SAR"}
+              <div className="flex gap-2 items-center sm:col-span-2 lg:col-span-2">
+                <Select
+                  {...selectFieldProps()}
+                  label={t("quotation.recipientTitle.label")}
+                  className="w-[140px] shrink-0"
+                  selectedKeys={[recipientTitle]}
+                  onSelectionChange={(keys) => {
+                    const value = Array.from(keys)[0] as QuotationRecipientTitle;
+                    if (value) setRecipientTitle(value);
+                  }}
+                >
+                  {QUOTATION_RECIPIENT_TITLES.map((title) => (
+                    <SelectItem
+                      key={title}
+                      textValue={t(`quotation.pdf.recipientTitle.${title}`)}
+                    >
+                      {t(`quotation.pdf.recipientTitle.${title}`)}
+                    </SelectItem>
+                  ))}
+                </Select>
+                <Input
+                  label={t("quotation.clientName")}
+                  className="flex-1 min-w-0"
+                  value={clientName}
+                  onValueChange={setClientName}
+                  isRequired
                 />
-              )}
-            </div>
-            {includeBase && (
-              <p className="text-xs text-default-400 mt-1">
-                {t("quotation.basePackageHint")}
-              </p>
-            )}
-            {includeBase && (
-              <Textarea
-                key={`base-desc-${quoteLocale}`}
-                className="mt-3"
-                label={t("quotation.description")}
-                value={displayDescription("base", QUOTATION_BASE_PACKAGE)}
-                onValueChange={(value) => setItemDescription("base", value)}
-                minRows={2}
+              </div>
+              <Input
+                label={t("quotation.clientCr")}
+                value={clientCr}
+                onValueChange={setClientCr}
+                placeholder="7053575184"
               />
-            )}
-          </div>
+            </div>
 
-          {/* Price catalog */}
-          {activePrices.length > 0 && (
-            <div>
-              <p className="text-sm font-bold mb-3">{t("quotation.fromCatalog")}</p>
-              <div className="grid grid-cols-1 gap-3">
-                {activePrices.map((price) => {
-                  const selected = selectedPriceIds.has(price.id);
+            <Divider />
+
+            {/* Line items */}
+            <div className="space-y-3">
+              <p className="text-sm font-bold">{t("quotation.lineItems")}</p>
+              <p className="text-xs text-default-400">{t("quotation.lineItemsHint")}</p>
+
+              <div className="flex flex-wrap items-end gap-3">
+                <Select
+                  {...selectFieldProps()}
+                  className="flex-1 min-w-[220px]"
+                  label={t("quotation.selectItem")}
+                  placeholder={t("quotation.selectItemPlaceholder")}
+                  selectedKeys={[]}
+                  onSelectionChange={(keys) => {
+                    const id = Array.from(keys)[0] as string;
+                    if (id) handlePickCatalogItem(id);
+                  }}
+                >
+                  {selectableOptions.map((option) => {
+                    const label =
+                      quoteLocale === "ar" ? option.nameAr : option.nameEn;
+                    return (
+                      <SelectItem
+                        key={option.id}
+                        textValue={`${label} ${option.unitPrice}`}
+                      >
+                        <span className="flex items-center gap-1.5 text-sm">
+                          <span className="truncate">{label}</span>
+                          <span className="text-default-400 shrink-0">
+                            —{" "}
+                            <MoneyAmount
+                              amount={option.unitPrice}
+                              currency="SAR"
+                              symbolSize={11}
+                              priceDirection={
+                                quoteLocale === "ar" ? "rtl" : "ltr"
+                              }
+                            />
+                          </span>
+                        </span>
+                      </SelectItem>
+                    );
+                  })}
+                </Select>
+
+                <Button
+                  color="primary"
+                  variant="flat"
+                  className="shrink-0"
+                  startContent={<Plus className="h-4 w-4" />}
+                  onPress={handleAddNewItem}
+                >
+                  {t("quotation.addNewItem")}
+                </Button>
+              </div>
+
+              <div className="space-y-3">
+                {lines.length === 0 && (
+                  <p className="text-sm text-default-400 py-6 text-center border border-dashed border-default-200 rounded-lg">
+                    {t("quotation.noLinesYet")}
+                  </p>
+                )}
+
+                {lines.map((line) => {
+                  const serviceName =
+                    quoteLocale === "ar"
+                      ? line.nameAr
+                      : line.nameEn || line.nameAr;
+
                   return (
                     <div
-                      key={price.id}
+                      key={line.id}
                       className="p-3 rounded-lg border border-default-100 space-y-3"
                     >
-                      <Checkbox
-                        isSelected={selected}
-                        onValueChange={(checked) => togglePrice(price.id, checked)}
-                      >
-                        <span className="text-sm inline-flex items-center gap-1.5">
-                          {catalogItemName(price, quoteLocale)}
-                          <span className="text-default-400">—</span>
-                          <MoneyAmount
-                            amount={price.unitPrice}
-                            currency={price.currency}
-                            symbolSize={12}
-                            priceDirection={quoteLocale === "ar" ? "rtl" : "ltr"}
-                          />
-                        </span>
-                      </Checkbox>
-                      {selected && (
-                        <Textarea
-                          key={`${price.id}-desc-${quoteLocale}`}
-                          label={t("quotation.description")}
+                      <div className="flex flex-wrap items-start gap-3">
+                        <Input
                           size="sm"
-                          value={displayDescription(price.id, {
-                            description: price.description,
-                            descriptionAr: price.description,
-                            descriptionEn: price.description,
-                          })}
+                          className="flex-1 min-w-[180px]"
+                          label={t("quotation.itemName")}
+                          value={serviceName}
                           onValueChange={(value) =>
-                            setItemDescription(price.id, value)
+                            updateLine(line.id, (prev) =>
+                              updateLineName(prev, quoteLocale, value)
+                            )
                           }
-                          minRows={2}
+                          placeholder={
+                            line.sourceId
+                              ? optionLabel(line.sourceId)
+                              : t("quotation.customItem")
+                          }
                         />
-                      )}
+
+                        <QuotationPriceInput
+                          size="sm"
+                          className="w-[140px] shrink-0"
+                          label={t("quotation.price")}
+                          value={line.unitPrice}
+                          onChange={(v) =>
+                            updateLine(line.id, (prev) => ({
+                              ...prev,
+                              unitPrice: v,
+                            }))
+                          }
+                          currency="SAR"
+                        />
+
+                        <Button
+                          isIconOnly
+                          size="sm"
+                          variant="light"
+                          color="danger"
+                          className="mt-5"
+                          aria-label={t("quotation.removeLine")}
+                          onPress={() => handleRemoveLine(line.id)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+
+                      <Textarea
+                        key={`${line.id}-desc-${quoteLocale}`}
+                        size="sm"
+                        label={t("quotation.itemDescription")}
+                        value={lineDisplayDescription(line, quoteLocale)}
+                        onValueChange={(value) =>
+                          updateLine(line.id, (prev) =>
+                            updateLineDescription(prev, quoteLocale, value)
+                          )
+                        }
+                        minRows={2}
+                      />
                     </div>
                   );
                 })}
               </div>
             </div>
-          )}
 
-          {/* Optional add-ons */}
-          <div>
-            <p className="text-sm font-bold mb-1">{t("quotation.optionalAddons")}</p>
-            <p className="text-xs text-default-400 mb-3">{t("quotation.optionalHint")}</p>
-            <div className="grid grid-cols-1 gap-3">
-              {addonItems.map((addon) => {
-                const selected = selectedAddonIds.has(addon.id);
-                return (
-                  <div
-                    key={addon.id}
-                    className="p-3 rounded-lg border border-default-100 space-y-3"
-                  >
-                    <div className="flex flex-wrap items-center gap-3">
-                      <Checkbox
-                        isSelected={selected}
-                        onValueChange={(checked) => toggleAddon(addon.id, checked)}
-                      >
-                        <span className="text-sm font-medium">
-                          {itemServiceName(addon, quoteLocale)}
-                        </span>
-                      </Checkbox>
-                      {selected && (
-                        <QuotationPriceInput
-                          size="sm"
-                          className="max-w-[130px]"
-                          value={addonPrices[addon.id] ?? addon.unitPrice}
-                          onChange={(v) =>
-                            setAddonPrices((prev) => ({
-                              ...prev,
-                              [addon.id]: v,
-                            }))
-                          }
-                          currency={company?.defaultCurrency || "SAR"}
-                          label={t("quotation.price")}
-                        />
-                      )}
-                    </div>
-                    {selected && (
-                      <Textarea
-                        key={`${addon.id}-desc-${quoteLocale}`}
-                        label={t("quotation.description")}
-                        size="sm"
-                        value={displayDescription(addon.id, addon)}
-                        onValueChange={(value) =>
-                          setItemDescription(addon.id, value)
-                        }
-                        minRows={2}
-                      />
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          </div>
+            <Checkbox
+              isSelected={pricesIncludeVat}
+              onValueChange={setPricesIncludeVat}
+            >
+              {t("quotation.pricesIncludeVat")}
+            </Checkbox>
 
-          <Checkbox isSelected={pricesIncludeVat} onValueChange={setPricesIncludeVat}>
-            {t("quotation.pricesIncludeVat")}
-          </Checkbox>
+            <Textarea
+              key={`notes-${quoteLocale}`}
+              label={t("quotation.notes")}
+              value={notesValue}
+              onValueChange={(value) => {
+                notesTouchedByLocale.current[quoteLocale] = true;
+                setNotesByLocale((prev) => ({ ...prev, [quoteLocale]: value }));
+              }}
+              minRows={2}
+              description={t("quotation.notesHint")}
+            />
 
-          <Textarea
-            key={`notes-${quoteLocale}`}
-            label={t("quotation.notes")}
-            value={notesValue}
-            onValueChange={(value) => {
-              notesTouchedByLocale.current[quoteLocale] = true;
-              setNotesByLocale((prev) => ({ ...prev, [quoteLocale]: value }));
-            }}
-            minRows={2}
-            description={t("quotation.notesHint")}
-          />
-
-          <div className="flex flex-wrap items-center justify-between gap-4 pt-2 border-t border-default-100">
-            <div className="text-sm">
-              <p>
-                {t("quotation.total")}:{" "}
-                <strong>
-                  <MoneyAmount
-                    amount={totals.total}
-                    currency={quotationData.currency}
-                    priceDirection={quoteLocale === "ar" ? "rtl" : "ltr"}
-                    suffix={
-                      pricesIncludeVat ? t("quotation.includingVat") : undefined
-                    }
-                  />
-                </strong>
-              </p>
-              <p className="text-default-400 text-xs">
-                {t("quotation.selectedItems", {
-                  count: quotationData.items.length,
-                })}
-              </p>
-            </div>
-            <div className="flex gap-2">
-              <Button
-                variant="flat"
-                startContent={<Eye className="h-4 w-4" />}
-                onPress={() => setShowPreview((v) => !v)}
-              >
-                {showPreview ? t("quotation.hidePreview") : t("quotation.preview")}
-              </Button>
-              <Button
-                color="primary"
-                className="rounded-full font-bold"
-                startContent={<FileDown className="h-4 w-4" />}
-                isLoading={exporting}
-                onPress={handleExport}
-              >
-                {t("quotation.downloadPdf")}
-              </Button>
-            </div>
-          </div>
-        </CardBody>
-      </Card>
-
-      {/* Preview */}
-      {showPreview && (
-        <Card className="border border-default-100 overflow-auto">
-          <CardBody className="p-4 bg-default-50">
-            <div className="mx-auto shadow-lg" style={{ width: "210mm" }}>
-              <QuotationPrintDocument data={quotationData} />
+            <div className="flex flex-wrap items-center justify-between gap-4 pt-2 border-t border-default-100">
+              <div className="text-sm">
+                <p>
+                  {t("quotation.total")}:{" "}
+                  <strong>
+                    <MoneyAmount
+                      amount={totals.total}
+                      currency={quotationData.currency}
+                      priceDirection={quoteLocale === "ar" ? "rtl" : "ltr"}
+                      suffix={
+                        pricesIncludeVat
+                          ? t("quotation.includingVat")
+                          : undefined
+                      }
+                    />
+                  </strong>
+                </p>
+                <p className="text-default-400 text-xs">
+                  {t("quotation.selectedItems", {
+                    count: quotationData.items.length,
+                  })}
+                </p>
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  variant="flat"
+                  startContent={<Eye className="h-4 w-4" />}
+                  onPress={() => setShowPreview((v) => !v)}
+                >
+                  {showPreview
+                    ? t("quotation.hidePreview")
+                    : t("quotation.preview")}
+                </Button>
+                <Button
+                  color="primary"
+                  className="rounded-full font-bold"
+                  startContent={<FileDown className="h-4 w-4" />}
+                  isLoading={exporting}
+                  onPress={handleExport}
+                >
+                  {t("quotation.downloadPdf")}
+                </Button>
+              </div>
             </div>
           </CardBody>
         </Card>
-      )}
 
-      {/* Hidden PDF render target */}
-      <div
-        ref={printRef}
-        aria-hidden
-        style={{
-          position: "fixed",
-          left: "-12000px",
-          top: 0,
-          width: "210mm",
-          pointerEvents: "none",
-        }}
-      >
-        <QuotationPrintDocument data={quotationData} />
-      </div>
+        {showPreview && (
+          <Card className="border border-default-100 overflow-auto">
+            <CardBody className="p-4 bg-default-50">
+              <div className="mx-auto shadow-lg" style={{ width: "210mm" }}>
+                <QuotationPrintDocument data={quotationData} />
+              </div>
+            </CardBody>
+          </Card>
+        )}
+
+        <div
+          ref={printRef}
+          aria-hidden
+          style={{
+            position: "fixed",
+            left: "-12000px",
+            top: 0,
+            width: "210mm",
+            pointerEvents: "none",
+          }}
+        >
+          <QuotationPrintDocument data={quotationData} />
+        </div>
       </div>
     </div>
   );

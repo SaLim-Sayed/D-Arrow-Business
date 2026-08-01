@@ -21,6 +21,7 @@ export type Permission =
   | "crm.manage_contacts"
   | "crm.manage_deals"
   | "crm.manage_tasks"
+  | "crm.manage_contracts"
   | "crm.delete"
   | "admin.seed"
   | "tasks.view"
@@ -58,6 +59,7 @@ const ALL_PERMISSIONS: Permission[] = [
   "crm.manage_contacts",
   "crm.manage_deals",
   "crm.manage_tasks",
+  "crm.manage_contracts",
   "crm.delete",
   "admin.seed",
   "tasks.view",
@@ -90,6 +92,7 @@ export const ROLE_PERMISSIONS: Record<UserRole, readonly Permission[]> = {
     "crm.manage_contacts",
     "crm.manage_deals",
     "crm.manage_tasks",
+    "crm.manage_contracts",
     "tasks.view",
     "tasks.create",
     "tasks.edit",

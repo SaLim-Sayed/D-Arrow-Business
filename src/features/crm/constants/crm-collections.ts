@@ -9,6 +9,7 @@ export const CRM_COLLECTIONS = {
   attachments: "crm_attachments",
   notifications: "crm_notifications",
   quotations: "quotations",
+  contracts: "contracts",
 } as const;
 
 export type CrmCollectionName = (typeof CRM_COLLECTIONS)[keyof typeof CRM_COLLECTIONS];
