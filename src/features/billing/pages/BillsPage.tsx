@@ -27,10 +27,10 @@ import { cn } from "@/lib/utils";
 import { BillingMoney } from "../components/BillingMoney";
 import { useBills } from "../hooks/use-bills";
 import { useContactsQuery } from "@/features/crm/hooks/use-contacts";
-import { contactDisplayName } from "@/features/crm/utils/contacts-list.utils";
 import type { Bill } from "../schemas/bill";
 import { downloadBillsCsv } from "../utils/bill-export";
 import { getBillAmountDue } from "../utils/aged-reports";
+import { resolveBillVendorName } from "../utils/invoice-customer";
 import { billingDateLocale } from "../utils/locale";
 import { useBillingSettings } from "../hooks/use-billing-settings";
 import { BillingDocumentGuide } from "../components/BillingDocumentGuide";
@@ -169,14 +169,8 @@ export default function BillsPage() {
   const currency =
     settings?.currencies?.find((c) => c.isDefault)?.code ?? "SAR";
 
-  const getVendorName = (vendorId: string) => {
-    const contact = contacts.find((c) => c.id === vendorId);
-    if (contact) return contactDisplayName(contact);
-    if (vendorId.startsWith("vendor_") || vendorId.startsWith("cust_")) {
-      return t("bills.unknown_vendor");
-    }
-    return vendorId;
-  };
+  const getVendorName = (bill: Bill) =>
+    resolveBillVendorName(bill, contacts, t("bills.unknown_vendor"));
 
   const metrics = useMemo(() => {
     const outstanding = bills
@@ -198,7 +192,7 @@ export default function BillsPage() {
         if (!q) return true;
         return (
           b.billNumber.toLowerCase().includes(q) ||
-          getVendorName(b.vendorId).toLowerCase().includes(q)
+          getVendorName(b).toLowerCase().includes(q)
         );
       })
       .sort(
@@ -253,7 +247,7 @@ export default function BillsPage() {
       (b) => [
         b.issueDate.toLocaleDateString(dateLocale),
         b.billNumber,
-        getVendorName(b.vendorId),
+        getVendorName(b),
         b.dueDate.toLocaleDateString(dateLocale),
         b.grandTotal,
         getBillAmountDue(b),
@@ -432,7 +426,7 @@ export default function BillsPage() {
                     selected={!!bill.id && selectedIds.has(bill.id)}
                     onToggle={() => bill.id && toggleOne(bill.id)}
                     onView={() => navigate(`/billing/bills/${bill.id}`)}
-                    vendorName={getVendorName(bill.vendorId)}
+                    vendorName={getVendorName(bill)}
                     amountDue={getBillAmountDue(bill)}
                     t={t}
                     locale={i18n.language}

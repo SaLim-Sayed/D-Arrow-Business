@@ -23,6 +23,7 @@ import type { ProductPrice } from "../types/pricing.types";
 import { useCompanyProfile } from "../hooks/use-company-profile";
 import { useCreatePriceMutation, useUpdatePriceMutation } from "../hooks/use-pricing";
 import { normalizeCurrencyCode } from "@/lib/utils";
+import { RiyalSymbol } from "@/components/shared/riyal-symbol";
 
 interface PricingFormModalProps {
   isOpen: boolean;
@@ -55,7 +56,7 @@ export function PricingFormModal({
       sku: "",
       description: "",
       unitPrice: 0,
-      currency: company?.defaultCurrency ?? "SAR",
+      currency: "SAR",
       taxRate: 0,
       status: "active",
     },
@@ -71,7 +72,7 @@ export function PricingFormModal({
               sku: price.sku ?? "",
               description: price.description ?? "",
               unitPrice: price.unitPrice,
-              currency: price.currency,
+              currency: "SAR",
               taxRate: price.taxRate ?? 0,
               status: price.status,
             }
@@ -81,7 +82,7 @@ export function PricingFormModal({
               sku: "",
               description: "",
               unitPrice: 0,
-              currency: company?.defaultCurrency ?? "SAR",
+              currency: "SAR",
               taxRate: 0,
               status: "active",
             }
@@ -172,10 +173,9 @@ export function PricingFormModal({
                 <Input
                   label={t("pricing.fields.currency")}
                   variant="bordered"
-                  maxLength={3}
+                  isReadOnly
                   {...register("currency")}
-                  isInvalid={!!errors.currency}
-                  errorMessage={errors.currency?.message}
+                  endContent={<RiyalSymbol size={14} className="text-default-500" />}
                 />
                 <Input
                   label={t("pricing.fields.taxRate")}

@@ -11,7 +11,7 @@ export const zakatRecordSchema = z.object({
   zakatBase: z.number(),
   rate: z.number().min(0).default(ZAKAT_RATE),
   zakatDue: z.number().min(0),
-  currency: z.string().default("USD"),
+  currency: z.string().default("SAR"),
   status: z.enum(["draft", "accrued", "paid"]).default("draft"),
   accrualJournalId: z.string().optional(),
   paymentJournalId: z.string().optional(),

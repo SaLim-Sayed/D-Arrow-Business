@@ -25,7 +25,8 @@ import {
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
-import { cn, formatCurrency } from "@/lib/utils";
+import { cn } from "@/lib/utils";
+import { MoneyAmount } from "@/components/shared/riyal-symbol";
 import {
   useDeleteProductMutation,
   useProductCategories,
@@ -118,7 +119,7 @@ function ProductRow({
       </td>
       <td className="whitespace-nowrap px-3 py-2 text-end">
         <span className="tabular-nums font-medium text-default-900" dir="ltr">
-          {formatCurrency(product.price, "USD")}
+          <MoneyAmount amount={product.price} />
           {unitLabel ? (
             <span className="ms-1 text-xs font-normal text-default-400">
               / {unitLabel}

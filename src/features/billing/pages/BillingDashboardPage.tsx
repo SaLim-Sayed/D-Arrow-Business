@@ -24,7 +24,8 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { cn, formatCurrency } from "@/lib/utils";
+import { cn } from "@/lib/utils";
+import { MoneyAmount } from "@/components/shared/riyal-symbol";
 import { useInvoices } from "../hooks/use-invoices";
 import { getInvoiceAmountDue } from "../utils/accounting-engine";
 import { AccountingPageHeader } from "../components/accounting-ui";
@@ -125,7 +126,7 @@ function ChartTooltip({
             {nameMap[entry.name] ?? entry.name}:
           </span>
           <span className="font-semibold tabular-nums text-default-900" dir="ltr">
-            {formatCurrency(entry.value, "USD")}
+            <MoneyAmount amount={entry.value} />
           </span>
         </div>
       ))}
@@ -210,21 +211,21 @@ export default function BillingDashboardPage() {
     {
       key: "outstanding",
       label: t("dashboard.outstanding"),
-      value: formatCurrency(totalOutstanding, "USD"),
+      value: <MoneyAmount amount={totalOutstanding} />,
       icon: TrendingUp,
       className: "text-primary bg-primary/10",
     },
     {
       key: "overdue",
       label: t("dashboard.overdue"),
-      value: formatCurrency(totalOverdue, "USD"),
+      value: <MoneyAmount amount={totalOverdue} />,
       icon: AlertCircle,
       className: "text-danger bg-danger/10",
     },
     {
       key: "paid",
       label: t("dashboard.total_received"),
-      value: formatCurrency(totalPaid, "USD"),
+      value: <MoneyAmount amount={totalPaid} />,
       icon: CheckCircle2,
       className: "text-success bg-success/10",
     },
@@ -378,9 +379,9 @@ export default function BillingDashboardPage() {
                 <YAxis
                   axisLine={false}
                   tickLine={false}
-                  tickFormatter={(v) => `$${v}`}
+                  tickFormatter={(v) => `${v}\u00A0\u20C1`}
                   tick={{ fontSize: 11, fill: "#71717a" }}
-                  width={48}
+                  width={56}
                 />
                 <RechartsTooltip
                   content={
@@ -453,7 +454,7 @@ export default function BillingDashboardPage() {
                   </div>
                   <div className="flex shrink-0 flex-col items-end gap-1">
                     <p className="text-sm font-bold tabular-nums text-default-900" dir="ltr">
-                      {formatCurrency(inv.grandTotal, inv.currency)}
+                      <MoneyAmount amount={inv.grandTotal} />
                     </p>
                     <span
                       className={cn(

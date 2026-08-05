@@ -77,7 +77,7 @@ export function buildAgedReceivablesReport(
     const partyId = inv.customerId;
     const existing = byParty.get(partyId) ?? {
       partyId,
-      partyName: getPartyName(partyId),
+      partyName: inv.customerName?.trim() || getPartyName(partyId),
       buckets: emptyBuckets(),
       total: 0,
     };
@@ -115,7 +115,7 @@ export function buildAgedPayablesReport(
     const partyId = bill.vendorId;
     const existing = byParty.get(partyId) ?? {
       partyId,
-      partyName: getPartyName(partyId),
+      partyName: bill.vendorName?.trim() || getPartyName(partyId),
       buckets: emptyBuckets(),
       total: 0,
     };

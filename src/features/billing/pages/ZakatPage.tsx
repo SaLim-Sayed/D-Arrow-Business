@@ -21,6 +21,7 @@ import { parseDate } from "@internationalized/date";
 import { CheckCircle2, HandCoins, Landmark, Scale, Settings } from "lucide-react";
 import { AppDatePicker } from "@/components/shared/app-date-picker";
 import { formatCurrency, cn } from "@/lib/utils";
+import { MoneyAmount } from "@/components/shared/riyal-symbol";
 import { AccountingPageHeader } from "../components/accounting-ui";
 import { ReportDataTable } from "../components/report-ui";
 import { useAccounts } from "../hooks/use-accounts";
@@ -157,13 +158,13 @@ function AccrueZakatModal({
                 <div className="flex items-center justify-between py-0.5">
                   <span className="text-default-500">{t("zakat.zakat_base")}</span>
                   <span className="font-medium tabular-nums" dir="ltr">
-                    {formatCurrency(calculation.zakatBase, currency)}
+                    <MoneyAmount amount={calculation.zakatBase} />
                   </span>
                 </div>
                 <div className="flex items-center justify-between py-0.5 font-bold">
                   <span className="text-default-800">{t("zakat.zakat_due")}</span>
                   <span className="tabular-nums text-primary" dir="ltr">
-                    {formatCurrency(calculation.zakatDue, currency)}
+                    <MoneyAmount amount={calculation.zakatDue} />
                   </span>
                 </div>
               </div>
@@ -228,7 +229,7 @@ function RecordZakatPaymentModal({
               {t("zakat.payment_title")}
               <p className="mt-1 text-sm font-normal text-default-500">
                 {record.fiscalYear} ·{" "}
-                <span dir="ltr">{formatCurrency(record.zakatDue, record.currency)}</span>
+                <MoneyAmount amount={record.zakatDue} />
               </p>
             </ModalHeader>
             <ModalBody className="gap-4">
@@ -324,7 +325,7 @@ export default function ZakatPage() {
           <div className="min-w-0">
             <p className="truncate text-xs text-default-500">{t("zakat.zakat_base")}</p>
             <p className="truncate text-base font-bold tabular-nums text-default-900" dir="ltr">
-              {formatCurrency(calculation.zakatBase, currency)}
+              <MoneyAmount amount={calculation.zakatBase} />
             </p>
           </div>
         </div>
@@ -335,7 +336,7 @@ export default function ZakatPage() {
           <div className="min-w-0">
             <p className="truncate text-xs text-default-500">{t("zakat.eligible_assets")}</p>
             <p className="truncate text-base font-bold tabular-nums text-default-900" dir="ltr">
-              {formatCurrency(calculation.eligibleAssets, currency)}
+              <MoneyAmount amount={calculation.eligibleAssets} />
             </p>
           </div>
         </div>
@@ -348,7 +349,7 @@ export default function ZakatPage() {
               {t("zakat.zakat_due")} ({calculation.configuredRatePercent}%)
             </p>
             <p className="truncate text-base font-bold tabular-nums text-primary" dir="ltr">
-              {formatCurrency(calculation.zakatDue, currency)}
+              <MoneyAmount amount={calculation.zakatDue} />
             </p>
           </div>
         </div>

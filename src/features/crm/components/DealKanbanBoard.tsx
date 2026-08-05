@@ -8,15 +8,16 @@ import {
 } from "@hello-pangea/dnd";
 import { Card, CardBody } from "@heroui/react";
 import { LoadingSpinner } from "@/components/shared/loading-spinner";
-import { cn, formatCurrency } from "@/lib/utils";
+import { cn } from "@/lib/utils";
+import { MoneyAmount } from "@/components/shared/riyal-symbol";
 import { useDealsQuery, useUpdateDealStageMutation } from "../hooks/use-deals";
 import { useContactsQuery } from "../hooks/use-contacts";
 import { DEAL_STAGES, normalizeDealStage } from "../constants/deal-workflow";
 import type { Deal, DealStage } from "../types/deals.types";
 import type { Contact } from "../types/contacts.types";
 
-function formatDealAmount(amount: number, currency: string) {
-  return formatCurrency(amount, currency);
+function FormatDealAmount({ amount }: { amount: number }) {
+  return <MoneyAmount amount={amount} />;
 }
 
 function contactDisplayName(contact: Contact | undefined) {
@@ -53,7 +54,7 @@ function DealCard({ deal, contactName, isDragging }: DealCardProps) {
             {deal.title}
           </h4>
           <p className="text-sm font-semibold text-foreground">
-            {formatDealAmount(deal.amount, deal.currency)}
+            <FormatDealAmount amount={deal.amount} />
           </p>
           {contactName && (
             <p className="text-xs text-default-500 truncate">{contactName}</p>

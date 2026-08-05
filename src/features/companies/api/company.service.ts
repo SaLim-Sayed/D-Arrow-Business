@@ -13,11 +13,9 @@ import type { CompanyProfile, UpdateCompanyProfileDTO } from "../types/company.t
 
 const SERVICE_NAME = "CompanyService";
 
-/** App currency is Saudi Riyal; map legacy EGP/empty to SAR. */
-function resolveDefaultCurrency(code?: string | null): string {
-  const normalized = (code ?? "").trim().toUpperCase();
-  if (!normalized || normalized === "EGP") return "SAR";
-  return normalized;
+/** App currency is always Saudi Riyal. */
+function resolveDefaultCurrency(_code?: string | null): string {
+  return "SAR";
 }
 
 function mapCompanyDoc(

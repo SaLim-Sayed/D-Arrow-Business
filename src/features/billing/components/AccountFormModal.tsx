@@ -95,7 +95,7 @@ export function AccountFormModal({
       description: "",
       isActive: true,
       isSystemAccount: false,
-      currency: "USD",
+      currency: "SAR",
       currentBalance: 0,
     },
   });
@@ -129,7 +129,7 @@ export function AccountFormModal({
         isActive: true,
         isSystemAccount: false,
         currency:
-          settings?.currencies?.find((c) => c.isDefault)?.code ?? "USD",
+          settings?.currencies?.find((c) => c.isDefault)?.code ?? "SAR",
         currentBalance: 0,
       });
     }

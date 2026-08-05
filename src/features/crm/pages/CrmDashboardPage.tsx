@@ -2,6 +2,8 @@ import { useTranslation } from "react-i18next";
 import { Card, CardBody, CardHeader } from "@heroui/react";
 import { PageHeader } from "@/components/shared/page-header";
 import { StatCard, StatCardGrid } from "@/components/shared/stat-card";
+import { MoneyAmount } from "@/components/shared/riyal-symbol";
+import { RIYAL_SIGN } from "@/lib/utils";
 import { useCrmAnalytics } from "../hooks/use-crm-analytics";
 import { Target, Users, Handshake, Trophy, XCircle, DollarSign, TrendingUp } from "lucide-react";
 import { PrimaryActionButton } from "@/components/shared/primary-action-button";
@@ -22,7 +24,14 @@ const CustomTooltip = ({ active, payload, label }: any) => {
           <div key={index} className="flex items-center gap-2 text-sm">
             <div className="w-2 h-2 rounded-full" style={{ backgroundColor: entry.color }} />
             <span className="text-default-600 capitalize">{entry.name}:</span>
-            <span className="font-bold">{entry.value}</span>
+            <span className="font-bold">
+              {typeof entry.value === "number" &&
+              (entry.dataKey === "amount" || entry.name === "amount") ? (
+                <MoneyAmount amount={entry.value} />
+              ) : (
+                entry.value
+              )}
+            </span>
           </div>
         ))}
       </div>
@@ -43,7 +52,7 @@ export function CrmDashboardPage() {
     { label: t("dashboard.stats.lostDeals"), value: kpis.lostDeals, icon: XCircle, color: "text-danger", bg: "bg-danger/10", gradient: "from-danger/20 to-rose-500/20" },
     {
       label: t("dashboard.stats.expectedRevenue"),
-      value: `$${kpis.expectedRevenue.toLocaleString(undefined, { maximumFractionDigits: 0 })}`,
+      value: <MoneyAmount amount={kpis.expectedRevenue} symbolSize={28} maximumFractionDigits={0} />,
       icon: DollarSign,
       color: "text-secondary",
       bg: "bg-secondary/10",
@@ -172,7 +181,7 @@ export function CrmDashboardPage() {
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" strokeOpacity={0.3} />
                   <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#71717a' }} dy={10} />
-                  <YAxis axisLine={false} tickLine={false} tickFormatter={(v) => `$${v}`} tick={{ fontSize: 12, fill: '#71717a' }} dx={-10} />
+                  <YAxis axisLine={false} tickLine={false} tickFormatter={(v) => `${v}\u00A0${RIYAL_SIGN}`} tick={{ fontSize: 12, fill: '#71717a' }} dx={-10} width={56} />
                   <RechartsTooltip content={<CustomTooltip />} cursor={{ stroke: '#006fee', strokeWidth: 1, strokeDasharray: '5 5' }} />
                   <Line type="monotone" dataKey="amount" stroke="#006fee" strokeWidth={4} dot={{ r: 4, fill: '#006fee', strokeWidth: 2, stroke: '#fff' }} activeDot={{ r: 8, strokeWidth: 0 }} />
                 </LineChart>

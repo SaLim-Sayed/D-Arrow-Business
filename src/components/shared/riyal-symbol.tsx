@@ -1,5 +1,5 @@
 import type { CSSProperties } from "react";
-import { cn, isSarCurrency } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 
 /** Official Saudi Riyal symbol viewBox */
 const RIYAL_VIEWBOX = "0 0 1124.14 1256.39";
@@ -40,6 +40,7 @@ export function RiyalSymbol({ size = 14, className, style }: RiyalSymbolProps) {
 
 interface MoneyAmountProps {
   amount: number;
+  /** Ignored for display — app always shows Saudi Riyal. Kept for call-site compatibility. */
   currency?: string | null;
   suffix?: string;
   className?: string;
@@ -51,10 +52,9 @@ interface MoneyAmountProps {
   minimumFractionDigits?: number;
 }
 
-/** Amount with official Saudi Riyal icon when currency is SAR */
+/** Amount with the official Saudi Riyal symbol (any stored currency is displayed as SAR). */
 export function MoneyAmount({
   amount,
-  currency,
   suffix,
   className,
   symbolSize = 14,
@@ -68,51 +68,31 @@ export function MoneyAmount({
     minimumFractionDigits,
   });
 
-  if (isSarCurrency(currency)) {
-    return (
-      <span
-        className={cn("tabular-nums", className)}
-        style={{
-          display: "inline-flex",
-          flexDirection: "row",
-          flexWrap: "nowrap",
-          direction: priceDirection,
-          unicodeBidi: "isolate",
-          alignItems: "flex-end",
-          fontSize: symbolSize,
-          lineHeight: 1,
-          gap: "0.22em",
-          whiteSpace: "nowrap",
-        }}
-      >
-        <span style={{ lineHeight: 1 }}>{formatted}</span>
-        <RiyalSymbol
-          style={{
-            width: "0.78em",
-            height: "0.82em",
-            transform: "translateY(0.1em)",
-          }}
-        />
-        {suffix ? <span style={{ lineHeight: 1 }}>{suffix}</span> : null}
-      </span>
-    );
-  }
-
-  const code = (currency ?? "USD").trim().toUpperCase();
-
-  if (code === "USD") {
-    return (
-      <span className={cn("tabular-nums", className)} dir="ltr">
-        ${formatted}
-        {suffix ? ` ${suffix}` : ""}
-      </span>
-    );
-  }
-
   return (
-    <span className={cn("tabular-nums", className)} dir="ltr">
-      {formatted} {code}
-      {suffix ? ` ${suffix}` : ""}
+    <span
+      className={cn("tabular-nums", className)}
+      style={{
+        display: "inline-flex",
+        flexDirection: "row",
+        flexWrap: "nowrap",
+        direction: priceDirection,
+        unicodeBidi: "isolate",
+        alignItems: "flex-end",
+        fontSize: symbolSize,
+        lineHeight: 1,
+        gap: "0.22em",
+        whiteSpace: "nowrap",
+      }}
+    >
+      <span style={{ lineHeight: 1 }}>{formatted}</span>
+      <RiyalSymbol
+        style={{
+          width: "0.78em",
+          height: "0.82em",
+          transform: "translateY(0.1em)",
+        }}
+      />
+      {suffix ? <span style={{ lineHeight: 1 }}>{suffix}</span> : null}
     </span>
   );
 }

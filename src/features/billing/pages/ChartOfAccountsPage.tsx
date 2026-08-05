@@ -26,7 +26,7 @@ import {
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
-import { formatCurrency } from "@/lib/utils";
+import { MoneyAmount } from "@/components/shared/riyal-symbol";
 import { useAccounts } from "../hooks/use-accounts";
 import { AccountFormModal } from "../components/AccountFormModal";
 import type { Account, AccountType } from "../schemas/account";
@@ -160,7 +160,7 @@ function AccountRow({
           )}
           dir="ltr"
         >
-          {formatCurrency(balance, account.currency ?? "USD")}
+          <MoneyAmount amount={balance} />
         </span>
       </td>
       <td className="w-10 px-2 py-2">
@@ -527,11 +527,7 @@ export default function ChartOfAccountsPage() {
                               className="px-3 py-2 text-end text-sm font-bold tabular-nums"
                               dir="ltr"
                             >
-                              {formatCurrency(
-                                entry.total,
-                                filtered.find((a) => a.type === entry.type)
-                                  ?.currency ?? "USD"
-                              )}
+                              <MoneyAmount amount={entry.total} />
                             </td>
                             <td />
                           </tr>
@@ -589,10 +585,7 @@ export default function ChartOfAccountsPage() {
                             className="px-3 py-2 text-end text-sm font-bold tabular-nums"
                             dir="ltr"
                           >
-                            {formatCurrency(
-                              group.total,
-                              group.accounts[0]?.currency ?? "USD"
-                            )}
+                            <MoneyAmount amount={group.total} />
                           </td>
                           <td />
                         </tr>,

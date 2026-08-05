@@ -1,5 +1,5 @@
 import React from "react";
-import { formatCurrency } from "@/lib/utils";
+import { MoneyAmount } from "@/components/shared/riyal-symbol";
 import type { JournalEntry } from "../schemas/journal";
 
 interface JournalPrintViewProps {
@@ -49,10 +49,10 @@ export const JournalPrintView = React.forwardRef<HTMLDivElement, JournalPrintVie
                 <td className="py-3 px-4">{line.accountId}</td>
                 <td className="py-3 px-4 text-gray-600">{line.description || "—"}</td>
                 <td className="py-3 px-4 text-right">
-                  {line.debit > 0 ? formatCurrency(line.debit, journal.currency) : ""}
+                  {line.debit > 0 ? <MoneyAmount amount={line.debit} /> : ""}
                 </td>
                 <td className="py-3 px-4 text-right">
-                  {line.credit > 0 ? formatCurrency(line.credit, journal.currency) : ""}
+                  {line.credit > 0 ? <MoneyAmount amount={line.credit} /> : ""}
                 </td>
               </tr>
             ))}
@@ -63,10 +63,10 @@ export const JournalPrintView = React.forwardRef<HTMLDivElement, JournalPrintVie
                 TOTAL
               </td>
               <td className="py-3 px-4 text-right text-green-700">
-                {formatCurrency(journal.totalDebit, journal.currency)}
+                <MoneyAmount amount={journal.totalDebit} />
               </td>
               <td className="py-3 px-4 text-right text-blue-700">
-                {formatCurrency(journal.totalCredit, journal.currency)}
+                <MoneyAmount amount={journal.totalCredit} />
               </td>
             </tr>
           </tfoot>

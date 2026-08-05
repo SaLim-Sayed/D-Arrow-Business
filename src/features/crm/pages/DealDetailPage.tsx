@@ -37,14 +37,13 @@ import { contactDisplayName } from "../utils/contacts-list.utils";
 import { CrmRecordLayout, CrmRecordHeader } from "../components/CrmRecordLayout";
 import { CrmStageBar } from "../components/CrmStageBar";
 import { CrmSmartButtons } from "../components/CrmSmartButtons";
-import { formatDate, formatCurrency } from "@/lib/utils";
+import { formatDate } from "@/lib/utils";
+import { MoneyAmount } from "@/components/shared/riyal-symbol";
 import { normalizeCrmTaskStatus } from "../constants/crm-task.constants";
 import type { DealStage } from "../types/deals.types";
 import type { ActivityType } from "../types/activities.types";
 
-function formatAmount(amount: number, currency: string) {
-  return formatCurrency(amount, currency);
-}
+
 
 export function DealDetailPage() {
   const { dealId = "" } = useParams();
@@ -85,7 +84,7 @@ export function DealDetailPage() {
               { label: deal.title },
             ]}
             title={deal.title}
-            subtitle={formatAmount(deal.amount, deal.currency)}
+            subtitle={<MoneyAmount amount={deal.amount} />}
             badge={
               <Chip color={DEAL_STAGE_COLORS[deal.stage]} variant="flat" size="md">
                 {t(`deals.stage.${deal.stage}`)}
@@ -134,7 +133,7 @@ export function DealDetailPage() {
                   {deal.title}
                 </FieldBox>
                 <FieldBox label={t("deals.form.amount")} icon={<DollarSign className="h-3.5 w-3.5" />}>
-                  {formatAmount(deal.amount, deal.currency)}
+                  <MoneyAmount amount={deal.amount} />
                 </FieldBox>
                 <FieldBox label={t("deals.form.contact")} icon={<User className="h-3.5 w-3.5" />}>
                   {contact ? (

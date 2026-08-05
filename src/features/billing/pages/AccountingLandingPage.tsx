@@ -26,6 +26,7 @@ import { useInvoices } from "../hooks/use-invoices";
 import { useBills } from "../hooks/use-bills";
 import { useBillingSettings } from "../hooks/use-billing-settings";
 import { getInvoiceAmountDue } from "../utils/accounting-engine";
+import { getDefaultBillingCurrency } from "../utils/billing-currency";
 import {
   AccountingAppTile,
   AccountingMetricCards,
@@ -65,7 +66,7 @@ export default function AccountingLandingPage() {
     (b) => b.status === "open" || b.status === "overdue" || b.status === "draft"
   ).length;
 
-  const currency = settings?.currencies?.find((c) => c.isDefault)?.code ?? "SAR";
+  const currency = getDefaultBillingCurrency(settings);
 
   return (
     <div className="animate-in fade-in pb-24 duration-300">

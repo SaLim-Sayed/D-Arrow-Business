@@ -1,19 +1,22 @@
 import type { BillingSettings } from "../schemas/settings";
+import { APP_CURRENCY } from "@/lib/utils";
 
-export const DEFAULT_BILLING_CURRENCY = "SAR";
+export const DEFAULT_BILLING_CURRENCY = APP_CURRENCY;
 
 export const DEFAULT_BILLING_CURRENCY_ENTRY = {
   code: DEFAULT_BILLING_CURRENCY,
-  symbol: "SAR",
+  symbol: "\u20C1",
   name: "Saudi Riyal",
   isDefault: true,
 } as const;
 
+/** App billing currency is always Saudi Riyal. */
+export function normalizeBillingCurrency(_code?: string | null): string {
+  return DEFAULT_BILLING_CURRENCY;
+}
+
 export function getDefaultBillingCurrency(
-  settings?: Pick<BillingSettings, "currencies"> | null
+  _settings?: Pick<BillingSettings, "currencies"> | null
 ): string {
-  return (
-    settings?.currencies?.find((c) => c.isDefault)?.code ??
-    DEFAULT_BILLING_CURRENCY
-  );
+  return DEFAULT_BILLING_CURRENCY;
 }

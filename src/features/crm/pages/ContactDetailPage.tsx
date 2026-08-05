@@ -52,7 +52,8 @@ import { CrmNotesSection } from "../components/shared/CrmNotesSection";
 import { CrmAttachmentsSection } from "../components/shared/CrmAttachmentsSection";
 import { CrmTimeline } from "../components/shared/CrmTimeline";
 import { contactDisplayName } from "../utils/contacts-list.utils";
-import { formatDate, formatCurrency } from "@/lib/utils";
+import { formatDate } from "@/lib/utils";
+import { MoneyAmount } from "@/components/shared/riyal-symbol";
 import { useInvoicesByCustomer } from "@/features/billing/hooks/use-invoices";
 import { getInvoiceAmountDue } from "@/features/billing/utils/accounting-engine";
 import { normalizeCrmTaskStatus } from "../constants/crm-task.constants";
@@ -235,7 +236,7 @@ export function ContactDetailPage() {
                       <TableCell>{deal.title}</TableCell>
                       <TableCell>{t(`deals.stage.${deal.stage}`)}</TableCell>
                       <TableCell>
-                        {formatCurrency(deal.amount, deal.currency)}
+                        <MoneyAmount amount={deal.amount} />
                       </TableCell>
                       <TableCell>
                         <Button
@@ -412,10 +413,10 @@ export function ContactDetailPage() {
                         </Chip>
                       </TableCell>
                       <TableCell className="text-right font-medium">
-                        {formatCurrency(inv.grandTotal, inv.currency)}
+                        <MoneyAmount amount={inv.grandTotal} />
                       </TableCell>
                       <TableCell className="text-right">
-                        {formatCurrency(getInvoiceAmountDue(inv), inv.currency)}
+                        <MoneyAmount amount={getInvoiceAmountDue(inv)} />
                       </TableCell>
                     </TableRow>
                   ))}

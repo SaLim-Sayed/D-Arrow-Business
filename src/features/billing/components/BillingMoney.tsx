@@ -1,6 +1,9 @@
 import { MoneyAmount } from "@/components/shared/riyal-symbol";
 import { useTranslation } from "react-i18next";
-import { DEFAULT_BILLING_CURRENCY } from "../utils/billing-currency";
+import {
+  DEFAULT_BILLING_CURRENCY,
+  normalizeBillingCurrency,
+} from "../utils/billing-currency";
 
 interface BillingMoneyProps {
   amount: number;
@@ -28,7 +31,7 @@ export function BillingMoney({
   return (
     <MoneyAmount
       amount={amount}
-      currency={currency ?? DEFAULT_BILLING_CURRENCY}
+      currency={normalizeBillingCurrency(currency ?? DEFAULT_BILLING_CURRENCY)}
       locale={locale ?? (isAr ? "ar-SA" : "en-US")}
       priceDirection={priceDirection ?? (isAr ? "rtl" : "ltr")}
       symbolSize={symbolSize}

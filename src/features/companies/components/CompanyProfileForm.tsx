@@ -23,7 +23,7 @@ import { useAppPermissions } from "../hooks/use-app-permissions";
 import { BRAND_PRIMARY_HEX, BRAND_SECONDARY_HEX, THEME_PRESETS } from "@/theme/brand-colors";
 import { cn } from "@/lib/utils";
 
-const CURRENCIES = ["SAR", "AED", "USD", "EUR"];
+const CURRENCIES = ["SAR"];
 
 const HEX_PATTERN = /^#[0-9a-fA-F]{6}$/;
 

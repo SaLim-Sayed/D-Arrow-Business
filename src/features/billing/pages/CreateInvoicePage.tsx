@@ -1,6 +1,8 @@
 import { useForm, useFieldArray, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
+  Autocomplete,
+  AutocompleteItem,
   Card,
   CardBody,
   CardHeader,
@@ -14,12 +16,15 @@ import {
 import { Plus, Trash2, Save, Send, ChevronRight } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Link, useNavigate, useParams, useLocation } from "react-router-dom";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import { selectFieldProps } from "@/components/shared/select-field";
-import { useContactsQuery } from "@/features/crm/hooks/use-contacts";
-import { contactDisplayName } from "@/features/crm/utils/contacts-list.utils";
+import { RiyalSymbol } from "@/components/shared/riyal-symbol";
+import {
+  useContactsQuery,
+  useCreateContactMutation,
+} from "@/features/crm/hooks/use-contacts";
 import { useProducts } from "../hooks/use-products";
 import { useBillingSettings } from "../hooks/use-billing-settings";
 import { useCreateInvoiceMutation, useUpdateInvoiceMutation, useInvoice } from "../hooks/use-invoices";
@@ -35,7 +40,12 @@ import {
   DEFAULT_BILLING_CURRENCY,
   getDefaultBillingCurrency,
 } from "../utils/billing-currency";
-
+import {
+  findContactByCustomerInput,
+  invoiceCustomerPickerLabel,
+  resolveInvoiceCustomerName,
+} from "../utils/invoice-customer";
+import { toCreateContactDTO } from "@/features/crm/schemas/contact.schema";
 export default function CreateInvoicePage() {
   const { t } = useTranslation("billing");
   const navigate = useNavigate();
@@ -61,7 +71,9 @@ export default function CreateInvoicePage() {
 
   const { data: contactsRes } = useContactsQuery();
   const contacts = contactsRes?.data || [];
-  
+  const createContact = useCreateContactMutation();
+  const [customerInput, setCustomerInput] = useState("");
+
   const { data: products = [] } = useProducts();
   const { data: billingSettings } = useBillingSettings();
   const taxes = billingSettings?.taxes ?? [];
@@ -86,6 +98,8 @@ export default function CreateInvoicePage() {
     defaultValues: {
       invoiceNumber: "DRAFT",
       status: "draft",
+      customerId: "",
+      customerName: "",
       currency: DEFAULT_BILLING_CURRENCY,
       issueDate: new Date(),
       dueDate: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000),
@@ -122,21 +136,32 @@ export default function CreateInvoicePage() {
         validityMonths: fromQuotation.data.validityMonths,
         items: fromQuotation.data.items,
       });
-      control._reset(draft as any);
+      const contact = contacts.find((c) => c.id === fromQuotation.contactId);
+      const customerName = contact
+        ? invoiceCustomerPickerLabel(contact)
+        : draft.customerName ?? "";
+      control._reset({ ...draft, customerName } as any);
+      setCustomerInput(customerName);
     }
-  }, [isEditing, fromQuotation, control]);
+  }, [isEditing, fromQuotation, control, contacts]);
 
   useEffect(() => {
     if (isEditing && existingInvoice) {
+      const name = resolveInvoiceCustomerName(
+        existingInvoice,
+        contacts,
+        existingInvoice.customerName ?? ""
+      );
       const resetData = {
         ...existingInvoice,
+        customerName: existingInvoice.customerName || name,
         issueDate: new Date(existingInvoice.issueDate),
         dueDate: new Date(existingInvoice.dueDate),
       };
-      // Type assertion is safe here as existingInvoice items map to the CreateInvoiceDTO
       control._reset(resetData as any);
+      setCustomerInput(existingInvoice.customerName || name);
     }
-  }, [isEditing, existingInvoice, control]);
+  }, [isEditing, existingInvoice, control, contacts]);
 
   useEffect(() => {
     if (!isEditing && !fromQuotation && billingSettings) {
@@ -160,7 +185,6 @@ export default function CreateInvoicePage() {
   const watchItems = watch("items");
   const currency = watch("currency") ?? DEFAULT_BILLING_CURRENCY;
 
-  // Dynamic calculations
   // Dynamic calculations
   // We compute totals dynamically from watchItems.
   const subTotal = watchItems.reduce((acc, item) => acc + (Number(item.quantity) || 0) * (Number(item.unitPrice) || 0), 0);
@@ -201,10 +225,56 @@ export default function CreateInvoicePage() {
     });
   };
 
+  const resolveCustomerForSave = async (
+    data: CreateInvoiceDTO
+  ): Promise<{ customerId: string; customerName: string }> => {
+    const typedName = (data.customerName || customerInput).trim();
+    let customerId = data.customerId?.trim() || "";
+
+    if (customerId) {
+      const selected = contacts.find((c) => c.id === customerId);
+      return {
+        customerId,
+        customerName:
+          typedName ||
+          (selected ? invoiceCustomerPickerLabel(selected) : customerId),
+      };
+    }
+
+    if (!typedName) {
+      throw new Error("customer_required");
+    }
+
+    const existing = findContactByCustomerInput(contacts, typedName);
+    if (existing?.id) {
+      return {
+        customerId: existing.id,
+        customerName: typedName,
+      };
+    }
+
+    const created = await createContact.mutateAsync(
+      toCreateContactDTO({
+        firstName: typedName,
+        lastName: "",
+        email: "",
+        phone: "",
+        accountName: typedName,
+      })
+    );
+
+    return {
+      customerId: created.data.id,
+      customerName: typedName,
+    };
+  };
+
   const onSubmit = async (data: CreateInvoiceDTO, actionType: "draft" | "sent") => {
     try {
+      const customer = await resolveCustomerForSave(data);
       const finalData: CreateInvoiceDTO = {
         ...data,
+        ...customer,
         status: actionType,
         subTotal,
         totalTax,
@@ -274,29 +344,64 @@ export default function CreateInvoicePage() {
         <Card className="p-2 border border-default-100 shadow-sm rounded-2xl">
           <CardBody className="gap-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Customer */}
+              {/* Customer: pick existing or type a new company/client name */}
               <Controller
                 control={control}
                 name="customerId"
                 render={({ field }) => (
-                  <Select
-                    {...selectFieldProps()}
-                    {...field}
-                    label={t("invoices.create.customer") || "Customer"}
-                    placeholder={t("invoices.create.customer_placeholder") || "Select a customer"}
+                  <Autocomplete
+                    label={t("invoices.create.customer")}
+                    placeholder={t("invoices.create.customer_placeholder")}
+                    description={t("invoices.create.customer_hint")}
                     variant="bordered"
+                    allowsCustomValue
+                    menuTrigger="focus"
+                    inputValue={customerInput}
+                    selectedKey={field.value || null}
+                    onInputChange={(value) => {
+                      setCustomerInput(value);
+                      setValue("customerName", value, { shouldValidate: true });
+                      const selected = contacts.find((c) => c.id === field.value);
+                      if (
+                        selected &&
+                        invoiceCustomerPickerLabel(selected) !== value
+                      ) {
+                        field.onChange("");
+                      }
+                    }}
+                    onSelectionChange={(key) => {
+                      const id = key != null ? String(key) : "";
+                      field.onChange(id);
+                      if (!id) return;
+                      const contact = contacts.find((c) => c.id === id);
+                      if (!contact) return;
+                      const label = invoiceCustomerPickerLabel(contact);
+                      setCustomerInput(label);
+                      setValue("customerName", label, { shouldValidate: true });
+                    }}
+                    onBlur={field.onBlur}
                     isInvalid={!!errors.customerId}
-                    errorMessage={(errors.customerId?.message as string)}
+                    errorMessage={errors.customerId?.message as string | undefined}
+                    listboxProps={{
+                      emptyContent: t("invoices.create.customer_empty"),
+                    }}
                   >
                     {contacts.map((contact) => {
-                      const label = contactDisplayName(contact);
+                      const label = invoiceCustomerPickerLabel(contact);
                       return (
-                      <SelectItem key={contact.id} textValue={label}>
-                        {label}
-                      </SelectItem>
+                        <AutocompleteItem key={contact.id!} textValue={label}>
+                          <div className="flex flex-col">
+                            <span>{label}</span>
+                            {contact.email ? (
+                              <span className="text-xs text-default-400">
+                                {contact.email}
+                              </span>
+                            ) : null}
+                          </div>
+                        </AutocompleteItem>
                       );
                     })}
-                  </Select>
+                  </Autocomplete>
                 )}
               />
 
@@ -381,7 +486,7 @@ export default function CreateInvoicePage() {
                           variant="flat"
                           dir="ltr"
                           classNames={{ input: "text-start" }}
-                          startContent={<span className="text-default-400 text-xs">$</span>}
+                          startContent={<RiyalSymbol size={12} className="text-default-400" />}
                           {...register(`items.${index}.unitPrice` as const, { valueAsNumber: true })}
                         />
                       </td>
@@ -477,7 +582,7 @@ export default function CreateInvoicePage() {
           <Button
             variant="flat"
             onPress={() => handleSubmit((data) => onSubmit(data as any, "draft"))()}
-            isLoading={isSubmitting || updateInvoice.isPending || createInvoice.isPending}
+            isLoading={isSubmitting || updateInvoice.isPending || createInvoice.isPending || createContact.isPending}
             startContent={<Save className="w-4 h-4" />}
           >
             {isEditing ? t("invoices.create.update_draft") : t("invoices.create.save_draft")}
@@ -485,7 +590,7 @@ export default function CreateInvoicePage() {
           <Button
             color="primary"
             onPress={() => handleSubmit((data) => onSubmit(data as any, "sent"))()}
-            isLoading={isSubmitting || updateInvoice.isPending || createInvoice.isPending}
+            isLoading={isSubmitting || updateInvoice.isPending || createInvoice.isPending || createContact.isPending}
             startContent={<Send className="w-4 h-4" />}
           >
             {isEditing ? t("invoices.create.update_send") : t("invoices.create.save_send")}

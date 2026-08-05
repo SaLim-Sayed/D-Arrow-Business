@@ -29,7 +29,7 @@ export const journalEntrySchema = z.object({
   lines: z.array(journalLineSchema).min(2, "At least two lines are required for double-entry"),
   totalDebit: z.number().min(0),
   totalCredit: z.number().min(0),
-  currency: z.string().default("USD"),
+  currency: z.string().default("SAR"),
   status: z.enum(["draft", "posted", "cancelled"]).default("draft"),
   sourceType: z.enum(["manual", "invoice", "bill", "payment", "refund", "inventory", "payroll", "opening", "closing"]).default("manual"),
   sourceId: z.string().optional(), // ID of the invoice, bill, etc.

@@ -30,71 +30,36 @@ export function generateId(): string {
   return crypto.randomUUID();
 }
 
-const ISO_CURRENCY_CODE = /^[A-Z]{3}$/;
+/** App display currency is always Saudi Riyal. */
+export const APP_CURRENCY = "SAR";
 
-export function isSarCurrency(currency?: string | null) {
-  const code = (currency ?? "").trim().toUpperCase();
-  return code === "SAR" || code === "ريال";
+/** Official Unicode Saudi Riyal Sign (U+20C1) for plain-text / CSV only. Prefer <MoneyAmount /> in UI. */
+export const RIYAL_SIGN = "\u20C1";
+
+export function isSarCurrency(_currency?: string | null) {
+  return true;
 }
 
-/** Returns a valid ISO 4217 code, defaulting to SAR when invalid. */
-export function normalizeCurrencyCode(currency: string | null | undefined): string {
-  const code = (currency ?? "").trim().toUpperCase();
-  if (!ISO_CURRENCY_CODE.test(code)) return "SAR";
-
-  try {
-    new Intl.NumberFormat(undefined, { style: "currency", currency: code });
-    return code;
-  } catch {
-    return "SAR";
-  }
+/** Always returns SAR — any other stored code is remapped for display/storage defaults. */
+export function normalizeCurrencyCode(_currency?: string | null): string {
+  return APP_CURRENCY;
 }
 
+/** Formats amount for plain text. UI should use <MoneyAmount /> for the SVG رiyal mark. */
 export function formatCurrency(
   amount: number,
-  currency?: string | null,
+  _currency?: string | null,
   options?: Intl.NumberFormatOptions
 ): string {
-  const code = normalizeCurrencyCode(currency);
   const currentLang = i18n.language || "en";
   const fractionDigits = options?.maximumFractionDigits ?? 2;
+  const locale = currentLang.startsWith("ar") ? "ar-SA" : currentLang;
 
-  if (isSarCurrency(code)) {
-    const formatted = amount.toLocaleString(currentLang.startsWith("ar") ? "ar-SA" : currentLang, {
-      maximumFractionDigits: fractionDigits,
-      minimumFractionDigits: 0,
-      ...options,
-    });
-    return `${formatted} SAR`;
-  }
+  const formatted = amount.toLocaleString(locale, {
+    maximumFractionDigits: fractionDigits,
+    minimumFractionDigits: 0,
+    ...options,
+  });
 
-  const absFormatted = new Intl.NumberFormat(
-    currentLang.startsWith("ar") ? "ar-SA" : currentLang,
-    {
-      minimumFractionDigits: 0,
-      maximumFractionDigits: fractionDigits,
-      ...options,
-    }
-  ).format(Math.abs(amount));
-
-  const sign = amount < 0 ? "-" : "";
-
-  if (code === "USD") {
-    return `${sign}$${absFormatted}`;
-  }
-
-  try {
-    if (!currentLang.startsWith("ar")) {
-      return new Intl.NumberFormat(currentLang, {
-        style: "currency",
-        currency: code,
-        maximumFractionDigits: fractionDigits,
-        ...options,
-      }).format(amount);
-    }
-
-    return `${sign}${absFormatted}\u00A0${code}`;
-  } catch {
-    return `${sign}${absFormatted} ${code}`;
-  }
+  return `${formatted}\u00A0${RIYAL_SIGN}`;
 }

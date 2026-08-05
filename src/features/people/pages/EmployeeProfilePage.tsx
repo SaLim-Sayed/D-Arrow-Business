@@ -55,6 +55,7 @@ import { useTranslation } from "react-i18next";
 import { useAppPermissions } from "@/features/companies/hooks/use-app-permissions";
 import { formatDate } from "@/lib/utils";
 import { selectFieldProps } from "@/components/shared/select-field";
+import { MoneyAmount, RiyalSymbol } from "@/components/shared/riyal-symbol";
 
 const statusColorMap: Record<string, "success" | "warning" | "danger" | "primary" | "default"> = {
   active: "success",
@@ -352,7 +353,7 @@ export default function EmployeeProfilePage() {
                     variant="bordered"
                     value={editData.salary}
                     onValueChange={(val) => setEditData({ ...editData, salary: val })}
-                    startContent={<div className="pointer-events-none flex items-center"><span className="text-default-400 text-small">$</span></div>}
+                    startContent={<div className="pointer-events-none flex items-center"><RiyalSymbol size={14} className="text-default-400" /></div>}
                   />
                 </div>
               </ModalBody>
@@ -397,7 +398,7 @@ export default function EmployeeProfilePage() {
                       <InfoItem icon={<ShieldCheck size={16} />} label={t("profile.role")} value={employee.role ? t(`roles.${employee.role}`) : t("roles.employee")} />
                       <InfoItem icon={<UserIcon size={16} />} label={t("profile.reporting_to")} value="Sarah (CEO)" />
                       {employee.salary && (
-                        <InfoItem icon={<TrendingUp size={16} />} label={t("profile.salary")} value={`${employee.currency || "USD"} ${employee.salary.toLocaleString()}`} />
+                        <InfoItem icon={<TrendingUp size={16} />} label={t("profile.salary")} value={<MoneyAmount amount={employee.salary} />} />
                       )}
                     </div>
                     <Divider />
@@ -743,13 +744,13 @@ export default function EmployeeProfilePage() {
   );
 }
 
-function InfoItem({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
+function InfoItem({ icon, label, value }: { icon: React.ReactNode; label: string; value: React.ReactNode }) {
   return (
     <div className="flex items-start gap-3">
       <div className="p-2 bg-default-100 rounded-lg text-default-500 shrink-0">{icon}</div>
       <div>
         <p className="text-[10px] font-bold text-default-400 uppercase tracking-widest">{label}</p>
-        <p className="text-sm font-bold text-default-700 mt-0.5">{value}</p>
+        <div className="text-sm font-bold text-default-700 mt-0.5">{value}</div>
       </div>
     </div>
   );

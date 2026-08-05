@@ -5,8 +5,8 @@ import { Button } from "@heroui/react";
 import { Plus } from "lucide-react";
 import { toast } from "sonner";
 import { useAccounts } from "../hooks/use-accounts";
-import { formatCurrency } from "@/lib/utils";
 import { cn } from "@/lib/utils";
+import { MoneyAmount } from "@/components/shared/riyal-symbol";
 import { useInvoices } from "../hooks/use-invoices";
 import { useBills } from "../hooks/use-bills";
 import { useContactsQuery } from "@/features/crm/hooks/use-contacts";
@@ -73,20 +73,23 @@ function PlAmount({
     const { value, isCredit } = plExpenseDisplay(amount);
     return (
       <span
-        className={cn(isCredit ? "text-success" : "text-default-900")}
+        className={cn(
+          "inline-flex items-center gap-0.5",
+          isCredit ? "text-success" : "text-default-900"
+        )}
         dir="ltr"
       >
-        {isCredit
-          ? `(${formatCurrency(value, "USD")})`
-          : formatCurrency(value, "USD")}
+        {isCredit ? (
+          <>
+            (<MoneyAmount amount={value} />)
+          </>
+        ) : (
+          <MoneyAmount amount={value} />
+        )}
       </span>
     );
   }
-  return (
-    <span className="text-default-900" dir="ltr">
-      {formatCurrency(amount, "USD")}
-    </span>
-  );
+  return <MoneyAmount amount={amount} className="text-default-900" />;
 }
 
 export default function ReportsPage() {
@@ -341,7 +344,7 @@ export default function ReportsPage() {
                 amount: <PlAmount amount={plSignedAmount(a)} variant="income" />,
               }))}
               totalLabel={t("reports.total_income")}
-              totalAmount={formatCurrency(totalIncome, "USD")}
+              totalAmount={<MoneyAmount amount={totalIncome} />}
               totalAmountClass="text-success"
             />
 
@@ -368,14 +371,14 @@ export default function ReportsPage() {
                 amount: <PlAmount amount={plSignedAmount(a)} variant="expense" />,
               }))}
               totalLabel={t("reports.total_expenses")}
-              totalAmount={formatCurrency(totalExpense, "USD")}
+              totalAmount={<MoneyAmount amount={totalExpense} />}
               totalAmountClass="text-warning-700 dark:text-warning"
               footer={hasExpenseCredits ? t("reports.expense_credit_hint") : undefined}
             />
 
             <NetIncomeBanner
               label={t("reports.net_income")}
-              amount={formatCurrency(netIncome, "USD")}
+              amount={<MoneyAmount amount={netIncome} />}
               netIncome={netIncome}
               formula={t("reports.guide.formula_pl")}
             />
@@ -391,10 +394,10 @@ export default function ReportsPage() {
               rows={assets.map((a) => ({
                 id: a.id!,
                 label: accountLabel(a),
-                amount: formatCurrency(a.currentBalance, a.currency),
+                amount: <MoneyAmount amount={a.currentBalance} />,
               }))}
               totalLabel={t("reports.total_assets")}
-              totalAmount={formatCurrency(totalAssets, "USD")}
+              totalAmount={<MoneyAmount amount={totalAssets} />}
               totalClass="text-primary"
             />
 
@@ -406,10 +409,10 @@ export default function ReportsPage() {
                 rows={liabilities.map((a) => ({
                   id: a.id!,
                   label: accountLabel(a),
-                  amount: formatCurrency(a.currentBalance, a.currency),
+                  amount: <MoneyAmount amount={a.currentBalance} />,
                 }))}
                 totalLabel={t("reports.total_liabilities")}
-                totalAmount={formatCurrency(totalLiabilities, "USD")}
+                totalAmount={<MoneyAmount amount={totalLiabilities} />}
                 totalClass="text-danger"
               />
 
@@ -423,7 +426,7 @@ export default function ReportsPage() {
                     label: accountLabel(a),
                     amount: (
                       <span dir="ltr">
-                        {formatCurrency(a.currentBalance, a.currency)}
+                        <MoneyAmount amount={a.currentBalance} />
                       </span>
                     ),
                   })),
@@ -435,20 +438,20 @@ export default function ReportsPage() {
                         className={netIncome >= 0 ? "text-success" : "text-danger"}
                         dir="ltr"
                       >
-                        {formatCurrency(netIncome, "USD")}
+                        <MoneyAmount amount={netIncome} />
                       </span>
                     ),
                   },
                 ]}
                 totalLabel={t("reports.total_equity")}
-                totalAmount={formatCurrency(totalEquity + netIncome, "USD")}
+                totalAmount={<MoneyAmount amount={totalEquity + netIncome} />}
                 totalAmountClass="text-secondary"
               />
 
               <div className="flex items-center justify-between rounded-lg border border-default-200 bg-default-50/60 px-4 py-3 text-sm font-bold">
                 <span>{t("reports.liabilities_plus_equity")}</span>
                 <span dir="ltr">
-                  {formatCurrency(totalLiabilities + totalEquity + netIncome, "USD")}
+                  <MoneyAmount amount={totalLiabilities + totalEquity + netIncome} />
                 </span>
               </div>
             </div>
@@ -470,14 +473,14 @@ export default function ReportsPage() {
                   {" — "}
                   {accountLabel(account)}
                 </span>,
-                debit > 0 ? formatCurrency(debit, account.currency) : "—",
-                credit > 0 ? formatCurrency(credit, account.currency) : "—",
+                debit > 0 ? <MoneyAmount amount={debit} /> : "—",
+                credit > 0 ? <MoneyAmount amount={credit} /> : "—",
               ],
             }))}
             footer={[
               t("reports.trial_total"),
-              formatCurrency(totalDebits, "USD"),
-              formatCurrency(totalCredits, "USD"),
+              <MoneyAmount amount={totalDebits} />,
+              <MoneyAmount amount={totalCredits} />,
             ]}
           />
         )}
@@ -499,9 +502,9 @@ export default function ReportsPage() {
               cells: [
                 <span key="name" className="font-medium">{row.partyName}</span>,
                 ...BUCKET_KEYS.map((k) =>
-                  row.buckets[k] > 0 ? formatCurrency(row.buckets[k], "USD") : "—"
+                  row.buckets[k] > 0 ? <MoneyAmount amount={row.buckets[k]} /> : "—"
                 ),
-                formatCurrency(row.total, "USD"),
+                <MoneyAmount amount={row.total} />,
               ],
             }))}
             footer={
@@ -509,9 +512,9 @@ export default function ReportsPage() {
                 ? [
                     t("reports.total"),
                     ...BUCKET_KEYS.map((k) =>
-                      formatCurrency(agedReceivables.totals[k], "USD")
+                      <MoneyAmount amount={agedReceivables.totals[k]} />
                     ),
-                    formatCurrency(agedReceivables.grandTotal, "USD"),
+                    <MoneyAmount amount={agedReceivables.grandTotal} />,
                   ]
                 : undefined
             }
@@ -535,9 +538,9 @@ export default function ReportsPage() {
               cells: [
                 <span key="name" className="font-medium">{row.partyName}</span>,
                 ...BUCKET_KEYS.map((k) =>
-                  row.buckets[k] > 0 ? formatCurrency(row.buckets[k], "USD") : "—"
+                  row.buckets[k] > 0 ? <MoneyAmount amount={row.buckets[k]} /> : "—"
                 ),
-                formatCurrency(row.total, "USD"),
+                <MoneyAmount amount={row.total} />,
               ],
             }))}
             footer={
@@ -545,9 +548,9 @@ export default function ReportsPage() {
                 ? [
                     t("reports.total"),
                     ...BUCKET_KEYS.map((k) =>
-                      formatCurrency(agedPayables.totals[k], "USD")
+                      <MoneyAmount amount={agedPayables.totals[k]} />
                     ),
-                    formatCurrency(agedPayables.grandTotal, "USD"),
+                    <MoneyAmount amount={agedPayables.grandTotal} />,
                   ]
                 : undefined
             }

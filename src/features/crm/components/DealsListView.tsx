@@ -17,10 +17,10 @@ import { LoadingSpinner } from "@/components/shared/loading-spinner";
 import { DEAL_STAGE_COLORS, normalizeDealStage, normalizeDealProbability } from "../constants/deal-workflow";
 import type { DealStage } from "../types/deals.types";
 import { contactDisplayName } from "../utils/contacts-list.utils";
-import { formatCurrency } from "@/lib/utils";
+import { MoneyAmount } from "@/components/shared/riyal-symbol";
 
-function formatAmount(amount: number, currency: string) {
-  return formatCurrency(amount, currency);
+function FormatAmount({ amount }: { amount: number }) {
+  return <MoneyAmount amount={amount} />;
 }
 
 export function DealsListView() {
@@ -75,7 +75,7 @@ export function DealsListView() {
                   {t(`deals.stage.${deal.stage}`)}
                 </Chip>
               </TableCell>
-              <TableCell>{formatAmount(deal.amount, deal.currency)}</TableCell>
+              <TableCell><FormatAmount amount={deal.amount} /></TableCell>
               <TableCell>{normalizeDealProbability(deal.probability)}/10</TableCell>
               <TableCell>
                 <Button as={Link} to={`/crm/deals/${deal.id}`} size="sm" variant="light" color="primary">

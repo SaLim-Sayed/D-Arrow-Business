@@ -33,6 +33,7 @@ import {
   unitLabel,
 } from "../utils/product-labels";
 import { getActiveTaxes } from "../utils/tax-utils";
+import { RiyalSymbol } from "@/components/shared/riyal-symbol";
 
 interface ProductFormModalProps {
   isOpen: boolean;
@@ -179,9 +180,7 @@ export function ProductFormModal({ isOpen, onOpenChange, product }: ProductFormM
                   isRequired
                   dir="ltr"
                   classNames={{ input: "text-start" }}
-                  startContent={
-                    <span className="text-default-400 text-sm">$</span>
-                  }
+                  startContent={<RiyalSymbol size={14} className="text-default-400" />}
                 />
               </div>
 

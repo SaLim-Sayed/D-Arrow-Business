@@ -23,8 +23,9 @@ import { useProducts } from "../hooks/use-products";
 import { useBillingSettings } from "../hooks/use-billing-settings";
 import { useCreateGenericDocumentMutation } from "../hooks/use-generic-documents";
 import { genericDocumentSchema, type CreateGenericDocumentDTO } from "../schemas/generic-document";
-import { formatCurrency } from "@/lib/utils";
+import { BillingMoney } from "../components/BillingMoney";
 import { LineTaxRateSelect } from "../components/LineTaxRateSelect";
+import { RiyalSymbol } from "@/components/shared/riyal-symbol";
 import {
   getDefaultTax,
   getTaxRateForProduct,
@@ -57,7 +58,7 @@ export default function CreateGenericInvoicePage() {
       documentType: "invoice",
       documentNumber: "DRAFT",
       status: "draft",
-      currency: "USD",
+      currency: "SAR",
       exchangeRate: 1,
       issueDate: new Date(),
       dueDate: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000),
@@ -313,7 +314,7 @@ export default function CreateGenericInvoicePage() {
                           variant="flat"
                           dir="ltr"
                           classNames={{ input: "text-start" }}
-                          startContent={<span className="text-default-400 text-xs">$</span>}
+                          startContent={<RiyalSymbol size={12} className="text-default-400" />}
                           {...register(`items.${index}.unitPrice` as const, { valueAsNumber: true })}
                         />
                       </td>
@@ -328,7 +329,7 @@ export default function CreateGenericInvoicePage() {
                         />
                       </td>
                       <td className="p-4 align-top text-end font-medium text-default-700">
-                        <span dir="ltr">{formatCurrency(lineTotal, "USD")}</span>
+                        <BillingMoney amount={lineTotal} />
                       </td>
                       <td className="p-4 align-top text-right">
                         <Button
@@ -382,24 +383,24 @@ export default function CreateGenericInvoicePage() {
             <CardBody className="p-6 space-y-4">
               <div className="flex justify-between text-sm text-default-600">
                 <span>Sub Total</span>
-                <span className="font-medium" dir="ltr">{formatCurrency(subTotal, "USD")}</span>
+                <BillingMoney amount={subTotal} className="font-medium" />
               </div>
               {totalDiscount > 0 && (
                 <div className="flex justify-between text-sm text-danger">
                   <span>Discount</span>
-                  <span dir="ltr">-{formatCurrency(totalDiscount, "USD")}</span>
+                  <span className="inline-flex items-center gap-0.5">-<BillingMoney amount={totalDiscount} /></span>
                 </div>
               )}
               {totalTax > 0 && (
                 <div className="flex justify-between text-sm text-default-600">
                   <span>Total Tax</span>
-                  <span className="font-medium" dir="ltr">{formatCurrency(totalTax, "USD")}</span>
+                  <BillingMoney amount={totalTax} className="font-medium" />
                 </div>
               )}
               <Divider />
               <div className="flex justify-between text-lg font-bold">
                 <span>Total</span>
-                <span dir="ltr">{formatCurrency(grandTotal, "USD")}</span>
+                <BillingMoney amount={grandTotal} />
               </div>
             </CardBody>
           </Card>

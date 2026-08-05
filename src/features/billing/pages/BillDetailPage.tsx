@@ -6,11 +6,11 @@ import { CreditCard, Edit2 } from "lucide-react";
 import { useBill } from "../hooks/use-bills";
 import { usePayments } from "../hooks/use-payments";
 import { useContactsQuery } from "@/features/crm/hooks/use-contacts";
-import { contactDisplayName } from "@/features/crm/utils/contacts-list.utils";
 import { useAccounts } from "../hooks/use-accounts";
 import { cn } from "@/lib/utils";
 import { BillingMoney } from "../components/BillingMoney";
 import { getBillAmountDue } from "../utils/aged-reports";
+import { resolveBillVendorName } from "../utils/invoice-customer";
 import { billingDateLocale } from "../utils/locale";
 import type { Bill } from "../schemas/bill";
 import { AccountingPageHeader } from "../components/accounting-ui";
@@ -39,15 +39,6 @@ export default function BillDetailPage() {
 
   const dateLocale = billingDateLocale(i18n.language);
 
-  const getVendorName = (vendorId: string) => {
-    const contact = contacts.find((c) => c.id === vendorId);
-    if (contact) return contactDisplayName(contact);
-    if (vendorId.startsWith("vendor_") || vendorId.startsWith("cust_")) {
-      return t("bills.unknown_vendor");
-    }
-    return vendorId;
-  };
-
   const getAccountLabel = (accountId: string) => {
     const account = accounts.find((a) => a.id === accountId);
     if (!account) return accountId;
@@ -71,6 +62,11 @@ export default function BillDetailPage() {
   }
 
   const amountDue = getBillAmountDue(bill);
+  const vendorName = resolveBillVendorName(
+    bill,
+    contacts,
+    t("bills.unknown_vendor")
+  );
 
   return (
     <div className="animate-in fade-in pb-24 duration-300">
@@ -130,7 +126,7 @@ export default function BillDetailPage() {
               {t("bills.detail.vendor")}
             </p>
             <p className="mt-1 font-medium text-default-900">
-              {getVendorName(bill.vendorId)}
+              {vendorName}
             </p>
           </div>
           <div>

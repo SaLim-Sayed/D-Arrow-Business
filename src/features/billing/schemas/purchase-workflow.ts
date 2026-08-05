@@ -48,7 +48,7 @@ export const purchaseOrderSchema = z.object({
   amountBilled: z.number().min(0).default(0),
   
   // Currency
-  currency: z.string().default("USD"),
+  currency: z.string().default("SAR"),
   
   // References
   receiptId: z.string().optional(),

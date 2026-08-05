@@ -23,7 +23,7 @@ import {
 import { useAppPermissions } from "../hooks/use-app-permissions";
 import { useCompanyProfile } from "../hooks/use-company-profile";
 import { LoadingSpinner } from "@/components/shared/loading-spinner";
-import { formatCurrency } from "@/lib/utils";
+import { MoneyAmount } from "@/components/shared/riyal-symbol";
 import type { ProductPrice } from "../types/pricing.types";
 
 export function PricingPage() {
@@ -118,7 +118,7 @@ export function PricingPage() {
                       </TableCell>
                       <TableCell>{price.sku || "—"}</TableCell>
                       <TableCell className="font-mono">
-                        {formatCurrency(price.unitPrice, price.currency)}
+                        <MoneyAmount amount={price.unitPrice} />
                       </TableCell>
                       <TableCell>
                         {price.taxRate != null ? `${price.taxRate}%` : "—"}

@@ -120,7 +120,7 @@ export const genericDocumentSchema = z.object({
   amountDue: z.number().min(0).optional(),
   
   // Currency
-  currency: z.string().default("USD"),
+  currency: z.string().default("SAR"),
   exchangeRate: z.number().default(1),
   
   // Terms

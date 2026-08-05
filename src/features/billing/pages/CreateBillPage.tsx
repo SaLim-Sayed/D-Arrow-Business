@@ -1,6 +1,8 @@
 import { useForm, useFieldArray, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
+  Autocomplete,
+  AutocompleteItem,
   Card,
   CardBody,
   CardHeader,
@@ -14,12 +16,16 @@ import {
 import { Plus, Trash2, Save, Send, ChevronRight } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import { selectFieldProps } from "@/components/shared/select-field";
-import { useContactsQuery } from "@/features/crm/hooks/use-contacts";
-import { contactDisplayName } from "@/features/crm/utils/contacts-list.utils";
+import { RiyalSymbol } from "@/components/shared/riyal-symbol";
+import {
+  useContactsQuery,
+  useCreateContactMutation,
+} from "@/features/crm/hooks/use-contacts";
+import { toCreateContactDTO } from "@/features/crm/schemas/contact.schema";
 import { useAccounts } from "../hooks/use-accounts";
 import {
   useCreateBillMutation,
@@ -35,6 +41,11 @@ import {
   DEFAULT_BILLING_CURRENCY,
   getDefaultBillingCurrency,
 } from "../utils/billing-currency";
+import {
+  findContactByCustomerInput,
+  invoiceCustomerPickerLabel,
+  resolveBillVendorName,
+} from "../utils/invoice-customer";
 
 export default function CreateBillPage() {
   const { t } = useTranslation("billing");
@@ -44,6 +55,8 @@ export default function CreateBillPage() {
 
   const { data: contactsRes } = useContactsQuery();
   const contacts = contactsRes?.data || [];
+  const createContact = useCreateContactMutation();
+  const [vendorInput, setVendorInput] = useState("");
   const { data: accounts = [] } = useAccounts();
   const expenseAccounts = accounts.filter(
     (a) => a.type === "expense" || a.type === "asset"
@@ -68,6 +81,8 @@ export default function CreateBillPage() {
     defaultValues: {
       billNumber: "DRAFT",
       status: "draft",
+      vendorId: "",
+      vendorName: "",
       currency: DEFAULT_BILLING_CURRENCY,
       issueDate: new Date(),
       dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
@@ -94,13 +109,20 @@ export default function CreateBillPage() {
 
   useEffect(() => {
     if (isEditing && existingBill) {
+      const name = resolveBillVendorName(
+        existingBill,
+        contacts,
+        existingBill.vendorName ?? ""
+      );
       control._reset({
         ...existingBill,
+        vendorName: existingBill.vendorName || name,
         issueDate: new Date(existingBill.issueDate),
         dueDate: new Date(existingBill.dueDate),
       } as any);
+      setVendorInput(existingBill.vendorName || name);
     }
-  }, [isEditing, existingBill, control]);
+  }, [isEditing, existingBill, control, contacts]);
 
   useEffect(() => {
     if (!isEditing && billingSettings) {
@@ -133,6 +155,50 @@ export default function CreateBillPage() {
   }, 0);
   const grandTotal = subTotal + totalTax;
 
+  const resolveVendorForSave = async (
+    data: CreateBillDTO
+  ): Promise<{ vendorId: string; vendorName: string }> => {
+    const typedName = (data.vendorName || vendorInput).trim();
+    let vendorId = data.vendorId?.trim() || "";
+
+    if (vendorId) {
+      const selected = contacts.find((c) => c.id === vendorId);
+      return {
+        vendorId,
+        vendorName:
+          typedName ||
+          (selected ? invoiceCustomerPickerLabel(selected) : vendorId),
+      };
+    }
+
+    if (!typedName) {
+      throw new Error("vendor_required");
+    }
+
+    const existing = findContactByCustomerInput(contacts, typedName);
+    if (existing?.id) {
+      return {
+        vendorId: existing.id,
+        vendorName: typedName,
+      };
+    }
+
+    const created = await createContact.mutateAsync(
+      toCreateContactDTO({
+        firstName: typedName,
+        lastName: "",
+        email: "",
+        phone: "",
+        accountName: typedName,
+      })
+    );
+
+    return {
+      vendorId: created.data.id,
+      vendorName: typedName,
+    };
+  };
+
   const buildPayload = (
     data: CreateBillDTO,
     actionType: "draft" | "open"
@@ -157,7 +223,11 @@ export default function CreateBillPage() {
 
   const onSubmit = async (data: CreateBillDTO, actionType: "draft" | "open") => {
     try {
-      const finalData = buildPayload(data, actionType);
+      const vendor = await resolveVendorForSave(data);
+      const finalData = {
+        ...buildPayload(data, actionType),
+        ...vendor,
+      };
       if (isEditing && id) {
         await updateBill.mutateAsync({ id, data: finalData });
         toast.success(
@@ -213,24 +283,59 @@ export default function CreateBillPage() {
                 control={control}
                 name="vendorId"
                 render={({ field }) => (
-                  <Select
-                    {...selectFieldProps()}
-                    {...field}
-                    label={t("bills.create.vendor") || "Vendor"}
-                    placeholder={t("bills.create.vendor_placeholder") || "Select vendor"}
+                  <Autocomplete
+                    label={t("bills.create.vendor")}
+                    placeholder={t("bills.create.vendor_placeholder")}
+                    description={t("bills.create.vendor_hint")}
                     variant="bordered"
+                    allowsCustomValue
+                    menuTrigger="focus"
+                    inputValue={vendorInput}
+                    selectedKey={field.value || null}
+                    onInputChange={(value) => {
+                      setVendorInput(value);
+                      setValue("vendorName", value, { shouldValidate: true });
+                      const selected = contacts.find((c) => c.id === field.value);
+                      if (
+                        selected &&
+                        invoiceCustomerPickerLabel(selected) !== value
+                      ) {
+                        field.onChange("");
+                      }
+                    }}
+                    onSelectionChange={(key) => {
+                      const id = key != null ? String(key) : "";
+                      field.onChange(id);
+                      if (!id) return;
+                      const contact = contacts.find((c) => c.id === id);
+                      if (!contact) return;
+                      const label = invoiceCustomerPickerLabel(contact);
+                      setVendorInput(label);
+                      setValue("vendorName", label, { shouldValidate: true });
+                    }}
+                    onBlur={field.onBlur}
                     isInvalid={!!errors.vendorId}
-                    errorMessage={errors.vendorId?.message as string}
+                    errorMessage={errors.vendorId?.message as string | undefined}
+                    listboxProps={{
+                      emptyContent: t("bills.create.vendor_empty"),
+                    }}
                   >
                     {contacts.map((contact) => {
-                      const label = contactDisplayName(contact);
+                      const label = invoiceCustomerPickerLabel(contact);
                       return (
-                        <SelectItem key={contact.id} textValue={label}>
-                          {label}
-                        </SelectItem>
+                        <AutocompleteItem key={contact.id!} textValue={label}>
+                          <div className="flex flex-col">
+                            <span>{label}</span>
+                            {contact.email ? (
+                              <span className="text-xs text-default-400">
+                                {contact.email}
+                              </span>
+                            ) : null}
+                          </div>
+                        </AutocompleteItem>
                       );
                     })}
-                  </Select>
+                  </Autocomplete>
                 )}
               />
               <Input
@@ -331,9 +436,7 @@ export default function CreateBillPage() {
                           variant="flat"
                           dir="ltr"
                           classNames={{ input: "text-start" }}
-                          startContent={
-                            <span className="text-default-400 text-xs">$</span>
-                          }
+                          startContent={<RiyalSymbol size={12} className="text-default-400" />}
                           {...register(`items.${index}.unitPrice` as const, {
                             valueAsNumber: true,
                           })}
@@ -422,7 +525,7 @@ export default function CreateBillPage() {
           <Button
             variant="flat"
             onPress={() => handleSubmit((d) => onSubmit(d as any, "draft"))()}
-            isLoading={isSubmitting || createBill.isPending || updateBill.isPending}
+            isLoading={isSubmitting || createBill.isPending || updateBill.isPending || createContact.isPending}
             startContent={<Save className="w-4 h-4" />}
           >
             {t("bills.create.save_draft") || "Save Draft"}
@@ -430,7 +533,7 @@ export default function CreateBillPage() {
           <Button
             color="primary"
             onPress={() => handleSubmit((d) => onSubmit(d as any, "open"))()}
-            isLoading={isSubmitting || createBill.isPending || updateBill.isPending}
+            isLoading={isSubmitting || createBill.isPending || updateBill.isPending || createContact.isPending}
             startContent={<Send className="w-4 h-4" />}
           >
             {t("bills.create.post") || "Post Bill"}

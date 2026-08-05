@@ -1,3 +1,4 @@
+import { RIYAL_SIGN } from "@/lib/utils";
 import { useTranslation } from "react-i18next";
 
 export type QuotationLocale = "ar" | "en";
@@ -56,12 +57,10 @@ export function catalogItemName(
 
 export function formatQuotationTotal(
   amount: number,
-  currency: string,
+  _currency: string,
   includeVat: boolean,
   tPdf: (key: string) => string
 ) {
-  const currLabel =
-    currency === "SAR" ? tPdf("currencySar") : currency;
   const suffix = includeVat ? ` ${tPdf("includingVat")}` : "";
-  return `${amount.toLocaleString("en-US", { maximumFractionDigits: 0 })} ${currLabel}${suffix}`;
+  return `${amount.toLocaleString("en-US", { maximumFractionDigits: 0 })} ${RIYAL_SIGN}${suffix}`;
 }

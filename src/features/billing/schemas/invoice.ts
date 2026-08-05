@@ -12,33 +12,46 @@ export const invoiceItemSchema = z.object({
   total: z.number().min(0),
 });
 
-export const invoiceSchema = z.object({
-  id: z.string().optional(),
-  invoiceNumber: z.string().min(1, "Invoice number is required"),
-  status: z.enum(["draft", "sent", "paid", "overdue", "cancelled"]).default("draft"),
-  customerId: z.string().min(1, "Customer is required"),
-  
-  issueDate: z.date(),
-  dueDate: z.date(),
-  
-  items: z.array(invoiceItemSchema).min(1, "At least one item is required"),
-  
-  subTotal: z.number().min(0),
-  totalTax: z.number().min(0),
-  totalDiscount: z.number().min(0),
-  grandTotal: z.number().min(0),
-  amountPaid: z.number().min(0).optional(),
-  quotationId: z.string().optional(),
-  paymentTermDays: z.number().int().min(0).optional(),
-  postedAt: z.date().optional(),
-  
-  notes: z.string().optional(),
-  termsAndConditions: z.string().optional(),
+export const invoiceSchema = z
+  .object({
+    id: z.string().optional(),
+    invoiceNumber: z.string().min(1, "Invoice number is required"),
+    status: z.enum(["draft", "sent", "paid", "overdue", "cancelled"]).default("draft"),
+    /** Linked CRM contact — set when picking existing or after creating from typed name. */
+    customerId: z.string().optional().default(""),
+    /** Display / typed company-or-customer name (works without selecting from the list). */
+    customerName: z.string().optional(),
 
-  currency: z.string().default("SAR"),
-  createdAt: z.date().optional(),
-  updatedAt: z.date().optional(),
-});
+    issueDate: z.date(),
+    dueDate: z.date(),
+
+    items: z.array(invoiceItemSchema).min(1, "At least one item is required"),
+
+    subTotal: z.number().min(0),
+    totalTax: z.number().min(0),
+    totalDiscount: z.number().min(0),
+    grandTotal: z.number().min(0),
+    amountPaid: z.number().min(0).optional(),
+    quotationId: z.string().optional(),
+    paymentTermDays: z.number().int().min(0).optional(),
+    postedAt: z.date().optional(),
+
+    notes: z.string().optional(),
+    termsAndConditions: z.string().optional(),
+
+    currency: z.string().default("SAR"),
+    createdAt: z.date().optional(),
+    updatedAt: z.date().optional(),
+  })
+  .superRefine((data, ctx) => {
+    if (!data.customerId?.trim() && !data.customerName?.trim()) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Customer is required",
+        path: ["customerId"],
+      });
+    }
+  });
 
 export type InvoiceItem = z.infer<typeof invoiceItemSchema>;
 export type Invoice = z.infer<typeof invoiceSchema>;

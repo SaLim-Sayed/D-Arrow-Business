@@ -22,7 +22,8 @@ import {
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
-import { cn, formatCurrency } from "@/lib/utils";
+import { cn } from "@/lib/utils";
+import { MoneyAmount } from "@/components/shared/riyal-symbol";
 import { useJournals } from "../hooks/use-journals";
 import { JournalFormModal } from "../components/JournalFormModal";
 import { JournalPrintView } from "../components/JournalPrintView";
@@ -116,7 +117,7 @@ function JournalRow({
       </td>
       <td className="whitespace-nowrap px-3 py-2 text-end">
         <span className="tabular-nums font-medium text-default-900" dir="ltr">
-          {formatCurrency(journal.totalDebit, journal.currency)}
+          <MoneyAmount amount={journal.totalDebit} />
         </span>
       </td>
       <td className="px-3 py-2">

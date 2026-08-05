@@ -6,7 +6,7 @@ import type { Invoice } from "../schemas/invoice";
 import type { BillingSettings } from "../schemas/settings";
 import type { Contact } from "@/features/crm/types/contacts.types";
 import type { CompanyProfile } from "@/features/companies/types/company.types";
-import { contactDisplayName } from "@/features/crm/utils/contacts-list.utils";
+import { resolveInvoiceCustomerName } from "../utils/invoice-customer";
 import { generateZatcaQr } from "../utils/zatca";
 import { billingDateLocale } from "../utils/locale";
 import { INVOICE_LOGO, INVOICE_THEME, INVOICE_FONT } from "../constants/invoice-theme";
@@ -239,9 +239,11 @@ export function InvoicePrintDocument({
   const companyPhone = profile?.phone || company?.phone;
   const logoSrc = profile?.logoUrl?.trim() || INVOICE_LOGO;
 
-  const customerName = customer
-    ? contactDisplayName(customer)
-    : t("invoices.detail.unknown_customer");
+  const customerName = resolveInvoiceCustomerName(
+    invoice,
+    customer ? [customer] : [],
+    t("invoices.detail.unknown_customer")
+  );
 
   const invoiceKind = resolveZatcaInvoiceKind(invoice, customer);
   const documentTitle = t(zatcaInvoiceTitleKey(invoiceKind));

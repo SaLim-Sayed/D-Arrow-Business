@@ -49,7 +49,7 @@ export const salesOrderSchema = z.object({
   amountInvoiced: z.number().min(0).default(0),
   
   // Currency
-  currency: z.string().default("USD"),
+  currency: z.string().default("SAR"),
   
   // References
   invoiceId: z.string().optional(),

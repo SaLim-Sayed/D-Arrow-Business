@@ -1,6 +1,5 @@
 import { Input } from "@heroui/react";
 import { RiyalSymbol } from "@/components/shared/riyal-symbol";
-import { isSarCurrency } from "@/lib/utils";
 import {
   formatPriceDisplay,
   parsePriceInput,
@@ -25,13 +24,7 @@ export function QuotationPriceInput({
   className,
   placeholder = "0",
 }: QuotationPriceInputProps) {
-  const currencyEnd = isSarCurrency(currency) ? (
-    <RiyalSymbol size={size === "sm" ? 12 : 14} />
-  ) : (
-    <span className="text-xs text-default-400 font-medium">
-      {(currency ?? "SAR").toUpperCase()}
-    </span>
-  );
+  const currencyEnd = <RiyalSymbol size={size === "sm" ? 12 : 14} />;
 
   return (
     <Input

@@ -12,7 +12,8 @@ import {
   Wallet,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { cn, formatCurrency } from "@/lib/utils";
+import { cn } from "@/lib/utils";
+import { MoneyAmount } from "@/components/shared/riyal-symbol";
 
 export type ReportTabKey = "pl" | "bs" | "tb" | "ar" | "ap";
 
@@ -120,21 +121,21 @@ export function ReportPlMetrics({
     {
       key: "income",
       label: t("reports.total_income"),
-      value: formatCurrency(totalIncome, "USD"),
+      value: <MoneyAmount amount={totalIncome} />,
       icon: TrendingUp,
       iconClass: "text-success bg-success/10",
     },
     {
       key: "expense",
       label: t("reports.total_expenses"),
-      value: formatCurrency(totalExpense, "USD"),
+      value: <MoneyAmount amount={totalExpense} />,
       icon: TrendingDown,
       iconClass: "text-warning-700 bg-warning/10 dark:text-warning",
     },
     {
       key: "net",
       label: t("reports.net_income"),
-      value: formatCurrency(netIncome, "USD"),
+      value: <MoneyAmount amount={netIncome} />,
       icon: BarChart3,
       iconClass:
         netIncome >= 0
@@ -298,7 +299,7 @@ export function NetIncomeBanner({
   formula,
 }: {
   label: string;
-  amount: string;
+  amount: React.ReactNode;
   netIncome: number;
   formula: string;
 }) {
@@ -423,9 +424,9 @@ export function BalanceSheetColumn({
   title: string;
   accentClass: string;
   accentBgClass?: string;
-  rows: { id: string; label: string; amount: string }[];
+  rows: { id: string; label: string; amount: React.ReactNode }[];
   totalLabel: string;
-  totalAmount: string;
+  totalAmount: React.ReactNode;
   totalClass?: string;
 }) {
   return (

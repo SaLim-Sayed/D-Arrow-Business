@@ -29,11 +29,11 @@ import { useInvoices } from "../hooks/use-invoices";
 import { useBillingSettings } from "../hooks/use-billing-settings";
 import { getDefaultBillingCurrency } from "../utils/billing-currency";
 import { useContactsQuery } from "@/features/crm/hooks/use-contacts";
-import { contactDisplayName } from "@/features/crm/utils/contacts-list.utils";
 import type { Invoice } from "../schemas/invoice";
 import { downloadInvoicesCsv } from "../utils/invoice-export";
 import { BillingDocumentGuide } from "../components/BillingDocumentGuide";
 import { getInvoiceAmountDue } from "../utils/accounting-engine";
+import { resolveInvoiceCustomerName } from "../utils/invoice-customer";
 import { billingDateLocale } from "../utils/locale";
 import {
   AccountingListShell,
@@ -66,14 +66,12 @@ export default function InvoicesPage() {
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
-  const getCustomerName = (customerId: string) => {
-    const contact = contacts.find((c) => c.id === customerId);
-    if (contact) return contactDisplayName(contact);
-    if (customerId.startsWith("cust_") || customerId.startsWith("vendor_")) {
-      return t("invoices.unknown_customer");
-    }
-    return customerId;
-  };
+  const getCustomerName = (invoice: Invoice) =>
+    resolveInvoiceCustomerName(
+      invoice,
+      contacts,
+      t("invoices.unknown_customer")
+    );
 
   const metrics = useMemo(() => {
     const outstanding = invoices
@@ -95,7 +93,7 @@ export default function InvoicesPage() {
         if (!q) return true;
         return (
           i.invoiceNumber.toLowerCase().includes(q) ||
-          getCustomerName(i.customerId).toLowerCase().includes(q)
+          getCustomerName(i).toLowerCase().includes(q)
         );
       })
       .sort(
@@ -148,7 +146,7 @@ export default function InvoicesPage() {
       (inv) => [
         inv.issueDate.toLocaleDateString(dateLocale),
         inv.invoiceNumber,
-        getCustomerName(inv.customerId),
+        getCustomerName(inv),
         inv.dueDate.toLocaleDateString(dateLocale),
         inv.grandTotal,
         getInvoiceAmountDue(inv),
@@ -317,7 +315,7 @@ export default function InvoicesPage() {
               </thead>
               <tbody>
                 {filtered.map((invoice) => {
-                  const customerName = getCustomerName(invoice.customerId);
+                  const customerName = getCustomerName(invoice);
                   const amountDue = getInvoiceAmountDue(invoice);
                   const view = () => invoice.id && navigate(`/billing/invoices/${invoice.id}`);
 

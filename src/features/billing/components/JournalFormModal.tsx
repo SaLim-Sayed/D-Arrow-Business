@@ -139,7 +139,7 @@ export function JournalFormModal({
       })),
       totalDebit,
       totalCredit,
-      currency: "USD",
+      currency: "SAR",
       status: "posted",
       sourceType: "manual",
     };

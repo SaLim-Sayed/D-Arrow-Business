@@ -10,7 +10,7 @@ export interface CrmBreadcrumbItem {
 interface CrmRecordHeaderProps {
   breadcrumbs: CrmBreadcrumbItem[];
   title: string;
-  subtitle?: string;
+  subtitle?: React.ReactNode;
   badge?: React.ReactNode;
   actions?: React.ReactNode;
   stageBar?: React.ReactNode;
