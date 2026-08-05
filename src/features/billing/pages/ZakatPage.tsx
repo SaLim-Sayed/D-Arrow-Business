@@ -29,7 +29,6 @@ import {
   useAccrueZakatMutation,
   useRecordZakatPaymentMutation,
   useZakatCalculation,
-  useZakatCurrency,
   useZakatRecords,
 } from "../hooks/use-zakat";
 import type { ZakatRecord } from "../schemas/zakat";
@@ -55,7 +54,6 @@ function AccrueZakatModal({
   onClose: () => void;
 }) {
   const { t } = useTranslation("billing");
-  const currency = useZakatCurrency();
   const accrueZakat = useAccrueZakatMutation();
   // Baseline calculation (no override) just to read the company's configured rate from settings.
   const configured = useZakatCalculation();
@@ -287,7 +285,6 @@ function RecordZakatPaymentModal({
 export default function ZakatPage() {
   const { t, i18n } = useTranslation("billing");
   const calculation = useZakatCalculation();
-  const currency = useZakatCurrency();
   const { data: records = [], isLoading } = useZakatRecords();
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [payingRecord, setPayingRecord] = useState<ZakatRecord | null>(null);

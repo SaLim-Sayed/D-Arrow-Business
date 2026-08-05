@@ -18,7 +18,6 @@ interface QuotationPriceInputProps {
 export function QuotationPriceInput({
   value,
   onChange,
-  currency,
   label,
   size = "md",
   className,
