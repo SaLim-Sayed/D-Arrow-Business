@@ -143,6 +143,13 @@ export async function generatePdfBlob(element: HTMLElement): Promise<Blob> {
 
 async function buildPdfDocument(element: HTMLElement) {
   const target = resolveCaptureTarget(element);
+  const isInvoiceOrQuote = !!(
+    target.closest("[data-invoice-print], [data-quotation-print]") ||
+    target.matches("[data-invoice-print], [data-quotation-print]")
+  );
+  // Invoice/quotation sheets are already A4-sized with internal padding — don't shrink them.
+  const margin = isInvoiceOrQuote ? 0 : MARGIN_MM;
+
   await waitForRender(target);
 
   const restore = prepareForCapture(element);
@@ -157,6 +164,12 @@ async function buildPdfDocument(element: HTMLElement) {
       onclone: (_doc, cloned) => {
         normalizePrintClone(cloned);
         replaceCanvasesWithImages(target, cloned);
+        // Ensure clone is full A4 width (ignore any parent CSS scale)
+        cloned.style.transform = "none";
+        cloned.style.width = `${A4_WIDTH_MM}mm`;
+        cloned.style.minHeight = `${A4_HEIGHT_MM}mm`;
+        cloned.style.boxSizing = "border-box";
+        cloned.style.background = "#ffffff";
       },
     });
 
@@ -167,21 +180,21 @@ async function buildPdfDocument(element: HTMLElement) {
     const imgData = canvas.toDataURL("image/png", 1);
     const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
 
-    const contentWidth = A4_WIDTH_MM - MARGIN_MM * 2;
-    const contentHeight = A4_HEIGHT_MM - MARGIN_MM * 2;
+    const contentWidth = A4_WIDTH_MM - margin * 2;
+    const contentHeight = A4_HEIGHT_MM - margin * 2;
     const imgHeight = (canvas.height * contentWidth) / canvas.width;
 
     let offsetY = 0;
     let page = 0;
 
-    while (offsetY < imgHeight) {
+    while (offsetY < imgHeight - 0.5) {
       if (page > 0) pdf.addPage();
 
       pdf.addImage(
         imgData,
         "PNG",
-        MARGIN_MM,
-        MARGIN_MM - offsetY,
+        margin,
+        margin - offsetY,
         contentWidth,
         imgHeight
       );
