@@ -1,4 +1,5 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import type { CSSProperties } from "react";
 import { useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Button, Spinner } from "@heroui/react";
@@ -17,9 +18,14 @@ import type { BillingSettings } from "../schemas/settings";
 /** A4 width in CSS pixels (96dpi). */
 const A4_WIDTH_PX = (210 * 96) / 25.4;
 
+const SUPPORTS_ZOOM =
+  typeof CSS !== "undefined" &&
+  typeof CSS.supports === "function" &&
+  CSS.supports("zoom", "0.5");
+
 /**
  * Public (no sign-in) invoice page for QR scans.
- * Preview scales the full A4 sheet to fit the phone width.
+ * Mobile: scale full A4 sheet to phone width without RTL shift bugs.
  */
 export default function PublicInvoicePdfPage() {
   const { token } = useParams<{ token: string }>();
@@ -77,7 +83,6 @@ export default function PublicInvoicePdfPage() {
     };
   }, [token]);
 
-  // Public tax invoices always show in Arabic
   useEffect(() => {
     if (!share?.snapshot) return;
     const prev = i18n.language;
@@ -97,16 +102,23 @@ export default function PublicInvoicePdfPage() {
     const sheet = sheetRef.current;
     if (!viewport || !sheet) return;
 
-    const available = viewport.clientWidth;
-    const next = Math.min(1, available / A4_WIDTH_PX);
+    const available = Math.max(0, viewport.clientWidth);
+    const next = available > 0 ? Math.min(1, available / A4_WIDTH_PX) : 1;
     setScale(next);
-    setSheetHeight(sheet.offsetHeight);
+    // offsetHeight is pre-zoom/pre-transform natural height
+    setSheetHeight(sheet.scrollHeight || sheet.offsetHeight);
   };
 
   useLayoutEffect(() => {
     if (!share?.snapshot || !hydrated) return;
 
-    const raf = window.requestAnimationFrame(updateScale);
+    const run = () => {
+      // Wait a frame so fonts / QR paint, then measure
+      window.requestAnimationFrame(updateScale);
+    };
+    run();
+    const t = window.setTimeout(run, 200);
+
     const viewport = viewportRef.current;
     const observer =
       typeof ResizeObserver !== "undefined" && viewport
@@ -116,7 +128,7 @@ export default function PublicInvoicePdfPage() {
     window.addEventListener("resize", updateScale);
 
     return () => {
-      window.cancelAnimationFrame(raf);
+      window.clearTimeout(t);
       observer?.disconnect();
       window.removeEventListener("resize", updateScale);
     };
@@ -176,21 +188,38 @@ export default function PublicInvoicePdfPage() {
   }
 
   const shareUrl = token ? invoicePdfShareUrl(token) : undefined;
-  const previewHeight = sheetHeight > 0 ? sheetHeight * scale : undefined;
+
+  // zoom adjusts layout size; transform needs an explicit clip height
+  const clipHeight =
+    !SUPPORTS_ZOOM && sheetHeight > 0 ? sheetHeight * scale : undefined;
+
+  const sheetStyle: CSSProperties = SUPPORTS_ZOOM
+    ? ({
+        width: A4_WIDTH_PX,
+        zoom: scale,
+      } as CSSProperties)
+    : {
+        width: A4_WIDTH_PX,
+        transform: scale < 1 ? `scale(${scale})` : undefined,
+        transformOrigin: "0 0",
+      };
 
   return (
     <div className="min-h-dvh bg-background">
-      <div className="mx-auto w-full max-w-[220mm] px-3 pb-16 pt-4 sm:px-4">
-        <div className="sticky top-0 z-20 mb-4 flex flex-wrap items-center justify-between gap-3 border-b border-default-100 bg-background/90 py-3 backdrop-blur-md print:hidden">
+      <div className="mx-auto w-full max-w-[220mm] px-2 pb-16 pt-3 sm:px-4">
+        <div
+          className="sticky top-0 z-20 mb-3 flex items-center justify-between gap-3 border-b border-default-100 bg-background/90 py-3 backdrop-blur-md print:hidden"
+          dir="rtl"
+        >
           <div className="min-w-0">
-            <h1 className="truncate text-xl font-bold sm:text-2xl" dir="ltr">
+            <h1 className="truncate text-xl font-bold" dir="ltr">
               {share.invoiceNumber}
             </h1>
             <p className="text-sm text-default-500">
               {t("invoices.public.no_signin_needed")}
             </p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex shrink-0 items-center gap-2">
             <Button
               variant="flat"
               isIconOnly
@@ -211,55 +240,62 @@ export default function PublicInvoicePdfPage() {
           </div>
         </div>
 
-        {/* Viewport: full phone width. Sheet stays A4, scaled from top-left. */}
-        <div ref={viewportRef} className="w-full print:overflow-visible">
+        {/*
+          dir=ltr on the viewport is required: under page-level RTL, a 210mm
+          sheet overflows to the left and transform/zoom clips to a blank box.
+          InvoicePrintDocument keeps its own dir=rtl for Arabic content.
+        */}
+        <div
+          ref={viewportRef}
+          dir="ltr"
+          className="w-full overflow-x-hidden print:overflow-visible"
+          style={{ height: clipHeight }}
+        >
           <div
-            className="relative mx-auto overflow-hidden rounded-lg border border-default-200 bg-white shadow-sm print:overflow-visible print:rounded-none print:border-none print:shadow-none"
-            style={{
-              width: "100%",
-              height: previewHeight,
-              maxWidth: A4_WIDTH_PX,
-            }}
+            ref={sheetRef}
+            data-public-invoice-sheet
+            className="rounded-lg border border-default-200 bg-white shadow-sm print:rounded-none print:border-none print:shadow-none"
+            style={sheetStyle}
           >
-            <div
-              ref={sheetRef}
-              className="print:!transform-none"
-              style={{
-                width: A4_WIDTH_PX,
-                transform: scale < 1 ? `scale(${scale})` : undefined,
-                transformOrigin: "top left",
-              }}
-            >
-              <div ref={printRef} className="bg-white">
-                <InvoicePrintDocument
-                  invoice={{
-                    ...hydrated.invoice,
-                    customerName: share.snapshot.customerName,
-                  }}
-                  company={hydrated.company}
-                  customer={hydrated.customer}
-                  amountDue={hydrated.amountDue}
-                  settings={
-                    {
-                      companyProfile: {
-                        name: share.snapshot.company.name,
-                        address: share.snapshot.company.address || "—",
-                        commercialRegister:
-                          share.snapshot.company.commercialRegister,
-                        taxNumber: share.snapshot.company.taxNumber,
-                        phone: share.snapshot.company.phone,
-                        email: share.snapshot.company.email,
-                        logoUrl: share.snapshot.company.logoUrl,
-                      },
-                    } as BillingSettings
-                  }
-                  pdfShareUrl={shareUrl}
-                />
-              </div>
+            <div ref={printRef} className="bg-white">
+              <InvoicePrintDocument
+                invoice={{
+                  ...hydrated.invoice,
+                  customerName: share.snapshot.customerName,
+                }}
+                company={hydrated.company}
+                customer={hydrated.customer}
+                amountDue={hydrated.amountDue}
+                settings={
+                  {
+                    companyProfile: {
+                      name: share.snapshot.company.name,
+                      address: share.snapshot.company.address || "—",
+                      commercialRegister:
+                        share.snapshot.company.commercialRegister,
+                      taxNumber: share.snapshot.company.taxNumber,
+                      phone: share.snapshot.company.phone,
+                      email: share.snapshot.company.email,
+                      logoUrl: share.snapshot.company.logoUrl,
+                    },
+                  } as BillingSettings
+                }
+                pdfShareUrl={shareUrl}
+              />
             </div>
           </div>
         </div>
       </div>
+
+      <style>{`
+        @media print {
+          [data-public-invoice-sheet] {
+            zoom: 1 !important;
+            transform: none !important;
+            width: 210mm !important;
+          }
+        }
+      `}</style>
     </div>
   );
 }
