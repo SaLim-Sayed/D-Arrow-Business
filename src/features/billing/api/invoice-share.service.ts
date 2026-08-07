@@ -101,7 +101,7 @@ export function buildInvoicePublicSnapshot(input: {
     },
     amountDue: getInvoiceAmountDue(invoice),
     customerName,
-    locale: locale || (typeof navigator !== "undefined" ? navigator.language : "ar"),
+    locale: locale || "ar",
     customer: customer
       ? {
           email: customer.email,
@@ -326,14 +326,18 @@ export async function publishInvoicePdfShare(input: {
   settings?: BillingSettings;
   company?: CompanyProfile | null;
   customer?: Contact;
+  locale?: string;
 }): Promise<{ pdfUrl: string; shareUrl: string }> {
   // Always ensure snapshot first so the link never says "not ready"
-  await publishInvoiceSnapshotShare(input);
+  await publishInvoiceSnapshotShare({
+    ...input,
+    locale: input.locale || "ar",
+  });
 
-  const { generatePdfBlob } = await import(
-    "@/features/crm/utils/generate-quotation-pdf"
+  const { generateInvoicePdfBlob } = await import(
+    "../utils/generate-invoice-pdf"
   );
-  const blob = await generatePdfBlob(input.printElement);
+  const blob = await generateInvoicePdfBlob(input.printElement);
 
   const storageUrl = await uploadInvoicePdf(
     input.companyId,

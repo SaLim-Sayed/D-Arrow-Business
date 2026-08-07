@@ -11,7 +11,7 @@ import {
   type InvoicePublicShare,
 } from "../api/invoice-share.service";
 import { InvoicePrintDocument } from "../components/InvoicePrintDocument";
-import { generateQuotationPdf } from "@/features/crm/utils/generate-quotation-pdf";
+import { generateInvoicePdf } from "../utils/generate-invoice-pdf";
 import type { BillingSettings } from "../schemas/settings";
 
 /**
@@ -74,13 +74,11 @@ export default function PublicInvoicePdfPage() {
     };
   }, [token]);
 
-  // Match invoice language/dir to how it was published
+  // Public tax invoices always show in Arabic
   useEffect(() => {
     if (!share?.snapshot) return;
-    const locale = share.snapshot.locale || "ar";
-    const next = locale.startsWith("ar") ? "ar" : "en";
     const prev = i18n.language;
-    void i18n.changeLanguage(next);
+    void i18n.changeLanguage("ar");
     return () => {
       void i18n.changeLanguage(prev);
     };
@@ -111,20 +109,19 @@ export default function PublicInvoicePdfPage() {
     };
   }, [share?.snapshot, hydrated]);
 
-  /** Always export from the live A4 invoice sheet (same format as on screen / in-app). */
+  /** Download PDF always in Arabic (same layout as scanned view). */
   const handleDownloadPdf = async () => {
     if (!share || !printRef.current) return;
     setExporting(true);
 
     const page = pageRef.current;
     const prevTransform = page?.style.transform ?? "";
-    // Capture at full A4 size (ignore mobile scale)
     if (page) page.style.transform = "none";
     setScaledHeight(undefined);
 
     try {
       await new Promise((r) => requestAnimationFrame(() => r(undefined)));
-      await generateQuotationPdf(
+      await generateInvoicePdf(
         printRef.current,
         `${share.invoiceNumber || "invoice"}.pdf`
       );

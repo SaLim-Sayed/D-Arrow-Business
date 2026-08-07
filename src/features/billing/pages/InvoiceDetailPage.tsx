@@ -20,7 +20,7 @@ import { useBillingSettings } from "../hooks/use-billing-settings";
 import { useCompanyProfile } from "@/features/companies/hooks/use-company-profile";
 import { RecordPaymentModal } from "../components/RecordPaymentModal";
 import { InvoicePrintDocument } from "../components/InvoicePrintDocument";
-import { generateQuotationPdf } from "@/features/crm/utils/generate-quotation-pdf";
+import { generateInvoicePdf } from "../utils/generate-invoice-pdf";
 import { formatCurrency } from "@/lib/utils";
 import { BillingMoney } from "../components/BillingMoney";
 import { getInvoiceAmountDue } from "../utils/accounting-engine";
@@ -104,7 +104,7 @@ export default function InvoiceDetailPage() {
       settings,
       company,
       customer,
-      locale: i18n.language,
+      locale: "ar",
     })
       .then(() => {
         sessionStorage.setItem(cacheKey, fingerprint);
@@ -152,6 +152,7 @@ export default function InvoiceDetailPage() {
             settings,
             company,
             customer,
+            locale: "ar",
           });
           sessionStorage.setItem(cacheKey, fingerprint);
           sessionStorage.setItem(`invoice-snap:${invoice.id}`, fingerprint);
@@ -217,7 +218,7 @@ export default function InvoiceDetailPage() {
     if (!printRef.current) return;
     setExporting(true);
     try {
-      await generateQuotationPdf(
+      await generateInvoicePdf(
         printRef.current,
         `${invoice.invoiceNumber}.pdf`
       );
@@ -228,6 +229,10 @@ export default function InvoiceDetailPage() {
             invoice,
             printElement: printRef.current,
             shareToken: invoice.shareToken,
+            settings,
+            company,
+            customer,
+            locale: "ar",
           });
           await BillingService.invoices.update(companyId, invoice.id!, {
             pdfUrl,
