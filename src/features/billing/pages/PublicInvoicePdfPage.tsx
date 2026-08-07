@@ -167,9 +167,6 @@ export default function PublicInvoicePdfPage() {
       <div className="flex min-h-dvh flex-col items-center justify-center gap-3 bg-background">
         <Spinner size="lg" color="primary" />
         <p className="text-sm text-default-500">{t("invoices.public.opening_pdf")}</p>
-        <p className="text-xs text-default-400">
-          {t("invoices.public.no_signin_needed")}
-        </p>
       </div>
     );
   }
@@ -215,9 +212,6 @@ export default function PublicInvoicePdfPage() {
             <h1 className="truncate text-xl font-bold" dir="ltr">
               {share.invoiceNumber}
             </h1>
-            <p className="text-sm text-default-500">
-              {t("invoices.public.no_signin_needed")}
-            </p>
           </div>
           <div className="flex shrink-0 items-center gap-2">
             <Button
