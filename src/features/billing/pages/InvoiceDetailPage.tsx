@@ -30,6 +30,7 @@ import {
   createInvoiceShareToken,
   invoicePdfShareUrl,
   publishInvoicePdfShare,
+  publishInvoiceSnapshotShare,
 } from "../api/invoice-share.service";
 
 export default function InvoiceDetailPage() {
@@ -78,7 +79,39 @@ export default function InvoiceDetailPage() {
       });
   }, [invoice?.id, invoice?.shareToken, companyId, queryClient]);
 
-  // Upload PDF so /i/:token redirects to the file
+  // Publish snapshot ASAP so QR /i/:token works without Storage or PDF generation
+  useEffect(() => {
+    if (!invoice?.id || !invoice.shareToken || !companyId) return;
+
+    const fingerprint = [
+      invoice.invoiceNumber,
+      invoice.status,
+      invoice.grandTotal,
+      invoice.totalTax,
+      invoice.items.length,
+      invoice.shareToken,
+      invoice.customerName || "",
+    ].join(":");
+    const cacheKey = `invoice-snap:${invoice.id}`;
+    if (sessionStorage.getItem(cacheKey) === fingerprint) return;
+
+    void publishInvoiceSnapshotShare({
+      companyId,
+      invoice,
+      shareToken: invoice.shareToken,
+      settings,
+      company,
+      customer,
+    })
+      .then(() => {
+        sessionStorage.setItem(cacheKey, fingerprint);
+      })
+      .catch((err) => {
+        console.error("Failed to publish invoice snapshot share", err);
+      });
+  }, [invoice, companyId, settings, company, customer]);
+
+  // Optional: attach PDF file in background (Storage may be unavailable)
   useEffect(() => {
     if (
       !invoice?.id ||
@@ -103,42 +136,44 @@ export default function InvoiceDetailPage() {
       return;
     }
 
-    let cancelled = false;
     publishLock.current = true;
-
     const timer = window.setTimeout(() => {
       void (async () => {
         try {
-          if (!printRef.current || cancelled) return;
+          if (!printRef.current) return;
           const { pdfUrl } = await publishInvoicePdfShare({
             companyId,
             invoice,
             printElement: printRef.current,
             shareToken: invoice.shareToken!,
+            settings,
+            company,
+            customer,
           });
-          if (cancelled) return;
           sessionStorage.setItem(cacheKey, fingerprint);
-          await BillingService.invoices.update(companyId, invoice.id!, {
-            pdfUrl,
-            shareToken: invoice.shareToken,
-          });
-          queryClient.invalidateQueries({
-            queryKey: ["billing", "invoices", companyId, invoice.id],
-          });
+          sessionStorage.setItem(`invoice-snap:${invoice.id}`, fingerprint);
+          if (pdfUrl.startsWith("http")) {
+            await BillingService.invoices.update(companyId, invoice.id!, {
+              pdfUrl,
+              shareToken: invoice.shareToken,
+            });
+            queryClient.invalidateQueries({
+              queryKey: ["billing", "invoices", companyId, invoice.id],
+            });
+          }
         } catch (err) {
           console.error("Failed to publish invoice PDF share", err);
         } finally {
           publishLock.current = false;
         }
       })();
-    }, 900);
+    }, 1200);
 
     return () => {
-      cancelled = true;
       window.clearTimeout(timer);
       publishLock.current = false;
     };
-  }, [invoice, companyId, queryClient]);
+  }, [invoice, companyId, queryClient, settings, company, customer]);
 
   if (isLoading) {
     return (

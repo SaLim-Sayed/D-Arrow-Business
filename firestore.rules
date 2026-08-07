@@ -72,7 +72,7 @@ service cloud.firestore {
       allow read, write: if true;
     }
 
-    // Public invoice PDF shares (QR scan → PDF). Token = document id.
+    // Public invoice PDF shares (QR scan → PDF). No auth required to open.
     match /publicInvoiceShares/{token} {
       allow get: if true;
       allow list: if false;
@@ -80,8 +80,12 @@ service cloud.firestore {
         && request.resource.data.token == token
         && request.resource.data.companyId is string
         && request.resource.data.invoiceId is string
-        && request.resource.data.pdfUrl is string
-        && belongsToCompany(request.resource.data.companyId);
+        && belongsToCompany(request.resource.data.companyId)
+        && (
+          request.resource.data.snapshot is map
+          || request.resource.data.pdfUrl is string
+          || request.resource.data.pdfBase64 is string
+        );
       allow delete: if signedIn()
         && belongsToCompany(resource.data.companyId);
     }

@@ -544,6 +544,8 @@
     },
     "public": {
       "opening_pdf": "جاري فتح ملف PDF...",
+      "no_signin_needed": "لا يلزم تسجيل الدخول",
+      "download_pdf": "تحميل PDF",
       "pdf_not_ready": "ملف PDF غير جاهز بعد",
       "pdf_unavailable": "تعذر فتح الفاتورة",
       "pdf_unavailable_hint": "افتح الفاتورة من التطبيق أولاً لإنشاء رابط المشاركة، ثم أعد المسح.",

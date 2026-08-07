@@ -537,6 +537,8 @@
     },
     "public": {
       "opening_pdf": "Opening PDF…",
+      "no_signin_needed": "No sign-in required",
+      "download_pdf": "Download PDF",
       "pdf_not_ready": "PDF is not ready yet",
       "pdf_unavailable": "Could not open this invoice",
       "pdf_unavailable_hint": "Open the invoice in the app once to create the share link, then scan again.",
