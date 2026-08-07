@@ -14,22 +14,26 @@ import { InvoicePrintDocument } from "../components/InvoicePrintDocument";
 import { generateInvoicePdf } from "../utils/generate-invoice-pdf";
 import type { BillingSettings } from "../schemas/settings";
 
+/** A4 width in CSS pixels (96dpi). */
+const A4_WIDTH_PX = (210 * 96) / 25.4;
+
 /**
  * Public (no sign-in) invoice page for QR scans.
- * Always shows + downloads the same A4 InvoicePrintDocument as the app.
+ * Preview scales the full A4 sheet to fit the phone width.
  */
 export default function PublicInvoicePdfPage() {
   const { token } = useParams<{ token: string }>();
   const { t } = useTranslation("billing");
   const printRef = useRef<HTMLDivElement>(null);
-  const pageRef = useRef<HTMLDivElement>(null);
+  const viewportRef = useRef<HTMLDivElement>(null);
+  const sheetRef = useRef<HTMLDivElement>(null);
   const [share, setShare] = useState<InvoicePublicShare | null>(null);
   const [error, setError] = useState<"missing" | "not_ready" | "failed" | null>(
     null
   );
   const [exporting, setExporting] = useState(false);
   const [scale, setScale] = useState(1);
-  const [scaledHeight, setScaledHeight] = useState<number | undefined>();
+  const [sheetHeight, setSheetHeight] = useState(0);
 
   useEffect(() => {
     if (!token?.trim()) {
@@ -45,7 +49,6 @@ export default function PublicInvoicePdfPage() {
         const data = await getInvoicePublicShare(token.trim());
         if (cancelled) return;
 
-        // Prefer snapshot so scan always shows the same invoice layout as the app
         const ready = !!(
           data?.snapshot ||
           data?.pdfUrl?.startsWith("http") ||
@@ -90,44 +93,44 @@ export default function PublicInvoicePdfPage() {
   }, [share]);
 
   const updateScale = () => {
-    const page = pageRef.current;
-    if (!page?.parentElement) return;
-    const available = page.parentElement.clientWidth;
-    const natural = 210 * (96 / 25.4);
-    const next = Math.min(1, available / natural);
+    const viewport = viewportRef.current;
+    const sheet = sheetRef.current;
+    if (!viewport || !sheet) return;
+
+    const available = viewport.clientWidth;
+    const next = Math.min(1, available / A4_WIDTH_PX);
     setScale(next);
-    setScaledHeight(next < 1 ? page.offsetHeight * next : undefined);
+    setSheetHeight(sheet.offsetHeight);
   };
 
   useLayoutEffect(() => {
     if (!share?.snapshot || !hydrated) return;
+
     const raf = window.requestAnimationFrame(updateScale);
+    const viewport = viewportRef.current;
+    const observer =
+      typeof ResizeObserver !== "undefined" && viewport
+        ? new ResizeObserver(() => updateScale())
+        : null;
+    observer?.observe(viewport!);
     window.addEventListener("resize", updateScale);
+
     return () => {
       window.cancelAnimationFrame(raf);
+      observer?.disconnect();
       window.removeEventListener("resize", updateScale);
     };
   }, [share?.snapshot, hydrated]);
 
-  /** Download PDF always in Arabic (same layout as scanned view). */
   const handleDownloadPdf = async () => {
     if (!share || !printRef.current) return;
     setExporting(true);
-
-    const page = pageRef.current;
-    const prevTransform = page?.style.transform ?? "";
-    if (page) page.style.transform = "none";
-    setScaledHeight(undefined);
-
     try {
-      await new Promise((r) => requestAnimationFrame(() => r(undefined)));
       await generateInvoicePdf(
         printRef.current,
         `${share.invoiceNumber || "invoice"}.pdf`
       );
     } finally {
-      if (page) page.style.transform = prevTransform;
-      updateScale();
       setExporting(false);
     }
   };
@@ -159,7 +162,6 @@ export default function PublicInvoicePdfPage() {
     );
   }
 
-  // Snapshot missing: cannot render same layout — ask user to reopen invoice in app
   if (!share.snapshot || !hydrated) {
     return (
       <div className="flex min-h-dvh flex-col items-center justify-center gap-3 bg-background px-6 text-center">
@@ -174,20 +176,21 @@ export default function PublicInvoicePdfPage() {
   }
 
   const shareUrl = token ? invoicePdfShareUrl(token) : undefined;
+  const previewHeight = sheetHeight > 0 ? sheetHeight * scale : undefined;
 
   return (
-    <div className="min-h-dvh bg-background px-3 py-4 sm:px-6">
-      <div className="mx-auto max-w-[220mm] space-y-6 pb-20 animate-in fade-in duration-500">
-        <div className="sticky top-0 z-20 flex flex-wrap items-center justify-between gap-4 border-b border-default-100 bg-background/80 py-4 backdrop-blur-md print:hidden">
+    <div className="min-h-dvh bg-background">
+      <div className="mx-auto w-full max-w-[220mm] px-3 pb-16 pt-4 sm:px-4">
+        <div className="sticky top-0 z-20 mb-4 flex flex-wrap items-center justify-between gap-3 border-b border-default-100 bg-background/90 py-3 backdrop-blur-md print:hidden">
           <div className="min-w-0">
-            <h1 className="truncate text-2xl font-bold" dir="ltr">
+            <h1 className="truncate text-xl font-bold sm:text-2xl" dir="ltr">
               {share.invoiceNumber}
             </h1>
             <p className="text-sm text-default-500">
               {t("invoices.public.no_signin_needed")}
             </p>
           </div>
-          <div className="flex flex-wrap items-center justify-end gap-2">
+          <div className="flex items-center gap-2">
             <Button
               variant="flat"
               isIconOnly
@@ -208,47 +211,51 @@ export default function PublicInvoicePdfPage() {
           </div>
         </div>
 
-        <div
-          className="overflow-x-hidden print:h-auto print:overflow-visible"
-          style={{ height: scaledHeight }}
-        >
+        {/* Viewport: full phone width. Sheet stays A4, scaled from top-left. */}
+        <div ref={viewportRef} className="w-full print:overflow-visible">
           <div
-            ref={pageRef}
-            className="print:!transform-none"
+            className="relative mx-auto overflow-hidden rounded-lg border border-default-200 bg-white shadow-sm print:overflow-visible print:rounded-none print:border-none print:shadow-none"
             style={{
-              transform: scale < 1 ? `scale(${scale})` : undefined,
-              transformOrigin: "top center",
               width: "100%",
+              height: previewHeight,
+              maxWidth: A4_WIDTH_PX,
             }}
           >
             <div
-              ref={printRef}
-              className="overflow-x-auto rounded-lg border border-default-200 bg-default-50/50 p-2 shadow-sm print:border-none print:bg-white print:p-0 print:shadow-none"
+              ref={sheetRef}
+              className="print:!transform-none"
+              style={{
+                width: A4_WIDTH_PX,
+                transform: scale < 1 ? `scale(${scale})` : undefined,
+                transformOrigin: "top left",
+              }}
             >
-              <InvoicePrintDocument
-                invoice={{
-                  ...hydrated.invoice,
-                  customerName: share.snapshot.customerName,
-                }}
-                company={hydrated.company}
-                customer={hydrated.customer}
-                amountDue={hydrated.amountDue}
-                settings={
-                  {
-                    companyProfile: {
-                      name: share.snapshot.company.name,
-                      address: share.snapshot.company.address || "—",
-                      commercialRegister:
-                        share.snapshot.company.commercialRegister,
-                      taxNumber: share.snapshot.company.taxNumber,
-                      phone: share.snapshot.company.phone,
-                      email: share.snapshot.company.email,
-                      logoUrl: share.snapshot.company.logoUrl,
-                    },
-                  } as BillingSettings
-                }
-                pdfShareUrl={shareUrl}
-              />
+              <div ref={printRef} className="bg-white">
+                <InvoicePrintDocument
+                  invoice={{
+                    ...hydrated.invoice,
+                    customerName: share.snapshot.customerName,
+                  }}
+                  company={hydrated.company}
+                  customer={hydrated.customer}
+                  amountDue={hydrated.amountDue}
+                  settings={
+                    {
+                      companyProfile: {
+                        name: share.snapshot.company.name,
+                        address: share.snapshot.company.address || "—",
+                        commercialRegister:
+                          share.snapshot.company.commercialRegister,
+                        taxNumber: share.snapshot.company.taxNumber,
+                        phone: share.snapshot.company.phone,
+                        email: share.snapshot.company.email,
+                        logoUrl: share.snapshot.company.logoUrl,
+                      },
+                    } as BillingSettings
+                  }
+                  pdfShareUrl={shareUrl}
+                />
+              </div>
             </div>
           </div>
         </div>
