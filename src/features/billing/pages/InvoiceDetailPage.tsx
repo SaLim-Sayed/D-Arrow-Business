@@ -91,6 +91,8 @@ export default function InvoiceDetailPage() {
       invoice.items.length,
       invoice.shareToken,
       invoice.customerName || "",
+      i18n.language,
+      "v2",
     ].join(":");
     const cacheKey = `invoice-snap:${invoice.id}`;
     if (sessionStorage.getItem(cacheKey) === fingerprint) return;
@@ -102,6 +104,7 @@ export default function InvoiceDetailPage() {
       settings,
       company,
       customer,
+      locale: i18n.language,
     })
       .then(() => {
         sessionStorage.setItem(cacheKey, fingerprint);
@@ -109,7 +112,7 @@ export default function InvoiceDetailPage() {
       .catch((err) => {
         console.error("Failed to publish invoice snapshot share", err);
       });
-  }, [invoice, companyId, settings, company, customer]);
+  }, [invoice, companyId, settings, company, customer, i18n.language]);
 
   // Optional: attach PDF file in background (Storage may be unavailable)
   useEffect(() => {

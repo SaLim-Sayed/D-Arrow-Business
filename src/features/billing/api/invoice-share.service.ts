@@ -38,6 +38,8 @@ export interface InvoicePublicSnapshot {
     email?: string;
     logoUrl?: string;
   };
+  /** Language used when the invoice was published (keeps public layout RTL/LTR). */
+  locale?: string;
 }
 
 export interface InvoicePublicShare {
@@ -74,8 +76,9 @@ export function buildInvoicePublicSnapshot(input: {
   settings?: BillingSettings;
   company?: CompanyProfile | null;
   customer?: Contact;
+  locale?: string;
 }): InvoicePublicSnapshot {
-  const { invoice, settings, company, customer } = input;
+  const { invoice, settings, company, customer, locale } = input;
   const profile = settings?.companyProfile;
   const customerName = resolveInvoiceCustomerName(
     invoice,
@@ -98,6 +101,7 @@ export function buildInvoicePublicSnapshot(input: {
     },
     amountDue: getInvoiceAmountDue(invoice),
     customerName,
+    locale: locale || (typeof navigator !== "undefined" ? navigator.language : "ar"),
     customer: customer
       ? {
           email: customer.email,
@@ -300,6 +304,7 @@ export async function publishInvoiceSnapshotShare(input: {
   settings?: BillingSettings;
   company?: CompanyProfile | null;
   customer?: Contact;
+  locale?: string;
 }): Promise<{ shareUrl: string }> {
   const snapshot = buildInvoicePublicSnapshot(input);
   await upsertInvoicePublicShare({

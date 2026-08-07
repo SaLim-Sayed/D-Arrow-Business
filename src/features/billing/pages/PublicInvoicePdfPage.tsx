@@ -1,32 +1,36 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Button, Spinner } from "@heroui/react";
 import { Download, Printer } from "lucide-react";
+import i18n from "@/lib/i18n";
 import {
   base64ToPdfBlob,
   getInvoicePublicShare,
   hydrateInvoiceFromSnapshot,
+  invoicePdfShareUrl,
   type InvoicePublicShare,
 } from "../api/invoice-share.service";
 import { InvoicePrintDocument } from "../components/InvoicePrintDocument";
 import { generateQuotationPdf } from "@/features/crm/utils/generate-quotation-pdf";
-import { invoicePdfShareUrl } from "../api/invoice-share.service";
 import type { BillingSettings } from "../schemas/settings";
 
 /**
  * Public (no sign-in) invoice page for QR scans.
- * Prefers snapshot HTML (always ready), then PDF file when available.
+ * Renders the same A4 InvoicePrintDocument as the signed-in detail page.
  */
 export default function PublicInvoicePdfPage() {
   const { token } = useParams<{ token: string }>();
   const { t } = useTranslation("billing");
   const printRef = useRef<HTMLDivElement>(null);
+  const pageRef = useRef<HTMLDivElement>(null);
   const [share, setShare] = useState<InvoicePublicShare | null>(null);
   const [error, setError] = useState<"missing" | "not_ready" | "failed" | null>(
     null
   );
   const [exporting, setExporting] = useState(false);
+  const [scale, setScale] = useState(1);
+  const [scaledHeight, setScaledHeight] = useState<number | undefined>();
 
   useEffect(() => {
     if (!token?.trim()) {
@@ -50,11 +54,6 @@ export default function PublicInvoicePdfPage() {
 
         if (data && ready) {
           setShare(data);
-
-          // Auto-open hosted PDF when available (optional fast path)
-          if (data.pdfUrl?.startsWith("http") && !data.snapshot) {
-            window.location.replace(data.pdfUrl);
-          }
           return;
         }
 
@@ -74,6 +73,45 @@ export default function PublicInvoicePdfPage() {
       cancelled = true;
     };
   }, [token]);
+
+  // Match invoice language/dir to how it was published (same layout as in-app)
+  useEffect(() => {
+    if (!share?.snapshot) return;
+    const locale = share.snapshot.locale || "ar";
+    const next = locale.startsWith("ar") ? "ar" : "en";
+    const prev = i18n.language;
+    void i18n.changeLanguage(next);
+    return () => {
+      void i18n.changeLanguage(prev);
+    };
+  }, [share?.snapshot]);
+
+  const hydrated = useMemo(() => {
+    if (!share?.snapshot) return null;
+    return hydrateInvoiceFromSnapshot(share.snapshot);
+  }, [share]);
+
+  // Keep A4 proportions on phone — scale down to fit viewport width
+  useLayoutEffect(() => {
+    if (!share?.snapshot || !hydrated) return;
+
+    const updateScale = () => {
+      const page = pageRef.current;
+      if (!page?.parentElement) return;
+      const available = page.parentElement.clientWidth;
+      const natural = 210 * (96 / 25.4); // 210mm ≈ CSS px
+      const next = Math.min(1, available / natural);
+      setScale(next);
+      setScaledHeight(next < 1 ? page.offsetHeight * next : undefined);
+    };
+
+    const raf = window.requestAnimationFrame(updateScale);
+    window.addEventListener("resize", updateScale);
+    return () => {
+      window.cancelAnimationFrame(raf);
+      window.removeEventListener("resize", updateScale);
+    };
+  }, [share?.snapshot, hydrated]);
 
   const handleDownloadPdf = async () => {
     if (!share) return;
@@ -108,7 +146,7 @@ export default function PublicInvoicePdfPage() {
 
   if (error) {
     return (
-      <div className="flex min-h-dvh flex-col items-center justify-center gap-3 bg-default-50 px-6 text-center">
+      <div className="flex min-h-dvh flex-col items-center justify-center gap-3 bg-background px-6 text-center">
         <p className="text-base font-bold text-default-800">
           {error === "not_ready"
             ? t("invoices.public.pdf_not_ready")
@@ -121,9 +159,9 @@ export default function PublicInvoicePdfPage() {
     );
   }
 
-  if (!share) {
+  if (!share || (share.snapshot && !hydrated)) {
     return (
-      <div className="flex min-h-dvh flex-col items-center justify-center gap-3 bg-default-50">
+      <div className="flex min-h-dvh flex-col items-center justify-center gap-3 bg-background">
         <Spinner size="lg" color="primary" />
         <p className="text-sm text-default-500">{t("invoices.public.opening_pdf")}</p>
         <p className="text-xs text-default-400">
@@ -133,89 +171,143 @@ export default function PublicInvoicePdfPage() {
     );
   }
 
-  if (share.snapshot) {
-    const hydrated = hydrateInvoiceFromSnapshot(share.snapshot);
+  // Primary path: same InvoicePrintDocument A4 sheet as InvoiceDetailPage
+  if (share.snapshot && hydrated) {
     const shareUrl = token ? invoicePdfShareUrl(token) : undefined;
 
     return (
-      <div className="min-h-dvh bg-default-50 pb-10">
-        <div className="sticky top-0 z-20 flex flex-wrap items-center justify-between gap-3 border-b border-default-200 bg-content1/95 px-4 py-3 backdrop-blur">
-          <div>
-            <p className="text-sm font-bold text-default-800" dir="ltr">
-              {share.invoiceNumber}
-            </p>
-            <p className="text-xs text-default-400">
-              {t("invoices.public.no_signin_needed")}
-            </p>
+      <div className="min-h-dvh bg-background px-3 py-4 sm:px-6">
+        <div className="mx-auto max-w-[220mm] space-y-6 pb-20 animate-in fade-in duration-500">
+          <div className="sticky top-0 z-20 flex flex-wrap items-center justify-between gap-4 border-b border-default-100 bg-background/80 py-4 backdrop-blur-md print:hidden">
+            <div className="min-w-0">
+              <h1 className="truncate text-2xl font-bold" dir="ltr">
+                {share.invoiceNumber}
+              </h1>
+              <p className="text-sm text-default-500">
+                {t("invoices.public.no_signin_needed")}
+              </p>
+            </div>
+            <div className="flex flex-wrap items-center justify-end gap-2">
+              <Button
+                variant="flat"
+                isIconOnly
+                aria-label={t("actions.download_pdf")}
+                isLoading={exporting}
+                onPress={() => void handleDownloadPdf()}
+              >
+                <Download className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="flat"
+                isIconOnly
+                aria-label={t("actions.print")}
+                onPress={() => window.print()}
+              >
+                <Printer className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
-          <div className="flex gap-2">
-            <Button
-              size="sm"
-              variant="flat"
-              startContent={<Printer className="h-4 w-4" />}
-              onPress={() => window.print()}
-            >
-              {t("invoices.detail.print")}
-            </Button>
-            <Button
-              size="sm"
-              color="primary"
-              isLoading={exporting}
-              startContent={<Download className="h-4 w-4" />}
-              onPress={() => void handleDownloadPdf()}
-            >
-              {t("invoices.public.download_pdf")}
-            </Button>
-          </div>
-        </div>
 
-        <div
-          ref={printRef}
-          className="mx-auto max-w-[220mm] overflow-x-auto p-2 print:max-w-none print:p-0"
-        >
-          <InvoicePrintDocument
-            invoice={{
-              ...hydrated.invoice,
-              customerName: share.snapshot.customerName,
-            }}
-            company={hydrated.company}
-            customer={hydrated.customer}
-            amountDue={hydrated.amountDue}
-            settings={
-              {
-                companyProfile: {
-                  name: share.snapshot.company.name,
-                  address: share.snapshot.company.address || "—",
-                  commercialRegister:
-                    share.snapshot.company.commercialRegister,
-                  taxNumber: share.snapshot.company.taxNumber,
-                  phone: share.snapshot.company.phone,
-                  email: share.snapshot.company.email,
-                  logoUrl: share.snapshot.company.logoUrl,
-                },
-              } as BillingSettings
-            }
-            pdfShareUrl={shareUrl}
-          />
+          <div
+            className="overflow-x-hidden print:h-auto print:overflow-visible"
+            style={{ height: scaledHeight }}
+          >
+            <div
+              ref={pageRef}
+              className="print:!transform-none"
+              style={{
+                transform: scale < 1 ? `scale(${scale})` : undefined,
+                transformOrigin: "top center",
+                width: "100%",
+              }}
+            >
+              <div
+                ref={printRef}
+                className="overflow-x-auto rounded-lg border border-default-200 bg-default-50/50 p-2 shadow-sm print:border-none print:bg-white print:p-0 print:shadow-none print:transform-none"
+              >
+                <InvoicePrintDocument
+                  invoice={{
+                    ...hydrated.invoice,
+                    customerName: share.snapshot.customerName,
+                  }}
+                  company={hydrated.company}
+                  customer={hydrated.customer}
+                  amountDue={hydrated.amountDue}
+                  settings={
+                    {
+                      companyProfile: {
+                        name: share.snapshot.company.name,
+                        address: share.snapshot.company.address || "—",
+                        commercialRegister:
+                          share.snapshot.company.commercialRegister,
+                        taxNumber: share.snapshot.company.taxNumber,
+                        phone: share.snapshot.company.phone,
+                        email: share.snapshot.company.email,
+                        logoUrl: share.snapshot.company.logoUrl,
+                      },
+                    } as BillingSettings
+                  }
+                  pdfShareUrl={shareUrl}
+                />
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     );
   }
 
-  // PDF-only share (legacy)
-  if (share.pdfBase64) {
-    const blobUrl = URL.createObjectURL(base64ToPdfBlob(share.pdfBase64));
+  // Fallback: hosted PDF / embedded bytes (legacy shares without snapshot)
+  if (share.pdfUrl?.startsWith("http")) {
     return (
-      <div className="flex min-h-dvh flex-col bg-default-100">
-        <div className="flex items-center justify-between gap-3 border-b border-default-200 bg-content1 px-4 py-3">
+      <div className="flex min-h-dvh flex-col bg-background">
+        <div className="flex items-center justify-between gap-3 border-b border-default-100 px-4 py-3">
           <p className="truncate text-sm font-bold" dir="ltr">
             {share.invoiceNumber}.pdf
           </p>
-          <Button as="a" href={blobUrl} download={`${share.invoiceNumber}.pdf`} color="primary" size="sm">
+          <Button
+            as="a"
+            href={share.pdfUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            color="primary"
+            size="sm"
+          >
             {t("invoices.public.download_pdf")}
           </Button>
         </div>
-        <iframe title="invoice" src={blobUrl} className="min-h-0 w-full flex-1 border-0" />
+        <iframe
+          title="invoice"
+          src={share.pdfUrl}
+          className="min-h-0 w-full flex-1 border-0"
+        />
+      </div>
+    );
+  }
+
+  if (share.pdfBase64) {
+    const blobUrl = URL.createObjectURL(base64ToPdfBlob(share.pdfBase64));
+    return (
+      <div className="flex min-h-dvh flex-col bg-background">
+        <div className="flex items-center justify-between gap-3 border-b border-default-100 px-4 py-3">
+          <p className="truncate text-sm font-bold" dir="ltr">
+            {share.invoiceNumber}.pdf
+          </p>
+          <Button
+            as="a"
+            href={blobUrl}
+            download={`${share.invoiceNumber}.pdf`}
+            color="primary"
+            size="sm"
+          >
+            {t("invoices.public.download_pdf")}
+          </Button>
+        </div>
+        <iframe
+          title="invoice"
+          src={blobUrl}
+          className="min-h-0 w-full flex-1 border-0"
+        />
       </div>
     );
   }
