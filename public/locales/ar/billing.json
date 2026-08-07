@@ -507,6 +507,9 @@
       "outstanding": "المتبقي",
       "logo": "الشعار",
       "qr": "QR",
+      "qr_hint": "رمز زاتكا — امسحه بتطبيق قارئ الفاتورة الإلكترونية (لا يفتح رابطاً)",
+      "qr_hint_pdf": "امسح لفتح ملف PDF الفاتورة",
+      "qr_pdf_ready": "QR → PDF",
       "vat_number": "الرقم الضريبي",
       "line_discount": "خصم",
       "download_pdf": "تحميل PDF",
@@ -538,6 +541,13 @@
       "pdf_failed": "فشل إنشاء PDF",
       "no_email": "لا يوجد بريد إلكتروني للعميل",
       "email_opened": "تم فتح تطبيق البريد"
+    },
+    "public": {
+      "opening_pdf": "جاري فتح ملف PDF...",
+      "pdf_not_ready": "ملف PDF غير جاهز بعد",
+      "pdf_unavailable": "تعذر فتح الفاتورة",
+      "pdf_unavailable_hint": "افتح الفاتورة من التطبيق أولاً لإنشاء رابط المشاركة، ثم أعد المسح.",
+      "go_login": "تسجيل الدخول"
     }
   },
   "payments": {

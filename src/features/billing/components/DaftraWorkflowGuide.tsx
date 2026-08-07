@@ -134,7 +134,7 @@ export function ZatcaComplianceBanner({
   className?: string;
 }) {
   const { t } = useTranslation("billing");
-  const isConfigured = !!taxNumber && taxNumber.replace(/\D/g, "").length >= 10;
+  const isConfigured = !!taxNumber && taxNumber.replace(/\D/g, "").length === 15;
 
   return (
     <div

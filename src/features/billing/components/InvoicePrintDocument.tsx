@@ -1,13 +1,13 @@
 import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
-import { QRCodeCanvas } from "qrcode.react";
 import { MoneyAmount } from "@/components/shared/riyal-symbol";
 import type { Invoice } from "../schemas/invoice";
 import type { BillingSettings } from "../schemas/settings";
 import type { Contact } from "@/features/crm/types/contacts.types";
 import type { CompanyProfile } from "@/features/companies/types/company.types";
 import { resolveInvoiceCustomerName } from "../utils/invoice-customer";
-import { generateZatcaQr } from "../utils/zatca";
+import { canShowZatcaQr, generateZatcaQr, normalizeZatcaVat } from "../utils/zatca";
+import { ZatcaQrCode } from "./ZatcaQrCode";
 import { billingDateLocale } from "../utils/locale";
 import { INVOICE_LOGO, INVOICE_THEME, INVOICE_FONT } from "../constants/invoice-theme";
 import {
@@ -26,6 +26,8 @@ interface InvoicePrintDocumentProps {
   company?: CompanyProfile | null;
   customer?: Contact;
   amountDue: number;
+  /** When set, QR encodes this https URL so camera scan opens the PDF */
+  pdfShareUrl?: string | null;
 }
 
 function MetaCell({
@@ -221,6 +223,7 @@ export function InvoicePrintDocument({
   company,
   customer,
   amountDue,
+  pdfShareUrl,
 }: InvoicePrintDocumentProps) {
   const { t, i18n } = useTranslation("billing");
   const isAr = i18n.language.startsWith("ar");
@@ -235,7 +238,8 @@ export function InvoicePrintDocument({
     profile?.commercialRegister?.trim() ||
     company?.commercialRegister?.trim() ||
     undefined;
-  const companyVat = profile?.taxNumber || company?.taxNumber;
+  const companyVatRaw = profile?.taxNumber || company?.taxNumber;
+  const companyVat = companyVatRaw ? normalizeZatcaVat(companyVatRaw) || companyVatRaw.trim() : undefined;
   const companyPhone = profile?.phone || company?.phone;
   const logoSrc = profile?.logoUrl?.trim() || INVOICE_LOGO;
 
@@ -248,17 +252,21 @@ export function InvoicePrintDocument({
   const invoiceKind = resolveZatcaInvoiceKind(invoice, customer);
   const documentTitle = t(zatcaInvoiceTitleKey(invoiceKind));
 
-  const showQr = !!companyVat && invoice.totalTax > 0 && invoice.status !== "draft";
-  const qrValue = showQr
-    ? generateZatcaQr(
-        companyName,
-        companyVat!,
-        invoice.issueDate.toISOString(),
-        invoice.grandTotal,
-        invoice.totalTax
-      )
-    : "";
-
+  const shareUrl = pdfShareUrl?.trim() || "";
+  const zatcaQr =
+    canShowZatcaQr(companyVatRaw)
+      ? generateZatcaQr(
+          companyName === "—" ? "Seller" : companyName,
+          companyVatRaw!,
+          invoice.issueDate,
+          invoice.grandTotal,
+          invoice.totalTax
+        )
+      : "";
+  // Prefer https share link so phone cameras open the PDF
+  const qrValue = shareUrl || zatcaQr;
+  const showQr = !!qrValue;
+  const qrOpensPdf = !!shareUrl;
   const vatPercent = invoiceVatPercent(invoice.subTotal, invoice.totalTax);
   const issueDateTime = invoice.issueDate.toLocaleString(dateLocale, {
     year: "numeric",
@@ -399,20 +407,45 @@ export function InvoicePrintDocument({
           </div>
         </div>
 
-        <div style={{ flexShrink: 0 }}>
+        <div style={{ flexShrink: 0, textAlign: "center" }}>
           {showQr ? (
             <div
               style={{
-                padding: "6px",
-                border: `1px solid ${INVOICE_THEME.borderLight}`,
-                borderRadius: "6px",
-                background: "#fff",
+                display: "inline-flex",
+                flexDirection: "column",
+                alignItems: "center",
+                gap: "4px",
               }}
             >
-              <QRCodeCanvas value={qrValue} size={76} level="M" />
+              <div
+                style={{
+                  padding: "4px",
+                  border: `1px solid ${INVOICE_THEME.borderLight}`,
+                  borderRadius: "6px",
+                  background: "#fff",
+                }}
+              >
+                <ZatcaQrCode value={qrValue} size={120} />
+              </div>
+              <div
+                style={{
+                  fontSize: "8px",
+                  fontWeight: 600,
+                  color: INVOICE_THEME.muted,
+                  maxWidth: 130,
+                  lineHeight: 1.35,
+                  letterSpacing: "normal",
+                }}
+              >
+                {t(
+                  qrOpensPdf
+                    ? "invoices.detail.qr_hint_pdf"
+                    : "invoices.detail.qr_hint"
+                )}
+              </div>
             </div>
           ) : (
-            <PlaceholderBox label={t("invoices.detail.qr")} />
+            <PlaceholderBox label={t("invoices.detail.qr")} size={120} />
           )}
         </div>
       </div>

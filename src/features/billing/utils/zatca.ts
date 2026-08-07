@@ -1,62 +1,80 @@
 /**
- * ZATCA (Zakat, Tax and Customs Authority) E-Invoicing Utilities
- * Implements Phase 1 QR Code generation using TLV (Tag-Length-Value) Base64 encoding
+ * ZATCA Phase 1 QR — TLV (Tag-Length-Value) then Base64.
+ * Length must be UTF-8 byte length (critical for Arabic seller names).
  */
 
+function toZatcaTimestamp(timestamp: string | Date): string {
+  const date =
+    timestamp instanceof Date ? timestamp : new Date(timestamp);
+  if (Number.isNaN(date.getTime())) {
+    return new Date().toISOString().replace(/\.\d{3}Z$/, "Z");
+  }
+  // ZATCA expects ISO-8601 UTC without fractional seconds
+  return date.toISOString().replace(/\.\d{3}Z$/, "Z");
+}
+
+/** Keep digits only — Saudi VAT / TRN is 15 digits. */
+export function normalizeZatcaVat(taxNumber: string): string {
+  return taxNumber.replace(/\D/g, "");
+}
+
+function getTlvBytes(tag: number, value: string): Uint8Array {
+  const encoder = new TextEncoder();
+  let valueBytes = encoder.encode(value);
+
+  // Length field is a single byte (max 255)
+  if (valueBytes.length > 255) {
+    valueBytes = valueBytes.slice(0, 255);
+  }
+
+  const tlv = new Uint8Array(2 + valueBytes.length);
+  tlv[0] = tag;
+  tlv[1] = valueBytes.length;
+  tlv.set(valueBytes, 2);
+  return tlv;
+}
+
 /**
- * Generates a Base64 encoded TLV string for ZATCA QR Code
- * @param sellerName Company name
- * @param taxNumber 15-digit VAT number
- * @param timestamp ISO 8601 timestamp string (e.g. 2022-04-25T15:30:00Z)
- * @param invoiceTotal Total amount including VAT
- * @param vatTotal Total VAT amount
+ * Generates a Base64 TLV payload for the ZATCA Phase 1 QR code.
  */
 export function generateZatcaQr(
   sellerName: string,
   taxNumber: string,
-  timestamp: string,
+  timestamp: string | Date,
   invoiceTotal: number,
   vatTotal: number
 ): string {
-  // Convert each field to Tag-Length-Value format
-  const getTlvBytes = (tag: number, value: string) => {
-    const encoder = new TextEncoder();
-    const valueBytes = encoder.encode(value);
-    
-    // Tag and Length are 1 byte each
-    const tagBytes = new Uint8Array([tag]);
-    const lengthBytes = new Uint8Array([valueBytes.length]);
-    
-    const tlv = new Uint8Array(tagBytes.length + lengthBytes.length + valueBytes.length);
-    tlv.set(tagBytes, 0);
-    tlv.set(lengthBytes, 1);
-    tlv.set(valueBytes, 2);
-    
-    return tlv;
-  };
+  const name = sellerName.trim() || "Seller";
+  const vat = normalizeZatcaVat(taxNumber);
+  const ts = toZatcaTimestamp(timestamp);
+  const total = Number.isFinite(invoiceTotal) ? invoiceTotal : 0;
+  const tax = Number.isFinite(vatTotal) ? vatTotal : 0;
 
-  const tlv1 = getTlvBytes(1, sellerName);
-  const tlv2 = getTlvBytes(2, taxNumber);
-  const tlv3 = getTlvBytes(3, timestamp);
-  const tlv4 = getTlvBytes(4, invoiceTotal.toFixed(2));
-  const tlv5 = getTlvBytes(5, vatTotal.toFixed(2));
+  const parts = [
+    getTlvBytes(1, name),
+    getTlvBytes(2, vat),
+    getTlvBytes(3, ts),
+    getTlvBytes(4, total.toFixed(2)),
+    getTlvBytes(5, tax.toFixed(2)),
+  ];
 
-  // Combine all TLV byte arrays
-  const totalLength = tlv1.length + tlv2.length + tlv3.length + tlv4.length + tlv5.length;
+  const totalLength = parts.reduce((sum, p) => sum + p.length, 0);
   const combined = new Uint8Array(totalLength);
-  
   let offset = 0;
-  combined.set(tlv1, offset); offset += tlv1.length;
-  combined.set(tlv2, offset); offset += tlv2.length;
-  combined.set(tlv3, offset); offset += tlv3.length;
-  combined.set(tlv4, offset); offset += tlv4.length;
-  combined.set(tlv5, offset);
-  
-  // Convert to Base64
+  for (const part of parts) {
+    combined.set(part, offset);
+    offset += part.length;
+  }
+
   let binary = "";
   for (let i = 0; i < combined.length; i++) {
-    binary += String.fromCharCode(combined[i]);
+    binary += String.fromCharCode(combined[i]!);
   }
-  
+
   return btoa(binary);
+}
+
+/** True when tax number is a full Saudi 15-digit VAT / TRN. */
+export function canShowZatcaQr(taxNumber?: string | null): boolean {
+  return normalizeZatcaVat(taxNumber ?? "").length === 15;
 }

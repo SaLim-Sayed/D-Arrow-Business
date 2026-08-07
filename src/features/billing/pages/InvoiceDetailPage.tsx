@@ -1,6 +1,7 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { useQueryClient } from "@tanstack/react-query";
 import { Button, Chip } from "@heroui/react";
 import {
   Printer,
@@ -11,6 +12,7 @@ import {
   Edit2,
 } from "lucide-react";
 import { toast } from "sonner";
+import { useCompany } from "@/features/companies/context/company-context";
 import { useInvoice } from "../hooks/use-invoices";
 import { usePayments } from "../hooks/use-payments";
 import { useContactsQuery } from "@/features/crm/hooks/use-contacts";
@@ -23,12 +25,22 @@ import { formatCurrency } from "@/lib/utils";
 import { BillingMoney } from "../components/BillingMoney";
 import { getInvoiceAmountDue } from "../utils/accounting-engine";
 import { billingDateLocale } from "../utils/locale";
+import { BillingService } from "../api/billing.service";
+import {
+  createInvoiceShareToken,
+  invoicePdfShareUrl,
+  publishInvoicePdfShare,
+} from "../api/invoice-share.service";
 
 export default function InvoiceDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { t, i18n } = useTranslation("billing");
+  const { companyId } = useCompany();
+  const queryClient = useQueryClient();
   const printRef = useRef<HTMLDivElement>(null);
+  const publishLock = useRef(false);
+  const tokenEnsuredFor = useRef<string | null>(null);
   const [paymentOpen, setPaymentOpen] = useState(false);
   const [exporting, setExporting] = useState(false);
 
@@ -42,6 +54,91 @@ export default function InvoiceDetailPage() {
   const { data: company } = useCompanyProfile();
 
   const customer = contacts.find((c) => c.id === invoice?.customerId);
+
+  const pdfShareUrl = invoice?.shareToken
+    ? invoicePdfShareUrl(invoice.shareToken)
+    : "";
+
+  // Ensure share token (QR encodes https://…/i/:token)
+  useEffect(() => {
+    if (!invoice?.id || !companyId || invoice.shareToken) return;
+    if (tokenEnsuredFor.current === invoice.id) return;
+    tokenEnsuredFor.current = invoice.id;
+    const token = createInvoiceShareToken();
+    void BillingService.invoices
+      .update(companyId, invoice.id, { shareToken: token })
+      .then(() =>
+        queryClient.invalidateQueries({
+          queryKey: ["billing", "invoices", companyId, invoice.id],
+        })
+      )
+      .catch((err) => {
+        console.error(err);
+        tokenEnsuredFor.current = null;
+      });
+  }, [invoice?.id, invoice?.shareToken, companyId, queryClient]);
+
+  // Upload PDF so /i/:token redirects to the file
+  useEffect(() => {
+    if (
+      !invoice?.id ||
+      !invoice.shareToken ||
+      !companyId ||
+      !printRef.current ||
+      publishLock.current
+    ) {
+      return;
+    }
+
+    const fingerprint = [
+      invoice.invoiceNumber,
+      invoice.status,
+      invoice.grandTotal,
+      invoice.totalTax,
+      invoice.items.length,
+      invoice.shareToken,
+    ].join(":");
+    const cacheKey = `invoice-pdf:${invoice.id}`;
+    if (sessionStorage.getItem(cacheKey) === fingerprint && invoice.pdfUrl) {
+      return;
+    }
+
+    let cancelled = false;
+    publishLock.current = true;
+
+    const timer = window.setTimeout(() => {
+      void (async () => {
+        try {
+          if (!printRef.current || cancelled) return;
+          const { pdfUrl } = await publishInvoicePdfShare({
+            companyId,
+            invoice,
+            printElement: printRef.current,
+            shareToken: invoice.shareToken!,
+          });
+          if (cancelled) return;
+          sessionStorage.setItem(cacheKey, fingerprint);
+          await BillingService.invoices.update(companyId, invoice.id!, {
+            pdfUrl,
+            shareToken: invoice.shareToken,
+          });
+          queryClient.invalidateQueries({
+            queryKey: ["billing", "invoices", companyId, invoice.id],
+          });
+        } catch (err) {
+          console.error("Failed to publish invoice PDF share", err);
+        } finally {
+          publishLock.current = false;
+        }
+      })();
+    }, 900);
+
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timer);
+      publishLock.current = false;
+    };
+  }, [invoice, companyId, queryClient]);
 
   if (isLoading) {
     return (
@@ -84,8 +181,35 @@ export default function InvoiceDetailPage() {
     try {
       await generateQuotationPdf(
         printRef.current,
-        `${invoice.invoiceNumber}.pdf`,
+        `${invoice.invoiceNumber}.pdf`
       );
+      if (companyId && invoice.shareToken && printRef.current) {
+        try {
+          const { pdfUrl } = await publishInvoicePdfShare({
+            companyId,
+            invoice,
+            printElement: printRef.current,
+            shareToken: invoice.shareToken,
+          });
+          await BillingService.invoices.update(companyId, invoice.id!, {
+            pdfUrl,
+            shareToken: invoice.shareToken,
+          });
+          sessionStorage.setItem(
+            `invoice-pdf:${invoice.id}`,
+            [
+              invoice.invoiceNumber,
+              invoice.status,
+              invoice.grandTotal,
+              invoice.totalTax,
+              invoice.items.length,
+              invoice.shareToken,
+            ].join(":")
+          );
+        } catch {
+          /* non-fatal */
+        }
+      }
     } catch {
       toast.error(t("invoices.detail.pdf_failed"));
     } finally {
@@ -134,13 +258,11 @@ export default function InvoiceDetailPage() {
               >
                 {t(`invoices.status.${invoice.status}`)}
               </Chip>
-              {invoice.totalTax > 0 &&
-                invoice.status !== "draft" &&
-                settings?.companyProfile?.taxNumber && (
-                  <span className="rounded bg-success/10 px-2 py-0.5 text-[10px] font-bold text-success">
-                    {t("daftra.zatca.badge")}
-                  </span>
-                )}
+              {invoice.pdfUrl ? (
+                <span className="rounded bg-primary/10 px-2 py-0.5 text-[10px] font-bold text-primary">
+                  {t("invoices.detail.qr_pdf_ready")}
+                </span>
+              ) : null}
             </h1>
             <p className="text-sm text-default-500">
               {t("invoices.detail.issue_datetime")}:{" "}
@@ -215,6 +337,7 @@ export default function InvoiceDetailPage() {
           company={company}
           customer={customer}
           amountDue={amountDue}
+          pdfShareUrl={pdfShareUrl || null}
         />
       </div>
 

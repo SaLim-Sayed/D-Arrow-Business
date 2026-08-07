@@ -1,6 +1,19 @@
 export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "/api";
 export const ENABLE_MOCKS = import.meta.env.VITE_ENABLE_MOCKS === "true";
 
+/** Public site origin for share links (invoice QR → PDF). Prefer env on preview/local. */
+export const APP_URL = (
+  import.meta.env.VITE_APP_URL as string | undefined
+)?.replace(/\/$/, "");
+
+export function getAppOrigin(): string {
+  if (APP_URL) return APP_URL;
+  if (typeof window !== "undefined" && window.location?.origin) {
+    return window.location.origin;
+  }
+  return "https://d-arrow-business-ekzy.vercel.app";
+}
+
 export const STORAGE_KEYS = {
   THEME: "d-arrow-theme",
   LAYOUT: "d-arrow-layout",

@@ -40,6 +40,10 @@ export const invoiceSchema = z
     termsAndConditions: z.string().optional(),
 
     currency: z.string().default("SAR"),
+    /** Public token for /i/:token → opens PDF when scanned */
+    shareToken: z.string().optional(),
+    /** Firebase Storage download URL for the shared PDF */
+    pdfUrl: z.string().optional(),
     createdAt: z.date().optional(),
     updatedAt: z.date().optional(),
   })

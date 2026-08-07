@@ -7,6 +7,7 @@ import {
   syncInvoiceStatuses,
 } from "../utils/accounting-engine";
 import { createGenericDocumentFromInvoiceData } from "../utils/migrate-to-generic";
+import { createInvoiceShareToken } from "../api/invoice-share.service";
 
 async function postInvoiceIfNeeded(
   _companyId: string,
@@ -67,6 +68,7 @@ export function useCreateInvoiceMutation(options?: { useGenericSystem?: boolean 
         status: data.status ?? "draft",
         invoiceNumber: data.invoiceNumber || "DRAFT",
         amountPaid: data.amountPaid ?? 0,
+        shareToken: data.shareToken || createInvoiceShareToken(),
       };
 
       if (isPosting) {

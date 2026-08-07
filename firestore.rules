@@ -72,6 +72,20 @@ service cloud.firestore {
       allow read, write: if true;
     }
 
+    // Public invoice PDF shares (QR scan → PDF). Token = document id.
+    match /publicInvoiceShares/{token} {
+      allow get: if true;
+      allow list: if false;
+      allow create, update: if signedIn()
+        && request.resource.data.token == token
+        && request.resource.data.companyId is string
+        && request.resource.data.invoiceId is string
+        && request.resource.data.pdfUrl is string
+        && belongsToCompany(request.resource.data.companyId);
+      allow delete: if signedIn()
+        && belongsToCompany(resource.data.companyId);
+    }
+
     match /companies/{companyId} {
       allow read, write: if belongsToCompany(companyId);
       allow create: if signedIn();

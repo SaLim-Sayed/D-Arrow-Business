@@ -500,6 +500,9 @@
       "outstanding": "Outstanding",
       "logo": "Logo",
       "qr": "QR",
+      "qr_hint": "ZATCA code — scan with an e-invoice reader app (it is not a web link)",
+      "qr_hint_pdf": "Scan to open the invoice PDF",
+      "qr_pdf_ready": "QR → PDF",
       "vat_number": "VAT",
       "line_discount": "Discount",
       "download_pdf": "Download PDF",
@@ -531,6 +534,13 @@
       "pdf_failed": "Failed to generate PDF",
       "no_email": "Customer has no email on file",
       "email_opened": "Email client opened"
+    },
+    "public": {
+      "opening_pdf": "Opening PDF…",
+      "pdf_not_ready": "PDF is not ready yet",
+      "pdf_unavailable": "Could not open this invoice",
+      "pdf_unavailable_hint": "Open the invoice in the app once to create the share link, then scan again.",
+      "go_login": "Sign in"
     }
   },
   "payments": {

@@ -6,6 +6,7 @@ import { ForgotPasswordPage } from "@/features/auth/pages/forgot-password-page";
 import { ResetPasswordPage } from "@/features/auth/pages/reset-password-page";
 import { AcceptInvitePage } from "@/features/auth/pages/accept-invite-page";
 import { ProtectedRoute } from "@/features/auth/components/protected-route";
+import PublicInvoicePdfPage from "@/features/billing/pages/PublicInvoicePdfPage";
 import { AppLayout } from "@/components/layout/app-layout";
 import { TasksLayout } from "@/features/tasks/components/TasksLayout";
 import { TasksDashboardPage } from "@/features/tasks/pages/tasks-dashboard-page";
@@ -85,6 +86,10 @@ export const router = createBrowserRouter([
       {
         path: "invite/:token",
         element: <AcceptInvitePage />,
+      },
+      {
+        path: "i/:token",
+        element: <PublicInvoicePdfPage />,
       },
       {
         index: true,
