@@ -1,11 +1,8 @@
-import { Outlet } from "react-router-dom";
+import { Outlet, useLocation } from "react-router-dom";
 import { Header } from "./header";
 import { PortalSidebar } from "./portal-sidebar";
-import { PortalFloatingButton } from "./portal-switcher";
 import { useSyncLastPortal } from "@/features/portals/hooks/use-sync-last-portal";
-import { useAccessiblePortals } from "@/features/portals/hooks/use-portals";
 import { getPortalFromPath } from "@/lib/portal-permissions";
-import { useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useLayoutStore } from "@/stores/layout.store";
 
@@ -21,8 +18,6 @@ export function AppLayout() {
     portal === "people" ||
     portal === "billing" ||
     portal === "chat";
-  const portals = useAccessiblePortals();
-  const showPortalFab = portals.length > 1;
 
   return (
     <div className="min-h-screen bg-background">
@@ -40,19 +35,12 @@ export function AppLayout() {
         <main
           className={cn(
             "flex-1 pt-14 sm:pt-16",
-            isPicker
-              ? "px-4 pb-4 md:px-8 md:pb-8"
-              : cn(
-                  "px-4 pb-4 md:px-6 md:pb-6",
-                  showPortalFab &&
-                    "pb-[max(5.5rem,calc(env(safe-area-inset-bottom)+4.5rem))] md:pb-24"
-                )
+            isPicker ? "px-4 pb-4 md:px-8 md:pb-8" : "px-4 pb-4 md:px-6 md:pb-6"
           )}
         >
           <Outlet />
         </main>
       </div>
-      <PortalFloatingButton />
     </div>
   );
 }
