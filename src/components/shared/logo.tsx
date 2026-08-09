@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
 
 const ASSETS = {
@@ -10,6 +11,10 @@ interface LogoProps {
   className?: string;
   size?: "sm" | "md" | "lg" | "xl";
   variant?: "full" | "icon";
+  /** When set, the logo navigates to this path on press. */
+  to?: string;
+  title?: string;
+  onClick?: () => void;
 }
 
 const heightBySize = {
@@ -19,10 +24,17 @@ const heightBySize = {
   xl: "h-32",
 };
 
-export function Logo({ className, size = "md", variant = "full" }: LogoProps) {
-  if (variant === "icon") {
-    return (
-      <div className={cn("flex items-center justify-center", className)}>
+export function Logo({
+  className,
+  size = "md",
+  variant = "full",
+  to,
+  title,
+  onClick,
+}: LogoProps) {
+  const mark =
+    variant === "icon" ? (
+      <div className={cn("flex items-center justify-center", !to && className)}>
         <img
           src={ASSETS.iconLight}
           alt="D-Arrow"
@@ -34,19 +46,33 @@ export function Logo({ className, size = "md", variant = "full" }: LogoProps) {
           className={cn("object-contain hidden dark:block", heightBySize[size])}
         />
       </div>
+    ) : (
+      <div className={cn("flex items-center", !to && className)}>
+        <img
+          src={ASSETS.full}
+          alt="D-Arrow Marketing"
+          className={cn(
+            "w-auto max-w-full object-contain",
+            heightBySize[size]
+          )}
+        />
+      </div>
     );
-  }
+
+  if (!to) return mark;
 
   return (
-    <div className={cn("flex items-center", className)}>
-      <img
-        src={ASSETS.full}
-        alt="D-Arrow Marketing"
-        className={cn(
-          "w-auto max-w-full object-contain",
-          heightBySize[size]
-        )}
-      />
-    </div>
+    <Link
+      to={to}
+      title={title}
+      aria-label={title ?? "D-Arrow"}
+      onClick={onClick}
+      className={cn(
+        "inline-flex rounded-xl outline-none transition-opacity hover:opacity-90 focus-visible:ring-2 focus-visible:ring-primary/40",
+        className
+      )}
+    >
+      {mark}
+    </Link>
   );
 }

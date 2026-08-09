@@ -56,10 +56,16 @@ export function PortalSidebar({ portal }: PortalSidebarProps) {
         {sidebarCollapsed ? (
           <>
             <Tooltip
-              content={t(meta.titleKey)}
+              content={t("portals.allApps")}
               placement={isRtl ? "left" : "right"}
             >
-              <Logo size="sm" variant="icon" className="w-10 shrink-0" />
+              <Logo
+                size="sm"
+                variant="icon"
+                to="/"
+                title={t("portals.allApps")}
+                className="w-10 shrink-0"
+              />
             </Tooltip>
             <Button
               isIconOnly
@@ -78,7 +84,13 @@ export function PortalSidebar({ portal }: PortalSidebarProps) {
         ) : (
           <>
             <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-              <Logo size="sm" variant="full" className="w-full min-w-[240px] h-20" />
+              <Logo
+                size="sm"
+                variant="full"
+                to="/"
+                title={t("portals.allApps")}
+                className="w-full min-w-[240px] h-20"
+              />
               <span className="truncate text-[10px] font-black uppercase tracking-[0.2em] text-primary/80">
                 {t(meta.titleKey)}
               </span>

@@ -53,7 +53,22 @@ export function MobileSidebar() {
   return (
     <div className="flex h-full flex-col bg-sidebar">
       <div className="flex h-16 items-center gap-3 border-b border-default-100 px-4">
-        <Logo size="sm" variant="icon" className="shrink-0" />
+        <Logo
+          size="sm"
+          variant="icon"
+          to={
+            portal === "tasks" ||
+            portal === "crm" ||
+            portal === "people" ||
+            portal === "billing" ||
+            portal === "chat"
+              ? "/"
+              : undefined
+          }
+          title={t("portals.allApps")}
+          className="shrink-0"
+          onClick={() => setMobileSidebarOpen(false)}
+        />
         {navItems.length > 0 && (
           <span className="min-w-0 truncate text-[10px] font-black uppercase tracking-[0.2em] text-primary/80">
             {portalTitle}

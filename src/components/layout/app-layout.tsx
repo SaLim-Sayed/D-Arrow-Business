@@ -1,6 +1,7 @@
 import { Outlet, useLocation } from "react-router-dom";
 import { Header } from "./header";
 import { PortalSidebar } from "./portal-sidebar";
+import { PortalPickerDrawer } from "@/features/portals/components/PortalPickerDrawer";
 import { useSyncLastPortal } from "@/features/portals/hooks/use-sync-last-portal";
 import { getPortalFromPath } from "@/lib/portal-permissions";
 import { cn } from "@/lib/utils";
@@ -9,7 +10,8 @@ import { useLayoutStore } from "@/stores/layout.store";
 export function AppLayout() {
   useSyncLastPortal();
   const { pathname } = useLocation();
-  const { sidebarCollapsed } = useLayoutStore();
+  const { sidebarCollapsed, portalPickerOpen, setPortalPickerOpen } =
+    useLayoutStore();
   const portal = getPortalFromPath(pathname);
   const isPicker = portal === "picker";
   const showSidebar =
@@ -41,6 +43,10 @@ export function AppLayout() {
           <Outlet />
         </main>
       </div>
+      <PortalPickerDrawer
+        isOpen={portalPickerOpen}
+        onOpenChange={setPortalPickerOpen}
+      />
     </div>
   );
 }

@@ -21,9 +21,10 @@ import { Menu, Moon, Sun, LogOut, User, Clock, Settings } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { MobileSidebar } from "./mobile-sidebar";
 import { Logo } from "../shared/logo";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { TimeTrackerWidget } from "@/features/people/components/TimeTrackerWidget";
 import { useAttendanceTimer } from "@/features/people/hooks/use-attendance-timer";
+import { getPortalFromPath } from "@/lib/portal-permissions";
 
 export function Header({
   hasPortalSidebar = false,
@@ -37,6 +38,17 @@ export function Header({
   const { mobileSidebarOpen, setMobileSidebarOpen } = useLayoutStore();
   const { mode, toggleMode } = useThemeStore();
   const navigate = useNavigate();
+  const { pathname } = useLocation();
+  const portal = getPortalFromPath(pathname);
+  const logoHomeTo =
+    portal === "tasks" ||
+    portal === "crm" ||
+    portal === "people" ||
+    portal === "billing" ||
+    portal === "chat" ||
+    portal === "settings"
+      ? "/"
+      : undefined;
 
   const { isCheckedIn, isOnBreak } = useAttendanceTimer();
   const displayName = i18n.language === "ar" ? user?.nameAr : user?.name;
@@ -83,6 +95,8 @@ export function Header({
       <Logo
         size="sm"
         variant="icon"
+        to={logoHomeTo}
+        title={t("portals.allApps")}
         className={cn(
           "shrink-0",
           hasPortalSidebar ? "flex md:hidden" : "flex"
