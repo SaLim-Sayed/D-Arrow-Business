@@ -18,8 +18,9 @@ export function PresenceDot({
   return (
     <span
       className={cn(
-        "inline-block h-2.5 w-2.5 rounded-full ring-2 ring-background",
+        "inline-block h-2.5 w-2.5 rounded-full ring-2 ring-content1",
         STATUS_COLOR[status],
+        status === "online" && "shadow-[0_0_0_2px_hsl(var(--heroui-success)/0.25)]",
         className
       )}
       aria-hidden

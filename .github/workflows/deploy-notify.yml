@@ -1,0 +1,46 @@
+name: Deploy notifications → Zoho Cliq
+
+# This repo deploys via Vercel's git integration, which reports deployment
+# statuses back to GitHub. We listen to those rather than running our own
+# deploy, so Cliq reflects what Vercel actually did.
+on:
+  deployment_status:
+
+jobs:
+  notify:
+    # queued/in_progress fire on every preview build; only report meaningful states.
+    if: >-
+      contains(fromJSON('["pending","success","failure","error"]'),
+      github.event.deployment_status.state)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Map Vercel state to Cliq status
+        id: map
+        env:
+          STATE: ${{ github.event.deployment_status.state }}
+        run: |
+          case "$STATE" in
+            pending) echo "status=started" >> "$GITHUB_OUTPUT" ;;
+            success) echo "status=success" >> "$GITHUB_OUTPUT" ;;
+            *)       echo "status=failure" >> "$GITHUB_OUTPUT" ;;
+          esac
+
+      - name: Notify Cliq
+        env:
+          CLIQ_WEBHOOK_DEPLOYMENTS: ${{ secrets.CLIQ_WEBHOOK_DEPLOYMENTS }}
+          CLIQ_WEBHOOK_DEVOPS: ${{ secrets.CLIQ_WEBHOOK_DEVOPS }}
+        run: |
+          node scripts/notify-cliq.mjs \
+            --status "${{ steps.map.outputs.status }}" \
+            --env "${{ github.event.deployment.environment }}" \
+            --branch "${{ github.event.deployment.ref }}" \
+            --commit "${{ github.event.deployment.sha }}" \
+            --actor "${{ github.event.deployment.creator.login }}" \
+            --url "${{ github.event.deployment_status.target_url }}" \
+            --reason "${{ github.event.deployment_status.description }}"

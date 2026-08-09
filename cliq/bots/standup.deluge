@@ -1,0 +1,52 @@
+/*
+ * Standup Bot — /standup
+ * Implements §16 "Standup Bot" of docs/Zoho-Cliq-Implementation-Plan.md.
+ *
+ * Paste into Zoho Cliq → Bots & Tools → Commands → /standup → Script editor.
+ * This is Deluge and runs inside Cliq; it cannot be executed from this repo.
+ *
+ * Opens the standup form. Submissions are handled by standup-form.deluge.
+ */
+progress = Map();
+progress.put("type", "textarea");
+progress.put("name", "progress");
+progress.put("label", "Today's progress");
+progress.put("placeholder", "What moved forward since the last standup?");
+progress.put("mandatory", true);
+
+next = Map();
+next.put("type", "textarea");
+next.put("name", "next");
+next.put("label", "Next step");
+next.put("placeholder", "What you are picking up next.");
+next.put("mandatory", true);
+
+blockers = Map();
+blockers.put("type", "textarea");
+blockers.put("name", "blockers");
+blockers.put("label", "Blockers");
+blockers.put("placeholder", "Leave empty if nothing is blocked.");
+blockers.put("mandatory", false);
+
+inputs = List();
+inputs.add(progress);
+inputs.add(next);
+inputs.add(blockers);
+
+action = Map();
+action.put("type", "invoke.function");
+action.put("name", "standup_submit");
+
+form = Map();
+form.put("title", "Daily Standup");
+form.put("name", "standup");
+form.put("hint", "Posted to the channel you ran this in.");
+form.put("inputs", inputs);
+form.put("button_label", "Post standup");
+form.put("action", action);
+
+response = Map();
+response.put("type", "form");
+response.put("form", form);
+
+return response;

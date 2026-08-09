@@ -16,7 +16,9 @@ import {
 import { db } from "@/lib/firebase";
 import {
   buildParticipantKey,
+  type ChannelVisibility,
   type Conversation,
+  type ConversationType,
 } from "../types/chat.types";
 
 function toIso(value: unknown): string | null {
@@ -25,13 +27,16 @@ function toIso(value: unknown): string | null {
   return null;
 }
 
-function mapConversation(
+export function mapConversation(
   id: string,
   data: Record<string, unknown>
 ): Conversation {
-  return {
+  // Legacy DM documents predate the `type` field and have no channel data.
+  const type: ConversationType = data.type === "channel" ? "channel" : "dm";
+
+  const conversation: Conversation = {
     id,
-    type: "dm",
+    type,
     memberIds: Array.isArray(data.memberIds)
       ? (data.memberIds as string[])
       : [],
@@ -41,9 +46,23 @@ function mapConversation(
     createdBy: String(data.createdBy ?? ""),
     createdAt: toIso(data.createdAt) ?? new Date().toISOString(),
   };
+
+  if (type === "channel") {
+    conversation.name = String(data.name ?? "");
+    conversation.slug = String(data.slug ?? "");
+    conversation.topic = String(data.topic ?? "");
+    conversation.visibility =
+      data.visibility === "private"
+        ? ("private" as ChannelVisibility)
+        : ("public" as ChannelVisibility);
+    conversation.readOnly = data.readOnly === true;
+    conversation.archivedAt = toIso(data.archivedAt);
+  }
+
+  return conversation;
 }
 
-function conversationsRef(companyId: string) {
+export function conversationsRef(companyId: string) {
   return collection(db, "companies", companyId, "conversations");
 }
 

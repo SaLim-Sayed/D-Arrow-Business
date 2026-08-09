@@ -1,4 +1,4 @@
-export type NotificationType = "task_created" | "task_updated" | "task_assigned" | "attendance_started" | "attendance_resumed" | "attendance_completed" | "general";
+export type NotificationType = "task_created" | "task_updated" | "task_assigned" | "attendance_started" | "attendance_resumed" | "attendance_completed" | "chat_mention" | "general";
 
 export interface AppNotification {
   id: string;

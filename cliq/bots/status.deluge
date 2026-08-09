@@ -1,0 +1,93 @@
+/*
+ * Status Bot — /status
+ * Implements §16 "Status Bot" of docs/Zoho-Cliq-Implementation-Plan.md.
+ *
+ * Paste into Zoho Cliq → Bots & Tools → Commands → /status → Script editor.
+ * This is Deluge and runs inside Cliq; it cannot be executed from this repo.
+ *
+ * Set APP_URL to the production deployment before enabling.
+ * Checks only what this stack actually has: the deployed app, Firestore, and
+ * Firebase Auth. CI/CD and Sentry rows are intentionally absent — see §"Reality
+ * check" in the plan review; there is nothing to report for them yet.
+ */
+APP_URL = "https://d-arrow-business.vercel.app";
+FIREBASE_PROJECT = "d-arrow-buisiness";
+
+FIRESTORE_URL = "https://firestore.googleapis.com/v1/projects/" + FIREBASE_PROJECT + "/databases/(default)/documents";
+AUTH_URL = "https://identitytoolkit.googleapis.com/v1/projects/" + FIREBASE_PROJECT;
+
+UP = "🟢 Operational";
+DOWN = "🔴 Unreachable";
+
+/*
+ * A reachable-but-unauthorised endpoint still proves the service is up, and
+ * these Google endpoints reject anonymous calls by design. So the signal we
+ * want is "did the request complete at all", which is exactly what a thrown
+ * exception distinguishes.
+ */
+appStatus = DOWN;
+try {
+	invokeurl [ url : APP_URL type : GET ];
+	appStatus = UP;
+} catch (e) {
+	appStatus = DOWN;
+}
+
+dbStatus = DOWN;
+try {
+	invokeurl [ url : FIRESTORE_URL type : GET ];
+	dbStatus = UP;
+} catch (e) {
+	dbStatus = DOWN;
+}
+
+authStatus = DOWN;
+try {
+	invokeurl [ url : AUTH_URL type : GET ];
+	authStatus = UP;
+} catch (e) {
+	authStatus = DOWN;
+}
+
+rows = List();
+
+appRow = Map();
+appRow.put("Service", "Production app");
+appRow.put("Status", appStatus);
+rows.add(appRow);
+
+dbRow = Map();
+dbRow.put("Service", "Firestore");
+dbRow.put("Status", dbStatus);
+rows.add(dbRow);
+
+authRow = Map();
+authRow.put("Service", "Firebase Auth");
+authRow.put("Status", authStatus);
+rows.add(authRow);
+
+headers = List();
+headers.add("Service");
+headers.add("Status");
+
+tableData = Map();
+tableData.put("headers", headers);
+tableData.put("rows", rows);
+
+slide = Map();
+slide.put("type", "table");
+slide.put("data", tableData);
+
+slides = List();
+slides.add(slide);
+
+card = Map();
+card.put("title", "D-Arrow System Status");
+card.put("theme", "modern-inline");
+
+response = Map();
+response.put("text", "Checked " + zoho.currenttime.toString("yyyy-MM-dd HH:mm") + ".");
+response.put("card", card);
+response.put("slides", slides);
+
+return response;

@@ -10,7 +10,10 @@
     "newMessage": "New message",
     "startConversation": "Start conversation",
     "noPeople": "No teammates found",
-    "you": "You"
+    "you": "You",
+    "searchInbox": "Search conversations…",
+    "conversationCount_one": "{{count}} conversation",
+    "conversationCount_other": "{{count}} conversations"
   },
   "conversation": {
     "select": "Select a conversation",
@@ -29,10 +32,89 @@
     "away": "Away",
     "busy": "Busy",
     "offline": "Offline",
-    "lastSeen": "Last seen {{time}}"
+    "lastSeen": "Last seen {{time}}",
+    "empty": "No messages yet",
+    "emptyHint": "Say hello to start the conversation",
+    "jumpToLatest": "Jump to latest"
+  },
+  "composer": {
+    "attach": "Attach file",
+    "emoji": "Emoji",
+    "record": "Record voice message",
+    "recording": "Recording",
+    "stopRecording": "Stop recording",
+    "voiceReady": "Voice note ready",
+    "removeFile": "Remove file",
+    "voiceMessage": "Voice message",
+    "emojiGroups": {
+      "smileys": "Smileys & people",
+      "objects": "Symbols & objects"
+    }
   },
   "errors": {
     "sendFailed": "Failed to send message",
-    "startFailed": "Failed to start conversation"
+    "startFailed": "Failed to start conversation",
+    "createChannelFailed": "Failed to create channel",
+    "joinFailed": "Failed to join channel",
+    "leaveFailed": "Failed to leave channel",
+    "addMembersFailed": "Failed to add members",
+    "duplicateChannel": "A channel with this name already exists",
+    "channelNameRequired": "Channel name must contain letters or numbers",
+    "unsupportedFile": "Unsupported or oversized file",
+    "micDenied": "Microphone access was denied",
+    "micUnsupported": "Voice recording is not supported in this browser",
+    "recordingTooShort": "Recording was too short"
+  },
+  "channels": {
+    "title": "Channels",
+    "directMessages": "Direct messages",
+    "browse": "Browse channels",
+    "create": "Create channel",
+    "createTitle": "Create a channel",
+    "join": "Join",
+    "leave": "Leave",
+    "name": "Channel name",
+    "namePlaceholder": "e.g. announcements",
+    "topic": "Topic",
+    "topicOptional": "Topic (optional)",
+    "topicPlaceholder": "What is this channel about?",
+    "visibility": "Visibility",
+    "public": "Public",
+    "publicHint": "Anyone in the company can find and join it",
+    "private": "Private",
+    "privateHint": "Only invited members can see it",
+    "readOnly": "Announcements only",
+    "readOnlyHint": "Only admins can post",
+    "empty": "No channels yet",
+    "emptyHint": "Create one to start a team conversation",
+    "noneToJoin": "You have joined every public channel",
+    "members_one": "{{count}} member",
+    "members_other": "{{count}} members",
+    "postingRestricted": "Only admins can post in this channel",
+    "addMembers": "Add members",
+    "addMembersHint": "Optionally invite teammates now",
+    "addMembersPrivateHint": "Invite teammates — private channels are invite-only",
+    "searchMembers": "Search people…",
+    "noMembersFound": "No people found",
+    "alreadyMember": "Already a member",
+    "creator": "Creator",
+    "manageMembers": "Channel members",
+    "currentMembers_one": "{{count}} member",
+    "currentMembers_other": "{{count}} members",
+    "addSelected_one": "Add {{count}} member",
+    "addSelected_other": "Add {{count}} members",
+    "membersAdded_one": "Added {{count}} member",
+    "membersAdded_other": "Added {{count}} members"
+  },
+  "thread": {
+    "reply": "Reply",
+    "replies_one": "{{count}} reply",
+    "replies_other": "{{count}} replies",
+    "title": "Thread",
+    "replyPlaceholder": "Reply…",
+    "noReplies": "No replies yet"
+  },
+  "notifications": {
+    "mentionedYou": "{{name}} mentioned you"
   }
 }

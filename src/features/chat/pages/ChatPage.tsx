@@ -20,12 +20,15 @@ export function ChatPage() {
   }, [users]);
 
   const activeConversation = conversations.find((c) => c.id === conversationId);
-  const peerId = activeConversation?.memberIds.find((id) => id !== userId);
+  const peerId =
+    activeConversation && activeConversation.type === "dm"
+      ? activeConversation.memberIds.find((id) => id !== userId)
+      : undefined;
   const peer = peerId ? usersById[peerId] : undefined;
 
   return (
-    <div className="flex h-[calc(100dvh-var(--header-height)-1rem)] min-h-[420px] overflow-hidden rounded-2xl border border-default-100 bg-content1 shadow-sm md:h-[calc(100dvh-var(--header-height)-1.5rem)]">
-      <div className="hidden w-full max-w-sm shrink-0 md:flex md:flex-col">
+    <div className="flex h-full min-h-0 overflow-hidden border-y border-default-100/80 bg-content1 md:rounded-3xl md:border md:shadow-premium">
+      <aside className="hidden w-full max-w-[22rem] shrink-0 border-e border-default-100/80 bg-content1 md:flex md:min-h-0 md:flex-col lg:max-w-sm">
         <InboxList
           conversations={conversations}
           reads={reads}
@@ -33,10 +36,10 @@ export function ChatPage() {
           activeId={conversationId}
           usersById={usersById}
         />
-      </div>
-      <div className="flex min-w-0 flex-1 flex-col">
+      </aside>
+      <main className="flex min-h-0 min-w-0 flex-1 flex-col chat-surface">
         {!conversationId ? (
-          <div className="flex h-full flex-col md:hidden">
+          <div className="flex h-full min-h-0 flex-col bg-content1 md:hidden">
             <InboxList
               conversations={conversations}
               reads={reads}
@@ -45,10 +48,20 @@ export function ChatPage() {
             />
           </div>
         ) : null}
-        <div className={conversationId ? "flex h-full min-h-0 flex-col" : "hidden md:flex md:h-full md:min-h-0 md:flex-col"}>
-          <ConversationView conversationId={conversationId} peer={peer} />
+        <div
+          className={
+            conversationId
+              ? "flex h-full min-h-0 flex-col"
+              : "hidden md:flex md:h-full md:min-h-0 md:flex-col"
+          }
+        >
+          <ConversationView
+            conversationId={conversationId}
+            conversation={activeConversation}
+            peer={peer}
+          />
         </div>
-      </div>
+      </main>
     </div>
   );
 }

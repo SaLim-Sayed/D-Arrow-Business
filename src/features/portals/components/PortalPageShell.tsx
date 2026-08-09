@@ -52,7 +52,13 @@ export function PortalPageShell({
         </div>
       )}
 
-      <div className={cn(fullBleed && "h-[calc(100dvh-var(--header-height))]")}>
+      <div
+        className={cn(
+          fullBleed &&
+            // Mobile subnav sits above this region; desktop uses the full remainder.
+            "h-[calc(100dvh-var(--header-height)-3.25rem)] md:h-[calc(100dvh-var(--header-height))]"
+        )}
+      >
         {children}
       </div>
     </div>

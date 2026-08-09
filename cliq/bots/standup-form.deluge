@@ -1,0 +1,38 @@
+/*
+ * Standup Bot — form submission handler.
+ * Paste into Zoho Cliq → Bots & Tools → Functions → standup_submit.
+ *
+ * Receives the values submitted from standup.deluge and posts a formatted
+ * standup entry back to the channel.
+ */
+progress = values.get("progress");
+next = values.get("next");
+blockers = values.get("blockers");
+
+if (blockers == null || blockers.trim() == "") {
+	blockers = "None";
+}
+
+author = user.get("first_name");
+
+if (author == null || author == "") {
+	author = user.get("name");
+}
+
+lines = List();
+lines.add("**Daily Standup — " + author + "**");
+lines.add("_" + zoho.currentdate.toString("EEEE, d MMMM yyyy") + "_");
+lines.add("");
+lines.add("**Today's progress**");
+lines.add(progress);
+lines.add("");
+lines.add("**Next step**");
+lines.add(next);
+lines.add("");
+lines.add("**Blockers**");
+lines.add(blockers);
+
+response = Map();
+response.put("text", lines.toString("\n"));
+
+return response;
