@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Avatar, Button, Input } from "@heroui/react";
-import { MessageSquareReply, Pencil, Trash2 } from "lucide-react";
+import { Clock3, MessageSquareReply, Pencil, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { MessageBody } from "./MessageBody";
 import { MessageAttachments } from "./MessageAttachments";
@@ -13,14 +13,15 @@ interface MessageBubbleProps {
   onEdit: (messageId: string, body: string) => Promise<void>;
   onDelete: (messageId: string) => Promise<void>;
   candidates?: MentionCandidate[];
-  /** Shown above the body in channels so senders are identifiable. */
   senderName?: string;
   senderAvatar?: string;
-  /** Omitted inside a thread panel, where replying again would nest. */
   onReply?: (message: ChatMessage) => void;
   onOpenThread?: (message: ChatMessage) => void;
-  /** Draws attention when the current user was mentioned. */
   mentionsMe?: boolean;
+  /** First bubble in a same-sender cluster (shows avatar/name). */
+  isClusterStart?: boolean;
+  /** Last bubble in a same-sender cluster (shows timestamp). */
+  isClusterEnd?: boolean;
 }
 
 export function MessageBubble({
@@ -34,6 +35,8 @@ export function MessageBubble({
   onReply,
   onOpenThread,
   mentionsMe = false,
+  isClusterStart = true,
+  isClusterEnd = true,
 }: MessageBubbleProps) {
   const { t, i18n } = useTranslation("chat");
   const [editing, setEditing] = useState(false);
@@ -41,7 +44,8 @@ export function MessageBubble({
   const [busy, setBusy] = useState(false);
   const canEditText = Boolean(message.body.trim());
   const attachments = message.attachments ?? [];
-  const showSender = !isMine && Boolean(senderName);
+  const showSenderMeta = !isMine && Boolean(senderName) && isClusterStart;
+  const isPending = message.id.startsWith("pending-");
 
   const time = (() => {
     try {
@@ -59,7 +63,8 @@ export function MessageBubble({
       <div
         className={cn(
           "flex w-full px-0.5",
-          isMine ? "justify-end" : "justify-start"
+          isMine ? "justify-end" : "justify-start",
+          !isClusterStart && "mt-0.5"
         )}
       >
         <div className="max-w-[min(78%,30rem)] rounded-2xl bg-default-100/70 px-3.5 py-2 text-xs italic text-default-400 ring-1 ring-default-100/60">
@@ -85,36 +90,62 @@ export function MessageBubble({
 
   const actionBtn = cn(
     "rounded-lg p-1.5 transition-colors",
+    isMine ? "hover:bg-primary-foreground/15" : "hover:bg-default-200/80"
+  );
+
+  const radius = cn(
+    "rounded-2xl",
     isMine
-      ? "hover:bg-primary-foreground/15"
-      : "hover:bg-default-200/80"
+      ? cn(
+          isClusterStart && isClusterEnd && "rounded-ee-md",
+          isClusterStart && !isClusterEnd && "rounded-ee-md rounded-be-md",
+          !isClusterStart && isClusterEnd && "rounded-te-md rounded-ee-md",
+          !isClusterStart && !isClusterEnd && "rounded-e-md"
+        )
+      : cn(
+          isClusterStart && isClusterEnd && "rounded-es-md",
+          isClusterStart && !isClusterEnd && "rounded-es-md rounded-bs-md",
+          !isClusterStart && isClusterEnd && "rounded-ts-md rounded-es-md",
+          !isClusterStart && !isClusterEnd && "rounded-s-md"
+        )
   );
 
   return (
     <div
       className={cn(
-        "group flex w-full items-end gap-2 px-0.5",
-        isMine ? "justify-end" : "justify-start"
+        "group flex w-full items-end gap-2 px-0.5 animate-in fade-in slide-in-from-bottom-1 duration-200",
+        isMine ? "justify-end" : "justify-start",
+        isClusterStart ? "mt-2.5 first:mt-0" : "mt-0.5"
       )}
     >
-      {showSender && (
-        <Avatar
-          src={senderAvatar}
-          name={senderName}
-          className="mb-0.5 h-7 w-7 shrink-0 text-[10px] ring-2 ring-background"
-        />
+      {!isMine && Boolean(senderName) && (
+        <div className="mb-0.5 w-7 shrink-0">
+          {showSenderMeta ? (
+            <Avatar
+              src={senderAvatar}
+              name={senderName}
+              className="h-7 w-7 text-[10px] ring-2 ring-background"
+            />
+          ) : (
+            <span className="block h-7 w-7" aria-hidden />
+          )}
+        </div>
       )}
 
       <div
         className={cn(
-          "relative max-w-[min(78%,30rem)] px-3.5 py-2 text-sm leading-relaxed",
-          isMine ? "chat-bubble-mine" : "chat-bubble-theirs",
+          "relative max-w-[min(78%,30rem)] px-3.5 py-2 text-sm leading-relaxed transition-opacity",
+          radius,
+          isMine
+            ? "bg-primary text-primary-foreground shadow-sm"
+            : "bg-content1 text-default-900 shadow-sm ring-1 ring-default-100/80",
           mentionsMe &&
             !isMine &&
-            "ring-2 ring-warning/45 ring-offset-2 ring-offset-background"
+            "ring-2 ring-warning/45 ring-offset-2 ring-offset-background",
+          isPending && "opacity-75"
         )}
       >
-        {showSender && (
+        {showSenderMeta && (
           <p className="mb-1 truncate text-[11px] font-bold text-primary">
             {senderName}
           </p>
@@ -181,59 +212,65 @@ export function MessageBubble({
               message.messageType !== "text" && (
                 <p className="text-sm font-medium">📎 Attachment</p>
               )}
+
             <div
               className={cn(
                 "mt-1.5 flex items-center gap-1.5 text-[10px] leading-none",
-                isMine ? "text-primary-foreground/65" : "text-default-400"
+                isMine ? "text-primary-foreground/65" : "text-default-400",
+                !isClusterEnd && !isPending && "sm:opacity-0 sm:group-hover:opacity-100"
               )}
             >
               <span className="tabular-nums">{time}</span>
               {message.editedAt && <span>· {t("conversation.edited")}</span>}
-              <span
-                className={cn(
-                  "ms-auto inline-flex gap-0.5 opacity-100 transition-opacity sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100"
-                )}
-              >
-                {onReply && (
-                  <button
-                    type="button"
-                    className={actionBtn}
-                    aria-label={t("thread.reply")}
-                    onClick={() => onReply(message)}
-                  >
-                    <MessageSquareReply className="h-3.5 w-3.5" />
-                  </button>
-                )}
-                {isMine && (
-                  <>
-                    {canEditText && (
-                      <button
-                        type="button"
-                        className={actionBtn}
-                        aria-label={t("conversation.edit")}
-                        onClick={() => {
-                          setDraft(message.body);
-                          setEditing(true);
-                        }}
-                      >
-                        <Pencil className="h-3.5 w-3.5" />
-                      </button>
-                    )}
+              {isPending ? (
+                <span className="ms-auto inline-flex items-center gap-1 opacity-80">
+                  <Clock3 className="h-3 w-3" />
+                </span>
+              ) : (
+                <span className="ms-auto inline-flex items-center gap-0.5 opacity-100 transition-opacity sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100">
+                  {onReply && (
                     <button
                       type="button"
                       className={actionBtn}
-                      aria-label={t("conversation.delete")}
-                      disabled={busy}
-                      onClick={() => {
-                        setBusy(true);
-                        void onDelete(message.id).finally(() => setBusy(false));
-                      }}
+                      aria-label={t("thread.reply")}
+                      onClick={() => onReply(message)}
                     >
-                      <Trash2 className="h-3.5 w-3.5" />
+                      <MessageSquareReply className="h-3.5 w-3.5" />
                     </button>
-                  </>
-                )}
-              </span>
+                  )}
+                  {isMine && (
+                    <>
+                      {canEditText && (
+                        <button
+                          type="button"
+                          className={actionBtn}
+                          aria-label={t("conversation.edit")}
+                          onClick={() => {
+                            setDraft(message.body);
+                            setEditing(true);
+                          }}
+                        >
+                          <Pencil className="h-3.5 w-3.5" />
+                        </button>
+                      )}
+                      <button
+                        type="button"
+                        className={actionBtn}
+                        aria-label={t("conversation.delete")}
+                        disabled={busy}
+                        onClick={() => {
+                          setBusy(true);
+                          void onDelete(message.id).finally(() =>
+                            setBusy(false)
+                          );
+                        }}
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
+                    </>
+                  )}
+                </span>
+              )}
             </div>
 
             {Boolean(message.replyCount) && onOpenThread && (

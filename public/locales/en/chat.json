@@ -20,6 +20,8 @@
     "selectHint": "Choose a chat from the inbox or start a new message",
     "typing": "{{names}} typing…",
     "typingOne": "{{name}} is typing…",
+    "typingTwo": "{{a}} and {{b}} are typing…",
+    "typingMany": "{{count}} people are typing…",
     "edited": "edited",
     "deleted": "This message was deleted",
     "placeholder": "Write a message…",

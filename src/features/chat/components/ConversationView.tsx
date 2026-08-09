@@ -101,15 +101,27 @@ export function ConversationView({
   const typingLabel = useMemo(() => {
     if (!typingUserIds.length) return null;
     if (channel) {
-      const others = typingUserIds.filter((id) => id !== userId);
+      const others = typingUserIds
+        .filter((id) => id !== userId)
+        .map((id) => usersById[id]?.name)
+        .filter(Boolean) as string[];
       if (!others.length) return null;
-      return t("conversation.typing", { names: others.length });
+      if (others.length === 1) {
+        return t("conversation.typingOne", { name: others[0] });
+      }
+      if (others.length === 2) {
+        return t("conversation.typingTwo", {
+          a: others[0],
+          b: others[1],
+        });
+      }
+      return t("conversation.typingMany", { count: others.length });
     }
     if (peer && typingUserIds.includes(peer.id)) {
       return t("conversation.typingOne", { name: peer.name });
     }
     return null;
-  }, [typingUserIds, peer, channel, userId, t]);
+  }, [typingUserIds, peer, channel, userId, usersById, t]);
 
   // followKey also tracks typing so the sticky view reveals the indicator.
   const { containerRef, bottomRef, showJump, onScroll, scrollToBottom } =
@@ -319,7 +331,7 @@ export function ConversationView({
         <div
           ref={containerRef}
           onScroll={onScroll}
-          className="chat-scroll absolute inset-0 space-y-2 overflow-y-auto overscroll-contain px-3 py-4 sm:px-5 sm:py-5"
+          className="chat-scroll absolute inset-0 space-y-0 overflow-y-auto overscroll-contain px-3 py-4 sm:px-5 sm:py-5"
         >
           {isLoading ? (
             <div className="flex justify-center py-12">
@@ -355,6 +367,8 @@ export function ConversationView({
                   key={item.key}
                   message={item.message}
                   isMine={item.message.senderId === userId}
+                  isClusterStart={item.isClusterStart}
+                  isClusterEnd={item.isClusterEnd}
                   senderName={
                     channel
                       ? usersById[item.message.senderId]?.name

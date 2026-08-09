@@ -24,6 +24,8 @@
     "selectHint": "اختر محادثة من الوارد أو ابدأ رسالة جديدة",
     "typing": "{{names}} يكتبون…",
     "typingOne": "{{name}} يكتب…",
+    "typingTwo": "{{a}} و{{b}} يكتبان…",
+    "typingMany": "{{count}} أشخاص يكتبون…",
     "edited": "تم التعديل",
     "deleted": "تم حذف هذه الرسالة",
     "placeholder": "اكتب رسالة…",

@@ -1,20 +1,39 @@
 import type { ChatMessage } from "../types/chat.types";
 
+const CLUSTER_GAP_MS = 5 * 60 * 1000;
+
 export type MessageListItem =
   | { type: "day"; key: string; date: Date }
-  | { type: "message"; key: string; message: ChatMessage };
+  | {
+      type: "message";
+      key: string;
+      message: ChatMessage;
+      /** First message in a consecutive same-sender cluster. */
+      isClusterStart: boolean;
+      /** Last message in a consecutive same-sender cluster. */
+      isClusterEnd: boolean;
+    };
 
 function dayKey(iso: string): string {
   const d = new Date(iso);
   return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
 }
 
-/** Inserts day separators between messages ordered oldest → newest. */
+function sameCluster(a: ChatMessage, b: ChatMessage): boolean {
+  if (a.senderId !== b.senderId) return false;
+  if (a.deletedAt || b.deletedAt) return false;
+  const gap =
+    new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+  return gap >= 0 && gap <= CLUSTER_GAP_MS;
+}
+
+/** Inserts day separators and marks sender clusters (oldest → newest). */
 export function groupMessagesByDay(messages: ChatMessage[]): MessageListItem[] {
   const items: MessageListItem[] = [];
   let lastDay = "";
 
-  for (const message of messages) {
+  for (let i = 0; i < messages.length; i++) {
+    const message = messages[i];
     const key = dayKey(message.createdAt);
     if (key !== lastDay) {
       items.push({
@@ -24,7 +43,25 @@ export function groupMessagesByDay(messages: ChatMessage[]): MessageListItem[] {
       });
       lastDay = key;
     }
-    items.push({ type: "message", key: message.id, message });
+
+    const prev = i > 0 ? messages[i - 1] : null;
+    const next = i < messages.length - 1 ? messages[i + 1] : null;
+    const continuesPrev =
+      Boolean(prev) &&
+      dayKey(prev!.createdAt) === key &&
+      sameCluster(prev!, message);
+    const continuesNext =
+      Boolean(next) &&
+      dayKey(next!.createdAt) === key &&
+      sameCluster(message, next!);
+
+    items.push({
+      type: "message",
+      key: message.id,
+      message,
+      isClusterStart: !continuesPrev,
+      isClusterEnd: !continuesNext,
+    });
   }
 
   return items;
@@ -55,7 +92,6 @@ export function formatDayLabel(date: Date, locale: string): string {
     weekday: "short",
     month: "short",
     day: "numeric",
-    year:
-      date.getFullYear() === now.getFullYear() ? undefined : "numeric",
+    year: date.getFullYear() === now.getFullYear() ? undefined : "numeric",
   }).format(date);
 }
