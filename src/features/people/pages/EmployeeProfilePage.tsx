@@ -192,7 +192,7 @@ export default function EmployeeProfilePage() {
     <div className="space-y-6 max-w-7xl mx-auto w-full">
       <Button
         variant="light"
-        startContent={<ChevronLeft size={18} />}
+        startContent={<ChevronLeft size={18} className="rtl:rotate-180" />}
         onPress={() => navigate("/people")}
         className="font-bold text-default-500"
       >

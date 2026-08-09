@@ -33,7 +33,7 @@ function PortalCard({ portal }: { portal: PortalId }) {
           <div className="p-3 rounded-2xl bg-primary/10 text-primary">
             <Icon className="w-8 h-8" />
           </div>
-          <ArrowRight className="w-5 h-5 text-default-300 group-hover:text-primary group-hover:translate-x-1 transition-all" />
+          <ArrowRight className="h-5 w-5 text-default-300 transition-all group-hover:text-primary group-hover:translate-x-1 rtl:rotate-180 rtl:group-hover:-translate-x-1" />
         </div>
         <div>
           <h3 className="text-xl font-black tracking-tight">{t(meta.titleKey)}</h3>

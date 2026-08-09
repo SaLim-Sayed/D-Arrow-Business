@@ -32,7 +32,7 @@ export function CrmRecordHeader({
       <nav className="flex items-center gap-1 text-xs font-semibold text-default-400 flex-wrap">
         {breadcrumbs.map((crumb, i) => (
           <span key={i} className="flex items-center gap-1">
-            {i > 0 && <ChevronRight className="h-3 w-3 shrink-0" />}
+            {i > 0 && <ChevronRight className="h-3 w-3 shrink-0 rtl:rotate-180" />}
             {crumb.href ? (
               <Link to={crumb.href} className="hover:text-primary transition-colors">
                 {crumb.label}

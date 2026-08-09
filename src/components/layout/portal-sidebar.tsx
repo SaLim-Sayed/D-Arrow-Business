@@ -33,14 +33,21 @@ export function PortalSidebar({ portal }: PortalSidebarProps) {
   const { sidebarCollapsed, toggleSidebar, setPortalPickerOpen } = useLayoutStore();
   const navItems = usePortalNav(portal);
   const meta = PORTAL_META[portal];
-  const isRtl = i18n.language === "ar";
+  const isRtl = i18n.dir() === "rtl";
   const portals = useAccessiblePortals();
+  const CollapseIcon = sidebarCollapsed
+    ? isRtl
+      ? ChevronLeft
+      : ChevronRight
+    : isRtl
+      ? ChevronRight
+      : ChevronLeft;
 
   return (
     <aside
       className={cn(
         "fixed inset-y-0 start-0 z-30 hidden md:flex flex-col",
-        "border-r border-default-100 bg-sidebar text-sidebar-foreground",
+        "border-e border-default-100 bg-sidebar text-sidebar-foreground",
         "transition-all duration-300 shadow-premium overflow-y-auto",
         sidebarCollapsed ? "w-20" : "w-64"
       )}
@@ -74,11 +81,7 @@ export function PortalSidebar({ portal }: PortalSidebarProps) {
               className="h-8 w-8 shrink-0 bg-default-100/50 hover:bg-default-200/50"
               onPress={toggleSidebar}
             >
-              {isRtl ? (
-                <ChevronLeft className="h-5 w-5" />
-              ) : (
-                <ChevronRight className="h-5 w-5" />
-              )}
+              <CollapseIcon className="h-5 w-5" />
             </Button>
           </>
         ) : (
@@ -99,17 +102,10 @@ export function PortalSidebar({ portal }: PortalSidebarProps) {
               isIconOnly
               variant="flat"
               size="sm"
-              className={cn(
-                "h-8 w-8 shrink-0 bg-default-100/50 hover:bg-default-200/50",
-                isRtl ? "mr-auto" : "ml-auto"
-              )}
+              className="ms-auto h-8 w-8 shrink-0 bg-default-100/50 hover:bg-default-200/50"
               onPress={toggleSidebar}
             >
-              {isRtl ? (
-                <ChevronRight className="h-5 w-5" />
-              ) : (
-                <ChevronLeft className="h-5 w-5" />
-              )}
+              <CollapseIcon className="h-5 w-5" />
             </Button>
           </>
         )}

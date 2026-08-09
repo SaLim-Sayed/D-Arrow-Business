@@ -18,7 +18,7 @@
     "performance": "Performance"
   },
   "portals": {
-    "pickerTitle": "Choose your workspace",
+    "pickerTitle": "Choose the system",
     "pickerSubtitle": "Select a portal to get started",
     "allApps": "All apps",
     "switchPortal": "Switch portal",

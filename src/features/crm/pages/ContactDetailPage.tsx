@@ -108,7 +108,7 @@ export function ContactDetailPage() {
           onPress={() => navigate("/crm/contacts")}
           aria-label={t("contactDetail.back")}
         >
-          <ArrowLeft className="h-5 w-5" />
+          <ArrowLeft className="h-5 w-5 rtl:rotate-180" />
         </Button>
         <PageHeader
           title={name}

@@ -72,7 +72,7 @@ export function ErrorPage() {
                   variant="flat"
                   size="lg"
                   className="font-bold rounded-2xl h-14"
-                  startContent={<ChevronLeft size={18} />}
+                  startContent={<ChevronLeft size={18} className="rtl:rotate-180" />}
                   onPress={() => navigate(-1)}
                 >
                   {t("errors.goBack")}

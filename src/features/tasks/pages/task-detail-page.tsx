@@ -160,7 +160,7 @@ function SubtasksList({ parentId }: { parentId: string }) {
               <StatusBadge status={st.status} />
               <span className="font-semibold text-sm truncate group-hover:text-primary transition-colors">{st.title}</span>
             </div>
-            <ArrowRight className="h-4 w-4 text-default-400 shrink-0 group-hover:text-primary group-hover:translate-x-0.5 transition-all" />
+            <ArrowRight className="h-4 w-4 text-default-400 shrink-0 group-hover:text-primary transition-all rtl:rotate-180 group-hover:translate-x-0.5 rtl:group-hover:-translate-x-0.5" />
           </div>
         </Link>
       ))}

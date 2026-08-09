@@ -67,7 +67,7 @@ export function ForgotPasswordPage() {
               variant="flat"
               color="primary"
               className="w-full h-12 font-bold"
-              startContent={<ArrowLeft className="h-4 w-4" />}
+              startContent={<ArrowLeft className="h-4 w-4 rtl:rotate-180" />}
             >
               {t("forgotPassword.backToLogin")}
             </Button>
@@ -112,7 +112,7 @@ export function ForgotPasswordPage() {
                 to="/login"
                 className="inline-flex items-center gap-1 text-primary font-bold hover:underline"
               >
-                <ArrowLeft className="h-3.5 w-3.5" />
+                <ArrowLeft className="h-3.5 w-3.5 rtl:rotate-180" />
                 {t("forgotPassword.backToLogin")}
               </Link>
             </p>

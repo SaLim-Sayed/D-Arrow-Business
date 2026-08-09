@@ -135,7 +135,7 @@ export function LandingPage() {
               color="primary"
               size="lg"
               className="min-w-[200px] font-bold shadow-lg shadow-primary/25"
-              endContent={<ArrowRight className="h-4 w-4" />}
+              endContent={<ArrowRight className="h-4 w-4 rtl:rotate-180" />}
             >
               {t("hero.ctaPrimary")}
             </Button>
@@ -180,7 +180,7 @@ export function LandingPage() {
               variant="flat"
               color="primary"
               className="font-semibold"
-              endContent={<ArrowRight className="h-4 w-4" />}
+              endContent={<ArrowRight className="h-4 w-4 rtl:rotate-180" />}
             >
               {t("apps.viewAll")}
             </Button>

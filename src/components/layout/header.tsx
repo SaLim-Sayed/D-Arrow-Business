@@ -84,7 +84,7 @@ export function Header({
       <Drawer
         isOpen={mobileSidebarOpen}
         onOpenChange={setMobileSidebarOpen}
-        placement={i18n.language === "ar" ? "right" : "left"}
+        placement={i18n.dir() === "rtl" ? "right" : "left"}
         className="bg-background/80 backdrop-blur-xl"
       >
         <DrawerContent>

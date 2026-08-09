@@ -191,7 +191,7 @@ export default function PeopleDashboardPage() {
                       <Palmtree size={16} className="text-primary" />
                     </div>
                   }
-                  endContent={<ArrowRight size={14} className="text-primary/60" />}
+                  endContent={<ArrowRight size={14} className="text-primary/60 rtl:rotate-180" />}
                 >
                   {t("dashboard.apply_leave")}
                 </Button>
@@ -207,7 +207,7 @@ export default function PeopleDashboardPage() {
                       <ClipboardList size={16} className="text-secondary" />
                     </div>
                   }
-                  endContent={<ArrowRight size={14} className="text-secondary/60" />}
+                  endContent={<ArrowRight size={14} className="text-secondary/60 rtl:rotate-180" />}
                 >
                   {t("dashboard.view_approvals")}
                 </Button>
@@ -223,7 +223,7 @@ export default function PeopleDashboardPage() {
                       <UserCircle size={16} className="text-default-600" />
                     </div>
                   }
-                  endContent={<ArrowRight size={14} className="text-default-400" />}
+                  endContent={<ArrowRight size={14} className="text-default-400 rtl:rotate-180" />}
                 >
                   {t("dashboard.my_profile")}
                 </Button>
@@ -551,7 +551,7 @@ function NavCard({
         </div>
         <p className="text-default-400 text-xs font-medium mt-0.5 truncate">{desc}</p>
       </div>
-      <ArrowRight size={15} className="text-default-200 group-hover:text-default-400 transition-colors shrink-0" />
+      <ArrowRight size={15} className="text-default-200 group-hover:text-default-400 transition-colors shrink-0 rtl:rotate-180" />
     </button>
   );
 }

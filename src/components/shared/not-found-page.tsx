@@ -38,7 +38,7 @@ export function NotFoundPage() {
               size="lg"
               className="font-black uppercase tracking-widest h-14 rounded-2xl shadow-xl shadow-primary/30"
               onPress={() => navigate(-1)}
-              startContent={<ArrowLeft className="h-4 w-4 stroke-[3px]" />}
+              startContent={<ArrowLeft className="h-4 w-4 stroke-[3px] rtl:rotate-180" />}
             >
               {t("notFound.goBack")}
             </Button>

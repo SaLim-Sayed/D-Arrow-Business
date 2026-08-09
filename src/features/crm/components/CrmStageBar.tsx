@@ -49,7 +49,7 @@ export function CrmStageBar<T extends string>({
           {labelKey(stage)}
         </button>
         {!isLast && (
-          <ChevronRight className="h-4 w-4 mx-0.5 text-default-300 shrink-0" aria-hidden />
+          <ChevronRight className="h-4 w-4 mx-0.5 text-default-300 shrink-0 rtl:rotate-180" aria-hidden />
         )}
       </div>
     );

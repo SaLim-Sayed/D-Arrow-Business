@@ -80,7 +80,7 @@ function PortalDrawerItem({
         )}
       </div>
       {!isActive && (
-        <ChevronRight className="h-5 w-5 shrink-0 text-default-300" />
+        <ChevronRight className="h-5 w-5 shrink-0 text-default-300 rtl:rotate-180" />
       )}
     </button>
   );
@@ -95,6 +95,7 @@ export function PortalPickerDrawer({
   const location = useLocation();
   const portals = useAccessiblePortals();
   const current = getPortalFromPath(location.pathname);
+  const isRtl = i18n.dir() === "rtl";
 
   function selectPortal(portal: PortalId) {
     setLastPortal(portal);
@@ -106,7 +107,7 @@ export function PortalPickerDrawer({
     <Drawer
       isOpen={isOpen}
       onOpenChange={onOpenChange}
-      placement={i18n.language === "ar" ? "right" : "left"}
+      placement={isRtl ? "right" : "left"}
       size="full"
       classNames={{
         base: "bg-background/95 backdrop-blur-xl sm:max-w-sm sm:w-full",
