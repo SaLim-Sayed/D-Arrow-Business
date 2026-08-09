@@ -40,22 +40,24 @@ function toIso(value: unknown): string {
 
 function mapAttachments(raw: unknown): ChatAttachment[] {
   if (!Array.isArray(raw)) return [];
-  return raw
-    .map((item) => {
-      if (!item || typeof item !== "object") return null;
-      const data = item as Record<string, unknown>;
-      const url = String(data.url ?? "");
-      if (!url) return null;
-      return {
-        url,
-        name: String(data.name ?? "file"),
-        mimeType: normalizeMimeType(String(data.mimeType ?? "")),
-        sizeBytes: typeof data.sizeBytes === "number" ? data.sizeBytes : 0,
-        durationMs:
-          typeof data.durationMs === "number" ? data.durationMs : undefined,
-      } satisfies ChatAttachment;
-    })
-    .filter((item): item is ChatAttachment => item !== null);
+  const attachments: ChatAttachment[] = [];
+  for (const item of raw) {
+    if (!item || typeof item !== "object") continue;
+    const data = item as Record<string, unknown>;
+    const url = String(data.url ?? "");
+    if (!url) continue;
+    const attachment: ChatAttachment = {
+      url,
+      name: String(data.name ?? "file"),
+      mimeType: normalizeMimeType(String(data.mimeType ?? "")),
+      sizeBytes: typeof data.sizeBytes === "number" ? data.sizeBytes : 0,
+    };
+    if (typeof data.durationMs === "number") {
+      attachment.durationMs = data.durationMs;
+    }
+    attachments.push(attachment);
+  }
+  return attachments;
 }
 
 function mapMessageType(

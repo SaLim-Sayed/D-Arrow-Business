@@ -113,6 +113,7 @@ export function useMessages(conversationId: string | undefined) {
 
       if (payload.audio && !parentMessageId) {
         localObjectUrl = URL.createObjectURL(payload.audio.blob);
+        const previewUrl = localObjectUrl;
         setMessages((prev) => [
           ...prev,
           {
@@ -124,10 +125,10 @@ export function useMessages(conversationId: string | undefined) {
             createdAt: new Date().toISOString(),
             attachments: [
               {
-                url: localObjectUrl,
+                url: previewUrl,
                 name: `voice-${Date.now()}.webm`,
                 mimeType: payload.audio!.blob.type?.startsWith("audio/")
-                  ? payload.audio!.blob.type.split(";")[0]
+                  ? payload.audio!.blob.type.split(";")[0] || "audio/webm"
                   : "audio/webm",
                 sizeBytes: payload.audio!.blob.size,
                 durationMs: Math.max(0, Math.round(payload.audio!.durationMs)),
