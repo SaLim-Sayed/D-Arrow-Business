@@ -3,6 +3,13 @@ import { initReactI18next } from "react-i18next";
 import HttpBackend from "i18next-http-backend";
 import LanguageDetector from "i18next-browser-languagedetector";
 
+function applyDocumentDirection(lng: string | undefined) {
+  const language = lng || i18n.language || "en";
+  const dir = language.toLowerCase().startsWith("ar") ? "rtl" : "ltr";
+  document.documentElement.dir = dir;
+  document.documentElement.lang = language;
+}
+
 i18n
   .use(HttpBackend)
   .use(LanguageDetector)
@@ -24,10 +31,9 @@ i18n
     },
   });
 
-i18n.on("languageChanged", (lng) => {
-  const dir = lng === "ar" ? "rtl" : "ltr";
-  document.documentElement.dir = dir;
-  document.documentElement.lang = lng;
-});
+// languageChanged does not run on first load — set dir immediately too.
+applyDocumentDirection(i18n.language);
+i18n.on("initialized", () => applyDocumentDirection(i18n.language));
+i18n.on("languageChanged", applyDocumentDirection);
 
 export default i18n;

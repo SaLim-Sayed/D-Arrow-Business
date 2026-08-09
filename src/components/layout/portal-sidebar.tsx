@@ -35,6 +35,7 @@ export function PortalSidebar({ portal }: PortalSidebarProps) {
   const meta = PORTAL_META[portal];
   const isRtl = i18n.dir() === "rtl";
   const portals = useAccessiblePortals();
+  // Point toward the content when collapsed (expand), toward the edge when open (collapse).
   const CollapseIcon = sidebarCollapsed
     ? isRtl
       ? ChevronLeft
@@ -42,6 +43,9 @@ export function PortalSidebar({ portal }: PortalSidebarProps) {
     : isRtl
       ? ChevronRight
       : ChevronLeft;
+  const expandLabel = sidebarCollapsed
+    ? t("actions.expand")
+    : t("actions.collapse");
 
   return (
     <aside
@@ -49,21 +53,21 @@ export function PortalSidebar({ portal }: PortalSidebarProps) {
         "fixed inset-y-0 start-0 z-30 hidden md:flex flex-col",
         "border-e border-default-100 bg-sidebar text-sidebar-foreground",
         "transition-all duration-300 shadow-premium overflow-y-auto",
-        sidebarCollapsed ? "w-20" : "w-64"
+        sidebarCollapsed ? "w-[5.5rem]" : "w-64"
       )}
     >
       <div
         className={cn(
-          "relative flex border-b border-default-100 transition-all duration-300",
+          "relative flex items-center border-b border-default-100 transition-all duration-300",
           sidebarCollapsed
-            ? "h-auto flex-col items-center gap-2 py-4 px-2"
-            : "h-20 items-center justify-between gap-2 px-4"
+            ? "h-16 justify-center gap-1 px-1.5"
+            : "h-20 justify-between gap-2 px-4"
         )}
       >
         {sidebarCollapsed ? (
-          <>
+          <div className="flex items-center justify-center gap-1">
             <Tooltip
-              content={t("portals.allApps")}
+              content={t(meta.titleKey)}
               placement={isRtl ? "left" : "right"}
             >
               <Logo
@@ -71,19 +75,25 @@ export function PortalSidebar({ portal }: PortalSidebarProps) {
                 variant="icon"
                 to="/"
                 title={t("portals.allApps")}
-                className="w-10 shrink-0"
+                className="h-9 w-9 shrink-0 [&_img]:h-9"
               />
             </Tooltip>
-            <Button
-              isIconOnly
-              variant="flat"
-              size="sm"
-              className="h-8 w-8 shrink-0 bg-default-100/50 hover:bg-default-200/50"
-              onPress={toggleSidebar}
+            <Tooltip
+              content={expandLabel}
+              placement={isRtl ? "left" : "right"}
             >
-              <CollapseIcon className="h-5 w-5" />
-            </Button>
-          </>
+              <Button
+                isIconOnly
+                variant="flat"
+                size="sm"
+                className="h-8 w-8 min-w-8 shrink-0 bg-default-100/50 hover:bg-default-200/50"
+                aria-label={expandLabel}
+                onPress={toggleSidebar}
+              >
+                <CollapseIcon className="h-4 w-4" />
+              </Button>
+            </Tooltip>
+          </div>
         ) : (
           <>
             <div className="flex min-w-0 flex-1 flex-col gap-0.5">
@@ -92,21 +102,24 @@ export function PortalSidebar({ portal }: PortalSidebarProps) {
                 variant="full"
                 to="/"
                 title={t("portals.allApps")}
-                className="w-full min-w-[240px] h-20"
+                className="h-16 w-full min-w-0 max-w-full"
               />
               <span className="truncate text-[10px] font-black uppercase tracking-[0.2em] text-primary/80">
                 {t(meta.titleKey)}
               </span>
             </div>
-            <Button
-              isIconOnly
-              variant="flat"
-              size="sm"
-              className="ms-auto h-8 w-8 shrink-0 bg-default-100/50 hover:bg-default-200/50"
-              onPress={toggleSidebar}
-            >
-              <CollapseIcon className="h-5 w-5" />
-            </Button>
+            <Tooltip content={expandLabel} placement={isRtl ? "left" : "right"}>
+              <Button
+                isIconOnly
+                variant="flat"
+                size="sm"
+                className="ms-auto h-8 w-8 shrink-0 bg-default-100/50 hover:bg-default-200/50"
+                aria-label={expandLabel}
+                onPress={toggleSidebar}
+              >
+                <CollapseIcon className="h-5 w-5" />
+              </Button>
+            </Tooltip>
           </>
         )}
       </div>

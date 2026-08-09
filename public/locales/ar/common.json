@@ -77,7 +77,9 @@
     "loading": "جارٍ التحميل...",
     "noResults": "لا توجد نتائج",
     "viewAll": "عرض الكل",
-    "export": "تصدير"
+    "export": "تصدير",
+    "expand": "توسيع الشريط الجانبي",
+    "collapse": "طي الشريط الجانبي"
   },
   "language": {
     "en": "English",

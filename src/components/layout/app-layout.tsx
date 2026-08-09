@@ -27,7 +27,7 @@ export function AppLayout() {
       <div
         className={cn(
           "flex min-h-screen flex-col transition-[padding] duration-300",
-          showSidebar && (sidebarCollapsed ? "md:ps-20" : "md:ps-64")
+          showSidebar && (sidebarCollapsed ? "md:ps-[5.5rem]" : "md:ps-64")
         )}
       >
         <Header

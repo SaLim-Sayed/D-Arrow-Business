@@ -67,7 +67,7 @@ export function Header({
         "inset-x-0 transition-[inset] duration-300",
         hasPortalSidebar &&
           (sidebarCollapsed
-            ? "md:inset-x-auto md:start-20 md:end-0"
+            ? "md:inset-x-auto md:start-[5.5rem] md:end-0"
             : "md:inset-x-auto md:start-64 md:end-0")
       )}
     >
