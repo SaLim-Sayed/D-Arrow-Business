@@ -39,6 +39,7 @@ import type {
   QuotationFormDraft,
   QuotationLineItem,
   QuotationRecipientTitle,
+  QuotationValidityUnit,
 } from "../types/quotation.types";
 import { QUOTATION_RECIPIENT_TITLES } from "../utils/quotation-recipient-title";
 import {
@@ -47,10 +48,14 @@ import {
   createCustomLine,
   createDefaultQuotationFormDraft,
   createLineFromCatalogOption,
+  defaultDurationForUnit,
   lineDisplayDescription,
   normalizeQuotationDraft,
+  QUOTATION_VALIDITY_MAX,
+  QUOTATION_VALIDITY_UNITS,
   updateLineDescription,
   updateLineName,
+  validityUnitKey,
 } from "../utils/quotation-form-state";
 import {
   useQuotationsQuery,
@@ -112,7 +117,12 @@ export function QuotationBuilderForm() {
 
   const [quoteNumber, setQuoteNumber] = useState(defaultDraft.quoteNumber);
   const [quoteDateIso, setQuoteDateIso] = useState(defaultDraft.quoteDateIso);
-  const [validityMonths, setValidityMonths] = useState(defaultDraft.validityMonths);
+  const [validityDuration, setValidityDuration] = useState(
+    defaultDraft.validityDuration
+  );
+  const [validityUnit, setValidityUnit] = useState<QuotationValidityUnit>(
+    defaultDraft.validityUnit
+  );
   const [clientName, setClientName] = useState("");
   const [clientCr, setClientCr] = useState("");
   const [recipientTitle, setRecipientTitle] =
@@ -142,13 +152,12 @@ export function QuotationBuilderForm() {
   const defaultNotes = useMemo(
     () =>
       t("quotation.pdf.validityNote", {
-        months: validityMonths,
-        unit:
-          validityMonths === 1
-            ? t("quotation.pdf.month")
-            : t("quotation.pdf.months"),
+        duration: validityDuration,
+        unit: t(
+          `quotation.pdf.${validityUnitKey(validityDuration, validityUnit)}`
+        ),
       }),
-    [t, validityMonths]
+    [t, validityDuration, validityUnit]
   );
 
   useEffect(() => {
@@ -181,7 +190,8 @@ export function QuotationBuilderForm() {
     return {
       quoteNumber,
       quoteDate: formatQuotationDateFromIso(quoteDateIso),
-      validityMonths,
+      validityDuration,
+      validityUnit,
       company: buildCompanyInfo(company),
       client: {
         name: clientName,
@@ -198,7 +208,8 @@ export function QuotationBuilderForm() {
     lines,
     quoteNumber,
     quoteDateIso,
-    validityMonths,
+    validityDuration,
+    validityUnit,
     notesValue,
     defaultNotes,
     company,
@@ -214,6 +225,15 @@ export function QuotationBuilderForm() {
     () => calculateQuotationTotals(quotationData),
     [quotationData]
   );
+
+  const handleValidityUnitChange = (unit: QuotationValidityUnit) => {
+    setValidityUnit(unit);
+    setValidityDuration((prev) =>
+      prev >= 1 && prev <= QUOTATION_VALIDITY_MAX[unit]
+        ? prev
+        : defaultDurationForUnit(unit)
+    );
+  };
 
   const onContactSelect = (id: string) => {
     setSelectedContactId(id);
@@ -251,7 +271,8 @@ export function QuotationBuilderForm() {
     const normalized = normalizeQuotationDraft(draft, activePrices);
     setQuoteNumber(normalized.quoteNumber);
     setQuoteDateIso(normalized.quoteDateIso);
-    setValidityMonths(normalized.validityMonths);
+    setValidityDuration(normalized.validityDuration);
+    setValidityUnit(normalized.validityUnit);
     setClientName(normalized.clientName);
     setClientCr(normalized.clientCr);
     setRecipientTitle(normalized.recipientTitle ?? "mr");
@@ -269,7 +290,8 @@ export function QuotationBuilderForm() {
   const buildDraft = (): QuotationFormDraft => ({
     quoteNumber,
     quoteDateIso,
-    validityMonths,
+    validityDuration,
+    validityUnit,
     clientName,
     clientCr,
     recipientTitle,
@@ -358,7 +380,8 @@ export function QuotationBuilderForm() {
             vatRate: quotationData.vatRate,
             pricesIncludeVat: quotationData.pricesIncludeVat,
             notes: quotationData.notes,
-            validityMonths: quotationData.validityMonths,
+            validityDuration: quotationData.validityDuration,
+            validityUnit: quotationData.validityUnit,
             items: quotationData.items.map((item) => ({
               nameAr: item.nameAr,
               nameEn: item.nameEn,
@@ -489,12 +512,34 @@ export function QuotationBuilderForm() {
                 className="w-full"
               />
               <Input
-                label={t("quotation.validityMonths")}
+                label={t("quotation.validityDuration")}
                 type="number"
                 min={1}
-                max={12}
-                value={String(validityMonths)}
-                onValueChange={(v) => setValidityMonths(Number(v) || 3)}
+                max={QUOTATION_VALIDITY_MAX[validityUnit]}
+                value={String(validityDuration)}
+                onValueChange={(v) =>
+                  setValidityDuration(
+                    Number(v) || defaultDurationForUnit(validityUnit)
+                  )
+                }
+                endContent={
+                  <select
+                    aria-label={t("quotation.validityUnit")}
+                    className="bg-transparent text-small text-default-500 outline-none"
+                    value={validityUnit}
+                    onChange={(e) =>
+                      handleValidityUnitChange(
+                        e.target.value as QuotationValidityUnit
+                      )
+                    }
+                  >
+                    {QUOTATION_VALIDITY_UNITS.map((unit) => (
+                      <option key={unit} value={unit}>
+                        {t(`quotation.validityUnitOption.${unit}`)}
+                      </option>
+                    ))}
+                  </select>
+                }
               />
               <Input
                 label={t("quotation.vatRate")}

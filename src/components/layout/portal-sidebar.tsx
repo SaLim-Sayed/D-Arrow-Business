@@ -12,6 +12,7 @@ import { NavLink } from "react-router-dom";
 import type { PortalId } from "@/lib/portal-permissions";
 import { usePortalNav } from "@/features/portals/hooks/use-portal-nav";
 import { useAccessiblePortals } from "@/features/portals/hooks/use-portals";
+import { ChatInboxBadge } from "@/features/chat/components/ChatInboxBadge";
 
 const PORTAL_META: Record<PortalId, { titleKey: string }> = {
   tasks: { titleKey: "portals.tasks.short" },
@@ -145,7 +146,7 @@ export function PortalSidebar({ portal }: PortalSidebarProps) {
                   end={item.end}
                   className={({ isActive }) =>
                     cn(
-                      "group flex items-center gap-3 rounded-2xl px-4 py-3.5 text-sm font-medium transition-all duration-300",
+                      "group relative flex items-center gap-3 rounded-2xl px-4 py-3.5 text-sm font-medium transition-all duration-300",
                       "active:scale-[0.98]",
                       isActive
                         ? "bg-primary text-primary-foreground shadow-sm hover:bg-primary/90 hover:scale-[1.02]"
@@ -175,6 +176,16 @@ export function PortalSidebar({ portal }: PortalSidebarProps) {
                         >
                           {label}
                         </span>
+                      )}
+                      {item.path === "/chat" && (
+                        <ChatInboxBadge
+                          collapsed={sidebarCollapsed}
+                          className={
+                            isActive && !sidebarCollapsed
+                              ? "bg-white text-primary"
+                              : undefined
+                          }
+                        />
                       )}
                     </>
                   )}

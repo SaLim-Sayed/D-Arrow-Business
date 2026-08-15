@@ -4,7 +4,7 @@ import { useAuthStore } from "@/stores/auth.store";
 import { ConversationsService } from "../api/conversations.service";
 import type { Conversation } from "../types/chat.types";
 
-export function useConversations() {
+export function useConversations(enabled = true) {
   const { companyId } = useCompany();
   const userId = useAuthStore((s) => s.user?.id);
   const [conversations, setConversations] = useState<Conversation[]>([]);
@@ -12,7 +12,7 @@ export function useConversations() {
   const [reads, setReads] = useState<Record<string, string>>({});
 
   useEffect(() => {
-    if (!companyId || !userId) {
+    if (!enabled || !companyId || !userId) {
       setConversations([]);
       setIsLoading(false);
       return;
@@ -28,10 +28,10 @@ export function useConversations() {
       }
     );
     return unsub;
-  }, [companyId, userId]);
+  }, [enabled, companyId, userId]);
 
   useEffect(() => {
-    if (!companyId || !userId) {
+    if (!enabled || !companyId || !userId) {
       setReads({});
       return;
     }
@@ -42,7 +42,7 @@ export function useConversations() {
       userId,
       setReads
     );
-  }, [companyId, userId, conversations]);
+  }, [enabled, companyId, userId, conversations]);
 
   return { conversations, reads, isLoading, companyId, userId };
 }

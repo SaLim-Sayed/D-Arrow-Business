@@ -10,12 +10,58 @@ import type {
   LegacyQuotationFormDraft,
   QuotationDraftLine,
   QuotationFormDraft,
+  QuotationValidityUnit,
 } from "../types/quotation.types";
 import type { ProductPrice } from "@/features/companies/types/pricing.types";
 import { itemDescription } from "./quotation-direction";
 
 export const QUOTATION_CUSTOM_SOURCE = "custom";
 export const QUOTATION_BASE_SOURCE = "base";
+
+export const QUOTATION_VALIDITY_UNITS: QuotationValidityUnit[] = [
+  "day",
+  "month",
+];
+export const DEFAULT_VALIDITY_UNIT: QuotationValidityUnit = "day";
+export const DEFAULT_VALIDITY_DURATION = 30;
+/** Upper bound per unit for the validity input */
+export const QUOTATION_VALIDITY_MAX: Record<QuotationValidityUnit, number> = {
+  day: 365,
+  month: 12,
+};
+
+/** Translation key (under `quotation.pdf`) for the validity unit label */
+export function validityUnitKey(
+  duration: number,
+  unit: QuotationValidityUnit
+): "day" | "days" | "month" | "months" {
+  if (unit === "day") return duration === 1 ? "day" : "days";
+  return duration === 1 ? "month" : "months";
+}
+
+/** Sensible duration when switching units, kept inside that unit's range */
+export function defaultDurationForUnit(unit: QuotationValidityUnit): number {
+  return unit === "day" ? DEFAULT_VALIDITY_DURATION : 3;
+}
+
+/** Read validity from any draft shape, migrating pre-unit `validityMonths`. */
+function resolveValidity(
+  draft: Partial<QuotationFormDraft> & { validityMonths?: number }
+): Pick<QuotationFormDraft, "validityDuration" | "validityUnit"> {
+  if (typeof draft.validityDuration === "number") {
+    return {
+      validityDuration: draft.validityDuration,
+      validityUnit: draft.validityUnit ?? DEFAULT_VALIDITY_UNIT,
+    };
+  }
+  if (typeof draft.validityMonths === "number") {
+    return { validityDuration: draft.validityMonths, validityUnit: "month" };
+  }
+  return {
+    validityDuration: DEFAULT_VALIDITY_DURATION,
+    validityUnit: DEFAULT_VALIDITY_UNIT,
+  };
+}
 
 function newLineId(): string {
   return `line-${crypto.randomUUID()}`;
@@ -60,7 +106,8 @@ export function createDefaultQuotationFormDraft(): QuotationFormDraft {
   return {
     quoteNumber: formatQuoteNumber(),
     quoteDateIso: toQuotationDateIso(),
-    validityMonths: 3,
+    validityDuration: DEFAULT_VALIDITY_DURATION,
+    validityUnit: DEFAULT_VALIDITY_UNIT,
     clientName: "",
     clientCr: "",
     recipientTitle: "mr",
@@ -111,9 +158,10 @@ export function normalizeQuotationDraft(
 ): QuotationFormDraft {
   if (!isLegacyDraft(raw) && Array.isArray((raw as QuotationFormDraft).lines)) {
     const draft = raw as QuotationFormDraft;
-    return {
+    const normalized: QuotationFormDraft = {
       ...createDefaultQuotationFormDraft(),
       ...draft,
+      ...resolveValidity(draft),
       lines:
         draft.lines.length > 0
           ? draft.lines.map((line) => ({
@@ -125,6 +173,8 @@ export function normalizeQuotationDraft(
           : [createBasePackageLine()],
       recipientTitle: draft.recipientTitle ?? "mr",
     };
+    delete normalized.validityMonths;
+    return normalized;
   }
 
   if (!isLegacyDraft(raw)) {
@@ -195,7 +245,7 @@ export function normalizeQuotationDraft(
   return {
     quoteNumber: legacy.quoteNumber || formatQuoteNumber(),
     quoteDateIso: legacy.quoteDateIso || toQuotationDateIso(),
-    validityMonths: legacy.validityMonths ?? 3,
+    ...resolveValidity(legacy),
     clientName: legacy.clientName ?? "",
     clientCr: legacy.clientCr ?? "",
     recipientTitle: legacy.recipientTitle ?? "mr",

@@ -26,6 +26,8 @@ export interface Lead extends CrmBaseFields {
   phone: string;
   status: LeadStatus;
   source?: LeadSource | string;
+  /** Free-text source, used when `source` is "other" */
+  sourceOther?: string;
   priority?: LeadPriority;
   assignedTo: string | null;
   contactId?: string | null;

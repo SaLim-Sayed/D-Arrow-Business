@@ -10,7 +10,7 @@ import {
   SelectItem,
   Textarea,
 } from "@heroui/react";
-import { useForm, Controller } from "react-hook-form";
+import { useForm, useWatch, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
@@ -39,6 +39,7 @@ export function LeadFormModal({ isOpen, onOpenChange, lead }: LeadFormModalProps
     handleSubmit,
     control,
     reset,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm<LeadFormValues>({
     resolver: zodResolver(leadFormSchema),
@@ -49,11 +50,14 @@ export function LeadFormModal({ isOpen, onOpenChange, lead }: LeadFormModalProps
       company: "",
       status: "new",
       source: "other",
+      sourceOther: "",
       priority: "medium",
       assignedTo: null,
       notes: "",
     },
   });
+
+  const source = useWatch({ control, name: "source" });
 
   useEffect(() => {
     if (!isOpen) return;
@@ -65,6 +69,7 @@ export function LeadFormModal({ isOpen, onOpenChange, lead }: LeadFormModalProps
         company: lead.company,
         status: normalizeLeadStatus(lead.status),
         source: (lead.source as LeadFormValues["source"]) ?? "other",
+        sourceOther: lead.sourceOther ?? "",
         priority: lead.priority ?? "medium",
         assignedTo: lead.assignedTo,
         notes: lead.notes,
@@ -77,6 +82,7 @@ export function LeadFormModal({ isOpen, onOpenChange, lead }: LeadFormModalProps
         company: "",
         status: "new",
         source: "other",
+        sourceOther: "",
         priority: "medium",
         assignedTo: null,
         notes: "",
@@ -142,6 +148,7 @@ export function LeadFormModal({ isOpen, onOpenChange, lead }: LeadFormModalProps
                       onSelectionChange={(keys) => {
                         const v = Array.from(keys)[0] as string;
                         field.onChange(v);
+                        if (v !== "other") setValue("sourceOther", "");
                       }}
                     >
                       {LEAD_SOURCES.map((s) => (
@@ -170,6 +177,15 @@ export function LeadFormModal({ isOpen, onOpenChange, lead }: LeadFormModalProps
                   )}
                 />
               </div>
+              {source === "other" && (
+                <Input
+                  label={t("leads.form.sourceOther")}
+                  placeholder={t("leads.form.sourceOtherPlaceholder")}
+                  {...register("sourceOther")}
+                  isInvalid={!!errors.sourceOther}
+                  errorMessage={errors.sourceOther?.message}
+                />
+              )}
               {isEdit && (
                 <Controller
                   name="status"

@@ -161,6 +161,14 @@
       "attendance_completed": {
         "title": "نهاية الحضور",
         "message": "سجّل {{employeeName}} الخروج. إجمالي الوقت: {{totalTime}}."
+      },
+      "chat_mention": {
+        "title": "{{name}} أشار إليك",
+        "message": "{{message}}"
+      },
+      "chat_message": {
+        "title": "{{name}} أرسل رسالة",
+        "message": "{{message}}"
       }
     }
   }

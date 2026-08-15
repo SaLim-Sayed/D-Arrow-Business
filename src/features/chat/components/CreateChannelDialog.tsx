@@ -24,11 +24,13 @@ import { ChannelMemberPicker } from "./ChannelMemberPicker";
 interface CreateChannelDialogProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
+  onSelectConversation?: (conversationId: string) => void;
 }
 
 export function CreateChannelDialog({
   isOpen,
   onOpenChange,
+  onSelectConversation,
 }: CreateChannelDialogProps) {
   const { t } = useTranslation("chat");
   const navigate = useNavigate();
@@ -78,7 +80,8 @@ export function CreateChannelDialog({
       });
       reset();
       onOpenChange(false);
-      navigate(`/chat/${channelId}`);
+      if (onSelectConversation) onSelectConversation(channelId);
+      else navigate(`/chat/${channelId}`);
     } catch (error) {
       console.error(error);
       const message =

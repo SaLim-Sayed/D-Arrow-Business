@@ -33,7 +33,7 @@ import { CrmChatter } from "../components/shared/CrmChatter";
 import { useAllUsers } from "@/features/users/hooks/use-users";
 import { LeadFormModal } from "../components/LeadFormModal";
 import { LeadStatusChip } from "../components/LeadStatusChip";
-import { LEAD_STATUSES, normalizeLeadStatus } from "../constants/lead-workflow";
+import { LEAD_STATUSES, leadSourceLabel, normalizeLeadStatus } from "../constants/lead-workflow";
 import { CrmRecordLayout, CrmRecordHeader } from "../components/CrmRecordLayout";
 import { CrmStageBar } from "../components/CrmStageBar";
 import { CrmSmartButtons } from "../components/CrmSmartButtons";
@@ -168,7 +168,7 @@ export function LeadDetailPage() {
                   </FieldBox>
                 )}
                 {lead.source && (
-                  <FieldBox label={t("leads.form.source")}>{t(`leads.source.${lead.source}`)}</FieldBox>
+                  <FieldBox label={t("leads.form.source")}>{leadSourceLabel(lead, t)}</FieldBox>
                 )}
                 <FieldBox label={t("leads.form.notes")} className="md:col-span-2">
                   <p className="text-default-600 whitespace-pre-wrap">{lead.notes || "—"}</p>

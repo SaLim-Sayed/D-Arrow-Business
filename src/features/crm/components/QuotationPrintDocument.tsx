@@ -3,6 +3,7 @@ import { QUOTATION_THEME } from "../constants/quotation-theme";
 import { calculateQuotationTotals } from "../utils/quotation-calculations";
 import { itemServiceName, itemDescription, useQuotationLayout } from "../utils/quotation-direction";
 import { recipientTitleLabel } from "../utils/quotation-recipient-title";
+import { validityUnitKey } from "../utils/quotation-form-state";
 import { MoneyAmount } from "@/components/shared/riyal-symbol";
 import {
   QuotationLetterheadHeader,
@@ -115,8 +116,8 @@ export function QuotationPrintDocument({ data }: QuotationPrintDocumentProps) {
   const priceDirection = isAr ? "rtl" : "ltr";
 
   const validityNote = tPdf("validityNote", {
-    months: data.validityMonths,
-    unit: data.validityMonths === 1 ? tPdf("month") : tPdf("months"),
+    duration: data.validityDuration,
+    unit: tPdf(validityUnitKey(data.validityDuration, data.validityUnit)),
   });
   const notesText = data.notes?.trim() || validityNote;
 

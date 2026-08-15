@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useAuthStore } from "@/stores/auth.store";
 import { useAllUsers } from "@/features/users/hooks/use-users";
 import { useConversations } from "../hooks/use-conversations";
@@ -9,6 +9,7 @@ import type { User } from "@/features/auth/types/auth.types";
 
 export function ChatPage() {
   const { conversationId } = useParams<{ conversationId?: string }>();
+  const navigate = useNavigate();
   const userId = useAuthStore((s) => s.user?.id);
   const { conversations, reads, isLoading } = useConversations();
   const { data: users = [] } = useAllUsers();
@@ -25,6 +26,7 @@ export function ChatPage() {
       ? activeConversation.memberIds.find((id) => id !== userId)
       : undefined;
   const peer = peerId ? usersById[peerId] : undefined;
+  const openConversation = (id: string) => navigate(`/chat/${id}`);
 
   return (
     <div className="flex h-full min-h-0 overflow-hidden border-y border-default-100/80 bg-content1 md:rounded-3xl md:border md:shadow-premium">
@@ -35,6 +37,7 @@ export function ChatPage() {
           isLoading={isLoading}
           activeId={conversationId}
           usersById={usersById}
+          onSelectConversation={openConversation}
         />
       </aside>
       <main className="flex min-h-0 min-w-0 flex-1 flex-col chat-surface">
@@ -45,6 +48,7 @@ export function ChatPage() {
               reads={reads}
               isLoading={isLoading}
               usersById={usersById}
+              onSelectConversation={openConversation}
             />
           </div>
         ) : null}

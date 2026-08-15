@@ -17,11 +17,13 @@ import { usePublicChannels, useChannelActions } from "../hooks/use-channels";
 interface BrowseChannelsDialogProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
+  onSelectConversation?: (conversationId: string) => void;
 }
 
 export function BrowseChannelsDialog({
   isOpen,
   onOpenChange,
+  onSelectConversation,
 }: BrowseChannelsDialogProps) {
   const { t } = useTranslation("chat");
   const navigate = useNavigate();
@@ -46,7 +48,8 @@ export function BrowseChannelsDialog({
       await joinChannel(channelId);
       onOpenChange(false);
       setQuery("");
-      navigate(`/chat/${channelId}`);
+      if (onSelectConversation) onSelectConversation(channelId);
+      else navigate(`/chat/${channelId}`);
     } catch (error) {
       console.error(error);
       toast.error(t("errors.joinFailed"));

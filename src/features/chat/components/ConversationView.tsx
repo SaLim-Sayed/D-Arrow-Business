@@ -11,6 +11,7 @@ import {
   MessageSquare,
   UserPlus,
   Users,
+  X,
 } from "lucide-react";
 import { toast } from "sonner";
 import type { User } from "@/features/auth/types/auth.types";
@@ -19,7 +20,10 @@ import { isAdminRole } from "@/lib/permissions";
 import { cn } from "@/lib/utils";
 import { useAllUsers } from "@/features/users/hooks/use-users";
 import { useCompany } from "@/features/companies/context/company-context";
-import { notifyMentions } from "../api/mention-notifications";
+import {
+  notifyChatMessage,
+  previewFromComposer,
+} from "../api/chat-notifications";
 import { useMessages } from "../hooks/use-messages";
 import { useTyping, usePresenceMap } from "../hooks/use-presence";
 import { useChannelActions } from "../hooks/use-channels";
@@ -43,12 +47,18 @@ interface ConversationViewProps {
   conversationId?: string;
   conversation?: Conversation;
   peer?: User;
+  onBack?: () => void;
+  onClose?: () => void;
+  showBack?: boolean;
 }
 
 export function ConversationView({
   conversationId,
   conversation,
   peer,
+  onBack,
+  onClose,
+  showBack,
 }: ConversationViewProps) {
   const { t, i18n } = useTranslation("chat");
   const navigate = useNavigate();
@@ -176,11 +186,16 @@ export function ConversationView({
     setThreadRoot(null);
   }, [conversationId]);
 
+  const goBack = () => {
+    if (onBack) onBack();
+    else navigate("/chat");
+  };
+
   const leave = async () => {
     if (!channel) return;
     try {
       await leaveChannel(channel.id);
-      navigate("/chat");
+      goBack();
     } catch (error) {
       console.error(error);
       toast.error(t("errors.leaveFailed"));
@@ -215,9 +230,9 @@ export function ConversationView({
           size="sm"
           variant="light"
           isIconOnly
-          className="md:hidden"
+          className={showBack ? undefined : "md:hidden"}
           aria-label={t("nav.inbox")}
-          onPress={() => navigate("/chat")}
+          onPress={goBack}
         >
           <ChevronLeft className="h-5 w-5 rtl:rotate-180" />
         </Button>
@@ -316,6 +331,19 @@ export function ConversationView({
               {t("channels.leave")}
             </Button>
           </div>
+        )}
+        {onClose && (
+          <Button
+            size="sm"
+            variant="light"
+            isIconOnly
+            radius="full"
+            className="shrink-0"
+            aria-label={t("popup.close")}
+            onPress={onClose}
+          >
+            <X className="h-4 w-4" />
+          </Button>
         )}
       </header>
 
@@ -461,18 +489,17 @@ export function ConversationView({
             });
             scrollToBottom("smooth");
 
-            if (companyId && conversationId && userId && userIds.length) {
+            if (companyId && conversation && userId) {
               // Not awaited: the message is already delivered, and a failed
               // notification must not surface as a send failure.
-              void notifyMentions({
+              void notifyChatMessage({
                 companyId,
-                conversationId,
+                conversation,
                 senderId: userId,
+                senderName: senderName ?? "",
                 mentionedUserIds: userIds,
-                title: t("notifications.mentionedYou", {
-                  name: senderName ?? "",
-                }),
-                preview: body,
+                mentionsEveryone: everyone,
+                preview: previewFromComposer({ body, files, audio }),
               });
             }
           }}
@@ -481,10 +508,12 @@ export function ConversationView({
 
       <ThreadPanel
         conversationId={conversationId}
+        conversation={conversation}
         rootMessage={threadRoot}
         candidates={mentionCandidates}
         usersById={usersById}
         onClose={() => setThreadRoot(null)}
+        variant={showBack ? "overlay" : "drawer"}
       />
     </div>
   );

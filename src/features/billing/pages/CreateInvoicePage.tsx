@@ -58,7 +58,8 @@ export default function CreateInvoicePage() {
       vatRate: number;
       pricesIncludeVat: boolean;
       notes?: string;
-      validityMonths: number;
+      validityDuration: number;
+      validityUnit: "day" | "month";
       items: Array<{
         nameAr?: string;
         nameEn?: string;
@@ -133,7 +134,8 @@ export default function CreateInvoicePage() {
         vatRate: fromQuotation.data.vatRate,
         pricesIncludeVat: fromQuotation.data.pricesIncludeVat,
         notes: fromQuotation.data.notes,
-        validityMonths: fromQuotation.data.validityMonths,
+        validityDuration: fromQuotation.data.validityDuration,
+        validityUnit: fromQuotation.data.validityUnit,
         items: fromQuotation.data.items,
       });
       const contact = contacts.find((c) => c.id === fromQuotation.contactId);

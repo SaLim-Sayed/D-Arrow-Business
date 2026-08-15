@@ -21,6 +21,17 @@ export const LEAD_SOURCES: LeadSource[] = [
 
 export const LEAD_PRIORITIES: LeadPriority[] = ["low", "medium", "high"];
 
+/** Display label for a lead source, preferring the free-text value on "other". */
+export function leadSourceLabel(
+  lead: { source?: string; sourceOther?: string },
+  t: (key: string, fallback: string) => string
+): string {
+  const custom = lead.sourceOther?.trim();
+  if (lead.source === "other" && custom) return custom;
+  if (!lead.source) return "";
+  return t(`leads.source.${lead.source}`, lead.source);
+}
+
 /** Legacy Firestore values */
 export function normalizeLeadStatus(status: string): LeadStatus {
   if (status === "proposal") return "proposal_sent";

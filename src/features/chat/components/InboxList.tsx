@@ -24,6 +24,7 @@ import {
   Radio,
   Search,
   Users,
+  X,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useAuthStore } from "@/stores/auth.store";
@@ -35,21 +36,9 @@ import { PresenceDot } from "./PresenceDot";
 import { CreateChannelDialog } from "./CreateChannelDialog";
 import { BrowseChannelsDialog } from "./BrowseChannelsDialog";
 import { isChannel, type Conversation } from "../types/chat.types";
+import { isUnreadConversation } from "../utils/unread";
 import type { User } from "@/features/auth/types/auth.types";
 import { cn } from "@/lib/utils";
-
-function isUnread(
-  conversation: Conversation,
-  userId: string | undefined,
-  lastReadAt: string | undefined
-): boolean {
-  if (!userId || !conversation.lastMessageAt) return false;
-  if (!lastReadAt) return true;
-  return (
-    new Date(conversation.lastMessageAt).getTime() >
-    new Date(lastReadAt).getTime()
-  );
-}
 
 interface InboxListProps {
   conversations: Conversation[];
@@ -57,6 +46,8 @@ interface InboxListProps {
   isLoading: boolean;
   activeId?: string;
   usersById: Record<string, User>;
+  onSelectConversation?: (conversationId: string) => void;
+  onClose?: () => void;
 }
 
 export function InboxList({
@@ -65,6 +56,8 @@ export function InboxList({
   isLoading,
   activeId,
   usersById,
+  onSelectConversation,
+  onClose,
 }: InboxListProps) {
   const { t, i18n } = useTranslation("chat");
   const navigate = useNavigate();
@@ -128,6 +121,11 @@ export function InboxList({
       });
   }, [users, userId, query, presence]);
 
+  const openConversation = (conversationId: string) => {
+    if (onSelectConversation) onSelectConversation(conversationId);
+    else navigate(`/chat/${conversationId}`);
+  };
+
   const startDm = async (other: User) => {
     if (!companyId || !userId) return;
     setStarting(true);
@@ -139,7 +137,7 @@ export function InboxList({
       );
       setOpen(false);
       setQuery("");
-      navigate(`/chat/${conversation.id}`);
+      openConversation(conversation.id);
     } catch (error) {
       console.error(error);
       toast.error(t("errors.startFailed"));
@@ -163,7 +161,7 @@ export function InboxList({
   const renderRow = (conversation: Conversation) => {
     const channel = isChannel(conversation);
     const other = channel ? undefined : otherMember(conversation);
-    const unread = isUnread(conversation, userId, reads[conversation.id]);
+    const unread = isUnreadConversation(conversation, userId, reads[conversation.id]);
     const status = other ? presence[other.id]?.status ?? "offline" : "offline";
     const active = activeId === conversation.id;
     const title = channel ? conversation.name : other?.name ?? t("inbox.you");
@@ -172,7 +170,7 @@ export function InboxList({
       <li key={conversation.id} className="px-2">
         <button
           type="button"
-          onClick={() => navigate(`/chat/${conversation.id}`)}
+          onClick={() => openConversation(conversation.id)}
           className={cn(
             "flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-start transition-all",
             active
@@ -277,6 +275,19 @@ export function InboxList({
                 : t("inbox.emptyHint")}
             </p>
           </div>
+          <div className="flex items-center gap-1">
+            {onClose && (
+              <Button
+                size="sm"
+                variant="light"
+                radius="full"
+                isIconOnly
+                aria-label={t("popup.close")}
+                onPress={onClose}
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            )}
           <Dropdown placement="bottom-end">
             <DropdownTrigger>
               <Button
@@ -314,6 +325,7 @@ export function InboxList({
               </DropdownItem>
             </DropdownMenu>
           </Dropdown>
+          </div>
         </div>
 
         <Input
@@ -471,8 +483,13 @@ export function InboxList({
       <CreateChannelDialog
         isOpen={creatingChannel}
         onOpenChange={setCreatingChannel}
+        onSelectConversation={onSelectConversation}
       />
-      <BrowseChannelsDialog isOpen={browsing} onOpenChange={setBrowsing} />
+      <BrowseChannelsDialog
+        isOpen={browsing}
+        onOpenChange={setBrowsing}
+        onSelectConversation={onSelectConversation}
+      />
     </div>
   );
 }

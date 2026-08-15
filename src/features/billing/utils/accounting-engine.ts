@@ -448,7 +448,8 @@ export function quotationDataToInvoiceForm(input: {
   vatRate: number;
   pricesIncludeVat: boolean;
   notes?: string;
-  validityMonths?: number;
+  validityDuration?: number;
+  validityUnit?: "day" | "month";
   items: Array<{
     nameAr?: string;
     nameEn?: string;
@@ -487,7 +488,9 @@ export function quotationDataToInvoiceForm(input: {
   }, 0);
 
   const issueDate = new Date();
-  const paymentTermDays = (input.validityMonths ?? 1) * 30;
+  const validityDuration = input.validityDuration ?? 30;
+  const paymentTermDays =
+    input.validityUnit === "month" ? validityDuration * 30 : validityDuration;
   const dueDate = new Date(
     issueDate.getTime() + paymentTermDays * 24 * 60 * 60 * 1000
   );

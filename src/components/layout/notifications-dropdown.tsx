@@ -8,7 +8,7 @@ import {
   ScrollShadow,
   Spinner,
 } from "@heroui/react";
-import { Bell, Check, CircleAlert, Briefcase } from "lucide-react";
+import { Bell, Check, CircleAlert, Briefcase, MessageSquare, AtSign } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { formatDistanceToNow } from "date-fns";
 import { ar, enUS } from "date-fns/locale";
@@ -79,6 +79,19 @@ function getLocalizedNotification(
       }
       break;
     }
+    case "chat_mention": {
+      const looksStoredPhrase = /mentioned|أشار/i.test(title);
+      if (looksStoredPhrase) return { title, message };
+      return {
+        title: t("notifications.types.chat_mention.title", { name: title }),
+        message,
+      };
+    }
+    case "chat_message":
+      return {
+        title: t("notifications.types.chat_message.title", { name: title }),
+        message,
+      };
   }
 
   return { title, message };
@@ -115,6 +128,10 @@ export function NotificationsDropdown() {
       case "task_created":
       case "task_updated":
         return <Briefcase className="w-4 h-4 text-primary" />;
+      case "chat_mention":
+        return <AtSign className="w-4 h-4 text-secondary" />;
+      case "chat_message":
+        return <MessageSquare className="w-4 h-4 text-primary" />;
       default:
         return <CircleAlert className="w-4 h-4 text-warning" />;
     }

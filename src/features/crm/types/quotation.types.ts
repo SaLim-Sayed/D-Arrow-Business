@@ -34,10 +34,13 @@ export interface QuotationClientInfo {
 
 export type QuotationRecipientTitle = "mr" | "mrs" | "professor";
 
+export type QuotationValidityUnit = "day" | "month";
+
 export interface QuotationData {
   quoteNumber: string;
   quoteDate: string;
-  validityMonths: number;
+  validityDuration: number;
+  validityUnit: QuotationValidityUnit;
   company: QuotationCompanyInfo;
   client: QuotationClientInfo;
   items: QuotationLineItem[];
@@ -70,7 +73,10 @@ export interface QuotationDraftLine {
 export interface QuotationFormDraft {
   quoteNumber: string;
   quoteDateIso: string;
-  validityMonths: number;
+  validityDuration: number;
+  validityUnit: QuotationValidityUnit;
+  /** @deprecated pre-unit drafts stored months here; read-only for migration */
+  validityMonths?: number;
   clientName: string;
   clientCr: string;
   recipientTitle: QuotationRecipientTitle;

@@ -15,6 +15,7 @@ export const leadFormSchema = z.object({
   source: z
     .enum(["website", "referral", "social", "cold_call", "event", "other"])
     .optional(),
+  sourceOther: z.string().max(60, "Too long").optional(),
   priority: z.enum(["low", "medium", "high"]).optional(),
   assignedTo: z.string().nullable().optional(),
   notes: z.string().optional(),
@@ -30,6 +31,10 @@ export function toCreateLeadDTO(values: LeadFormValues): CreateLeadDTO {
     company: values.company?.trim() ?? "",
     status: values.status ?? "new",
     source: values.source ?? "other",
+    sourceOther:
+      (values.source ?? "other") === "other"
+        ? values.sourceOther?.trim() ?? ""
+        : "",
     priority: values.priority ?? "medium",
     assignedTo: values.assignedTo ?? null,
     notes: values.notes?.trim() ?? "",

@@ -161,6 +161,14 @@
       "attendance_completed": {
         "title": "Attendance Completed",
         "message": "{{employeeName}} has checked out. Total time: {{totalTime}}."
+      },
+      "chat_mention": {
+        "title": "{{name}} mentioned you",
+        "message": "{{message}}"
+      },
+      "chat_message": {
+        "title": "{{name}} sent a message",
+        "message": "{{message}}"
       }
     }
   }

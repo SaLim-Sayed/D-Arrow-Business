@@ -141,6 +141,11 @@
     "noReplies": "لا توجد ردود بعد"
   },
   "notifications": {
-    "mentionedYou": "{{name}} أشار إليك"
+    "mentionedYou": "{{name}} أشار إليك",
+    "newMessage": "{{name}} أرسل رسالة"
+  },
+  "popup": {
+    "close": "إغلاق المحادثة",
+    "openFull": "فتح الشات بالكامل"
   }
 }

@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 import { usePortalNav } from "@/features/portals/hooks/use-portal-nav";
 import type { PortalId } from "@/lib/portal-permissions";
+import { ChatInboxBadge } from "@/features/chat/components/ChatInboxBadge";
 
 interface PortalSubNavProps {
   portal: PortalId;
@@ -36,6 +37,9 @@ export function PortalSubNav({ portal }: PortalSubNavProps) {
             : namespace === "chat"
               ? tChat(labelKey)
               : t(labelKey)}
+          {path === "/chat" && (
+            <ChatInboxBadge className="ms-0 h-4 min-w-4 px-1" />
+          )}
         </NavLink>
       ))}
     </nav>

@@ -8,6 +8,7 @@ import { LanguageSwitcherRow } from "./language-switcher";
 import { getPortalFromPath } from "@/lib/portal-permissions";
 import { usePortalNav } from "@/features/portals/hooks/use-portal-nav";
 import { useAccessiblePortals } from "@/features/portals/hooks/use-portals";
+import { ChatInboxBadge } from "@/features/chat/components/ChatInboxBadge";
 
 export function MobileSidebar() {
   const { t } = useTranslation();
@@ -121,6 +122,13 @@ export function MobileSidebar() {
                   >
                     {label}
                   </span>
+                  {item.path === "/chat" && (
+                    <ChatInboxBadge
+                      className={
+                        isActive ? "bg-white text-primary" : undefined
+                      }
+                    />
+                  )}
                 </>
               )}
             </NavLink>
