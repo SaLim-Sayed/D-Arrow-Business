@@ -8,8 +8,13 @@ import {
   ScrollShadow,
   Spinner,
 } from "@heroui/react";
-import { Bell, Check, CircleAlert, Briefcase, MessageSquare, AtSign, FileCheck } from "lucide-react";
+import { Bell, BellRing, Check, CircleAlert, Briefcase, MessageSquare, AtSign, FileCheck } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
+import {
+  browserNotificationPermission,
+  requestBrowserNotifications,
+} from "@/lib/browser-notifications";
 import { formatDistanceToNow } from "date-fns";
 import { ar, enUS } from "date-fns/locale";
 import { useTranslation } from "react-i18next";
@@ -113,8 +118,16 @@ export function NotificationsDropdown() {
   const { data: notifications, isLoading } = useNotifications();
   const markAsRead = useMarkNotificationAsRead();
   const markAllAsRead = useMarkAllNotificationsAsRead();
+  const [permission, setPermission] = useState(browserNotificationPermission());
 
   const unreadCount = notifications?.filter((n) => !n.isRead).length || 0;
+
+  const handleEnableBrowserAlerts = async () => {
+    const result = await requestBrowserNotifications();
+    setPermission(result);
+    if (result === "granted") toast.success(t("notifications.browserEnabled"));
+    else if (result === "denied") toast.error(t("notifications.browserDenied"));
+  };
 
   const handleNotificationClick = (notification: AppNotification) => {
     if (!notification.isRead) {
@@ -185,6 +198,19 @@ export function NotificationsDropdown() {
               </Button>
             )}
           </div>
+
+          {permission === "default" && (
+            <button
+              type="button"
+              onClick={handleEnableBrowserAlerts}
+              className="flex items-center gap-2 border-b border-default-100 bg-primary/5 px-4 py-2.5 text-start transition-colors hover:bg-primary/10"
+            >
+              <BellRing className="h-4 w-4 shrink-0 text-primary" />
+              <span className="text-xs font-medium text-default-700">
+                {t("notifications.enableBrowser")}
+              </span>
+            </button>
+          )}
 
           {isLoading ? (
             <div className="flex justify-center p-8">

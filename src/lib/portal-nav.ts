@@ -10,7 +10,6 @@ import {
   FileText,
   ScrollText,
   Calendar,
-  CalendarClock,
   CheckSquare,
   Timer,
   TrendingUp,
@@ -41,7 +40,6 @@ export const TASKS_NAV: PortalNavItem[] = [
   { labelKey: "nav.dashboard", path: "/tasks", icon: LayoutDashboard, end: true },
   { labelKey: "nav.tasks", path: "/tasks/work", icon: ListTodo },
   { labelKey: "nav.sprints", path: "/tasks/sprints", icon: Clock },
-  { labelKey: "nav.meetings", path: "/tasks/meetings", icon: CalendarClock },
 ];
 
 export const CRM_NAV: PortalNavItem[] = [

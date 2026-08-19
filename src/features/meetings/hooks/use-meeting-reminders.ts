@@ -12,30 +12,6 @@ import type { Meeting } from "../types/meeting.types";
 
 const CHECK_INTERVAL_MS = 30_000;
 
-export function browserNotificationsSupported(): boolean {
-  return typeof window !== "undefined" && "Notification" in window;
-}
-
-export function browserNotificationPermission(): NotificationPermission | null {
-  return browserNotificationsSupported() ? Notification.permission : null;
-}
-
-export async function requestBrowserNotifications(): Promise<NotificationPermission | null> {
-  if (!browserNotificationsSupported()) return null;
-  if (Notification.permission !== "default") return Notification.permission;
-  return Notification.requestPermission();
-}
-
-function showBrowserNotification(title: string, body: string, tag: string) {
-  if (!browserNotificationsSupported()) return;
-  if (Notification.permission !== "granted") return;
-  try {
-    new Notification(title, { body, tag });
-  } catch {
-    // Some browsers only allow notifications from a service worker — ignore.
-  }
-}
-
 /**
  * Fires meeting reminders for the signed-in user while the app is open.
  *
@@ -78,14 +54,15 @@ export function useMeetingReminders() {
             })
           : t("reminder.body", { title: meeting.title, time });
 
+        // The global notifications subscription turns this into the toast and
+        // the browser alert, so the reminder is delivered like any other alert.
         await NotificationsService.createNotification(companyId, {
           userId,
           title,
           message,
           type: "general",
-          link: "/tasks/meetings",
+          link: "/meetings",
         });
-        showBrowserNotification(title, message, `meeting-${meeting.id}`);
         queryClient.invalidateQueries({ queryKey: QUERY_KEYS.meetings.all });
       } catch {
         // Retry on the next tick (e.g. offline while the reminder came due).

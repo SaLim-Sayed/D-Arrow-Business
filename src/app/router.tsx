@@ -114,7 +114,7 @@ export const router = createBrowserRouter([
               { path: "list", element: <Navigate to="/tasks/work/list" replace /> },
               { path: "board", element: <Navigate to="/tasks/work" replace /> },
               { path: "sprints", element: <SprintsPage /> },
-              { path: "meetings", element: <MeetingsPage /> },
+              { path: "meetings", element: <Navigate to="/meetings" replace /> },
               { path: "new", element: <TaskCreatePage /> },
               { path: ":taskId", element: <TaskDetailPage /> },
             ],
@@ -192,6 +192,12 @@ export const router = createBrowserRouter([
               { index: true, element: <ChatPage /> },
               { path: ":conversationId", element: <ChatPage /> },
             ],
+          },
+          {
+            // Meetings are open to every signed-in user, so they sit outside
+            // the portal guards.
+            path: "meetings",
+            element: <MeetingsPage />,
           },
           {
             path: "seed",

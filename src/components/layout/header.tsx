@@ -5,6 +5,7 @@ import { useThemeStore } from "@/stores/theme.store";
 import { LanguageSwitcher } from "./language-switcher";
 import { NotificationsDropdown } from "./notifications-dropdown";
 import { ChatNavButton } from "./chat-nav-button";
+import { MeetingsNavButton } from "@/features/meetings/components/MeetingsNavButton";
 import {
   Button,
   Dropdown,
@@ -138,6 +139,7 @@ export function Header({
         <div className="hidden sm:block mr-0 sm:mr-2">
           <TimeTrackerWidget />
         </div>
+        <MeetingsNavButton />
         <ChatNavButton />
         <NotificationsDropdown />
         <LanguageSwitcher compact className="sm:hidden" />

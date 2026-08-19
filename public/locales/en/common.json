@@ -137,6 +137,9 @@
   "notifications": {
     "title": "Notifications",
     "markAllAsRead": "Mark all as read",
+    "enableBrowser": "Enable browser alerts to get notified outside the app",
+    "browserEnabled": "Browser alerts enabled.",
+    "browserDenied": "Notification permission was denied. You can re-enable it in site settings.",
     "empty": "No notifications yet.",
     "types": {
       "task_created": {

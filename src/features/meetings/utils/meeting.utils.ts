@@ -109,3 +109,61 @@ export function formatMeetingDate(startAt: string, locale: string): string {
     month: "long",
   });
 }
+
+export function formatMeetingTimeRange(
+  meeting: Meeting,
+  locale: string
+): string {
+  const start = formatMeetingTime(meeting.startAt, locale);
+  const end = meetingEndsAt(meeting).toLocaleTimeString(locale, {
+    hour: "numeric",
+    minute: "2-digit",
+  });
+  return `${start} – ${end}`;
+}
+
+export function isSameDay(a: Date, b: Date): boolean {
+  return (
+    a.getFullYear() === b.getFullYear() &&
+    a.getMonth() === b.getMonth() &&
+    a.getDate() === b.getDate()
+  );
+}
+
+/** Six Sunday-first weeks covering the given month. */
+export function buildMonthGrid(year: number, month: number): Date[] {
+  const first = new Date(year, month, 1);
+  const start = new Date(first);
+  start.setDate(first.getDate() - first.getDay());
+  return Array.from({ length: 42 }, (_, i) => {
+    const day = new Date(start);
+    day.setDate(start.getDate() + i);
+    return day;
+  });
+}
+
+export function meetingsOnDay(meetings: Meeting[], day: Date): Meeting[] {
+  return meetings
+    .filter((meeting) => isSameDay(new Date(meeting.startAt), day))
+    .sort((a, b) => a.startAt.localeCompare(b.startAt));
+}
+
+/** Google Calendar-like event colors, picked deterministically per meeting. */
+const MEETING_COLORS = [
+  "#1a73e8",
+  "#33b679",
+  "#f4511e",
+  "#8e24aa",
+  "#e67c73",
+  "#f6bf26",
+  "#039be5",
+];
+
+export function meetingColor(meeting: Meeting): string {
+  const seed = meeting.team || meeting.title || meeting.id;
+  let hash = 0;
+  for (let i = 0; i < seed.length; i += 1) {
+    hash = (hash * 31 + seed.charCodeAt(i)) % 100_000;
+  }
+  return MEETING_COLORS[hash % MEETING_COLORS.length];
+}

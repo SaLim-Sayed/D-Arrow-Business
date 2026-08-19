@@ -9,6 +9,12 @@
     "upcoming": "قادمة",
     "past": "سابقة"
   },
+  "drawer": {
+    "today": "اليوم",
+    "emptyDay": "لا توجد اجتماعات في هذا اليوم.",
+    "viewAll": "عرض كل الاجتماعات",
+    "attendeeCount": "{{count}} من الحضور"
+  },
   "form": {
     "createTitle": "إنشاء اجتماع",
     "editTitle": "تعديل الاجتماع",

@@ -9,6 +9,12 @@
     "upcoming": "Upcoming",
     "past": "Past"
   },
+  "drawer": {
+    "today": "Today",
+    "emptyDay": "No meetings on this day.",
+    "viewAll": "View all meetings",
+    "attendeeCount": "{{count}} attending"
+  },
   "form": {
     "createTitle": "Create meeting",
     "editTitle": "Edit meeting",

@@ -1,9 +1,11 @@
 import { useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom";
 import { NotificationsService } from "../api/notifications.service";
 import { useCompany } from "@/features/companies/context/company-context";
 import { useAuth } from "@/features/auth/context/auth-context";
 import { toast } from "sonner";
+import { showBrowserNotification } from "@/lib/browser-notifications";
 import type { AppNotification } from "../types/notification.types";
 
 const NOTIFICATIONS_QUERY_KEY = "notifications";
@@ -12,11 +14,14 @@ export function useNotifications() {
   const queryClient = useQueryClient();
   const { companyId } = useCompany();
   const { user } = useAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (!companyId || !user?.id) return;
 
     let previousNotifications: AppNotification[] = [];
+    // The first snapshot is history, not news — alert only on what follows it.
+    let receivedFirstSnapshot = false;
 
     const unsubscribe = NotificationsService.subscribeToNotifications(
       companyId,
@@ -28,8 +33,7 @@ export function useNotifications() {
           notifications
         );
 
-        // Check for new unread notifications to trigger toast
-        if (previousNotifications.length > 0) {
+        if (receivedFirstSnapshot) {
           const newNotifications = notifications.filter(
             (n) =>
               !previousNotifications.find((prev) => prev.id === n.id) && !n.isRead
@@ -40,15 +44,27 @@ export function useNotifications() {
               description: n.message,
               duration: 5000,
             });
+            // Reaches the user even when the tab is in the background.
+            showBrowserNotification({
+              title: n.title,
+              body: n.message,
+              tag: n.id,
+              onClick: () => {
+                if (!n.link) return;
+                if (n.link.startsWith("http")) window.location.assign(n.link);
+                else navigate(n.link);
+              },
+            });
           });
         }
 
+        receivedFirstSnapshot = true;
         previousNotifications = notifications;
       }
     );
 
     return () => unsubscribe();
-  }, [companyId, user?.id, queryClient]);
+  }, [companyId, user?.id, queryClient, navigate]);
 
   return useQuery({
     queryKey: [NOTIFICATIONS_QUERY_KEY, companyId, user?.id],

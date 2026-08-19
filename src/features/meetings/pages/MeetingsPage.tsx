@@ -3,7 +3,7 @@ import { Button, Spinner, useDisclosure } from "@heroui/react";
 import { BellRing, CalendarClock, CalendarDays, Plus, Sunrise } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
-import { TasksMetricCards, TasksPageHeader, TasksPanel } from "@/features/tasks/components/tasks-ui";
+import { TasksMetricCards, TasksPanel } from "@/features/tasks/components/tasks-ui";
 import { useAllUsers } from "@/features/users/hooks/use-users";
 import { MeetingCard } from "../components/MeetingCard";
 import { MeetingFormModal } from "../components/MeetingFormModal";
@@ -11,7 +11,7 @@ import { useDeleteMeetingMutation, useMeetingsQuery } from "../hooks/use-meeting
 import {
   browserNotificationPermission,
   requestBrowserNotifications,
-} from "../hooks/use-meeting-reminders";
+} from "@/lib/browser-notifications";
 import { groupMeetings } from "../utils/meeting.utils";
 import type { Meeting, MeetingStatus } from "../types/meeting.types";
 
@@ -61,31 +61,35 @@ export function MeetingsPage() {
   ];
 
   return (
-    <div className="space-y-4">
-      <TasksPageHeader
-        title={t("title")}
-        description={t("description")}
-        action={
-          <div className="flex flex-wrap gap-2">
-            {permission === "default" && (
-              <Button
-                variant="flat"
-                startContent={<BellRing className="h-4 w-4" />}
-                onPress={handleEnableNotifications}
-              >
-                {t("notifications.enable")}
-              </Button>
-            )}
+    <div className="mx-auto w-full max-w-5xl space-y-4 animate-in fade-in duration-500">
+      <div className="mb-2 flex flex-wrap items-start justify-between gap-3">
+        <div className="min-w-0">
+          <h1 className="text-2xl font-bold tracking-tight text-default-900">
+            {t("title")}
+          </h1>
+          <p className="mt-1 max-w-2xl text-sm text-default-500">
+            {t("description")}
+          </p>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          {permission === "default" && (
             <Button
-              color="primary"
-              startContent={<Plus className="h-4 w-4" />}
-              onPress={handleNew}
+              variant="flat"
+              startContent={<BellRing className="h-4 w-4" />}
+              onPress={handleEnableNotifications}
             >
-              {t("newMeeting")}
+              {t("notifications.enable")}
             </Button>
-          </div>
-        }
-      />
+          )}
+          <Button
+            color="primary"
+            startContent={<Plus className="h-4 w-4" />}
+            onPress={handleNew}
+          >
+            {t("newMeeting")}
+          </Button>
+        </div>
+      </div>
 
       <TasksMetricCards
         items={[
