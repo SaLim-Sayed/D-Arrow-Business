@@ -20,6 +20,7 @@ import {
   CheckCircle2,
   Clock,
   Wallet,
+  Banknote,
 } from "lucide-react";
 import { BillingMoney } from "../components/BillingMoney";
 import { useInvoices } from "../hooks/use-invoices";
@@ -96,10 +97,22 @@ export default function AccountingLandingPage() {
           color="primary"
         />
         <AccountingQuickAction
+          to="/billing/receipt-vouchers/new"
+          icon={Banknote}
+          label={t("daftra.quick.new_receipt")}
+          color="default"
+        />
+        <AccountingQuickAction
           to="/billing/bills/new"
           icon={Plus}
           label={t("daftra.quick.new_bill")}
           color="danger"
+        />
+        <AccountingQuickAction
+          to="/billing/payment-vouchers/new"
+          icon={Wallet}
+          label={t("daftra.quick.new_payment_voucher")}
+          color="default"
         />
         <AccountingQuickAction
           to="/crm/quotations"
@@ -170,6 +183,13 @@ export default function AccountingLandingPage() {
           iconClassName="bg-primary/10 text-primary"
         />
         <AccountingAppTile
+          to="/billing/receipt-vouchers"
+          icon={Banknote}
+          title={t("landing.apps.receipt_vouchers.title")}
+          description={t("landing.apps.receipt_vouchers.desc")}
+          iconClassName="bg-success/10 text-success"
+        />
+        <AccountingAppTile
           to="/crm/quotations"
           icon={FileText}
           title={t("daftra.apps.quotations.title")}
@@ -199,6 +219,13 @@ export default function AccountingLandingPage() {
           description={t("landing.apps.bills.desc")}
           badge={openBills || undefined}
           iconClassName="bg-danger/10 text-danger"
+        />
+        <AccountingAppTile
+          to="/billing/payment-vouchers"
+          icon={Wallet}
+          title={t("landing.apps.payment_vouchers.title")}
+          description={t("landing.apps.payment_vouchers.desc")}
+          iconClassName="bg-orange-500/10 text-orange-600"
         />
       </AccountingModuleSection>
 

@@ -107,13 +107,32 @@ export function RecordPaymentModal({
 
     try {
       if (invoice?.id) {
-        await recordCustomerPayment.mutateAsync({ invoice, payment: paymentPayload });
+        const result = await recordCustomerPayment.mutateAsync({
+          invoice,
+          payment: paymentPayload,
+        });
+        toast.success(
+          result.voucher
+            ? t("vouchers.recorded_with_number", {
+                number: result.voucher.voucherNumber,
+              })
+            : t("payments.recorded")
+        );
       } else if (bill?.id) {
-        await recordVendorPayment.mutateAsync({ bill, payment: paymentPayload });
+        const result = await recordVendorPayment.mutateAsync({
+          bill,
+          payment: paymentPayload,
+        });
+        toast.success(
+          result.voucher
+            ? t("vouchers.recorded_with_number", {
+                number: result.voucher.voucherNumber,
+              })
+            : t("payments.recorded")
+        );
       } else {
         return;
       }
-      toast.success(t("payments.recorded"));
       onOpenChange(false);
     } catch (err) {
       const msg =

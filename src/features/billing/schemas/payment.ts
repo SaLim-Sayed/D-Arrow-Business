@@ -11,6 +11,8 @@ export const paymentSchema = z.object({
   methodName: z.string().optional(),
   reference: z.string().optional(),
   notes: z.string().optional(),
+  /** Linked receipt (سند قبض) or payment (سند صرف) voucher. */
+  voucherId: z.string().optional(),
   currency: z.string().default("SAR"),
   createdAt: z.date().optional(),
   updatedAt: z.date().optional(),

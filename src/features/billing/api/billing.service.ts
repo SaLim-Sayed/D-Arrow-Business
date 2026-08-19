@@ -24,6 +24,7 @@ import type { Account, CreateAccountDTO, UpdateAccountDTO } from "../schemas/acc
 import type { JournalEntry, CreateJournalEntryDTO, UpdateJournalEntryDTO } from "../schemas/journal";
 import type { Product, CreateProductDTO, UpdateProductDTO, ProductCategory, ProductUnit } from "../schemas/product";
 import type { Payment, CreatePaymentDTO } from "../schemas/payment";
+import type { Voucher, CreateVoucherDTO, VoucherType } from "../schemas/voucher";
 import type { ZakatRecord, CreateZakatRecordDTO, UpdateZakatRecordDTO } from "../schemas/zakat";
 import type { BillingSettings } from "../schemas/settings";
 import { DEFAULT_BILLING_CURRENCY_ENTRY } from "../utils/billing-currency";
@@ -91,6 +92,31 @@ async function listUsedInvoiceNumbers(companyId: string): Promise<string[]> {
   return snapshot.docs
     .map((d) => (d.data() as Invoice).invoiceNumber)
     .filter((n): n is string => !!n && n !== "DRAFT");
+}
+
+const RECEIPT_VOUCHER_SEQUENCE: DocumentSequence = {
+  prefix: "REC-",
+  nextNumber: 1,
+  padding: 4,
+};
+
+const PAYMENT_VOUCHER_SEQUENCE: DocumentSequence = {
+  prefix: "PAY-",
+  nextNumber: 1,
+  padding: 4,
+};
+
+async function listUsedVoucherNumbers(
+  companyId: string,
+  type: VoucherType
+): Promise<string[]> {
+  const ref = collection(db, "companies", companyId, "vouchers");
+  const snapshot = await getDocs(query(ref, limit(2000)));
+  return snapshot.docs
+    .map((d) => d.data() as Voucher)
+    .filter((v) => v.voucherType === type)
+    .map((v) => v.voucherNumber)
+    .filter((n): n is string => !!n);
 }
 
 export function createBillingCollectionService<T extends { id?: string }, CreateDTO, UpdateDTO>(
@@ -179,6 +205,7 @@ export const BillingService = {
   productCategories: createBillingCollectionService<ProductCategory, Partial<ProductCategory>, Partial<ProductCategory>>("product_categories", "ProductCategoryService"),
   productUnits: createBillingCollectionService<ProductUnit, Partial<ProductUnit>, Partial<ProductUnit>>("product_units", "ProductUnitService"),
   payments: createBillingCollectionService<Payment, CreatePaymentDTO, Partial<CreatePaymentDTO>>("payments", "PaymentService"),
+  vouchers: createBillingCollectionService<Voucher, CreateVoucherDTO, Partial<CreateVoucherDTO>>("vouchers", "VoucherService"),
   zakatRecords: createBillingCollectionService<ZakatRecord, CreateZakatRecordDTO, UpdateZakatRecordDTO>("zakatRecords", "ZakatRecordService"),
   
   // Generic Document System
@@ -241,6 +268,45 @@ export const BillingService = {
       );
 
       return documentNumber;
+    });
+  },
+
+  async reserveVoucherNumber(
+    companyId: string,
+    type: VoucherType
+  ): Promise<string> {
+    const sequenceKey =
+      type === "receipt" ? "receiptVoucherSequence" : "paymentVoucherSequence";
+    const defaultSeq =
+      type === "receipt" ? RECEIPT_VOUCHER_SEQUENCE : PAYMENT_VOUCHER_SEQUENCE;
+    const usedNumbers = await listUsedVoucherNumbers(companyId, type);
+    const docRef = doc(db, "companies", companyId, "settings", "billing");
+
+    return runTransaction(db, async (tx) => {
+      const snap = await tx.get(docRef);
+      const settings = snap.exists()
+        ? (snap.data() as BillingSettings & Record<string, unknown>)
+        : null;
+      const seq =
+        (settings?.[sequenceKey] as DocumentSequence | undefined) ?? {
+          ...defaultSeq,
+        };
+
+      const { number, nextSequence } = reserveNextSequenceNumber(
+        seq,
+        usedNumbers
+      );
+
+      tx.set(
+        docRef,
+        {
+          [sequenceKey]: nextSequence,
+          updatedAt: serverTimestamp(),
+        },
+        { merge: true }
+      );
+
+      return number;
     });
   },
 

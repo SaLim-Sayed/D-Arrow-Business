@@ -6,7 +6,9 @@
     "dashboard": "Overview",
     "reports": "Financial Reports",
     "invoices": "Customer Invoices",
+    "receipt_vouchers": "Receipt Vouchers",
     "bills": "Vendor Bills",
+    "payment_vouchers": "Payment Vouchers",
     "products": "Products & Services",
     "accounts": "Chart of Accounts",
     "journals": "Manual Journals",
@@ -24,9 +26,17 @@
         "title": "Customer Invoices",
         "desc": "Issue sales invoices and track customer payments"
       },
+      "receipt_vouchers": {
+        "title": "Receipt Voucher",
+        "desc": "سند قبض linked to sales invoices (company income)"
+      },
       "bills": {
         "title": "Vendor Bills",
         "desc": "Record purchase invoices and accounts payable"
+      },
+      "payment_vouchers": {
+        "title": "Payment Voucher",
+        "desc": "سند صرف linked to vendor bills (purchases)"
       },
       "reports": {
         "title": "Financial Reports",
@@ -64,15 +74,17 @@
     },
     "quick": {
       "new_invoice": "New Sales Invoice",
+      "new_receipt": "New Receipt Voucher",
       "new_bill": "New Vendor Bill",
+      "new_payment_voucher": "New Payment Voucher",
       "quotations": "Quotations",
       "reports": "Financial Reports"
     },
     "sections": {
       "sales": "Sales",
-      "sales_desc": "Customer invoices, quotations, and products",
+      "sales_desc": "Customer invoices, receipt vouchers, quotations, and products",
       "purchases": "Purchases",
-      "purchases_desc": "Vendor bills and accounts payable",
+      "purchases_desc": "Vendor bills, payment vouchers, and accounts payable",
       "accounting": "Accounting",
       "accounting_desc": "Chart of accounts, journal entries, and settings",
       "reports": "Reports & Analytics",
@@ -100,13 +112,13 @@
       "sales_title": "Sales cycle",
       "sales_step1": "Create a quotation in CRM (optional)",
       "sales_step2": "Issue a sales invoice to the customer",
-      "sales_step3": "Record customer payment — journal entry posts automatically",
+      "sales_step3": "Issue a receipt voucher (سند قبض) against the invoice — journal posts automatically",
       "sales_step4": "ZATCA QR appears on tax invoices when VAT number is set",
       "purchase_title": "Purchase cycle",
       "purchase_step1": "Record a vendor bill with expense accounts",
       "purchase_step2": "Journal entry posts to accounts payable automatically",
       "purchase_step3": "Track outstanding payables in AP aging report",
-      "purchase_step4": "Record vendor payment when paying — journal entry posts automatically",
+      "purchase_step4": "Issue a payment voucher (سند صرف) against the bill — journal posts automatically",
       "footer": "Configure company profile, tax rates, and invoice numbering in",
       "settings_link": "Accounting Settings"
     }
@@ -513,7 +525,7 @@
       "issue_date": "Issue Date",
       "issue_datetime": "Issue Date & Time",
       "due_date": "Due Date",
-      "record_payment": "Record Payment",
+      "record_payment": "Issue Receipt Voucher",
       "send_email": "Send Email",
       "bill_to": "Bill To",
       "unknown_customer": "Unknown Customer",
@@ -546,8 +558,8 @@
     }
   },
   "payments": {
-    "record_title": "Record Payment",
-    "record_vendor_title": "Record Vendor Payment",
+    "record_title": "Receipt Voucher (سند قبض)",
+    "record_vendor_title": "Payment Voucher (سند صرف)",
     "due": "Amount due",
     "amount_due_label": "Amount due",
     "amount": "Amount",
@@ -555,7 +567,7 @@
     "method": "Payment Method",
     "reference": "Reference",
     "notes": "Notes",
-    "record": "Record Payment",
+    "record": "Issue Voucher",
     "recorded": "Payment recorded",
     "failed": "Failed to record payment",
     "exceeds_due": "Amount exceeds the balance due",
@@ -566,6 +578,82 @@
       "card": "Card",
       "check": "Check",
       "other": "Other"
+    },
+    "view_voucher": "View voucher"
+  },
+  "vouchers": {
+    "select_source": "Select an invoice or bill first",
+    "amount_due": "Amount due",
+    "recorded_with_number": "Voucher {{number}} created",
+    "failed": "Failed to create voucher",
+    "not_found": "Voucher not found",
+    "pdf_failed": "Failed to download PDF",
+    "count_label": "{{count}} vouchers",
+    "metrics": {
+      "count": "Vouchers",
+      "this_month": "This month",
+      "month_count": "This month (count)"
+    },
+    "columns": {
+      "number": "Number",
+      "date": "Date",
+      "source": "Linked document",
+      "method": "Method",
+      "amount": "Amount"
+    },
+    "print": {
+      "date": "Date",
+      "method": "Payment method",
+      "reference": "Reference",
+      "notes": "Notes",
+      "amount": "Amount",
+      "amount_in_words": "Amount in words",
+      "cr": "CR",
+      "vat": "VAT",
+      "signatures": {
+        "accountant": "Accountant",
+        "received": "Received by",
+        "paid": "Paid by",
+        "manager": "Manager"
+      }
+    },
+    "receipt": {
+      "title": "Receipt Vouchers",
+      "description": "سند قبض for money received against sales invoices (company income).",
+      "add": "New Receipt Voucher",
+      "empty": "No receipt vouchers yet.",
+      "search": "Search by number, customer, or invoice...",
+      "create_title": "New Receipt Voucher",
+      "create_subtitle": "Collect customer payment against a sales invoice. A journal entry posts automatically.",
+      "party": "Received from",
+      "source": "Sales invoice",
+      "source_placeholder": "Select an unpaid sales invoice",
+      "against": "Against sales invoice",
+      "print_title": "Receipt Voucher",
+      "no_open_docs": "No unpaid sales invoices",
+      "submit": "Issue receipt voucher",
+      "metrics": {
+        "total": "Total received"
+      }
+    },
+    "disbursement": {
+      "title": "Payment Vouchers",
+      "description": "سند صرف for money paid against vendor bills (purchases).",
+      "add": "New Payment Voucher",
+      "empty": "No payment vouchers yet.",
+      "search": "Search by number, vendor, or bill...",
+      "create_title": "New Payment Voucher",
+      "create_subtitle": "Pay a vendor bill. A journal entry posts automatically.",
+      "party": "Paid to",
+      "source": "Vendor bill",
+      "source_placeholder": "Select an unpaid vendor bill",
+      "against": "Against purchase bill",
+      "print_title": "Payment Voucher",
+      "no_open_docs": "No unpaid vendor bills",
+      "submit": "Issue payment voucher",
+      "metrics": {
+        "total": "Total paid"
+      }
     }
   },
   "actions": {
@@ -660,7 +748,7 @@
       "total_tax": "Tax",
       "total": "Total",
       "notes": "Notes",
-      "record_payment": "Record Payment",
+      "record_payment": "Issue Payment Voucher",
       "paid": "Paid",
       "balance_due": "Balance Due"
     }

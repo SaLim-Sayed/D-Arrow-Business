@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Button, Divider } from "@heroui/react";
 import { CreditCard, Edit2 } from "lucide-react";
@@ -242,6 +242,17 @@ export default function BillDetailPage() {
                     {p.date.toLocaleDateString(dateLocale)}
                     {p.methodName ? ` — ${p.methodName}` : ""}
                     {p.reference ? ` (${p.reference})` : ""}
+                    {p.voucherId ? (
+                      <>
+                        {" · "}
+                        <Link
+                          to={`/billing/payment-vouchers/${p.voucherId}`}
+                          className="font-medium text-primary hover:underline"
+                        >
+                          {t("payments.view_voucher")}
+                        </Link>
+                      </>
+                    ) : null}
                   </span>
                   <BillingMoney
                     amount={p.amount}

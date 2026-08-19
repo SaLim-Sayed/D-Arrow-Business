@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useQueryClient } from "@tanstack/react-query";
 import { Button, Chip } from "@heroui/react";
@@ -426,6 +426,17 @@ export default function InvoiceDetailPage() {
                   {p.date.toLocaleDateString(dateLocale)}
                   {p.methodName ? ` — ${p.methodName}` : ""}
                   {p.reference ? ` (${p.reference})` : ""}
+                  {p.voucherId ? (
+                    <>
+                      {" · "}
+                      <Link
+                        to={`/billing/receipt-vouchers/${p.voucherId}`}
+                        className="font-medium text-primary hover:underline"
+                      >
+                        {t("payments.view_voucher")}
+                      </Link>
+                    </>
+                  ) : null}
                 </span>
                 <BillingMoney
                   amount={p.amount}

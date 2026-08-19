@@ -3,14 +3,21 @@ import type { Payment, CreatePaymentDTO } from "../schemas/payment";
 import type { Invoice } from "../schemas/invoice";
 import type { Bill } from "../schemas/bill";
 import { BillingService } from "../api/billing.service";
+import { createLinkedVoucher } from "../api/create-voucher";
 import { useCompany } from "@/features/companies/context/company-context";
 import { convertTimestampsToDates } from "../utils/timestamp";
+import type { Voucher } from "../schemas/voucher";
 import {
   buildPaymentJournalEntry,
   buildVendorPaymentJournalEntry,
   getInvoiceAmountDue,
 } from "../utils/accounting-engine";
 import { getBillAmountDue } from "../utils/aged-reports";
+
+export type RecordPaymentResult = {
+  payment: Payment;
+  voucher: Voucher | null;
+};
 
 type PaymentFilter =
   | string
@@ -90,10 +97,21 @@ export function useRecordPaymentMutation() {
         status: newStatus,
       });
 
-      return savedPayment;
+      const voucher = await createLinkedVoucher({
+        companyId: companyId!,
+        type: "receipt",
+        payment: savedPayment,
+        partyName: invoice.customerName?.trim() || invoice.customerId || "—",
+        partyId: invoice.customerId,
+        invoiceId: invoice.id,
+        invoiceNumber: invoice.invoiceNumber,
+      });
+
+      return { payment: savedPayment, voucher } satisfies RecordPaymentResult;
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["billing", "payments"] });
+      queryClient.invalidateQueries({ queryKey: ["billing", "vouchers"] });
       queryClient.invalidateQueries({ queryKey: ["billing", "invoices"] });
       queryClient.invalidateQueries({
         queryKey: ["billing", "invoices", variables.invoice.id],
@@ -148,10 +166,21 @@ export function useRecordVendorPaymentMutation() {
         status: newStatus,
       });
 
-      return savedPayment;
+      const voucher = await createLinkedVoucher({
+        companyId: companyId!,
+        type: "disbursement",
+        payment: savedPayment,
+        partyName: bill.vendorName?.trim() || bill.vendorId || "—",
+        partyId: bill.vendorId,
+        billId: bill.id,
+        billNumber: bill.billNumber,
+      });
+
+      return { payment: savedPayment, voucher } satisfies RecordPaymentResult;
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["billing", "payments"] });
+      queryClient.invalidateQueries({ queryKey: ["billing", "vouchers"] });
       queryClient.invalidateQueries({ queryKey: ["billing", "bills"] });
       queryClient.invalidateQueries({
         queryKey: ["billing", "bills", variables.bill.id],

@@ -22,6 +22,8 @@ import {
   PieChart,
   LayoutGrid,
   HandCoins,
+  Banknote,
+  Wallet,
   Inbox,
   type LucideIcon,
 } from "lucide-react";
@@ -71,7 +73,9 @@ export const BILLING_NAV: PortalNavItem[] = [
   { labelKey: "nav.home", path: "/billing", icon: LayoutGrid, end: true, namespace: "billing" },
   { labelKey: "nav.overview", path: "/billing/overview", icon: LayoutDashboard, namespace: "billing" },
   { labelKey: "nav.invoices", path: "/billing/invoices", icon: FileSpreadsheet, namespace: "billing" },
+  { labelKey: "nav.receipt_vouchers", path: "/billing/receipt-vouchers", icon: Banknote, namespace: "billing" },
   { labelKey: "nav.bills", path: "/billing/bills", icon: ReceiptText, namespace: "billing" },
+  { labelKey: "nav.payment_vouchers", path: "/billing/payment-vouchers", icon: Wallet, namespace: "billing" },
   { labelKey: "nav.reports", path: "/billing/reports", icon: PieChart, namespace: "billing" },
   { labelKey: "nav.products", path: "/billing/products", icon: Package, namespace: "billing" },
   { labelKey: "nav.journals", path: "/billing/journals", icon: BookA, namespace: "billing" },

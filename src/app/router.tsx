@@ -58,6 +58,9 @@ import InvoiceDetailPage from "@/features/billing/pages/InvoiceDetailPage";
 import BillsPage from "@/features/billing/pages/BillsPage";
 import CreateBillPage from "@/features/billing/pages/CreateBillPage";
 import BillDetailPage from "@/features/billing/pages/BillDetailPage";
+import VouchersPage from "@/features/billing/pages/VouchersPage";
+import CreateVoucherPage from "@/features/billing/pages/CreateVoucherPage";
+import VoucherDetailPage from "@/features/billing/pages/VoucherDetailPage";
 import ReportsPage from "@/features/billing/pages/ReportsPage";
 import ZakatPage from "@/features/billing/pages/ZakatPage";
 import { ChatLayout } from "@/features/chat/components/ChatLayout";
@@ -174,10 +177,16 @@ export const router = createBrowserRouter([
               { path: "invoices/new", element: <CreateInvoicePage /> },
               { path: "invoices/:id/edit", element: <CreateInvoicePage /> },
               { path: "invoices/:id", element: <InvoiceDetailPage /> },
+              { path: "receipt-vouchers", element: <VouchersPage type="receipt" /> },
+              { path: "receipt-vouchers/new", element: <CreateVoucherPage type="receipt" /> },
+              { path: "receipt-vouchers/:id", element: <VoucherDetailPage type="receipt" /> },
               { path: "bills", element: <BillsPage /> },
               { path: "bills/new", element: <CreateBillPage /> },
               { path: "bills/:id/edit", element: <CreateBillPage /> },
               { path: "bills/:id", element: <BillDetailPage /> },
+              { path: "payment-vouchers", element: <VouchersPage type="disbursement" /> },
+              { path: "payment-vouchers/new", element: <CreateVoucherPage type="disbursement" /> },
+              { path: "payment-vouchers/:id", element: <VoucherDetailPage type="disbursement" /> },
               { path: "accounts", element: <ChartOfAccountsPage /> },
               { path: "journals", element: <ManualJournalsPage /> },
               { path: "zakat", element: <ZakatPage /> },
