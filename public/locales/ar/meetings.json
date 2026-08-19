@@ -1,0 +1,59 @@
+{
+  "title": "الاجتماعات",
+  "description": "جدول اجتماعات الفريق مع تذكير تلقائي في موعد الاجتماع.",
+  "newMeeting": "اجتماع جديد",
+  "empty": "لا توجد اجتماعات مجدولة بعد.",
+  "groups": {
+    "today": "اليوم",
+    "tomorrow": "غدًا",
+    "upcoming": "قادمة",
+    "past": "سابقة"
+  },
+  "form": {
+    "createTitle": "إنشاء اجتماع",
+    "editTitle": "تعديل الاجتماع",
+    "title": "عنوان الاجتماع",
+    "titlePlaceholder": "مثال: اجتماع مراجعة الخطة",
+    "team": "الفريق / الجهة",
+    "teamPlaceholder": "مثال: فريق البرمجة",
+    "date": "التاريخ",
+    "time": "الوقت",
+    "duration": "المدة",
+    "minutes": "{{count}} دقيقة",
+    "reminder": "التذكير",
+    "reminderAtTime": "في وقت الاجتماع",
+    "reminderBefore": "قبل {{count}} دقيقة",
+    "location": "المكان أو الرابط",
+    "locationPlaceholder": "قاعة الاجتماعات أو رابط الاتصال",
+    "attendees": "الحضور",
+    "attendeesPlaceholder": "اختر أعضاء الفريق",
+    "agenda": "جدول الأعمال",
+    "agendaPlaceholder": "النقاط التي ستتم مناقشتها",
+    "cancel": "إلغاء",
+    "create": "إنشاء",
+    "save": "حفظ"
+  },
+  "card": {
+    "noAttendees": "بدون حضور",
+    "edit": "تعديل",
+    "delete": "حذف"
+  },
+  "reminder": {
+    "title": "تذكير باجتماع",
+    "body": "{{title}} الساعة {{time}}",
+    "bodyWithTeam": "{{title}} مع {{team}} الساعة {{time}}"
+  },
+  "notifications": {
+    "enable": "تفعيل تنبيهات المتصفح",
+    "enabled": "تم تفعيل تنبيهات المتصفح.",
+    "denied": "تم رفض إذن التنبيهات من المتصفح."
+  },
+  "toast": {
+    "created": "تم إنشاء الاجتماع",
+    "createFailed": "تعذر إنشاء الاجتماع",
+    "updated": "تم تحديث الاجتماع",
+    "updateFailed": "تعذر تحديث الاجتماع",
+    "deleted": "تم حذف الاجتماع",
+    "deleteFailed": "تعذر حذف الاجتماع"
+  }
+}

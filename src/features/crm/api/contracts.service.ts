@@ -12,6 +12,7 @@ const base = createCrmCollectionService<
   UpdateContractDTO
 >(CRM_COLLECTIONS.contracts, "ContractsService", {
   status: "draft",
+  approvalStatus: "pending",
 });
 
 export const ContractsService = {

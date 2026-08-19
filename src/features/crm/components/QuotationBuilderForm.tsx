@@ -62,9 +62,15 @@ import {
   useCreateQuotationMutation,
   useUpdateQuotationMutation,
   useDeleteQuotationMutation,
+  useApproveQuotationMutation,
 } from "../hooks/use-quotations";
 import { MoneyAmount } from "@/components/shared/riyal-symbol";
 import { toast } from "sonner";
+import { DocumentApprovalBar } from "@/components/shared/document-approval-bar";
+import {
+  isDocumentApproved,
+  pendingApprovalFields,
+} from "@/lib/permissions/document-approval";
 
 function buildCompanyInfo(
   profile: ReturnType<typeof useCompanyProfile>["data"]
@@ -95,6 +101,7 @@ function buildCompanyInfo(
 
 export function QuotationBuilderForm() {
   const { t, i18n } = useTranslation("crm");
+  const { t: tCommon } = useTranslation("common");
   const navigate = useNavigate();
   const quoteLocale = resolveQuotationLocale(i18n.language);
   const { data: company } = useCompanyProfile();
@@ -147,7 +154,10 @@ export function QuotationBuilderForm() {
   const createQuotation = useCreateQuotationMutation();
   const updateQuotation = useUpdateQuotationMutation();
   const deleteQuotation = useDeleteQuotationMutation();
+  const approveQuotation = useApproveQuotationMutation();
   const isSaving = createQuotation.isPending || updateQuotation.isPending;
+  const activeSaved = savedQuotations.find((q) => q.id === savedQuotationId);
+  const actionsUnlocked = isDocumentApproved(activeSaved);
 
   const defaultNotes = useMemo(
     () =>
@@ -334,6 +344,7 @@ export function QuotationBuilderForm() {
       total: totals.total,
       currency: quotationData.currency,
       contactId: selectedContactId || undefined,
+      ...pendingApprovalFields(),
     };
 
     try {
@@ -362,6 +373,10 @@ export function QuotationBuilderForm() {
   };
 
   const handleConvertToInvoice = () => {
+    if (!actionsUnlocked) {
+      toast.error(tCommon("documentApproval.lockedHint"));
+      return;
+    }
     if (!selectedContactId) {
       toast.error(t("quotation.contactRequiredForInvoice"));
       return;
@@ -396,6 +411,10 @@ export function QuotationBuilderForm() {
   };
 
   const handleExport = async () => {
+    if (!actionsUnlocked) {
+      toast.error(tCommon("documentApproval.lockedHint"));
+      return;
+    }
     if (!clientName.trim()) {
       toast.error(t("quotation.clientRequired"));
       return;
@@ -465,6 +484,7 @@ export function QuotationBuilderForm() {
                   color="secondary"
                   variant="flat"
                   startContent={<Receipt className="h-4 w-4" />}
+                  isDisabled={!actionsUnlocked}
                   onPress={handleConvertToInvoice}
                 >
                   {t("quotation.convertToInvoice")}
@@ -493,6 +513,15 @@ export function QuotationBuilderForm() {
             </div>
           </CardBody>
         </Card>
+
+        <DocumentApprovalBar
+          document={activeSaved}
+          isSaved={Boolean(savedQuotationId)}
+          isApproving={approveQuotation.isPending}
+          onApprove={() => {
+            if (savedQuotationId) approveQuotation.mutate(savedQuotationId);
+          }}
+        />
 
         <Card className="border border-default-100">
           <CardBody className="gap-5 p-6">
@@ -800,6 +829,7 @@ export function QuotationBuilderForm() {
                   className="rounded-full font-bold"
                   startContent={<FileDown className="h-4 w-4" />}
                   isLoading={exporting}
+                  isDisabled={!actionsUnlocked}
                   onPress={handleExport}
                 >
                   {t("quotation.downloadPdf")}

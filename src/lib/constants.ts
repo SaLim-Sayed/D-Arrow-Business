@@ -41,6 +41,10 @@ export const QUERY_KEYS = {
   users: {
     all: ["users"] as const,
   },
+  meetings: {
+    all: ["meetings"] as const,
+    list: (companyId: string) => ["meetings", companyId] as const,
+  },
   crm: {
     all: ["crm"] as const,
     leads: (companyId: string) => ["crm", companyId, "leads"] as const,

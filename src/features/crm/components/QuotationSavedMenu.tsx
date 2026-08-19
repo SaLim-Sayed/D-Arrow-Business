@@ -84,6 +84,11 @@ export function QuotationSavedMenu({
                       />
                     ) : null}
                   </div>
+                  {q.approvalStatus === "pending" ? (
+                    <p className="mt-1 text-[10px] font-semibold text-warning">
+                      {t("documentApproval.pending", { ns: "common" })}
+                    </p>
+                  ) : null}
                 </button>
               );
             })

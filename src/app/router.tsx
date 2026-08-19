@@ -14,6 +14,7 @@ import { TasksWorkspacePage } from "@/features/tasks/pages/tasks-workspace-page"
 import { TaskCreatePage } from "@/features/tasks/pages/task-create-page";
 import { TaskDetailPage } from "@/features/tasks/pages/task-detail-page";
 import { SprintsPage } from "@/features/tasks/pages/sprints-page";
+import { MeetingsPage } from "@/features/meetings/pages/MeetingsPage";
 import { CrmLayout } from "@/features/crm/components/CrmLayout";
 import { CrmDashboardPage } from "@/features/crm/pages/CrmDashboardPage";
 import { LeadsListPage } from "@/features/crm/pages/LeadsListPage";
@@ -113,6 +114,7 @@ export const router = createBrowserRouter([
               { path: "list", element: <Navigate to="/tasks/work/list" replace /> },
               { path: "board", element: <Navigate to="/tasks/work" replace /> },
               { path: "sprints", element: <SprintsPage /> },
+              { path: "meetings", element: <MeetingsPage /> },
               { path: "new", element: <TaskCreatePage /> },
               { path: ":taskId", element: <TaskDetailPage /> },
             ],

@@ -28,6 +28,7 @@ import { BillingMoney } from "../components/BillingMoney";
 import { useInvoices } from "../hooks/use-invoices";
 import { useBillingSettings } from "../hooks/use-billing-settings";
 import { getDefaultBillingCurrency } from "../utils/billing-currency";
+import { isDocumentApproved } from "@/lib/permissions/document-approval";
 import { useContactsQuery } from "@/features/crm/hooks/use-contacts";
 import type { Invoice } from "../schemas/invoice";
 import { downloadInvoicesCsv } from "../utils/invoice-export";
@@ -56,6 +57,7 @@ const STATUS_ORDER: Invoice["status"][] = [
 
 export default function InvoicesPage() {
   const { t, i18n } = useTranslation("billing");
+  const { t: tCommon } = useTranslation("common");
   const navigate = useNavigate();
   const { data: invoices = [], isLoading } = useInvoices();
   const { data: contactsRes } = useContactsQuery();
@@ -387,6 +389,11 @@ export default function InvoicesPage() {
                         >
                           {t(`invoices.status.${invoice.status}`)}
                         </span>
+                        {!isDocumentApproved(invoice) && (
+                          <span className="mt-1 block text-[10px] font-semibold text-warning">
+                            {tCommon("documentApproval.pending")}
+                          </span>
+                        )}
                       </td>
                       <td className="px-2 py-2.5" onClick={(e) => e.stopPropagation()}>
                         <Button

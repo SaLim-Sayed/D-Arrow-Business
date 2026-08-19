@@ -120,6 +120,9 @@ export interface SavedQuotation {
   createdBy?: string;
   createdAt: string;
   updatedAt: string;
+  approvalStatus?: "pending" | "approved";
+  approvedAt?: string | null;
+  approvedBy?: string | null;
 }
 
 export type CreateQuotationDTO = Omit<

@@ -44,6 +44,10 @@ export const invoiceSchema = z
     shareToken: z.string().optional(),
     /** Firebase Storage download URL for the shared PDF */
     pdfUrl: z.string().optional(),
+    /** Pending until a manager or super admin approves print/send. */
+    approvalStatus: z.enum(["pending", "approved"]).optional(),
+    approvedAt: z.date().optional().nullable(),
+    approvedBy: z.string().optional().nullable(),
     createdAt: z.date().optional(),
     updatedAt: z.date().optional(),
   })

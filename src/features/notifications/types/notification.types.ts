@@ -7,6 +7,7 @@ export type NotificationType =
   | "attendance_completed"
   | "chat_mention"
   | "chat_message"
+  | "document_approval"
   | "general";
 
 export interface AppNotification {

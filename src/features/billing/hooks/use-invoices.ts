@@ -1,13 +1,22 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
+import { toast } from "sonner";
 import type { Invoice, CreateInvoiceDTO, UpdateInvoiceDTO } from "../schemas/invoice";
 import { BillingService } from "../api/billing.service";
 import { useCompany } from "@/features/companies/context/company-context";
+import { useAuthStore } from "@/stores/auth.store";
 import { convertTimestampsToDates } from "../utils/timestamp";
 import {
   syncInvoiceStatuses,
 } from "../utils/accounting-engine";
 import { createGenericDocumentFromInvoiceData } from "../utils/migrate-to-generic";
 import { createInvoiceShareToken } from "../api/invoice-share.service";
+import { notifyDocumentApprovers } from "@/features/notifications/api/document-approval-notifications";
+import {
+  approvedFields,
+  canApproveDocuments,
+  isDocumentApproved,
+} from "@/lib/permissions/document-approval";
 
 async function postInvoiceIfNeeded(
   _companyId: string,
@@ -58,52 +67,51 @@ export function useInvoices() {
 export function useCreateInvoiceMutation(options?: { useGenericSystem?: boolean }) {
   const queryClient = useQueryClient();
   const { companyId } = useCompany();
+  const user = useAuthStore((s) => s.user);
   const useGeneric = options?.useGenericSystem ?? false;
 
   return useMutation({
     mutationFn: async (data: CreateInvoiceDTO) => {
-      const isPosting = data.status === "sent" || data.status === "paid";
       let payload: CreateInvoiceDTO = {
         ...data,
-        status: data.status ?? "draft",
+        status: "draft",
         invoiceNumber: data.invoiceNumber || "DRAFT",
         amountPaid: data.amountPaid ?? 0,
         shareToken: data.shareToken || createInvoiceShareToken(),
+        approvalStatus: "pending",
+        approvedAt: null,
+        approvedBy: null,
       };
 
-      if (isPosting) {
-        const invoiceNumber = await BillingService.reserveInvoiceNumber(companyId!);
-        payload = {
-          ...payload,
-          invoiceNumber,
-          postedAt: new Date(),
-        };
-      }
-
-      // Create the invoice in the legacy system
       const res = await BillingService.invoices.create(companyId!, payload);
       const newInvoice = convertTimestampsToDates(res.data) as Invoice;
 
-      // Optionally create in the generic document system as well
       if (useGeneric && newInvoice.id) {
         try {
           const genericDoc = createGenericDocumentFromInvoiceData(newInvoice, "invoice");
           await BillingService.documents.create(companyId!, genericDoc as any);
         } catch (error) {
           console.error("Failed to create generic document:", error);
-          // Don't fail the invoice creation if generic document creation fails
         }
       }
 
-      await postInvoiceIfNeeded(companyId!, newInvoice, true);
       return newInvoice;
     },
-    onSuccess: () => {
+    onSuccess: (invoice) => {
       queryClient.invalidateQueries({ queryKey: ["billing", "invoices"] });
       queryClient.invalidateQueries({ queryKey: ["billing", "documents"] });
       queryClient.invalidateQueries({ queryKey: ["billing", "journals"] });
       queryClient.invalidateQueries({ queryKey: ["billing", "accounts"] });
       queryClient.invalidateQueries({ queryKey: ["billing", "settings"] });
+      if (companyId && user) {
+        void notifyDocumentApprovers({
+          companyId,
+          senderId: user.id,
+          senderName: user.name,
+          kind: "invoice",
+          title: invoice.invoiceNumber || invoice.customerName || "",
+        });
+      }
     },
   });
 }
@@ -139,7 +147,18 @@ export function useUpdateInvoiceMutation(options?: { useGenericSystem?: boolean 
         (data.status === "sent" || data.status === "paid") &&
         existingInvoice.status === "draft";
 
-      let patch: UpdateInvoiceDTO = { ...data };
+      if (isPosting && !isDocumentApproved(existingInvoice)) {
+        throw new Error("Invoice must be approved before sending");
+      }
+
+      let patch: UpdateInvoiceDTO = isPosting
+        ? { ...data }
+        : {
+            ...data,
+            approvalStatus: "pending",
+            approvedAt: null,
+            approvedBy: null,
+          };
       if (isPosting) {
         const invoiceNumber = await BillingService.reserveInvoiceNumber(
           companyId!
@@ -205,4 +224,36 @@ export function useInvoicesByCustomer(customerId?: string) {
     ? invoices.filter((i) => i.customerId === customerId)
     : [];
   return { data: filtered, ...rest };
+}
+
+export function useApproveInvoiceMutation() {
+  const { t } = useTranslation("common");
+  const queryClient = useQueryClient();
+  const { companyId } = useCompany();
+  const user = useAuthStore((s) => s.user);
+
+  return useMutation({
+    mutationFn: async (id: string) => {
+      if (!canApproveDocuments(user?.role) || !user?.id) {
+        throw new Error("Not allowed");
+      }
+      const fields = approvedFields(user.id);
+      const res = await BillingService.invoices.update(companyId!, id, {
+        approvalStatus: fields.approvalStatus,
+        approvedAt: new Date(fields.approvedAt),
+        approvedBy: fields.approvedBy,
+      });
+      return convertTimestampsToDates(res.data) as Invoice;
+    },
+    onSuccess: (invoice) => {
+      queryClient.invalidateQueries({ queryKey: ["billing", "invoices"] });
+      if (invoice.id) {
+        queryClient.invalidateQueries({
+          queryKey: ["billing", "invoices", companyId, invoice.id],
+        });
+      }
+      toast.success(t("documentApproval.approveSuccess"));
+    },
+    onError: () => toast.error(t("documentApproval.approveError")),
+  });
 }

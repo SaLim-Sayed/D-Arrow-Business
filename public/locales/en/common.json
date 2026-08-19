@@ -8,6 +8,7 @@
     "taskList": "Task List",
     "taskBoard": "Task Board",
     "sprints": "Sprints",
+    "meetings": "Meetings",
     "analytics": "Analytics",
     "seed": "Seed Data",
     "people": "People & HR",
@@ -169,7 +170,22 @@
       "chat_message": {
         "title": "{{name}} sent a message",
         "message": "{{message}}"
+      },
+      "document_approval": {
+        "title": "Document awaiting approval",
+        "message": "{{name}}: {{message}}"
       }
     }
+  },
+  "documentApproval": {
+    "pending": "Pending approval",
+    "approved": "Approved",
+    "approve": "Approve",
+    "lockedHint": "Printing, sending, and other actions stay locked until a manager or super admin approves this document.",
+    "approverHint": "Review this document, then approve it to unlock print and other actions.",
+    "approvedHint": "This document is approved. Print and other actions are available.",
+    "approveSuccess": "Document approved",
+    "approveError": "Could not approve the document",
+    "mustSaveFirst": "Save the document first, then wait for approval."
   }
 }

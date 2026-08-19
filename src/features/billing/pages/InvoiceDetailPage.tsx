@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { useCompany } from "@/features/companies/context/company-context";
-import { useInvoice } from "../hooks/use-invoices";
+import { useInvoice, useApproveInvoiceMutation } from "../hooks/use-invoices";
 import { usePayments } from "../hooks/use-payments";
 import { useContactsQuery } from "@/features/crm/hooks/use-contacts";
 import { useBillingSettings } from "../hooks/use-billing-settings";
@@ -32,6 +32,8 @@ import {
   publishInvoicePdfShare,
   publishInvoiceSnapshotShare,
 } from "../api/invoice-share.service";
+import { DocumentApprovalBar } from "@/components/shared/document-approval-bar";
+import { isDocumentApproved } from "@/lib/permissions/document-approval";
 
 export default function InvoiceDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -48,6 +50,9 @@ export default function InvoiceDetailPage() {
   const dateLocale = billingDateLocale(i18n.language);
 
   const { data: invoice, isLoading } = useInvoice(id);
+  const approveInvoice = useApproveInvoiceMutation();
+  const { t: tCommon } = useTranslation("common");
+  const actionsUnlocked = isDocumentApproved(invoice);
   const { data: payments = [] } = usePayments(id);
   const { data: contactsRes } = useContactsQuery();
   const contacts = contactsRes?.data || [];
@@ -60,8 +65,9 @@ export default function InvoiceDetailPage() {
     ? invoicePdfShareUrl(invoice.shareToken)
     : "";
 
-  // Ensure share token (QR encodes https://…/i/:token)
+  // Ensure share token (QR encodes https://…/i/:token) only after approval
   useEffect(() => {
+    if (!actionsUnlocked) return;
     if (!invoice?.id || !companyId || invoice.shareToken) return;
     if (tokenEnsuredFor.current === invoice.id) return;
     tokenEnsuredFor.current = invoice.id;
@@ -77,10 +83,11 @@ export default function InvoiceDetailPage() {
         console.error(err);
         tokenEnsuredFor.current = null;
       });
-  }, [invoice?.id, invoice?.shareToken, companyId, queryClient]);
+  }, [invoice?.id, invoice?.shareToken, companyId, queryClient, actionsUnlocked]);
 
   // Publish snapshot ASAP so QR /i/:token works without Storage or PDF generation
   useEffect(() => {
+    if (!actionsUnlocked) return;
     if (!invoice?.id || !invoice.shareToken || !companyId) return;
 
     const fingerprint = [
@@ -112,10 +119,11 @@ export default function InvoiceDetailPage() {
       .catch((err) => {
         console.error("Failed to publish invoice snapshot share", err);
       });
-  }, [invoice, companyId, settings, company, customer, i18n.language]);
+  }, [invoice, companyId, settings, company, customer, i18n.language, actionsUnlocked]);
 
   // Optional: attach PDF file in background (Storage may be unavailable)
   useEffect(() => {
+    if (!actionsUnlocked) return;
     if (
       !invoice?.id ||
       !invoice.shareToken ||
@@ -177,7 +185,7 @@ export default function InvoiceDetailPage() {
       window.clearTimeout(timer);
       publishLock.current = false;
     };
-  }, [invoice, companyId, queryClient, settings, company, customer]);
+  }, [invoice, companyId, queryClient, settings, company, customer, actionsUnlocked]);
 
   if (isLoading) {
     return (
@@ -215,6 +223,10 @@ export default function InvoiceDetailPage() {
   };
 
   const handleDownloadPdf = async () => {
+    if (!actionsUnlocked) {
+      toast.error(tCommon("documentApproval.lockedHint"));
+      return;
+    }
     if (!printRef.current) return;
     setExporting(true);
     try {
@@ -261,6 +273,10 @@ export default function InvoiceDetailPage() {
   };
 
   const handleSendEmail = () => {
+    if (!actionsUnlocked) {
+      toast.error(tCommon("documentApproval.lockedHint"));
+      return;
+    }
     if (!customer?.email) {
       toast.error(t("invoices.detail.no_email"));
       return;
@@ -280,6 +296,16 @@ export default function InvoiceDetailPage() {
 
   return (
     <div className="mx-auto max-w-[220mm] space-y-6 pb-20 animate-in fade-in duration-500">
+      <div className="print:hidden">
+        <DocumentApprovalBar
+          document={invoice}
+          isSaved={Boolean(invoice.id)}
+          isApproving={approveInvoice.isPending}
+          onApprove={() => {
+            if (invoice.id) approveInvoice.mutate(invoice.id);
+          }}
+        />
+      </div>
       <div className="sticky top-0 z-20 flex flex-wrap items-center justify-between gap-4 border-b border-default-100 bg-background/80 py-4 backdrop-blur-md print:hidden">
         <div className="flex min-w-0 items-center gap-4">
           <Button
@@ -338,6 +364,7 @@ export default function InvoiceDetailPage() {
                 color="success"
                 variant="flat"
                 startContent={<CreditCard className="h-4 w-4" />}
+                isDisabled={!actionsUnlocked}
                 onPress={() => setPaymentOpen(true)}
               >
                 {t("invoices.detail.record_payment")}
@@ -346,6 +373,7 @@ export default function InvoiceDetailPage() {
           <Button
             variant="flat"
             startContent={<Mail className="h-4 w-4" />}
+            isDisabled={!actionsUnlocked}
             onPress={handleSendEmail}
           >
             {t("invoices.detail.send_email")}
@@ -355,6 +383,7 @@ export default function InvoiceDetailPage() {
             isIconOnly
             aria-label={t("actions.download_pdf")}
             isLoading={exporting}
+            isDisabled={!actionsUnlocked}
             onPress={handleDownloadPdf}
           >
             <Download className="h-4 w-4" />
@@ -363,6 +392,7 @@ export default function InvoiceDetailPage() {
             variant="flat"
             isIconOnly
             aria-label={t("actions.print")}
+            isDisabled={!actionsUnlocked}
             onPress={() => window.print()}
           >
             <Printer className="h-4 w-4" />

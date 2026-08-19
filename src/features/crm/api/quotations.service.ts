@@ -14,6 +14,7 @@ const base = createCrmCollectionService<
   status: "draft",
   total: 0,
   currency: "SAR",
+  approvalStatus: "pending",
 });
 
 export const QuotationsService = {

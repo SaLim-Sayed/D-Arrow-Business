@@ -58,6 +58,9 @@ export interface SavedContract {
   createdBy?: string;
   createdAt: string;
   updatedAt: string;
+  approvalStatus?: "pending" | "approved";
+  approvedAt?: string | null;
+  approvedBy?: string | null;
 }
 
 export type CreateContractDTO = Omit<

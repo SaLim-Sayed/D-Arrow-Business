@@ -8,7 +8,7 @@ import {
   ScrollShadow,
   Spinner,
 } from "@heroui/react";
-import { Bell, Check, CircleAlert, Briefcase, MessageSquare, AtSign } from "lucide-react";
+import { Bell, Check, CircleAlert, Briefcase, MessageSquare, AtSign, FileCheck } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { formatDistanceToNow } from "date-fns";
 import { ar, enUS } from "date-fns/locale";
@@ -92,6 +92,14 @@ function getLocalizedNotification(
         title: t("notifications.types.chat_message.title", { name: title }),
         message,
       };
+    case "document_approval":
+      return {
+        title: t("notifications.types.document_approval.title"),
+        message: t("notifications.types.document_approval.message", {
+          name: title,
+          message,
+        }),
+      };
   }
 
   return { title, message };
@@ -132,6 +140,8 @@ export function NotificationsDropdown() {
         return <AtSign className="w-4 h-4 text-secondary" />;
       case "chat_message":
         return <MessageSquare className="w-4 h-4 text-primary" />;
+      case "document_approval":
+        return <FileCheck className="w-4 h-4 text-warning" />;
       default:
         return <CircleAlert className="w-4 h-4 text-warning" />;
     }

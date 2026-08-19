@@ -5,6 +5,11 @@ import { QUERY_KEYS } from "@/lib/constants";
 import { useCompany } from "@/features/companies/context/company-context";
 import { useAuthStore } from "@/stores/auth.store";
 import { ContractsService } from "../api/contracts.service";
+import { notifyDocumentApprovers } from "@/features/notifications/api/document-approval-notifications";
+import {
+  approvedFields,
+  canApproveDocuments,
+} from "@/lib/permissions/document-approval";
 import type {
   CreateContractDTO,
   SavedContract,
@@ -32,20 +37,32 @@ export function useContractQuery(contractId: string | null) {
 export function useCreateContractMutation() {
   const { t } = useTranslation("crm");
   const { companyId } = useCompany();
-  const userId = useAuthStore((s) => s.user?.id);
+  const user = useAuthStore((s) => s.user);
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: (data: Omit<CreateContractDTO, "createdBy">) =>
       ContractsService.create(companyId!, {
         ...data,
-        createdBy: userId,
+        createdBy: user?.id,
+        approvalStatus: "pending",
+        approvedAt: null,
+        approvedBy: null,
       }),
-    onSuccess: () => {
+    onSuccess: (res) => {
       queryClient.invalidateQueries({
         queryKey: QUERY_KEYS.crm.contracts(companyId!),
       });
       toast.success(t("contract.saveSuccess"));
+      if (companyId && user) {
+        void notifyDocumentApprovers({
+          companyId,
+          senderId: user.id,
+          senderName: user.name,
+          kind: "contract",
+          title: res.data.title,
+        });
+      }
     },
     onError: () => toast.error(t("contract.saveError")),
   });
@@ -69,6 +86,32 @@ export function useUpdateContractMutation() {
       toast.success(t("contract.saveSuccess"));
     },
     onError: () => toast.error(t("contract.saveError")),
+  });
+}
+
+export function useApproveContractMutation() {
+  const { t } = useTranslation("common");
+  const { companyId } = useCompany();
+  const user = useAuthStore((s) => s.user);
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: string) => {
+      if (!canApproveDocuments(user?.role) || !user?.id) {
+        throw new Error("Not allowed");
+      }
+      return ContractsService.update(companyId!, id, approvedFields(user.id));
+    },
+    onSuccess: (res) => {
+      queryClient.invalidateQueries({
+        queryKey: QUERY_KEYS.crm.contracts(companyId!),
+      });
+      queryClient.invalidateQueries({
+        queryKey: QUERY_KEYS.crm.contract(res.data.id),
+      });
+      toast.success(t("documentApproval.approveSuccess"));
+    },
+    onError: () => toast.error(t("documentApproval.approveError")),
   });
 }
 

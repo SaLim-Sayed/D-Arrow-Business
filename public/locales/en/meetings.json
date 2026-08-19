@@ -1,0 +1,59 @@
+{
+  "title": "Meetings",
+  "description": "Schedule team meetings and get a reminder when they start.",
+  "newMeeting": "New meeting",
+  "empty": "No meetings scheduled yet.",
+  "groups": {
+    "today": "Today",
+    "tomorrow": "Tomorrow",
+    "upcoming": "Upcoming",
+    "past": "Past"
+  },
+  "form": {
+    "createTitle": "Create meeting",
+    "editTitle": "Edit meeting",
+    "title": "Meeting title",
+    "titlePlaceholder": "e.g. Plan review meeting",
+    "team": "Team / group",
+    "teamPlaceholder": "e.g. Development team",
+    "date": "Date",
+    "time": "Time",
+    "duration": "Duration",
+    "minutes": "{{count}} min",
+    "reminder": "Reminder",
+    "reminderAtTime": "At meeting time",
+    "reminderBefore": "{{count}} min before",
+    "location": "Location or link",
+    "locationPlaceholder": "Meeting room or call link",
+    "attendees": "Attendees",
+    "attendeesPlaceholder": "Pick team members",
+    "agenda": "Agenda",
+    "agendaPlaceholder": "Points to discuss",
+    "cancel": "Cancel",
+    "create": "Create",
+    "save": "Save"
+  },
+  "card": {
+    "noAttendees": "No attendees",
+    "edit": "Edit",
+    "delete": "Delete"
+  },
+  "reminder": {
+    "title": "Meeting reminder",
+    "body": "{{title}} at {{time}}",
+    "bodyWithTeam": "{{title}} with {{team}} at {{time}}"
+  },
+  "notifications": {
+    "enable": "Enable browser alerts",
+    "enabled": "Browser alerts enabled.",
+    "denied": "Browser notification permission was denied."
+  },
+  "toast": {
+    "created": "Meeting created",
+    "createFailed": "Could not create the meeting",
+    "updated": "Meeting updated",
+    "updateFailed": "Could not update the meeting",
+    "deleted": "Meeting deleted",
+    "deleteFailed": "Could not delete the meeting"
+  }
+}

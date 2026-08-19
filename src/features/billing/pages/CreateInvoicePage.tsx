@@ -46,8 +46,10 @@ import {
   resolveInvoiceCustomerName,
 } from "../utils/invoice-customer";
 import { toCreateContactDTO } from "@/features/crm/schemas/contact.schema";
+import { isDocumentApproved } from "@/lib/permissions/document-approval";
 export default function CreateInvoicePage() {
   const { t } = useTranslation("billing");
+  const { t: tCommon } = useTranslation("common");
   const navigate = useNavigate();
   const location = useLocation();
   const fromQuotation = (location.state as { fromQuotation?: {
@@ -86,6 +88,7 @@ export default function CreateInvoicePage() {
 
   const createInvoice = useCreateInvoiceMutation();
   const updateInvoice = useUpdateInvoiceMutation();
+  const canSend = isEditing && isDocumentApproved(existingInvoice);
 
   const {
     control,
@@ -273,6 +276,10 @@ export default function CreateInvoicePage() {
 
   const onSubmit = async (data: CreateInvoiceDTO, actionType: "draft" | "sent") => {
     try {
+      if (actionType === "sent" && !canSend) {
+        toast.error(tCommon("documentApproval.lockedHint"));
+        return;
+      }
       const customer = await resolveCustomerForSave(data);
       const finalData: CreateInvoiceDTO = {
         ...data,
@@ -580,7 +587,13 @@ export default function CreateInvoicePage() {
           </Card>
         </div>
 
-        <div className="flex justify-end gap-3 sticky bottom-4 bg-background/80 backdrop-blur-md p-4 rounded-2xl border border-default-100 shadow-xl z-10">
+        <div className="flex flex-col items-end gap-2 sticky bottom-4 bg-background/80 backdrop-blur-md p-4 rounded-2xl border border-default-100 shadow-xl z-10">
+          {!canSend && (
+            <p className="w-full text-xs text-warning">
+              {tCommon("documentApproval.lockedHint")}
+            </p>
+          )}
+          <div className="flex justify-end gap-3 w-full">
           <Button
             variant="flat"
             onPress={() => handleSubmit((data) => onSubmit(data as any, "draft"))()}
@@ -593,10 +606,12 @@ export default function CreateInvoicePage() {
             color="primary"
             onPress={() => handleSubmit((data) => onSubmit(data as any, "sent"))()}
             isLoading={isSubmitting || updateInvoice.isPending || createInvoice.isPending || createContact.isPending}
+            isDisabled={!canSend}
             startContent={<Send className="w-4 h-4" />}
           >
             {isEditing ? t("invoices.create.update_send") : t("invoices.create.save_send")}
           </Button>
+          </div>
         </div>
       </form>
     </div>

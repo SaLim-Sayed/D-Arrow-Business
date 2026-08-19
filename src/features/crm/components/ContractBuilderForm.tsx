@@ -47,7 +47,13 @@ import {
   useCreateContractMutation,
   useDeleteContractMutation,
   useUpdateContractMutation,
+  useApproveContractMutation,
 } from "../hooks/use-contracts";
+import { DocumentApprovalBar } from "@/components/shared/document-approval-bar";
+import {
+  isDocumentApproved,
+  pendingApprovalFields,
+} from "@/lib/permissions/document-approval";
 
 function uid(prefix: string) {
   return `${prefix}_${Math.random().toString(36).slice(2, 10)}`;
@@ -263,6 +269,7 @@ function SimplePartyFields({
 
 export function ContractBuilderForm() {
   const { t } = useTranslation("crm");
+  const { t: tCommon } = useTranslation("common");
   const { data: profile } = useCompanyProfile();
   const company = useMemo(() => buildCompanyInfo(profile), [profile]);
   const { data: contactsRes } = useContactsQuery();
@@ -299,7 +306,10 @@ export function ContractBuilderForm() {
   const createMutation = useCreateContractMutation();
   const updateMutation = useUpdateContractMutation();
   const deleteMutation = useDeleteContractMutation();
+  const approveMutation = useApproveContractMutation();
   const saving = createMutation.isPending || updateMutation.isPending;
+  const activeSaved = saved.find((c) => c.id === savedId);
+  const actionsUnlocked = isDocumentApproved(activeSaved);
 
   const patch = (partial: Partial<ContractFormDraft>) =>
     setForm((prev) => ({ ...prev, ...partial }));
@@ -451,6 +461,7 @@ export function ContractBuilderForm() {
       status: "draft" as const,
       form,
       contactId: form.contactId,
+      ...pendingApprovalFields(),
     };
     if (savedId) {
       await updateMutation.mutateAsync({ id: savedId, data: payload });
@@ -461,6 +472,10 @@ export function ContractBuilderForm() {
   };
 
   const handleDownload = async () => {
+    if (!actionsUnlocked) {
+      toast.error(tCommon("documentApproval.lockedHint"));
+      return;
+    }
     if (!form.client.name.trim()) {
       toast.error(t("contract.clientRequired"));
       return;
@@ -497,6 +512,7 @@ export function ContractBuilderForm() {
             className="font-semibold shadow-sm shadow-primary/25"
             startContent={<Download className="h-4 w-4" />}
             isLoading={exporting}
+            isDisabled={!actionsUnlocked}
             onPress={() => void handleDownload()}
           >
             {t("contract.downloadPdf")}
@@ -537,7 +553,9 @@ export function ContractBuilderForm() {
             >
               {saved.map((c) => (
                 <SelectItem key={c.id} textValue={c.title}>
-                  {c.title}
+                  {c.approvalStatus === "pending"
+                    ? `${c.title} · ${tCommon("documentApproval.pending")}`
+                    : c.title}
                 </SelectItem>
               ))}
             </Select>
@@ -559,6 +577,15 @@ export function ContractBuilderForm() {
           </div>
         </div>
       </div>
+
+      <DocumentApprovalBar
+        document={activeSaved}
+        isSaved={Boolean(savedId)}
+        isApproving={approveMutation.isPending}
+        onApprove={() => {
+          if (savedId) approveMutation.mutate(savedId);
+        }}
+      />
 
       {/* Progress rail */}
       <div className="overflow-hidden rounded-2xl border border-default-200 bg-content1 p-4 sm:p-5">
@@ -967,6 +994,7 @@ export function ContractBuilderForm() {
                 className="font-semibold text-white shadow-sm shadow-success/25"
                 startContent={<Download className="h-4 w-4" />}
                 isLoading={exporting}
+                isDisabled={!actionsUnlocked}
                 onPress={() => void handleDownload()}
               >
                 {t("contract.downloadPdf")}

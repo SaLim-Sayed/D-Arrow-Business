@@ -3,12 +3,14 @@ import { Header } from "./header";
 import { PortalSidebar } from "./portal-sidebar";
 import { PortalPickerDrawer } from "@/features/portals/components/PortalPickerDrawer";
 import { useSyncLastPortal } from "@/features/portals/hooks/use-sync-last-portal";
+import { useMeetingReminders } from "@/features/meetings/hooks/use-meeting-reminders";
 import { getPortalFromPath } from "@/lib/portal-permissions";
 import { cn } from "@/lib/utils";
 import { useLayoutStore } from "@/stores/layout.store";
 
 export function AppLayout() {
   useSyncLastPortal();
+  useMeetingReminders();
   const { pathname } = useLocation();
   const { sidebarCollapsed, portalPickerOpen, setPortalPickerOpen } =
     useLayoutStore();
