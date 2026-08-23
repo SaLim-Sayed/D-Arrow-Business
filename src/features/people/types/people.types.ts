@@ -17,6 +17,8 @@ export interface Employee {
   userId: string;
   firstName: string;
   lastName: string;
+  /** Some auto-provisioned records use a single name field. */
+  name?: string;
   email: string;
   avatarUrl?: string;
   jobTitle: string;
@@ -28,6 +30,13 @@ export interface Employee {
   status: EmployeeStatus;
   phoneNumber?: string;
   officeLocation?: string;
+  /** Work locations this employee may check in from (Jisr-style geofence). */
+  attendanceLocationIds?: string[];
+  /**
+   * geofence: must be inside an assigned location radius.
+   * flexible: check-in allowed from anywhere (remote / field).
+   */
+  attendanceCheckMode?: "geofence" | "flexible";
   salary?: number;
   currency?: string;
   onboardingTasks?: ChecklistItem[];
@@ -83,6 +92,42 @@ export interface Attendance {
   totalHours?: number;
   location?: string;
   notes?: string;
+  checkInLat?: number;
+  checkInLng?: number;
+  checkInLocationId?: string;
+  checkInLocationName?: string;
+  checkInDistanceMeters?: number;
+  checkOutLat?: number;
+  checkOutLng?: number;
+  checkOutLocationId?: string;
+  checkOutLocationName?: string;
+  checkOutDistanceMeters?: number;
+}
+
+export type AttendanceCheckMode = "geofence" | "flexible";
+
+export interface WorkLocation {
+  id: string;
+  name: string;
+  address?: string;
+  lat: number;
+  lng: number;
+  /** Allowed distance from the pin, in meters (Jisr default is typically 100–200). */
+  radiusMeters: number;
+  isActive: boolean;
+  createdAt?: Date | Timestamp | string;
+  updatedAt?: Date | Timestamp | string;
+}
+
+export type CreateWorkLocationDTO = Omit<WorkLocation, "id" | "createdAt" | "updatedAt">;
+
+export interface AttendanceGeoPayload {
+  lat: number;
+  lng: number;
+  accuracyMeters?: number;
+  locationId?: string;
+  locationName?: string;
+  distanceMeters?: number;
 }
 
 export interface Asset {

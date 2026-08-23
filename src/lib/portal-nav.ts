@@ -13,6 +13,7 @@ import {
   CheckSquare,
   Timer,
   TrendingUp,
+  MapPin,
   Settings,
   Package,
   BookCopy,
@@ -66,6 +67,12 @@ export const PEOPLE_NAV: PortalNavItem[] = [
   { labelKey: "nav.leave", path: "/people/leave", icon: Calendar },
   { labelKey: "nav.approvals", path: "/people/approvals", icon: CheckSquare },
   { labelKey: "nav.timesheets", path: "/people/timesheets", icon: Timer },
+  {
+    labelKey: "nav.attendance_settings",
+    path: "/people/attendance-settings",
+    icon: MapPin,
+    permission: "people.manage_employees",
+  },
   { labelKey: "nav.performance", path: "/people/performance", icon: TrendingUp },
 ];
 

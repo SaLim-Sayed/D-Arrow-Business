@@ -16,6 +16,7 @@ import {
   Megaphone,
   Target,
   FileSpreadsheet,
+  MapPin,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { EmployeeCard } from "../components/EmployeeCard";
@@ -283,6 +284,17 @@ export default function PeopleDashboardPage() {
                 onPress={() => navigate("/people/timesheets")}
               />
             </div>
+            {canManageEmployees && (
+            <div className="flex-1 min-w-[200px]">
+              <NavCard 
+                title={t("dashboard.nav_attendance")} 
+                desc={t("dashboard.nav_attendance_desc")} 
+                icon={<MapPin size={20} />}
+                iconBg="bg-teal-50 dark:bg-teal-500/10 text-teal-500"
+                onPress={() => navigate("/people/attendance-settings")}
+              />
+            </div>
+            )}
             <div className="flex-1 min-w-[200px]">
               <NavCard 
                 title={t("dashboard.nav_org")} 

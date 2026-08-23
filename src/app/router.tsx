@@ -34,6 +34,7 @@ import LeaveTrackerPage from "@/features/people/pages/LeaveTrackerPage";
 import EmployeeProfilePage from "@/features/people/pages/EmployeeProfilePage";
 import { ApprovalsPage } from "@/features/people/pages/ApprovalsPage";
 import PerformancePage from "@/features/people/pages/PerformancePage";
+import AttendanceSettingsPage from "@/features/people/pages/AttendanceSettingsPage";
 import TimesheetsPage from "@/features/people/pages/TimesheetsPage";
 import { SettingsLayout } from "@/features/companies/components/SettingsLayout";
 import { CompanySettingsPage } from "@/features/companies/pages/CompanySettingsPage";
@@ -152,6 +153,7 @@ export const router = createBrowserRouter([
               { path: "approvals", element: <ApprovalsPage /> },
               { path: "performance", element: <PerformancePage /> },
               { path: "timesheets", element: <TimesheetsPage /> },
+              { path: "attendance-settings", element: <AttendanceSettingsPage /> },
               { path: ":id", element: <EmployeeProfilePage /> },
             ],
           },

@@ -227,6 +227,7 @@ export default function TimesheetsPage() {
                 <TableColumn>{t("timesheets.col_department")}</TableColumn>
                 <TableColumn>{t("timesheets.col_checkin")}</TableColumn>
                 <TableColumn>{t("timesheets.col_checkout")}</TableColumn>
+                <TableColumn>{t("timesheets.col_location")}</TableColumn>
                 <TableColumn>{t("timesheets.col_hours")}</TableColumn>
                 <TableColumn>{t("timesheets.col_status")}</TableColumn>
               </TableHeader>
@@ -245,6 +246,9 @@ export default function TimesheetsPage() {
                     </TableCell>
                     <TableCell className="text-sm">
                       {log.checkOut ? new Date(log.checkOut as any).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "-"}
+                    </TableCell>
+                    <TableCell className="text-sm">
+                      {log.checkInLocationName || log.location || "—"}
                     </TableCell>
                     <TableCell className="font-bold text-sm text-primary">
                       {formatHours(log.totalHours)}

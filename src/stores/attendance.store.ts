@@ -5,9 +5,30 @@ import { db } from "@/lib/firebase";
 import { collection, query, where, getDocs, getDoc, addDoc, serverTimestamp } from "firebase/firestore";
 import { useAuthStore } from "./auth.store";
 import { AttendanceNotificationService } from "@/features/people/api/attendance-notifications.service";
+import { captureAttendanceGeo } from "@/features/people/utils/attendance-geo-check";
+import { AttendanceGeoError } from "@/features/people/utils/geo";
 import i18n from "@/lib/i18n";
 
-const at = (key: string) => i18n.t(key, { ns: "people" });
+const at = (key: string, opts?: Record<string, unknown>) =>
+  i18n.t(key, { ns: "people", ...opts });
+
+function geoErrorToast(error: unknown, fallbackKey: "checkin_failed" | "checkout_failed"): string {
+  if (error instanceof AttendanceGeoError) {
+    if (error.code === "permission_denied") return at("attendance_toast.gps_denied");
+    if (error.code === "unavailable" || error.code === "timeout") {
+      return at("attendance_toast.gps_unavailable");
+    }
+    if (error.code === "not_assigned") return at("attendance_toast.location_not_assigned");
+    if (error.code === "outside") {
+      return at("attendance_toast.outside_location", {
+        name: error.extra?.locationName ?? "",
+        distance: error.extra?.distanceMeters ?? "—",
+        radius: error.extra?.radiusMeters ?? "—",
+      });
+    }
+  }
+  return at(`attendance_toast.${fallbackKey}`);
+}
 
 interface AttendanceState {
   liveSeconds: number;
@@ -83,7 +104,8 @@ export const useAttendanceStore = create<AttendanceState>((set, get) => ({
     set({ isShiftLoading: true });
     try {
       const wasOnBreak = get().isOnBreak;
-      const res = await PeopleService.checkIn(companyId, finalEmployeeId);
+      const geo = await captureAttendanceGeo(companyId, finalEmployeeId);
+      const res = await PeopleService.checkIn(companyId, finalEmployeeId, geo);
       set({ 
         isOnBreak: false, 
         todayAttendance: res.data,
@@ -103,7 +125,7 @@ export const useAttendanceStore = create<AttendanceState>((set, get) => ({
       }
     } catch (error) {
       console.error("Check-in error:", error);
-      toast.error(at("attendance_toast.checkin_failed"));
+      toast.error(geoErrorToast(error, "checkin_failed"));
     } finally {
       set({ isShiftLoading: false });
     }
@@ -131,7 +153,14 @@ export const useAttendanceStore = create<AttendanceState>((set, get) => ({
     set({ isShiftLoading: true });
     try {
       const totalSeconds = get().accumulatedSeconds + get().liveSeconds;
-      await PeopleService.checkOut(companyId, attendanceId, finalEmployeeId, "off-duty");
+      const geo = await captureAttendanceGeo(companyId, finalEmployeeId);
+      await PeopleService.checkOut(
+        companyId,
+        attendanceId,
+        finalEmployeeId,
+        "off-duty",
+        geo
+      );
       get().stopTimer();
       await get().syncWithDb(companyId, userId);
       toast.success(at("attendance_toast.shift_completed"));
@@ -141,7 +170,7 @@ export const useAttendanceStore = create<AttendanceState>((set, get) => ({
         AttendanceNotificationService.notifyShiftCompleted(companyId, authUser.name, totalSeconds);
       }
     } catch (error) {
-      toast.error(at("attendance_toast.checkout_failed"));
+      toast.error(geoErrorToast(error, "checkout_failed"));
     } finally {
       set({ isShiftLoading: false });
     }

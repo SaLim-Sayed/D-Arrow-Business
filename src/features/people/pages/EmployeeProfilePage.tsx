@@ -44,9 +44,10 @@ import {
   TrendingUp,
 } from "lucide-react";
 import { motion } from "framer-motion";
-import { useEmployeesQuery, useLeaveRequestsQuery, useAssetsQuery, useUpdateEmployeeMutation, useAttendanceQuery } from "../hooks/use-people";
+import { useEmployeesQuery, useLeaveRequestsQuery, useAssetsQuery, useUpdateEmployeeMutation, useAttendanceQuery, useWorkLocationsQuery, useAssignAttendanceLocationMutation } from "../hooks/use-people";
 import { ApplyLeaveModal } from "../components/ApplyLeaveModal";
 import { ManageSkillsModal } from "../components/ManageSkillsModal";
+import { AssignAttendanceLocationModal } from "../components/AssignAttendanceLocationModal";
 import { db } from "@/lib/firebase";
 import { collection, query, orderBy, getDocs, getDoc, doc } from "firebase/firestore";
 import { useEffect } from "react";
@@ -88,6 +89,10 @@ export default function EmployeeProfilePage() {
 
   const { data: attendanceResponse, isLoading: isLoadingAttendance } = useAttendanceQuery(employee?.id || "");
   const attendanceLogs = attendanceResponse?.data || [];
+  const { data: locationsRes } = useWorkLocationsQuery();
+  const workLocations = locationsRes?.data ?? [];
+  const assignLocation = useAssignAttendanceLocationMutation();
+  const [assignOpen, setAssignOpen] = useState(false);
 
   const [appraisals, setAppraisals] = useState<any[]>([]);
   const [isLoadingAppraisals, setIsLoadingAppraisals] = useState(true);
@@ -303,6 +308,16 @@ export default function EmployeeProfilePage() {
       </motion.div>
 
       <ApplyLeaveModal isOpen={isOpen} onOpenChange={onOpenChange} />
+      <AssignAttendanceLocationModal
+        isOpen={assignOpen}
+        onOpenChange={setAssignOpen}
+        employee={employee ?? null}
+        locations={workLocations}
+        isSaving={assignLocation.isPending}
+        onSave={async (payload) => {
+          await assignLocation.mutateAsync(payload);
+        }}
+      />
 
       {/* Edit / Manage Modal */}
       <Modal isOpen={isEditOpen} onOpenChange={onEditOpenChange} placement="top-center">
@@ -551,6 +566,25 @@ export default function EmployeeProfilePage() {
 
                 <Tab key="attendance" title={<span className="flex items-center gap-1.5"><Clock size={15} />{t("profile.tab_attendance")}</span>}>
                   <div className="p-6 space-y-4">
+                    {canManageEmployees && employee && (
+                      <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-default-200 bg-default-50/70 p-4">
+                        <div>
+                          <p className="text-xs font-semibold uppercase text-default-400">
+                            {t("attendance_settings.assign_title")}
+                          </p>
+                          <p className="mt-1 text-sm font-medium">
+                            {employee.attendanceCheckMode === "flexible"
+                              ? t("attendance_settings.anywhere")
+                              : (employee.attendanceLocationIds ?? [])
+                                  .map((id) => workLocations.find((l) => l.id === id)?.name ?? id)
+                                  .join(" · ") || t("attendance_settings.not_set")}
+                          </p>
+                        </div>
+                        <Button size="sm" color="primary" variant="flat" onPress={() => setAssignOpen(true)}>
+                          {t("attendance_settings.assign")}
+                        </Button>
+                      </div>
+                    )}
                     <h4 className="font-bold text-sm flex items-center gap-2">
                       <Clock size={16} className="text-primary" />
                       {t("profile.daily_time_logs")}

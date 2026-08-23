@@ -66,6 +66,7 @@ export const QUERY_KEYS = {
     performanceReviews: (employeeId: string) => ["people", "reviews", employeeId] as const,
     assets: (companyId: string) => ["people", companyId, "assets"] as const,
     announcements: (companyId: string) => ["people", companyId, "announcements"] as const,
+    workLocations: (companyId: string) => ["people", companyId, "work-locations"] as const,
   },
   company: {
     profile: (companyId: string) => ["company", companyId, "profile"] as const,

@@ -4,7 +4,8 @@ import {
   getDoc, 
   doc, 
   addDoc, 
-  updateDoc, 
+  updateDoc,
+  deleteDoc,
   query,
   where,
   serverTimestamp,
@@ -20,7 +21,10 @@ import type {
   Attendance,
   LeaveStatus,
   Asset,
-  Announcement
+  Announcement,
+  WorkLocation,
+  CreateWorkLocationDTO,
+  AttendanceGeoPayload,
 } from "../types/people.types";
 
 const SERVICE_NAME = "PeopleService";
@@ -60,6 +64,18 @@ export const PeopleService = {
       return {
         data: { id: updatedDoc.id, ...updatedDoc.data() } as Employee,
         message: "Employee updated successfully",
+      };
+    })());
+  },
+
+  async getEmployee(companyId: string, employeeId: string): Promise<ApiResponse<Employee>> {
+    return withLogging(SERVICE_NAME, "getEmployee", (async () => {
+      const docRef = doc(db, "companies", companyId, "employees", employeeId);
+      const snap = await getDoc(docRef);
+      if (!snap.exists()) throw new Error("Employee not found");
+      return {
+        data: { id: snap.id, ...snap.data() } as Employee,
+        message: "Success",
       };
     })());
   },
@@ -121,18 +137,32 @@ export const PeopleService = {
   },
 
   // Attendance & Time Tracking
-  async checkIn(companyId: string, employeeId: string): Promise<ApiResponse<Attendance>> {
+  async checkIn(
+    companyId: string,
+    employeeId: string,
+    geo?: AttendanceGeoPayload
+  ): Promise<ApiResponse<Attendance>> {
     return withLogging(SERVICE_NAME, "checkIn", (async () => {
       const attendanceRef = collection(db, "companies", companyId, "attendance");
       const date = new Date().toISOString().split('T')[0];
-      
-      const docRef = await addDoc(attendanceRef, {
+
+      const payload: Record<string, unknown> = {
         employeeId,
         date,
         checkIn: serverTimestamp(),
         status: "present",
         createdAt: serverTimestamp(),
-      });
+      };
+      if (geo) {
+        payload.checkInLat = geo.lat;
+        payload.checkInLng = geo.lng;
+        payload.location = geo.locationName;
+        if (geo.locationId) payload.checkInLocationId = geo.locationId;
+        if (geo.locationName) payload.checkInLocationName = geo.locationName;
+        if (geo.distanceMeters != null) payload.checkInDistanceMeters = geo.distanceMeters;
+      }
+      
+      const docRef = await addDoc(attendanceRef, payload);
 
       // Global status update for persistence across browsers
       const employeeRef = doc(db, "companies", companyId, "employees", employeeId);
@@ -149,7 +179,13 @@ export const PeopleService = {
     })());
   },
 
-  async checkOut(companyId: string, attendanceId: string, employeeId: string, nextStatus: "on-break" | "off-duty" = "off-duty"): Promise<ApiResponse<Attendance>> {
+  async checkOut(
+    companyId: string,
+    attendanceId: string,
+    employeeId: string,
+    nextStatus: "on-break" | "off-duty" = "off-duty",
+    geo?: AttendanceGeoPayload
+  ): Promise<ApiResponse<Attendance>> {
     return withLogging(SERVICE_NAME, "checkOut", (async () => {
       const docRef = doc(db, "companies", companyId, "attendance", attendanceId);
       const snap = await getDoc(docRef);
@@ -159,11 +195,20 @@ export const PeopleService = {
       const checkOut = new Date();
       const totalHours = (checkOut.getTime() - checkIn.getTime()) / (1000 * 60 * 60);
 
-      await updateDoc(docRef, {
+      const update: Record<string, unknown> = {
         checkOut: serverTimestamp(),
         totalHours,
         updatedAt: serverTimestamp(),
-      });
+      };
+      if (geo) {
+        update.checkOutLat = geo.lat;
+        update.checkOutLng = geo.lng;
+        if (geo.locationId) update.checkOutLocationId = geo.locationId;
+        if (geo.locationName) update.checkOutLocationName = geo.locationName;
+        if (geo.distanceMeters != null) update.checkOutDistanceMeters = geo.distanceMeters;
+      }
+
+      await updateDoc(docRef, update);
 
       // Global status update
       const employeeRef = doc(db, "companies", companyId, "employees", employeeId);
@@ -375,6 +420,65 @@ export const PeopleService = {
         message: "Announcement created successfully",
       };
     })());
-  }
+  },
+
+  async getWorkLocations(companyId: string): Promise<ApiResponse<WorkLocation[]>> {
+    return withLogging(SERVICE_NAME, "getWorkLocations", (async () => {
+      const ref = collection(db, "companies", companyId, "work_locations");
+      const snapshot = await getDocs(ref);
+      const locations = snapshot.docs.map((docSnap) => ({
+        id: docSnap.id,
+        ...docSnap.data(),
+      })) as WorkLocation[];
+      return {
+        data: locations.sort((a, b) => a.name.localeCompare(b.name)),
+        message: "Success",
+      };
+    })());
+  },
+
+  async createWorkLocation(
+    companyId: string,
+    data: CreateWorkLocationDTO
+  ): Promise<ApiResponse<WorkLocation>> {
+    return withLogging(SERVICE_NAME, "createWorkLocation", (async () => {
+      const ref = collection(db, "companies", companyId, "work_locations");
+      const docRef = await addDoc(ref, {
+        ...data,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      });
+      const snap = await getDoc(docRef);
+      return {
+        data: { id: snap.id, ...snap.data() } as WorkLocation,
+        message: "Work location created",
+      };
+    })());
+  },
+
+  async updateWorkLocation(
+    companyId: string,
+    locationId: string,
+    data: Partial<CreateWorkLocationDTO>
+  ): Promise<ApiResponse<WorkLocation>> {
+    return withLogging(SERVICE_NAME, "updateWorkLocation", (async () => {
+      const docRef = doc(db, "companies", companyId, "work_locations", locationId);
+      await updateDoc(docRef, {
+        ...data,
+        updatedAt: serverTimestamp(),
+      });
+      const snap = await getDoc(docRef);
+      return {
+        data: { id: snap.id, ...snap.data() } as WorkLocation,
+        message: "Work location updated",
+      };
+    })());
+  },
+
+  async deleteWorkLocation(companyId: string, locationId: string): Promise<void> {
+    return withLogging(SERVICE_NAME, "deleteWorkLocation", (async () => {
+      await deleteDoc(doc(db, "companies", companyId, "work_locations", locationId));
+    })());
+  },
 };
 

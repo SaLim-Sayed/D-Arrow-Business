@@ -2,7 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { QUERY_KEYS } from "@/lib/constants";
 import { PeopleService } from "../api/people.service";
 import { useCompany } from "@/features/companies/context/company-context";
-import type { LeaveRequest, PerformanceReview, Asset, Announcement } from "../types/people.types";
+import type { LeaveRequest, PerformanceReview, Asset, Announcement, Employee, CreateWorkLocationDTO } from "../types/people.types";
 import { toast } from "sonner";
 import i18n from "@/lib/i18n";
 
@@ -194,5 +194,107 @@ export function useCreateAnnouncementMutation() {
     onError: (error: any) => {
       toast.error(error.message || t("toast.announcement_failed"));
     }
+  });
+}
+
+export function useWorkLocationsQuery() {
+  const { companyId } = useCompany();
+
+  return useQuery({
+    queryKey: QUERY_KEYS.people.workLocations(companyId!),
+    queryFn: () => PeopleService.getWorkLocations(companyId!),
+    enabled: !!companyId,
+  });
+}
+
+export function useCreateWorkLocationMutation() {
+  const { companyId } = useCompany();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data: CreateWorkLocationDTO) =>
+      PeopleService.createWorkLocation(companyId!, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: QUERY_KEYS.people.workLocations(companyId!),
+      });
+      toast.success(t("attendance_settings.location_saved"));
+    },
+    onError: (error: { message?: string }) => {
+      toast.error(error.message || t("attendance_settings.location_save_failed"));
+    },
+  });
+}
+
+export function useUpdateWorkLocationMutation() {
+  const { companyId } = useCompany();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      locationId,
+      data,
+    }: {
+      locationId: string;
+      data: Partial<CreateWorkLocationDTO>;
+    }) => PeopleService.updateWorkLocation(companyId!, locationId, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: QUERY_KEYS.people.workLocations(companyId!),
+      });
+      toast.success(t("attendance_settings.location_saved"));
+    },
+    onError: (error: { message?: string }) => {
+      toast.error(error.message || t("attendance_settings.location_save_failed"));
+    },
+  });
+}
+
+export function useDeleteWorkLocationMutation() {
+  const { companyId } = useCompany();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (locationId: string) =>
+      PeopleService.deleteWorkLocation(companyId!, locationId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: QUERY_KEYS.people.workLocations(companyId!),
+      });
+      toast.success(t("attendance_settings.location_deleted"));
+    },
+    onError: (error: { message?: string }) => {
+      toast.error(error.message || t("attendance_settings.location_delete_failed"));
+    },
+  });
+}
+
+export function useAssignAttendanceLocationMutation() {
+  const { companyId } = useCompany();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      employeeId,
+      attendanceLocationIds,
+      attendanceCheckMode,
+    }: {
+      employeeId: string;
+      attendanceLocationIds: string[];
+      attendanceCheckMode: Employee["attendanceCheckMode"];
+    }) =>
+      PeopleService.updateEmployee(companyId!, employeeId, {
+        attendanceLocationIds,
+        attendanceCheckMode,
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: QUERY_KEYS.people.employees(companyId!),
+      });
+      toast.success(t("attendance_settings.assignment_saved"));
+    },
+    onError: (error: { message?: string }) => {
+      toast.error(error.message || t("attendance_settings.assignment_failed"));
+    },
   });
 }
