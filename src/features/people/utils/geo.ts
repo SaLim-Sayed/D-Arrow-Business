@@ -9,10 +9,17 @@ export type AttendanceGeoCode =
   | "no_employee";
 
 export class AttendanceGeoError extends Error {
+  code: AttendanceGeoCode;
+  extra?: {
+    distanceMeters?: number;
+    radiusMeters?: number;
+    locationName?: string;
+  };
+
   constructor(
-    public code: AttendanceGeoCode,
+    code: AttendanceGeoCode,
     message: string,
-    public extra?: {
+    extra?: {
       distanceMeters?: number;
       radiusMeters?: number;
       locationName?: string;
@@ -20,6 +27,8 @@ export class AttendanceGeoError extends Error {
   ) {
     super(message);
     this.name = "AttendanceGeoError";
+    this.code = code;
+    this.extra = extra;
   }
 }
 
