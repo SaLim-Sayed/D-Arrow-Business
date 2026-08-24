@@ -253,7 +253,10 @@ export function InvoicePrintDocument({
   const documentTitle = t(zatcaInvoiceTitleKey(invoiceKind));
 
   const shareUrl = pdfShareUrl?.trim() || "";
-  const zatcaQr =
+  // Phase 2 QR (tags 1-9, includes the cryptographic stamp) once the invoice
+  // has been cleared/reported via zatcaSubmitInvoice; otherwise fall back to
+  // the Phase 1 QR (tags 1-5) computed locally.
+  const zatcaQrPhase1 =
     canShowZatcaQr(companyVatRaw)
       ? generateZatcaQr(
           companyName === "—" ? "Seller" : companyName,
@@ -263,10 +266,15 @@ export function InvoicePrintDocument({
           invoice.totalTax
         )
       : "";
-  // Prefer https share link so phone cameras open the PDF
-  const qrValue = shareUrl || zatcaQr;
+  const zatcaQr = invoice.zatcaQrPhase2 || zatcaQrPhase1;
+  // A ZATCA-compliant tax invoice MUST show the TLV QR, not a generic link —
+  // reader apps decode seller/VAT/totals (and, once submitted, the
+  // cryptographic stamp) from it; a URL QR isn't machine-readable by them.
+  // Only fall back to a "scan to view PDF" link-QR when there's no VAT
+  // number to build a compliant QR from at all.
+  const qrValue = zatcaQr || shareUrl;
   const showQr = !!qrValue;
-  const qrOpensPdf = !!shareUrl;
+  const qrOpensPdf = !zatcaQr && !!shareUrl;
   const vatPercent = invoiceVatPercent(invoice.subTotal, invoice.totalTax);
   const issueDateTime = invoice.issueDate.toLocaleString(dateLocale, {
     year: "numeric",

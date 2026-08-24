@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { zatcaClearanceStatusSchema, zatcaEnvironmentSchema } from "./zatca";
 
 export const invoiceItemSchema = z.object({
   id: z.string().optional(),
@@ -50,6 +51,19 @@ export const invoiceSchema = z
     approvedBy: z.string().optional().nullable(),
     createdAt: z.date().optional(),
     updatedAt: z.date().optional(),
+
+    // ZATCA Phase 2 — populated by POST /api/zatca/submit once this invoice
+    // has been signed and reported/cleared. Absent until then.
+    zatcaUuid: z.string().optional(),
+    zatcaIcv: z.number().int().min(1).optional(),
+    zatcaPreviousHash: z.string().optional(),
+    zatcaInvoiceHash: z.string().optional(),
+    zatcaQrPhase2: z.string().optional(),
+    zatcaClearanceStatus: zatcaClearanceStatusSchema.optional(),
+    zatcaClearanceErrors: z.array(z.unknown()).nullable().optional(),
+    zatcaClearanceWarnings: z.array(z.unknown()).nullable().optional(),
+    zatcaSubmittedAt: z.date().optional(),
+    zatcaEnvironment: zatcaEnvironmentSchema.optional(),
   })
   .superRefine((data, ctx) => {
     if (!data.customerId?.trim() && !data.customerName?.trim()) {

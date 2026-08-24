@@ -206,7 +206,19 @@
     "loading": "جاري تحميل الإعدادات...",
     "zakat_settings": "الزكاة",
     "zakat_settings_desc": "إعداد نسبة الزكاة الافتراضية وترقيم مستندات استحقاق الزكاة.",
-    "zakat_rate": "نسبة الزكاة"
+    "zakat_rate": "نسبة الزكاة",
+    "zatca_phase2_title": "زاتكا المرحلة الثانية (تكامل الفوترة الإلكترونية)",
+    "zatca_phase2_desc": "توقيع الفواتير وربطها بسلسلة التجزئة وإرسالها إلى واجهة زاتكا للمصادقة/الإبلاغ. يتطلب إتمام الإعداد (CSID) قبل الإرسال الفعلي — راجع docs/zatca-phase2-setup.md.",
+    "zatca_phase2_enable": "تفعيل إرسال زاتكا المرحلة الثانية",
+    "zatca_phase2_environment": "البيئة",
+    "zatca_phase2_environment_hint": "استخدم بيئة الاختبار (Sandbox) للتجربة المحلية، ثم بيئة المحاكاة (Simulation) بعد الحصول على رمز تحقق حقيقي من بوابة فاتورة، ثم بيئة الإنتاج بعد التحقق من المخرجات.",
+    "zatca_env_sandbox": "بيئة الاختبار (Sandbox)",
+    "zatca_env_simulation": "بيئة المحاكاة (Simulation)",
+    "zatca_env_production": "بيئة الإنتاج (Production)",
+    "zatca_phase2_onboarded": "حالة الإعداد",
+    "zatca_yes": "تم الإعداد",
+    "zatca_no": "لم يتم الإعداد",
+    "zatca_phase2_onboarding_hint": "إعداد الشهادة (CSR، رمز التحقق، CSID) خطوة تُنفَّذ لمرة واحدة عبر functions/scripts/onboard.ts ونقاط /api/zatca المصادَق عليها، وليس من هذه الشاشة — راجع docs/zatca-phase2-setup.md."
   },
   "products": {
     "title": "المنتجات والخدمات",
@@ -552,7 +564,19 @@
       "invoice_not_found": "لم يتم العثور على الفاتورة",
       "pdf_failed": "فشل إنشاء PDF",
       "no_email": "لا يوجد بريد إلكتروني للعميل",
-      "email_opened": "تم فتح تطبيق البريد"
+      "email_opened": "تم فتح تطبيق البريد",
+      "zatca_status": {
+        "not_submitted": "زاتكا: لم تُرسل",
+        "reported": "زاتكا: مُبلَّغة",
+        "cleared": "زاتكا: مُصادَق عليها",
+        "failed": "زاتكا: فشل الإرسال"
+      },
+      "zatca_submit": "إرسال إلى زاتكا",
+      "zatca_submitted": "تم الإرسال إلى زاتكا",
+      "zatca_retry": "إعادة محاولة الإرسال إلى زاتكا",
+      "zatca_submit_success": "قبلت زاتكا الفاتورة ({{status}})",
+      "zatca_submit_rejected": "رفضت زاتكا الفاتورة — راجع تفاصيل الخطأ قبل إعادة المحاولة",
+      "zatca_submit_error": "تعذّر الاتصال بزاتكا — حاول مرة أخرى"
     },
     "public": {
       "opening_pdf": "جاري فتح ملف PDF...",

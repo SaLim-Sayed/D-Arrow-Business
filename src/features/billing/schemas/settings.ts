@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { zatcaPhase2SettingsSchema } from "./zatca";
 
 function emptyToUndefined(value: unknown) {
   if (value === null || value === undefined || value === "") return undefined;
@@ -115,6 +116,10 @@ export function createBillingSettingsSchema(v: BillingSettingsValidationMessages
       (val) => (Number.isFinite(Number(val)) ? Number(val) : 2.5),
       z.number().min(0).max(100)
     ).default(2.5),
+    // ZATCA Phase 2 e-invoicing — non-secret toggle/environment only. The
+    // private key/certificate live in companies/{id}/zatcaSecrets, which
+    // Firestore rules block from all client access.
+    zatcaPhase2: zatcaPhase2SettingsSchema.optional(),
   });
 }
 

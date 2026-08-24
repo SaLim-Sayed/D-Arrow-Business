@@ -206,7 +206,19 @@
     "unsaved_hint": "You have unsaved changes — click Save.",
     "zakat_settings": "Zakat",
     "zakat_settings_desc": "Configure the default Zakat rate and document numbering used when accruing Zakat.",
-    "zakat_rate": "Zakat Rate"
+    "zakat_rate": "Zakat Rate",
+    "zatca_phase2_title": "ZATCA Phase 2 (E-Invoicing Integration)",
+    "zatca_phase2_desc": "Sign, hash-chain, and submit invoices to ZATCA's Clearance/Reporting API. Requires onboarding with a Compliance/Production CSID before it can submit for real — see docs/zatca-phase2-setup.md.",
+    "zatca_phase2_enable": "Enable ZATCA Phase 2 submission",
+    "zatca_phase2_environment": "Environment",
+    "zatca_phase2_environment_hint": "Use Sandbox for local testing, Simulation once you have a real OTP from the Fatoora portal, and Production only after validating output.",
+    "zatca_env_sandbox": "Sandbox (developer-portal)",
+    "zatca_env_simulation": "Simulation (pre-production)",
+    "zatca_env_production": "Production (core)",
+    "zatca_phase2_onboarded": "Onboarding status",
+    "zatca_yes": "Onboarded",
+    "zatca_no": "Not onboarded",
+    "zatca_phase2_onboarding_hint": "Onboarding (CSR, OTP, CSID) is a one-time, credential-issuing step and is done via functions/scripts/onboard.ts plus the authenticated /api/zatca endpoints, not from this screen — see docs/zatca-phase2-setup.md."
   },
   "products": {
     "title": "Products & Services",
@@ -545,7 +557,19 @@
       "invoice_not_found": "Invoice not found or loading...",
       "pdf_failed": "Failed to generate PDF",
       "no_email": "Customer has no email on file",
-      "email_opened": "Email client opened"
+      "email_opened": "Email client opened",
+      "zatca_status": {
+        "not_submitted": "ZATCA: Not submitted",
+        "reported": "ZATCA: Reported",
+        "cleared": "ZATCA: Cleared",
+        "failed": "ZATCA: Failed"
+      },
+      "zatca_submit": "Submit to ZATCA",
+      "zatca_submitted": "Submitted to ZATCA",
+      "zatca_retry": "Retry ZATCA submission",
+      "zatca_submit_success": "ZATCA accepted the invoice ({{status}})",
+      "zatca_submit_rejected": "ZATCA rejected the invoice — check the error details before resubmitting",
+      "zatca_submit_error": "Could not reach ZATCA — please try again"
     },
     "public": {
       "opening_pdf": "Opening PDF…",

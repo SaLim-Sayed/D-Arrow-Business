@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Button, Input, Spinner } from "@heroui/react";
+import { Button, Input, Spinner, Switch, Select, SelectItem, Chip } from "@heroui/react";
 import {
   Building2,
   Hash,
@@ -7,8 +7,9 @@ import {
   Settings2,
   ShieldAlert,
   Wallet,
+  ShieldCheck,
 } from "lucide-react";
-import { useForm, useFieldArray, type FieldErrors } from "react-hook-form";
+import { useForm, useFieldArray, Controller, type FieldErrors } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
@@ -145,6 +146,11 @@ export default function SettingsPage() {
       currencies: [{ ...DEFAULT_BILLING_CURRENCY_ENTRY }],
       taxes: [],
       paymentMethods: [],
+      zatcaPhase2: {
+        enabled: false,
+        environment: "developer-portal",
+        onboarded: false,
+      },
     },
   });
 
@@ -487,6 +493,64 @@ export default function SettingsPage() {
             )}
 
             {activeTab === "advanced" && (
+              <div className="space-y-6">
+              <SettingsSection
+                title={t("settings.zatca_phase2_title")}
+                description={t("settings.zatca_phase2_desc")}
+              >
+                <div className="space-y-4">
+                  <Controller
+                    name="zatcaPhase2.enabled"
+                    control={control}
+                    render={({ field }) => (
+                      <Switch isSelected={!!field.value} onValueChange={field.onChange} size="sm">
+                        {t("settings.zatca_phase2_enable")}
+                      </Switch>
+                    )}
+                  />
+                  <Controller
+                    name="zatcaPhase2.environment"
+                    control={control}
+                    render={({ field }) => (
+                      <Select
+                        label={t("settings.zatca_phase2_environment")}
+                        selectedKeys={new Set([field.value || "developer-portal"])}
+                        onSelectionChange={(keys) => field.onChange(Array.from(keys)[0])}
+                        variant="bordered"
+                        className="max-w-xs"
+                        description={t("settings.zatca_phase2_environment_hint")}
+                      >
+                        <SelectItem key="developer-portal" textValue={t("settings.zatca_env_sandbox")}>
+                          {t("settings.zatca_env_sandbox")}
+                        </SelectItem>
+                        <SelectItem key="simulation" textValue={t("settings.zatca_env_simulation")}>
+                          {t("settings.zatca_env_simulation")}
+                        </SelectItem>
+                        <SelectItem key="core" textValue={t("settings.zatca_env_production")}>
+                          {t("settings.zatca_env_production")}
+                        </SelectItem>
+                      </Select>
+                    )}
+                  />
+                  <div className="flex items-center gap-2 text-sm">
+                    <ShieldCheck className="h-4 w-4 text-default-400" />
+                    <span className="text-default-500">{t("settings.zatca_phase2_onboarded")}:</span>
+                    <Chip
+                      size="sm"
+                      variant="flat"
+                      color={watch("zatcaPhase2.onboarded") ? "success" : "warning"}
+                    >
+                      {watch("zatcaPhase2.onboarded")
+                        ? t("settings.zatca_yes")
+                        : t("settings.zatca_no")}
+                    </Chip>
+                  </div>
+                  <p className="max-w-xl text-xs text-default-400">
+                    {t("settings.zatca_phase2_onboarding_hint")}
+                  </p>
+                </div>
+              </SettingsSection>
+
               <SettingsSection
                 title={t("settings.developer_actions")}
                 description={t("settings.seed_desc")}
@@ -504,6 +568,7 @@ export default function SettingsPage() {
                   </Button>
                 </div>
               </SettingsSection>
+              </div>
             )}
           </div>
 

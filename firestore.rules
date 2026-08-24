@@ -94,6 +94,20 @@ service cloud.firestore {
       allow read, write: if belongsToCompany(companyId);
       allow create: if signedIn();
 
+      // ZATCA Phase 2 credentials (private key, certificate, CSID auth) and
+      // the invoice hash-chain state. Written only by the server (Vercel
+      // /api/zatca or optional Cloud Functions) via the Admin SDK, which
+      // bypasses these rules entirely — so "false" here just means no client,
+      // however privileged, can read or write them directly. Keep this ABOVE
+      // the generic wildcard match below; a more specific match always wins
+      // over a recursive one for the same path.
+      match /zatcaSecrets/{envId} {
+        allow read, write: if false;
+      }
+      match /zatcaChain/{docId} {
+        allow read, write: if false;
+      }
+
       match /{allSubcollections=**} {
         allow read, write: if belongsToCompany(companyId);
       }
