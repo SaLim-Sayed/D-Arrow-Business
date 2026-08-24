@@ -10,6 +10,7 @@ import {
   Mail,
   CreditCard,
   Edit2,
+  ShieldCheck,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useCompany } from "@/features/companies/context/company-context";
@@ -34,6 +35,7 @@ import {
 } from "../api/invoice-share.service";
 import { DocumentApprovalBar } from "@/components/shared/document-approval-bar";
 import { isDocumentApproved } from "@/lib/permissions/document-approval";
+import { submitInvoiceToZatca } from "../api/zatca.service";
 
 export default function InvoiceDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -46,6 +48,7 @@ export default function InvoiceDetailPage() {
   const tokenEnsuredFor = useRef<string | null>(null);
   const [paymentOpen, setPaymentOpen] = useState(false);
   const [exporting, setExporting] = useState(false);
+  const [submittingZatca, setSubmittingZatca] = useState(false);
 
   const dateLocale = billingDateLocale(i18n.language);
 
@@ -294,6 +297,41 @@ export default function InvoiceDetailPage() {
     toast.success(t("invoices.detail.email_opened"));
   };
 
+  const zatcaEnabled = Boolean(settings?.zatcaPhase2?.enabled);
+  const zatcaStatus = invoice.zatcaClearanceStatus ?? "not_submitted";
+  const zatcaSubmittable =
+    zatcaEnabled && invoice.status !== "draft" && invoice.status !== "cancelled";
+
+  const handleSubmitZatca = async () => {
+    if (!companyId || !invoice.id) return;
+    setSubmittingZatca(true);
+    try {
+      const result = await submitInvoiceToZatca(companyId, invoice.id);
+      if (result.accepted) {
+        toast.success(t("invoices.detail.zatca_submit_success", { status: result.status }));
+      } else {
+        toast.error(t("invoices.detail.zatca_submit_rejected"));
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error(
+        err instanceof Error ? err.message : t("invoices.detail.zatca_submit_error")
+      );
+    } finally {
+      setSubmittingZatca(false);
+      queryClient.invalidateQueries({
+        queryKey: ["billing", "invoices", companyId, invoice.id],
+      });
+    }
+  };
+
+  const zatcaChipColor =
+    zatcaStatus === "cleared" || zatcaStatus === "reported"
+      ? "success"
+      : zatcaStatus === "failed"
+        ? "danger"
+        : "default";
+
   return (
     <div className="mx-auto max-w-[220mm] space-y-6 pb-20 animate-in fade-in duration-500">
       <div className="print:hidden">
@@ -332,6 +370,16 @@ export default function InvoiceDetailPage() {
                   {t("invoices.detail.qr_pdf_ready")}
                 </span>
               ) : null}
+              {zatcaEnabled && (
+                <Chip
+                  color={zatcaChipColor}
+                  variant="flat"
+                  size="sm"
+                  className="font-bold text-[10px]"
+                >
+                  {t(`invoices.detail.zatca_status.${zatcaStatus}`)}
+                </Chip>
+              )}
             </h1>
             <p className="text-sm text-default-500">
               {t("invoices.detail.issue_datetime")}:{" "}
@@ -370,6 +418,22 @@ export default function InvoiceDetailPage() {
                 {t("invoices.detail.record_payment")}
               </Button>
             )}
+          {zatcaSubmittable && (
+            <Button
+              color={zatcaStatus === "failed" ? "danger" : "primary"}
+              variant="flat"
+              startContent={<ShieldCheck className="h-4 w-4" />}
+              isLoading={submittingZatca}
+              isDisabled={!actionsUnlocked || zatcaStatus === "cleared" || zatcaStatus === "reported"}
+              onPress={handleSubmitZatca}
+            >
+              {zatcaStatus === "cleared" || zatcaStatus === "reported"
+                ? t("invoices.detail.zatca_submitted")
+                : zatcaStatus === "failed"
+                  ? t("invoices.detail.zatca_retry")
+                  : t("invoices.detail.zatca_submit")}
+            </Button>
+          )}
           <Button
             variant="flat"
             startContent={<Mail className="h-4 w-4" />}
