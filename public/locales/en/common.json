@@ -185,7 +185,7 @@
     "pending": "Pending approval",
     "approved": "Approved",
     "approve": "Approve",
-    "lockedHint": "Printing, sending, and other actions stay locked until a manager or super admin approves this document.",
+    "lockedHint": "Printing, sending, and other actions stay locked until an admin, manager, or super admin approves this document.",
     "approverHint": "Review this document, then approve it to unlock print and other actions.",
     "approvedHint": "This document is approved. Print and other actions are available.",
     "approveSuccess": "Document approved",

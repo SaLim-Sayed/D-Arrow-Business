@@ -8,6 +8,7 @@ export function invoiceStatusClass(status: Invoice["status"]) {
   if (status === "paid") return "bg-success/10 text-success";
   if (status === "overdue") return "bg-danger/10 text-danger";
   if (status === "sent") return "bg-primary/10 text-primary";
+  if (status === "pending") return "bg-warning/15 text-warning-700 dark:text-warning";
   if (status === "cancelled") return "bg-default-100 text-default-400";
   return "bg-default-100 text-default-500";
 }

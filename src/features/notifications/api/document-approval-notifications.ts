@@ -13,8 +13,8 @@ const LINKS: Record<ApprovalDocumentKind, string> = {
 };
 
 /**
- * Pings managers and super admins (except the creator) that a document
- * is waiting for their approval before print/send.
+ * Pings admins, managers, and super admins (except the creator) that a
+ * document is waiting for their approval before print/send.
  */
 export async function notifyDocumentApprovers(input: {
   companyId: string;

@@ -16,14 +16,15 @@ import {
   approvedFields,
   canApproveDocuments,
   isDocumentApproved,
+  pendingApprovalFields,
 } from "@/lib/permissions/document-approval";
 
 async function postInvoiceIfNeeded(
   _companyId: string,
   invoice: Invoice,
-  wasDraft: boolean
+  shouldPost: boolean
 ) {
-  if (!wasDraft) return;
+  if (!shouldPost) return;
   if (invoice.status !== "sent" && invoice.status !== "paid") return;
 
   try {
@@ -33,6 +34,14 @@ async function postInvoiceIfNeeded(
   } catch (error) {
     console.error("Failed to post invoice to accounting module:", error);
   }
+}
+
+async function ensureInvoiceNumber(
+  companyId: string,
+  current?: string
+): Promise<string> {
+  if (current && current !== "DRAFT") return current;
+  return BillingService.reserveInvoiceNumber(companyId);
 }
 
 export function useInvoices() {
@@ -72,16 +81,39 @@ export function useCreateInvoiceMutation(options?: { useGenericSystem?: boolean 
 
   return useMutation({
     mutationFn: async (data: CreateInvoiceDTO) => {
+      const wantsIssue = data.status === "sent" || data.status === "pending";
+      const autoApprove = canApproveDocuments(user?.role);
+
       let payload: CreateInvoiceDTO = {
         ...data,
-        status: "draft",
-        invoiceNumber: data.invoiceNumber || "DRAFT",
         amountPaid: data.amountPaid ?? 0,
         shareToken: data.shareToken || createInvoiceShareToken(),
-        approvalStatus: "pending",
-        approvedAt: null,
-        approvedBy: null,
       };
+
+      if (!wantsIssue) {
+        payload = {
+          ...payload,
+          status: "draft",
+          invoiceNumber: data.invoiceNumber && data.invoiceNumber !== "DRAFT" ? data.invoiceNumber : "DRAFT",
+          ...pendingApprovalFields(),
+        };
+      } else if (autoApprove && user?.id) {
+        payload = {
+          ...payload,
+          status: "sent",
+          invoiceNumber: await ensureInvoiceNumber(companyId!, data.invoiceNumber),
+          postedAt: new Date(),
+          ...approvedFields(user.id),
+          approvedAt: new Date(),
+        };
+      } else {
+        payload = {
+          ...payload,
+          status: "pending",
+          invoiceNumber: await ensureInvoiceNumber(companyId!, data.invoiceNumber),
+          ...pendingApprovalFields(),
+        };
+      }
 
       const res = await BillingService.invoices.create(companyId!, payload);
       const newInvoice = convertTimestampsToDates(res.data) as Invoice;
@@ -95,6 +127,10 @@ export function useCreateInvoiceMutation(options?: { useGenericSystem?: boolean 
         }
       }
 
+      if (newInvoice.status === "sent" || newInvoice.status === "paid") {
+        await postInvoiceIfNeeded(companyId!, newInvoice, true);
+      }
+
       return newInvoice;
     },
     onSuccess: (invoice) => {
@@ -103,7 +139,12 @@ export function useCreateInvoiceMutation(options?: { useGenericSystem?: boolean 
       queryClient.invalidateQueries({ queryKey: ["billing", "journals"] });
       queryClient.invalidateQueries({ queryKey: ["billing", "accounts"] });
       queryClient.invalidateQueries({ queryKey: ["billing", "settings"] });
-      if (companyId && user) {
+      if (
+        companyId &&
+        user &&
+        invoice.status === "pending" &&
+        invoice.approvalStatus === "pending"
+      ) {
         void notifyDocumentApprovers({
           companyId,
           senderId: user.id,
@@ -134,6 +175,7 @@ export function useInvoice(id?: string) {
 export function useUpdateInvoiceMutation(options?: { useGenericSystem?: boolean }) {
   const queryClient = useQueryClient();
   const { companyId } = useCompany();
+  const user = useAuthStore((s) => s.user);
   const useGeneric = options?.useGenericSystem ?? false;
 
   return useMutation({
@@ -143,30 +185,70 @@ export function useUpdateInvoiceMutation(options?: { useGenericSystem?: boolean 
         existingRes.data
       ) as Invoice;
 
-      const isPosting =
-        (data.status === "sent" || data.status === "paid") &&
-        existingInvoice.status === "draft";
+      const autoApprove = canApproveDocuments(user?.role);
+      const wantsIssue = data.status === "sent" || data.status === "pending";
+      const issuingFromDraft =
+        wantsIssue && existingInvoice.status === "draft";
+      const issuingPending =
+        data.status === "sent" &&
+        existingInvoice.status === "pending" &&
+        autoApprove;
 
-      if (isPosting && !isDocumentApproved(existingInvoice)) {
+      if (
+        data.status === "sent" &&
+        existingInvoice.status === "pending" &&
+        !autoApprove &&
+        !isDocumentApproved(existingInvoice)
+      ) {
         throw new Error("Invoice must be approved before sending");
       }
 
-      let patch: UpdateInvoiceDTO = isPosting
-        ? { ...data }
-        : {
-            ...data,
-            approvalStatus: "pending",
-            approvedAt: null,
-            approvedBy: null,
-          };
-      if (isPosting) {
-        const invoiceNumber = await BillingService.reserveInvoiceNumber(
-          companyId!
+      let patch: UpdateInvoiceDTO = { ...data };
+      let shouldPost = false;
+
+      if (issuingFromDraft) {
+        const invoiceNumber = await ensureInvoiceNumber(
+          companyId!,
+          existingInvoice.invoiceNumber
         );
+        if (autoApprove && user?.id) {
+          patch = {
+            ...patch,
+            status: "sent",
+            invoiceNumber,
+            postedAt: new Date(),
+            ...approvedFields(user.id),
+            approvedAt: new Date(),
+          };
+          shouldPost = true;
+        } else {
+          patch = {
+            ...patch,
+            status: "pending",
+            invoiceNumber,
+            ...pendingApprovalFields(),
+          };
+        }
+      } else if (issuingPending && user?.id) {
         patch = {
           ...patch,
-          invoiceNumber,
+          status: "sent",
           postedAt: new Date(),
+          ...approvedFields(user.id),
+          approvedAt: new Date(),
+        };
+        shouldPost = true;
+      } else if (existingInvoice.status === "pending") {
+        patch = {
+          ...patch,
+          status: "pending",
+          invoiceNumber: existingInvoice.invoiceNumber,
+          ...pendingApprovalFields(),
+        };
+      } else if (!isDocumentApproved(existingInvoice) || !wantsIssue) {
+        patch = {
+          ...patch,
+          ...pendingApprovalFields(),
         };
       }
 
@@ -202,10 +284,10 @@ export function useUpdateInvoiceMutation(options?: { useGenericSystem?: boolean 
         }
       }
 
-      await postInvoiceIfNeeded(companyId!, updatedInvoice, isPosting);
-      return updatedInvoice;
+      await postInvoiceIfNeeded(companyId!, updatedInvoice, shouldPost);
+      return { invoice: updatedInvoice, notifyApprovers: issuingFromDraft && updatedInvoice.status === "pending" };
     },
-    onSuccess: (_, variables) => {
+    onSuccess: (result, variables) => {
       queryClient.invalidateQueries({ queryKey: ["billing", "invoices"] });
       queryClient.invalidateQueries({
         queryKey: ["billing", "invoices", variables.id],
@@ -214,6 +296,15 @@ export function useUpdateInvoiceMutation(options?: { useGenericSystem?: boolean 
       queryClient.invalidateQueries({ queryKey: ["billing", "journals"] });
       queryClient.invalidateQueries({ queryKey: ["billing", "accounts"] });
       queryClient.invalidateQueries({ queryKey: ["billing", "settings"] });
+      if (result.notifyApprovers && companyId && user) {
+        void notifyDocumentApprovers({
+          companyId,
+          senderId: user.id,
+          senderName: user.name,
+          kind: "invoice",
+          title: result.invoice.invoiceNumber || result.invoice.customerName || "",
+        });
+      }
     },
   });
 }
@@ -224,6 +315,74 @@ export function useInvoicesByCustomer(customerId?: string) {
     ? invoices.filter((i) => i.customerId === customerId)
     : [];
   return { data: filtered, ...rest };
+}
+
+export function useConvertDraftInvoiceMutation() {
+  const { t } = useTranslation("billing");
+  const queryClient = useQueryClient();
+  const { companyId } = useCompany();
+  const user = useAuthStore((s) => s.user);
+
+  return useMutation({
+    mutationFn: async (id: string) => {
+      if (!user?.id) throw new Error("Not allowed");
+      const existingRes = await BillingService.invoices.getById(companyId!, id);
+      const existingInvoice = convertTimestampsToDates(existingRes.data) as Invoice;
+      if (existingInvoice.status !== "draft") {
+        throw new Error("Not a draft");
+      }
+
+      const invoiceNumber = await ensureInvoiceNumber(
+        companyId!,
+        existingInvoice.invoiceNumber
+      );
+      const autoApprove = canApproveDocuments(user.role);
+      const patch: UpdateInvoiceDTO = autoApprove
+        ? {
+            status: "sent",
+            invoiceNumber,
+            postedAt: new Date(),
+            ...approvedFields(user.id),
+            approvedAt: new Date(),
+          }
+        : {
+            status: "pending",
+            invoiceNumber,
+            ...pendingApprovalFields(),
+          };
+
+      const res = await BillingService.invoices.update(companyId!, id, patch);
+      const updated = convertTimestampsToDates(res.data) as Invoice;
+      await postInvoiceIfNeeded(companyId!, updated, autoApprove);
+      return { invoice: updated, notifyApprovers: !autoApprove };
+    },
+    onSuccess: (result) => {
+      queryClient.invalidateQueries({ queryKey: ["billing", "invoices"] });
+      queryClient.invalidateQueries({ queryKey: ["billing", "settings"] });
+      if (result.invoice.id) {
+        queryClient.invalidateQueries({
+          queryKey: ["billing", "invoices", companyId, result.invoice.id],
+        });
+      }
+      if (result.notifyApprovers && companyId && user) {
+        void notifyDocumentApprovers({
+          companyId,
+          senderId: user.id,
+          senderName: user.name,
+          kind: "invoice",
+          title: result.invoice.invoiceNumber || result.invoice.customerName || "",
+        });
+        toast.success(t("invoices.create.submitted_for_approval"));
+      } else {
+        toast.success(
+          t("invoices.detail.convert_success", {
+            number: result.invoice.invoiceNumber,
+          })
+        );
+      }
+    },
+    onError: () => toast.error(t("invoices.detail.convert_error")),
+  });
 }
 
 export function useApproveInvoiceMutation() {
@@ -237,13 +396,25 @@ export function useApproveInvoiceMutation() {
       if (!canApproveDocuments(user?.role) || !user?.id) {
         throw new Error("Not allowed");
       }
+      const existingRes = await BillingService.invoices.getById(companyId!, id);
+      const existingInvoice = convertTimestampsToDates(existingRes.data) as Invoice;
       const fields = approvedFields(user.id);
+      const shouldIssue =
+        existingInvoice.status === "pending" || existingInvoice.status === "draft";
+      const invoiceNumber = shouldIssue
+        ? await ensureInvoiceNumber(companyId!, existingInvoice.invoiceNumber)
+        : existingInvoice.invoiceNumber;
       const res = await BillingService.invoices.update(companyId!, id, {
         approvalStatus: fields.approvalStatus,
         approvedAt: new Date(fields.approvedAt),
         approvedBy: fields.approvedBy,
+        ...(shouldIssue
+          ? { status: "sent" as const, invoiceNumber, postedAt: new Date() }
+          : {}),
       });
-      return convertTimestampsToDates(res.data) as Invoice;
+      const updated = convertTimestampsToDates(res.data) as Invoice;
+      await postInvoiceIfNeeded(companyId!, updated, shouldIssue);
+      return updated;
     },
     onSuccess: (invoice) => {
       queryClient.invalidateQueries({ queryKey: ["billing", "invoices"] });

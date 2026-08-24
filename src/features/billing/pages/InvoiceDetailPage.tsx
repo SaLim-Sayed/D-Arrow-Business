@@ -10,10 +10,15 @@ import {
   Mail,
   CreditCard,
   Edit2,
+  FileCheck2,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useCompany } from "@/features/companies/context/company-context";
-import { useInvoice, useApproveInvoiceMutation } from "../hooks/use-invoices";
+import {
+  useInvoice,
+  useApproveInvoiceMutation,
+  useConvertDraftInvoiceMutation,
+} from "../hooks/use-invoices";
 import { usePayments } from "../hooks/use-payments";
 import { useContactsQuery } from "@/features/crm/hooks/use-contacts";
 import { useBillingSettings } from "../hooks/use-billing-settings";
@@ -33,7 +38,7 @@ import {
   publishInvoiceSnapshotShare,
 } from "../api/invoice-share.service";
 import { DocumentApprovalBar } from "@/components/shared/document-approval-bar";
-import { isDocumentApproved } from "@/lib/permissions/document-approval";
+import { isInvoiceActionsUnlocked } from "@/lib/permissions/document-approval";
 
 export default function InvoiceDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -51,8 +56,9 @@ export default function InvoiceDetailPage() {
 
   const { data: invoice, isLoading } = useInvoice(id);
   const approveInvoice = useApproveInvoiceMutation();
+  const convertDraft = useConvertDraftInvoiceMutation();
   const { t: tCommon } = useTranslation("common");
-  const actionsUnlocked = isDocumentApproved(invoice);
+  const actionsUnlocked = isInvoiceActionsUnlocked(invoice);
   const { data: payments = [] } = usePayments(id);
   const { data: contactsRes } = useContactsQuery();
   const contacts = contactsRes?.data || [];
@@ -209,6 +215,8 @@ export default function InvoiceDetailPage() {
     switch (status) {
       case "draft":
         return "default";
+      case "pending":
+        return "warning";
       case "sent":
         return "primary";
       case "paid":
@@ -300,10 +308,15 @@ export default function InvoiceDetailPage() {
         <DocumentApprovalBar
           document={invoice}
           isSaved={Boolean(invoice.id)}
+          requiresAction={invoice.status === "draft" || invoice.status === "pending"}
           isApproving={approveInvoice.isPending}
-          onApprove={() => {
-            if (invoice.id) approveInvoice.mutate(invoice.id);
-          }}
+          onApprove={
+            invoice.status === "draft"
+              ? undefined
+              : () => {
+                  if (invoice.id) approveInvoice.mutate(invoice.id);
+                }
+          }
         />
       </div>
       <div className="sticky top-0 z-20 flex flex-wrap items-center justify-between gap-4 border-b border-default-100 bg-background/80 py-4 backdrop-blur-md print:hidden">
@@ -349,6 +362,19 @@ export default function InvoiceDetailPage() {
         <div className="flex flex-wrap items-center justify-end gap-2">
           {invoice.status === "draft" && (
             <Button
+              color="success"
+              className="font-semibold text-white"
+              startContent={<FileCheck2 className="h-4 w-4" />}
+              isLoading={convertDraft.isPending}
+              onPress={() => {
+                if (invoice.id) convertDraft.mutate(invoice.id);
+              }}
+            >
+              {t("invoices.detail.convert_draft")}
+            </Button>
+          )}
+          {(invoice.status === "draft" || invoice.status === "pending") && (
+            <Button
               color="primary"
               variant="flat"
               startContent={<Edit2 className="h-4 w-4" />}
@@ -359,6 +385,7 @@ export default function InvoiceDetailPage() {
           )}
           {amountDue > 0 &&
             invoice.status !== "draft" &&
+            invoice.status !== "pending" &&
             invoice.status !== "cancelled" && (
               <Button
                 color="success"

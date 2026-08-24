@@ -28,8 +28,8 @@ export const automationService = {
       throw new Error("Cannot post an invoice that has not been saved to the database.");
     }
 
-    if (invoice.status === "draft") {
-      throw new Error("Cannot post a draft invoice to accounting.");
+    if (invoice.status === "draft" || invoice.status === "pending") {
+      throw new Error("Cannot post a draft or pending invoice to accounting.");
     }
 
     const { invoiceNumber, grandTotal, subTotal, totalTax, customerId } = invoice;

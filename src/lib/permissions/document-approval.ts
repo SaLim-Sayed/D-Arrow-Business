@@ -8,14 +8,14 @@ export interface DocumentApprovalFields {
   approvedBy?: string | null;
 }
 
-/** Only company managers and super admins may approve documents. */
+/** Admins, managers, and super admins may approve documents and issue invoices immediately. */
 export function canApproveDocuments(role: UserRole | undefined): boolean {
-  return role === "super_admin" || role === "manager";
+  return role === "super_admin" || role === "admin" || role === "manager";
 }
 
 /**
  * Documents created before approval existed have no field — keep them usable.
- * New documents are stored as `pending` until a manager/super admin approves.
+ * Employee-issued invoices are stored as `pending` until an admin/manager/super admin approves.
  */
 export function isDocumentApproved(
   doc: DocumentApprovalFields | null | undefined
@@ -23,6 +23,15 @@ export function isDocumentApproved(
   if (!doc) return false;
   if (doc.approvalStatus == null) return true;
   return doc.approvalStatus === "approved";
+}
+
+/** Drafts and invoices waiting for approval cannot be printed or sent. */
+export function isInvoiceActionsUnlocked(
+  invoice: (DocumentApprovalFields & { status?: string }) | null | undefined
+): boolean {
+  if (!invoice) return false;
+  if (invoice.status === "draft" || invoice.status === "pending") return false;
+  return isDocumentApproved(invoice);
 }
 
 export function pendingApprovalFields(): {

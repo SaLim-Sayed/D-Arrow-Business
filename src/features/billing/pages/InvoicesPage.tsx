@@ -16,6 +16,7 @@ import {
   Clock,
   Download,
   Eye,
+  FileCheck2,
   Filter,
   Plus,
   Search,
@@ -25,7 +26,7 @@ import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { BillingMoney } from "../components/BillingMoney";
-import { useInvoices } from "../hooks/use-invoices";
+import { useInvoices, useConvertDraftInvoiceMutation } from "../hooks/use-invoices";
 import { useBillingSettings } from "../hooks/use-billing-settings";
 import { getDefaultBillingCurrency } from "../utils/billing-currency";
 import { isDocumentApproved } from "@/lib/permissions/document-approval";
@@ -49,6 +50,7 @@ type StatusFilter = "all" | Invoice["status"];
 
 const STATUS_ORDER: Invoice["status"][] = [
   "draft",
+  "pending",
   "sent",
   "paid",
   "overdue",
@@ -60,6 +62,7 @@ export default function InvoicesPage() {
   const { t: tCommon } = useTranslation("common");
   const navigate = useNavigate();
   const { data: invoices = [], isLoading } = useInvoices();
+  const convertDraft = useConvertDraftInvoiceMutation();
   const { data: contactsRes } = useContactsQuery();
   const contacts = contactsRes?.data ?? [];
   const { data: settings } = useBillingSettings();
@@ -312,7 +315,7 @@ export default function InvoicesPage() {
                   <th className="px-3 py-2.5 text-end">{t("invoices.columns.amount")}</th>
                   <th className="px-3 py-2.5 text-end">{t("invoices.columns.amount_due")}</th>
                   <th className="px-3 py-2.5 text-start">{t("invoices.columns.status")}</th>
-                  <th className="w-12 px-2 py-2.5" />
+                  <th className="w-20 px-2 py-2.5" />
                 </tr>
               </thead>
               <tbody>
@@ -345,7 +348,7 @@ export default function InvoicesPage() {
                           <span className="font-mono font-semibold text-primary" dir="ltr">
                             {invoice.invoiceNumber}
                           </span>
-                          {invoice.totalTax > 0 && invoice.status !== "draft" && (
+                          {invoice.totalTax > 0 && invoice.status !== "draft" && invoice.status !== "pending" && (
                             <span className="rounded bg-success/10 px-1 py-0.5 text-[10px] font-bold text-success">
                               {t("daftra.zatca.badge")}
                             </span>
@@ -389,22 +392,40 @@ export default function InvoicesPage() {
                         >
                           {t(`invoices.status.${invoice.status}`)}
                         </span>
-                        {!isDocumentApproved(invoice) && (
+                        {!isDocumentApproved(invoice) &&
+                          invoice.status !== "pending" &&
+                          invoice.status !== "draft" && (
                           <span className="mt-1 block text-[10px] font-semibold text-warning">
                             {tCommon("documentApproval.pending")}
                           </span>
                         )}
                       </td>
                       <td className="px-2 py-2.5" onClick={(e) => e.stopPropagation()}>
-                        <Button
-                          isIconOnly
-                          size="sm"
-                          variant="light"
-                          aria-label={t("invoices.view")}
-                          onPress={view}
-                        >
-                          <Eye className="h-4 w-4" />
-                        </Button>
+                        <div className="flex items-center justify-end gap-0.5">
+                          {invoice.status === "draft" && invoice.id && (
+                            <Button
+                              isIconOnly
+                              size="sm"
+                              variant="light"
+                              color="success"
+                              aria-label={t("invoices.detail.convert_draft")}
+                              title={t("invoices.detail.convert_draft")}
+                              isLoading={convertDraft.isPending && convertDraft.variables === invoice.id}
+                              onPress={() => convertDraft.mutate(invoice.id!)}
+                            >
+                              <FileCheck2 className="h-4 w-4" />
+                            </Button>
+                          )}
+                          <Button
+                            isIconOnly
+                            size="sm"
+                            variant="light"
+                            aria-label={t("invoices.view")}
+                            onPress={view}
+                          >
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </td>
                     </tr>
                   );

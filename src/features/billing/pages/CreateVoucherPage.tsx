@@ -79,6 +79,7 @@ export default function CreateVoucherPage({ type }: { type: VoucherType }) {
     (invoice) =>
       invoice.status !== "cancelled" &&
       invoice.status !== "draft" &&
+      invoice.status !== "pending" &&
       getInvoiceAmountDue(invoice) > 0.001
   );
   const openBills = bills.filter(

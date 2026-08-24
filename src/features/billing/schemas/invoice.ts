@@ -16,7 +16,7 @@ export const invoiceSchema = z
   .object({
     id: z.string().optional(),
     invoiceNumber: z.string().min(1, "Invoice number is required"),
-    status: z.enum(["draft", "sent", "paid", "overdue", "cancelled"]).default("draft"),
+    status: z.enum(["draft", "pending", "sent", "paid", "overdue", "cancelled"]).default("draft"),
     /** Linked CRM contact — set when picking existing or after creating from typed name. */
     customerId: z.string().optional().default(""),
     /** Display / typed company-or-customer name (works without selecting from the list). */
@@ -44,7 +44,7 @@ export const invoiceSchema = z
     shareToken: z.string().optional(),
     /** Firebase Storage download URL for the shared PDF */
     pdfUrl: z.string().optional(),
-    /** Pending until a manager or super admin approves print/send. */
+    /** Pending until an admin, manager, or super admin approves print/send. */
     approvalStatus: z.enum(["pending", "approved"]).optional(),
     approvedAt: z.date().optional().nullable(),
     approvedBy: z.string().optional().nullable(),

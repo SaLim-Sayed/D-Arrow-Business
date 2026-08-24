@@ -14,6 +14,9 @@ interface DocumentApprovalBarProps {
   isSaved: boolean;
   isApproving?: boolean;
   onApprove?: () => void;
+  /** Treat as still needing action even if approvalStatus is missing (invoice drafts). */
+  requiresAction?: boolean;
+  actionLabel?: string;
 }
 
 export function DocumentApprovalBar({
@@ -21,11 +24,13 @@ export function DocumentApprovalBar({
   isSaved,
   isApproving,
   onApprove,
+  requiresAction,
+  actionLabel,
 }: DocumentApprovalBarProps) {
   const { t } = useTranslation("common");
   const role = useAuthStore((s) => s.user?.role);
   const canApprove = canApproveDocuments(role);
-  const approved = isDocumentApproved(document);
+  const approved = requiresAction ? false : isDocumentApproved(document);
 
   if (!isSaved) return null;
 
@@ -63,7 +68,7 @@ export function DocumentApprovalBar({
           startContent={<Check className="h-4 w-4" />}
           onPress={onApprove}
         >
-          {t("documentApproval.approve")}
+          {actionLabel ?? t("documentApproval.approve")}
         </Button>
       )}
     </div>

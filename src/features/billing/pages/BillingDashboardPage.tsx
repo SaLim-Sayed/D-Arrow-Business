@@ -36,6 +36,7 @@ import type { Invoice } from "../schemas/invoice";
 const STATUS_COLORS: Record<string, string> = {
   paid: "#17c964",
   sent: "#006fee",
+  pending: "#f5a524",
   overdue: "#f31260",
   draft: "#a1a1aa",
   cancelled: "#71717a",
@@ -45,6 +46,7 @@ function invoiceStatusClass(status: Invoice["status"]) {
   if (status === "paid") return "bg-success/10 text-success";
   if (status === "overdue") return "bg-danger/10 text-danger";
   if (status === "sent") return "bg-primary/10 text-primary";
+  if (status === "pending") return "bg-warning/15 text-warning-700 dark:text-warning";
   if (status === "cancelled") return "bg-default-100 text-default-400";
   return "bg-default-100 text-default-500";
 }
@@ -181,7 +183,7 @@ export default function BillingDashboardPage() {
 
   const invoiceStatusData = useMemo(
     () =>
-      (["paid", "sent", "overdue", "draft"] as const)
+      (["paid", "sent", "overdue", "pending", "draft"] as const)
         .map((status) => ({
           key: status,
           name: t(`invoices.status.${status}`),

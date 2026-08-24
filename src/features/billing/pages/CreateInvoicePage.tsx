@@ -46,7 +46,8 @@ import {
   resolveInvoiceCustomerName,
 } from "../utils/invoice-customer";
 import { toCreateContactDTO } from "@/features/crm/schemas/contact.schema";
-import { isDocumentApproved } from "@/lib/permissions/document-approval";
+import { isDocumentApproved, canApproveDocuments } from "@/lib/permissions/document-approval";
+import { useAuthStore } from "@/stores/auth.store";
 export default function CreateInvoicePage() {
   const { t } = useTranslation("billing");
   const { t: tCommon } = useTranslation("common");
@@ -88,7 +89,13 @@ export default function CreateInvoicePage() {
 
   const createInvoice = useCreateInvoiceMutation();
   const updateInvoice = useUpdateInvoiceMutation();
-  const canSend = isEditing && isDocumentApproved(existingInvoice);
+  const role = useAuthStore((s) => s.user?.role);
+  const canIssueImmediately = canApproveDocuments(role);
+  const canUsePrimaryAction =
+    !isEditing ||
+    existingInvoice?.status === "draft" ||
+    existingInvoice?.status === "pending" ||
+    isDocumentApproved(existingInvoice);
 
   const {
     control,
@@ -276,7 +283,14 @@ export default function CreateInvoicePage() {
 
   const onSubmit = async (data: CreateInvoiceDTO, actionType: "draft" | "sent") => {
     try {
-      if (actionType === "sent" && !canSend) {
+      if (
+        actionType === "sent" &&
+        isEditing &&
+        existingInvoice &&
+        existingInvoice.status !== "draft" &&
+        existingInvoice.status !== "pending" &&
+        !isDocumentApproved(existingInvoice)
+      ) {
         toast.error(tCommon("documentApproval.lockedHint"));
         return;
       }
@@ -303,18 +317,22 @@ export default function CreateInvoicePage() {
         }),
       };
       if (isEditing && id) {
-        await updateInvoice.mutateAsync({ id, data: finalData });
+        const result = await updateInvoice.mutateAsync({ id, data: finalData });
         toast.success(
-          actionType === "sent"
-            ? t("invoices.create.sent")
-            : t("invoices.create.updated")
+          result.invoice.status === "pending"
+            ? t("invoices.create.submitted_for_approval")
+            : actionType === "sent"
+              ? t("invoices.create.sent")
+              : t("invoices.create.updated")
         );
       } else {
-        await createInvoice.mutateAsync(finalData);
+        const created = await createInvoice.mutateAsync(finalData);
         toast.success(
-          actionType === "sent"
-            ? t("invoices.create.sent")
-            : t("invoices.create.draft_saved")
+          created.status === "pending"
+            ? t("invoices.create.submitted_for_approval")
+            : actionType === "sent"
+              ? t("invoices.create.sent")
+              : t("invoices.create.draft_saved")
         );
       }
       navigate("/billing/invoices");
@@ -588,7 +606,7 @@ export default function CreateInvoicePage() {
         </div>
 
         <div className="flex flex-col items-end gap-2 sticky bottom-4 bg-background/80 backdrop-blur-md p-4 rounded-2xl border border-default-100 shadow-xl z-10">
-          {!canSend && (
+          {isEditing && existingInvoice?.status === "pending" && !canIssueImmediately && (
             <p className="w-full text-xs text-warning">
               {tCommon("documentApproval.lockedHint")}
             </p>
@@ -606,10 +624,14 @@ export default function CreateInvoicePage() {
             color="primary"
             onPress={() => handleSubmit((data) => onSubmit(data as any, "sent"))()}
             isLoading={isSubmitting || updateInvoice.isPending || createInvoice.isPending || createContact.isPending}
-            isDisabled={!canSend}
+            isDisabled={!canUsePrimaryAction}
             startContent={<Send className="w-4 h-4" />}
           >
-            {isEditing ? t("invoices.create.update_send") : t("invoices.create.save_send")}
+            {isEditing
+              ? t("invoices.create.update_send")
+              : canIssueImmediately
+                ? t("invoices.create.save_send")
+                : t("invoices.create.save_submit")}
           </Button>
           </div>
         </div>
