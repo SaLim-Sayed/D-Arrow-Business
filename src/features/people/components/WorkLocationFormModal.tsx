@@ -194,17 +194,56 @@ export function WorkLocationFormModal({
                 </div>
               )}
 
-              <Slider
-                label={t("attendance_settings.radius", { meters: radius })}
-                minValue={50}
-                maxValue={1000}
-                step={10}
-                value={radius}
-                onChange={(v) => setRadius(Array.isArray(v) ? v[0] : v)}
-              />
-              <p className="text-xs text-default-500">
-                {t("attendance_settings.radius_hint")}
-              </p>
+              <div className="flex flex-col gap-2.5">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium">
+                    {t("attendance_settings.radius", { meters: radius })}
+                  </span>
+                  <Input
+                    type="number"
+                    size="sm"
+                    className="w-28"
+                    min={1}
+                    max={5000}
+                    value={radius.toString()}
+                    onValueChange={(v) => {
+                      const val = parseInt(v, 10);
+                      if (!isNaN(val) && val >= 1) {
+                        setRadius(val);
+                      }
+                    }}
+                    endContent={<span className="text-xs text-default-400">م</span>}
+                  />
+                </div>
+
+                <Slider
+                  aria-label={t("attendance_settings.radius", { meters: radius })}
+                  minValue={10}
+                  maxValue={1000}
+                  step={5}
+                  value={radius}
+                  onChange={(v) => setRadius(Array.isArray(v) ? v[0] : v)}
+                />
+
+                <div className="flex flex-wrap gap-1.5">
+                  {[10, 20, 50, 100, 150, 500].map((preset) => (
+                    <Button
+                      key={preset}
+                      size="sm"
+                      variant={radius === preset ? "solid" : "flat"}
+                      color={radius === preset ? "primary" : "default"}
+                      className="h-7 min-w-0 px-2 text-xs font-medium"
+                      onPress={() => setRadius(preset)}
+                    >
+                      {preset} م
+                    </Button>
+                  ))}
+                </div>
+
+                <p className="text-xs text-default-500">
+                  {t("attendance_settings.radius_hint")}
+                </p>
+              </div>
 
               <Switch isSelected={isActive} onValueChange={setIsActive}>
                 {t("attendance_settings.location_active")}
