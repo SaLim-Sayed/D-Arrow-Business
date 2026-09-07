@@ -34,25 +34,31 @@ export function Logo({
 }: LogoProps) {
   const mark =
     variant === "icon" ? (
-      <div className={cn("flex items-center justify-center", !to && className)}>
+      <div className={cn("flex items-center justify-center shrink-0", !to && className)}>
         <img
           src={ASSETS.iconLight}
           alt="D-Arrow"
-          className={cn("object-contain dark:hidden", heightBySize[size])}
+          className={cn(
+            "object-contain dark:hidden transition-all duration-200 filter drop-shadow-[0_1px_2px_rgba(0,0,0,0.08)] group-hover:drop-shadow-[0_2px_8px_rgba(249,115,22,0.25)]",
+            heightBySize[size]
+          )}
         />
         <img
           src={ASSETS.iconDark}
           alt="D-Arrow"
-          className={cn("object-contain hidden dark:block", heightBySize[size])}
+          className={cn(
+            "object-contain hidden dark:block transition-all duration-200 filter drop-shadow-[0_1px_2px_rgba(0,0,0,0.3)] group-hover:drop-shadow-[0_2px_8px_rgba(249,115,22,0.35)]",
+            heightBySize[size]
+          )}
         />
       </div>
     ) : (
-      <div className={cn("flex items-center", !to && className)}>
+      <div className={cn("flex items-center shrink-0", !to && className)}>
         <img
           src={ASSETS.full}
           alt="D-Arrow Marketing"
           className={cn(
-            "w-auto max-w-full object-contain",
+            "w-auto max-w-full object-contain transition-all duration-200 filter drop-shadow-[0_1px_2px_rgba(0,0,0,0.08)] group-hover:drop-shadow-[0_3px_10px_rgba(249,115,22,0.2)]",
             heightBySize[size]
           )}
         />
@@ -68,7 +74,7 @@ export function Logo({
       aria-label={title ?? "D-Arrow"}
       onClick={onClick}
       className={cn(
-        "inline-flex rounded-xl outline-none transition-opacity hover:opacity-90 focus-visible:ring-2 focus-visible:ring-primary/40",
+        "group inline-flex items-center justify-center rounded-xl outline-none transition-all duration-200 hover:scale-[1.04] active:scale-95 hover:brightness-105 focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2",
         className
       )}
     >

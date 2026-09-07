@@ -1,14 +1,43 @@
+import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { useLayoutStore } from "@/stores/layout.store";
-import { LayoutGrid } from "lucide-react";
+import { LayoutGrid, FolderOpen, Folder, ChevronDown, Search, X } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { NavLink, useLocation } from "react-router-dom";
 import { Logo } from "../shared/logo";
 import { LanguageSwitcherRow } from "./language-switcher";
-import { getPortalFromPath } from "@/lib/portal-permissions";
-import { usePortalNav } from "@/features/portals/hooks/use-portal-nav";
+import { getPortalFromPath, type PortalId } from "@/lib/portal-permissions";
+import {
+  getNavTreeForPortal,
+  type PortalNavTreeGroup,
+  type PortalNavItem,
+} from "@/lib/portal-nav";
 import { useAccessiblePortals } from "@/features/portals/hooks/use-portals";
 import { ChatInboxBadge } from "@/features/chat/components/ChatInboxBadge";
+
+const GROUP_TITLES_AR: Record<string, string> = {
+  general: "الرئيسية",
+  sales: "المبيعات والإيرادات",
+  purchases: "المشتريات والمصروفات",
+  reports_tax: "التقارير والمراكز المالية",
+  chart_accounts: "دليل الحسابات والإعدادات",
+  deals_leads: "إدارة العملاء والصفقات",
+  contracts_reports: "عروض الأسعار والتقارير",
+  attendance_leave: "الحضور والإجازات",
+  performance: "تقييم الأداء",
+  work_sprints: "إدارة العمل والدورات",
+  messages: "المحادثات والرسائل",
+};
+
+const PORTAL_TITLES_AR: Record<PortalId | "picker" | "settings", string> = {
+  billing: "المحاسبة والمالية",
+  crm: "إدارة العملاء",
+  people: "الموارد البشرية",
+  tasks: "إدارة المهام والمشاريع",
+  chat: "المحادثات والرسائل",
+  picker: "جميع التطبيقات",
+  settings: "الإعدادات",
+};
 
 export function MobileSidebar() {
   const { t } = useTranslation();
@@ -19,138 +48,205 @@ export function MobileSidebar() {
   const location = useLocation();
   const portals = useAccessiblePortals();
   const portal = getPortalFromPath(location.pathname);
-  const portalNav = usePortalNav(
-    portal === "tasks" ||
-      portal === "crm" ||
-      portal === "people" ||
-      portal === "billing" ||
-      portal === "chat"
+
+  const activePortalId: PortalId =
+    portal === "tasks" || portal === "crm" || portal === "people" || portal === "billing" || portal === "chat"
       ? portal
-      : "crm"
-  );
+      : "billing";
 
-  const navItems =
-    portal === "tasks" ||
-    portal === "crm" ||
-    portal === "people" ||
-    portal === "billing" ||
-    portal === "chat"
-      ? portalNav
-      : [];
+  const treeGroups = getNavTreeForPortal(activePortalId);
+  const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>(() => {
+    const init: Record<string, boolean> = {};
+    treeGroups.forEach((g) => {
+      init[g.id] = true;
+    });
+    return init;
+  });
+  const [searchQuery, setSearchQuery] = useState("");
 
-  const portalTitle =
-    portal === "tasks"
-      ? t("portals.tasks.short")
-      : portal === "crm"
-        ? t("portals.crm.short")
-        : portal === "people"
-          ? t("portals.people.short")
-          : portal === "billing"
-            ? t("portals.billing.short")
-            : portal === "chat"
-              ? t("portals.chat.short")
-              : t("appName");
+  const toggleGroup = (groupId: string) => {
+    setExpandedGroups((prev) => ({ ...prev, [groupId]: !prev[groupId] }));
+  };
+
+  const getItemLabel = (item: PortalNavItem) => {
+    if (item.namespace === "crm") return tCrm(item.labelKey);
+    if (item.namespace === "billing") return tBilling(item.labelKey);
+    if (item.namespace === "chat") return tChat(item.labelKey);
+    return t(item.labelKey);
+  };
+
+  const getGroupLabel = (group: PortalNavTreeGroup) => {
+    if (GROUP_TITLES_AR[group.id]) return GROUP_TITLES_AR[group.id];
+    return t(group.labelKey);
+  };
+
+  const portalTitle = (portal && PORTAL_TITLES_AR[portal]) ? PORTAL_TITLES_AR[portal] : t("appName");
 
   return (
-    <div className="flex h-full flex-col bg-sidebar">
-      <div className="flex h-16 items-center gap-3 border-b border-default-100 px-4">
-        <Logo
-          size="sm"
-          variant="icon"
-          to={
-            portal === "tasks" ||
-            portal === "crm" ||
-            portal === "people" ||
-            portal === "billing" ||
-            portal === "chat"
-              ? "/"
-              : undefined
-          }
-          title={t("portals.allApps")}
-          className="shrink-0"
-          onClick={() => setMobileSidebarOpen(false)}
-        />
-        {navItems.length > 0 && (
-          <span className="min-w-0 truncate text-[10px] font-black uppercase tracking-[0.2em] text-primary/80">
+    <div className="flex h-full flex-col bg-sidebar text-foreground overflow-y-auto">
+      {/* Top Mobile Header */}
+      <div className="flex h-16 items-center justify-between border-b border-default-100 px-4 shrink-0 bg-default-50/50">
+        <div className="flex items-center gap-3">
+          <Logo
+            size="sm"
+            variant="icon"
+            to="/"
+            title={t("portals.allApps")}
+            className="shrink-0"
+            onClick={() => setMobileSidebarOpen(false)}
+          />
+          <span className="min-w-0 truncate text-xs font-black text-default-900">
             {portalTitle}
           </span>
-        )}
+        </div>
+        <button
+          type="button"
+          onClick={() => setMobileSidebarOpen(false)}
+          className="p-1.5 text-default-400 hover:text-default-700 rounded-lg"
+          aria-label="إغلاق"
+        >
+          <X className="h-5 w-5" />
+        </button>
       </div>
-      <nav className="flex-1 space-y-2 p-4">
-        {navItems.map((item) => {
-          const label =
-            item.namespace === "crm"
-              ? tCrm(item.labelKey)
-              : item.namespace === "billing"
-                ? tBilling(item.labelKey)
-                : item.namespace === "chat"
-                  ? tChat(item.labelKey)
-                  : t(item.labelKey);
-          return (
-            <NavLink
-              key={item.path}
-              to={item.path}
-              end={item.end}
-              onClick={() => setMobileSidebarOpen(false)}
-              className={({ isActive }) =>
-                cn(
-                  "group flex items-center gap-3 rounded-2xl px-4 py-3.5 text-sm font-medium transition-all duration-300",
-                  "active:scale-[0.98]",
-                  isActive
-                    ? "bg-primary text-primary-foreground shadow-sm hover:bg-primary/90"
-                    : "text-default-600 hover:bg-default-100 hover:text-default-900"
-                )
-              }
+
+      {/* Mobile Search Bar */}
+      <div className="p-3 border-b border-default-100/80 shrink-0">
+        <div className="relative flex items-center">
+          <Search className="absolute start-2.5 h-3.5 w-3.5 text-default-400 pointer-events-none" />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="ابحث هنا..."
+            className="w-full h-8.5 ps-8 pe-8 text-xs font-medium bg-default-100/70 focus:bg-background border border-default-200/70 focus:border-primary/60 rounded-xl outline-none transition-all placeholder:text-default-400"
+          />
+          {searchQuery && (
+            <button
+              type="button"
+              onClick={() => setSearchQuery("")}
+              className="absolute end-2 p-0.5 text-default-400 hover:text-default-700 rounded-full"
             >
-              {({ isActive }) => (
-                <>
-                  <item.icon
-                    className={cn(
-                      "h-5 w-5 shrink-0 transition-transform group-hover:scale-110",
-                      isActive
-                        ? "text-primary-foreground"
-                        : "text-default-500 group-hover:text-default-900"
-                    )}
-                  />
-                  <span
-                    className={cn(
-                      "font-bold tracking-tight",
-                      isActive
-                        ? "text-primary-foreground"
-                        : "text-default-700 group-hover:text-default-900"
-                    )}
-                  >
-                    {label}
-                  </span>
-                  {item.path === "/chat" && (
-                    <ChatInboxBadge
-                      className={
-                        isActive ? "bg-white text-primary" : undefined
-                      }
+              <X className="h-3 w-3" />
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Tree Groups Navigation */}
+      <nav className="flex-1 space-y-2 p-3 overflow-y-auto">
+        {treeGroups.map((group) => {
+          const isExpanded = searchQuery.trim() ? true : expandedGroups[group.id] ?? true;
+          const query = searchQuery.toLowerCase().trim();
+          const groupLabel = getGroupLabel(group);
+          const groupMatch = query ? groupLabel.toLowerCase().includes(query) : true;
+          const matchingItems = group.items.filter((item) =>
+            query ? getItemLabel(item).toLowerCase().includes(query) : true
+          );
+
+          if (query && !groupMatch && matchingItems.length === 0) return null;
+
+          const displayItems = query && !groupMatch ? matchingItems : group.items;
+          const containsActiveChild = group.items.some(
+            (i) => i.path === location.pathname || (i.path !== "/" && location.pathname.startsWith(i.path))
+          );
+
+          return (
+            <div key={group.id} className="rounded-xl transition-all">
+              {/* Group Node Header */}
+              <div
+                onClick={() => toggleGroup(group.id)}
+                className={cn(
+                  "flex items-center justify-between px-2.5 py-2 rounded-xl transition-all cursor-pointer select-none",
+                  containsActiveChild ? "text-primary font-black bg-transparent" : "hover:bg-default-100/80"
+                )}
+              >
+                <div className="flex items-center gap-2 min-w-0 flex-1">
+                  {isExpanded ? (
+                    <FolderOpen
+                      className={cn(
+                        "h-4 w-4 shrink-0 transition-colors",
+                        containsActiveChild ? "text-primary fill-primary/20" : "text-primary/70"
+                      )}
+                    />
+                  ) : (
+                    <Folder
+                      className={cn(
+                        "h-4 w-4 shrink-0 transition-colors",
+                        containsActiveChild ? "text-primary fill-primary/20" : "text-default-400"
+                      )}
                     />
                   )}
-                </>
+                  <span className={cn("text-xs font-bold truncate", containsActiveChild ? "text-primary font-black" : "text-default-800")}>
+                    {groupLabel}
+                  </span>
+                </div>
+                <ChevronDown
+                  className={cn("h-3.5 w-3.5 text-default-400 transition-transform duration-200", !isExpanded && "-rotate-90 rtl:rotate-90")}
+                />
+              </div>
+
+              {/* Sub items branch */}
+              {isExpanded && (
+                <div className={cn("ms-5 ps-3 border-s-2 space-y-1 my-1 relative", containsActiveChild ? "border-primary/50" : "border-default-200")}>
+                  {displayItems.map((item) => {
+                    const Icon = item.icon;
+                    const label = getItemLabel(item);
+
+                    return (
+                      <div key={item.path} className="relative flex items-center">
+                        <div className={cn("absolute -start-[14px] top-1/2 w-3.5 h-[2px] pointer-events-none", containsActiveChild ? "bg-primary/50" : "bg-default-300/70")} />
+                        <NavLink
+                          to={item.path}
+                          end={item.end}
+                          onClick={() => setMobileSidebarOpen(false)}
+                          className={({ isActive }) =>
+                            cn(
+                              "flex flex-1 items-center gap-2 rounded-xl px-2.5 py-2 text-xs transition-all",
+                              isActive
+                                ? "text-primary font-black bg-transparent"
+                                : "text-default-600 hover:bg-default-100/70 hover:text-default-900 font-semibold"
+                            )
+                          }
+                        >
+                          {({ isActive }) => (
+                            <>
+                              <Icon className={cn("h-4 w-4 shrink-0", isActive ? "text-primary fill-primary/20" : "text-default-500")} />
+                              <span className={cn("truncate flex-1", isActive ? "text-primary font-black" : "text-default-700 font-semibold")}>
+                                {label}
+                              </span>
+                              {item.path === "/chat" && (
+                                <ChatInboxBadge className={isActive ? "bg-primary text-primary-foreground" : undefined} />
+                              )}
+                            </>
+                          )}
+                        </NavLink>
+                      </div>
+                    );
+                  })}
+                </div>
               )}
-            </NavLink>
+            </div>
           );
         })}
       </nav>
+
+      {/* Footer apps & language switcher */}
       {portals.length > 1 && (
-        <div className="border-t border-default-100 p-4">
+        <div className="border-t border-default-100 p-3 shrink-0">
           <button
             type="button"
             onClick={() => {
               setMobileSidebarOpen(false);
               setPortalPickerOpen(true);
             }}
-            className="flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold text-default-500 hover:bg-default-100 transition-all"
+            className="flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-xs font-semibold text-default-500 hover:bg-default-100 transition-all"
           >
-            <LayoutGrid className="h-5 w-5" />
+            <LayoutGrid className="h-4 w-4" />
             <span>{t("portals.allApps")}</span>
           </button>
         </div>
       )}
-      <div className="border-t border-default-100 p-4">
+      <div className="border-t border-default-100 p-3 shrink-0">
         <LanguageSwitcherRow onToggle={() => setMobileSidebarOpen(false)} />
       </div>
     </div>
