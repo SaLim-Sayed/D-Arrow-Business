@@ -66,6 +66,8 @@ import ReportsPage from "@/features/billing/pages/ReportsPage";
 import ZakatPage from "@/features/billing/pages/ZakatPage";
 import CostCentersPage from "@/features/billing/pages/CostCentersPage";
 import VatReturnPage from "@/features/billing/pages/VatReturnPage";
+import CreditNotesPage from "@/features/billing/pages/CreditNotesPage";
+import StatementOfAccountPage from "@/features/billing/pages/StatementOfAccountPage";
 import { ChatLayout } from "@/features/chat/components/ChatLayout";
 import { ChatPage } from "@/features/chat/pages/ChatPage";
 
@@ -196,6 +198,8 @@ export const router = createBrowserRouter([
               { path: "zakat", element: <ZakatPage /> },
               { path: "vat-return", element: <VatReturnPage /> },
               { path: "cost-centers", element: <CostCentersPage /> },
+              { path: "credit-notes", element: <CreditNotesPage /> },
+              { path: "statement-of-account", element: <StatementOfAccountPage /> },
               { path: "products", element: <ProductsPage /> },
               { path: "settings", element: <SettingsPage /> },
             ],

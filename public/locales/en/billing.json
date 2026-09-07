@@ -7,6 +7,8 @@
     "reports": "Financial Reports",
     "vat_return": "VAT Declaration",
     "cost_centers": "Cost Centers",
+    "credit_notes": "Credit / Debit Notes",
+    "statement_of_account": "Statement of Account",
     "invoices": "Customer Invoices",
     "receipt_vouchers": "Receipt Vouchers",
     "bills": "Vendor Bills",

@@ -26,6 +26,7 @@ import {
   useCreateContactMutation,
 } from "@/features/crm/hooks/use-contacts";
 import { useProducts } from "../hooks/use-products";
+import { useCostCenters } from "../hooks/use-cost-centers";
 import { useBillingSettings } from "../hooks/use-billing-settings";
 import { useCreateInvoiceMutation, useUpdateInvoiceMutation, useInvoice } from "../hooks/use-invoices";
 import { invoiceSchema, type CreateInvoiceDTO } from "../schemas/invoice";
@@ -79,6 +80,7 @@ export default function CreateInvoicePage() {
   const [customerInput, setCustomerInput] = useState("");
 
   const { data: products = [] } = useProducts();
+  const { data: costCenters = [] } = useCostCenters();
   const { data: billingSettings } = useBillingSettings();
   const taxes = billingSettings?.taxes ?? [];
   const defaultTax = getDefaultTax(taxes);
@@ -440,6 +442,25 @@ export default function CreateInvoicePage() {
                 description={t("invoices.create.number_assigned_on_post") || "Assigned when posted"}
               />
 
+              <Controller
+                name="costCenterId"
+                control={control}
+                render={({ field }) => (
+                  <Select
+                    label="مركز التكلفة (Cost Center)"
+                    placeholder="اختر مركز التكلفة (اختياري)..."
+                    variant="bordered"
+                    selectedKeys={field.value ? [field.value] : []}
+                    onSelectionChange={(keys) => field.onChange(Array.from(keys)[0] as string || "")}
+                  >
+                    {costCenters.map((cc) => (
+                      <SelectItem key={cc.id!} textValue={`${cc.code} - ${cc.name}`}>
+                        {cc.code} - {cc.name}
+                      </SelectItem>
+                    ))}
+                  </Select>
+                )}
+              />
             </div>
           </CardBody>
         </Card>

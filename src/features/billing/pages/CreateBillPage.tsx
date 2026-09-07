@@ -27,6 +27,7 @@ import {
 } from "@/features/crm/hooks/use-contacts";
 import { toCreateContactDTO } from "@/features/crm/schemas/contact.schema";
 import { useAccounts } from "../hooks/use-accounts";
+import { useCostCenters } from "../hooks/use-cost-centers";
 import {
   useCreateBillMutation,
   useUpdateBillMutation,
@@ -58,6 +59,7 @@ export default function CreateBillPage() {
   const createContact = useCreateContactMutation();
   const [vendorInput, setVendorInput] = useState("");
   const { data: accounts = [] } = useAccounts();
+  const { data: costCenters = [] } = useCostCenters();
   const expenseAccounts = accounts.filter(
     (a) => a.type === "expense" || a.type === "asset"
   );
@@ -343,6 +345,26 @@ export default function CreateBillPage() {
                 variant="bordered"
                 isReadOnly
                 {...register("billNumber")}
+              />
+
+              <Controller
+                name="costCenterId"
+                control={control}
+                render={({ field }) => (
+                  <Select
+                    label="مركز التكلفة (Cost Center)"
+                    placeholder="اختر مركز التكلفة (اختياري)..."
+                    variant="bordered"
+                    selectedKeys={field.value ? [field.value] : []}
+                    onSelectionChange={(keys) => field.onChange(Array.from(keys)[0] as string || "")}
+                  >
+                    {costCenters.map((cc) => (
+                      <SelectItem key={cc.id!} textValue={`${cc.code} - ${cc.name}`}>
+                        {cc.code} - {cc.name}
+                      </SelectItem>
+                    ))}
+                  </Select>
+                )}
               />
             </div>
           </CardBody>

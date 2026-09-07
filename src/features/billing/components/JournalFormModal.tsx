@@ -21,6 +21,7 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { selectFieldProps } from "@/components/shared/select-field";
 import { useAccounts } from "../hooks/use-accounts";
+import { useCostCenters } from "../hooks/use-cost-centers";
 import {
   useCreateJournalMutation,
   useUpdateJournalMutation,
@@ -52,6 +53,7 @@ export function JournalFormModal({
 }: JournalFormModalProps) {
   const { t } = useTranslation("billing");
   const { data: accounts = [] } = useAccounts();
+  const { data: costCenters = [] } = useCostCenters();
   const createMutation = useCreateJournalMutation();
   const updateMutation = useUpdateJournalMutation();
 
@@ -210,6 +212,7 @@ export function JournalFormModal({
                 <Table aria-label="Journal lines">
                   <TableHeader>
                     <TableColumn>ACCOUNT</TableColumn>
+                    <TableColumn>COST CENTER</TableColumn>
                     <TableColumn>DESCRIPTION</TableColumn>
                     <TableColumn>DEBIT</TableColumn>
                     <TableColumn>CREDIT</TableColumn>
@@ -238,6 +241,30 @@ export function JournalFormModal({
                                 textValue={`${acc.code} - ${acc.name}`}
                               >
                                 {acc.code} - {acc.name}
+                              </SelectItem>
+                            ))}
+                          </Select>
+                        </TableCell>
+                        <TableCell>
+                          <Select
+                            {...selectFieldProps({ compact: true })}
+                            placeholder="مركز التكلفة"
+                            selectedKeys={
+                              line.costCenterId ? new Set([line.costCenterId]) : new Set()
+                            }
+                            onSelectionChange={(keys) => {
+                              const val = Array.from(keys)[0] as string;
+                              updateLine(index, "costCenterId", val || "");
+                            }}
+                            aria-label="Select Cost Center"
+                            size="sm"
+                          >
+                            {costCenters.map((cc) => (
+                              <SelectItem 
+                                key={cc.id!} 
+                                textValue={`${cc.code} - ${cc.name}`}
+                              >
+                                {cc.code} - {cc.name}
                               </SelectItem>
                             ))}
                           </Select>

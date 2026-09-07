@@ -87,6 +87,8 @@ export const BILLING_NAV: PortalNavItem[] = [
   { labelKey: "nav.reports", path: "/billing/reports", icon: PieChart, namespace: "billing" },
   { labelKey: "nav.vat_return", path: "/billing/vat-return", icon: FileText, namespace: "billing" },
   { labelKey: "nav.cost_centers", path: "/billing/cost-centers", icon: Layers, namespace: "billing" },
+  { labelKey: "nav.credit_notes", path: "/billing/credit-notes", icon: ScrollText, namespace: "billing" },
+  { labelKey: "nav.statement_of_account", path: "/billing/statement-of-account", icon: BarChart3, namespace: "billing" },
   { labelKey: "nav.products", path: "/billing/products", icon: Package, namespace: "billing" },
   { labelKey: "nav.journals", path: "/billing/journals", icon: BookA, namespace: "billing" },
   { labelKey: "nav.accounts", path: "/billing/accounts", icon: BookCopy, namespace: "billing" },
