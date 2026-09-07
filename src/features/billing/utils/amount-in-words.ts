@@ -164,6 +164,35 @@ function splitAmount(amount: number) {
   return { major, minor };
 }
 
+const AR_CURRENCY_UNITS: Record<string, { major: string; minor: string }> = {
+  SAR: { major: "ريال", minor: "هللة" },
+  SR: { major: "ريال", minor: "هللة" },
+  "﷼": { major: "ريال", minor: "هللة" },
+  USD: { major: "دولار", minor: "سنت" },
+  EUR: { major: "يورو", minor: "سنت" },
+  AED: { major: "درهم", minor: "فلس" },
+  EGP: { major: "جنيه", minor: "قرش" },
+  KWD: { major: "دينار", minor: "فلس" },
+  QAR: { major: "ريال", minor: "درهم" },
+  BHD: { major: "دينار", minor: "فلس" },
+  OMR: { major: "ريال", minor: "بيسة" },
+  GBP: { major: "جنيه إسترليني", minor: "بنس" },
+};
+
+const EN_CURRENCY_UNITS: Record<
+  string,
+  { majorSingular: string; majorPlural: string; minor: string }
+> = {
+  SAR: { majorSingular: "Saudi Riyal", majorPlural: "Saudi Riyals", minor: "Halala" },
+  SR: { majorSingular: "Saudi Riyal", majorPlural: "Saudi Riyals", minor: "Halala" },
+  "﷼": { majorSingular: "Saudi Riyal", majorPlural: "Saudi Riyals", minor: "Halala" },
+  USD: { majorSingular: "US Dollar", majorPlural: "US Dollars", minor: "Cents" },
+  EUR: { majorSingular: "Euro", majorPlural: "Euros", minor: "Cents" },
+  AED: { majorSingular: "UAE Dirham", majorPlural: "UAE Dirhams", minor: "Fils" },
+  EGP: { majorSingular: "Egyptian Pound", majorPlural: "Egyptian Pounds", minor: "Piastres" },
+  GBP: { majorSingular: "Pound Sterling", majorPlural: "Pounds Sterling", minor: "Pence" },
+};
+
 export function amountInWords(
   amount: number,
   options?: { locale?: string; currency?: string }
@@ -171,19 +200,29 @@ export function amountInWords(
   const isAr = (options?.locale ?? "ar").startsWith("ar");
   const { major, minor } = splitAmount(amount);
   const currency = (options?.currency ?? "SAR").toUpperCase();
-  const isSar = currency === "SAR" || currency === "﷼";
 
   if (isAr) {
+    const arUnits = AR_CURRENCY_UNITS[currency] ?? {
+      major: currency,
+      minor: "جزءاً من مائة",
+    };
     const majorWords = integerToArabic(major);
-    const unit = isSar ? "ريال سعودي" : currency;
+    const unit = arUnits.major;
     if (minor <= 0) return `${majorWords} ${unit} فقط لا غير`;
     const minorWords = integerToArabic(minor);
-    const fraction = isSar ? "هللة" : "جزءاً من مائة";
+    const fraction = arUnits.minor;
     return `${majorWords} ${unit} و${minorWords} ${fraction} فقط لا غير`;
   }
 
+  const enUnits = EN_CURRENCY_UNITS[currency];
   const majorWords = integerToEnglish(major);
-  const unit = isSar ? (major === 1 ? "Saudi Riyal" : "Saudi Riyals") : currency;
+  const unit = enUnits
+    ? major === 1
+      ? enUnits.majorSingular
+      : enUnits.majorPlural
+    : currency;
+
   if (minor <= 0) return `${majorWords} ${unit} only`;
   return `${majorWords} ${unit} and ${minor}/100 only`;
 }
+
