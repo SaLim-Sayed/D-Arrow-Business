@@ -238,10 +238,40 @@ export default function StatementOfAccountPage() {
           </p>
         </div>
       ) : (
-        <div className="space-y-6">
-          {/* Header info card */}
-          <div className="p-6 rounded-xl border border-default-200 bg-content1 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-            <div>
+        <div className="space-y-6 print:space-y-4 print:p-0">
+          {/* Print-Only Official Report Header */}
+          <div className="hidden print:block border-b-2 border-default-300 pb-4 mb-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-xl font-bold text-default-900">D-Arrow Business | د-آرو للتسويق والخدمات التجارية</h1>
+                <p className="text-xs text-default-600 font-semibold mt-0.5">كشف حساب تفصيلي (Statement of Account)</p>
+              </div>
+              <div className="text-left text-xs text-default-600">
+                <p><span className="font-bold">تاريخ الطباعة:</span> {new Date().toLocaleDateString("ar-SA")}</p>
+                <p><span className="font-bold">الفترة:</span> {preset === "all" ? "جميع الفترات" : preset === "this_month" ? "الشهر الحالي" : preset === "last_month" ? "الشهر السابق" : preset === "this_quarter" ? "الربع الحالي" : "السنة الحالية"}</p>
+              </div>
+            </div>
+
+            <div className="mt-3 pt-3 border-t border-default-200 flex justify-between items-center text-xs">
+              <div>
+                <span className="text-default-500 font-medium">العميل / المورد: </span>
+                <span className="font-bold text-default-900 text-sm">{contactDisplayName(selectedContact!)}</span>
+                {selectedContact?.accountName && (
+                  <span className="text-default-600 ms-2">({selectedContact.accountName})</span>
+                )}
+              </div>
+              {selectedContact?.phone && (
+                <div>
+                  <span className="text-default-500 font-medium">الهاتف: </span>
+                  <span className="font-semibold text-default-800" dir="ltr">{selectedContact.phone}</span>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Web Header info card / Print Summary card */}
+          <div className="p-6 print:p-4 rounded-xl border border-default-200 bg-content1 print:bg-white shadow-sm print:shadow-none flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+            <div className="print:hidden">
               <span className="text-xs text-default-400 font-bold uppercase tracking-wider">كشف حساب مالي تفصيلي</span>
               <h2 className="text-xl font-bold text-default-900 mt-1">{contactDisplayName(selectedContact!)}</h2>
               {selectedContact?.accountName && (
@@ -249,16 +279,16 @@ export default function StatementOfAccountPage() {
               )}
             </div>
 
-            <div className="flex flex-wrap items-center gap-6">
+            <div className="flex flex-wrap items-center gap-6 print:gap-4 print:w-full print:justify-between">
               <div className="text-left">
-                <span className="text-xs text-default-400">إجمالي المدين (+)</span>
+                <span className="text-xs text-default-400 print:text-default-600 font-bold">إجمالي المدين (+)</span>
                 <p className="font-mono font-bold text-base text-danger"><MoneyAmount amount={statementData.totalDebit} /></p>
               </div>
               <div className="text-left">
-                <span className="text-xs text-default-400">إجمالي الدائن (-)</span>
+                <span className="text-xs text-default-400 print:text-default-600 font-bold">إجمالي الدائن (-)</span>
                 <p className="font-mono font-bold text-base text-success"><MoneyAmount amount={statementData.totalCredit} /></p>
               </div>
-              <div className="text-left p-3 rounded-lg bg-default-100 border border-default-200">
+              <div className="text-left p-3 print:p-2 rounded-lg bg-default-100 print:bg-default-50 border border-default-200">
                 <span className="text-xs text-default-600 font-bold">الرصيد النهائي الحالي</span>
                 <p className={`font-mono font-black text-lg ${statementData.closingBalance >= 0 ? "text-primary" : "text-success"}`}>
                   <MoneyAmount amount={statementData.closingBalance} />
@@ -268,8 +298,8 @@ export default function StatementOfAccountPage() {
           </div>
 
           {/* Statement Table */}
-          <div className="overflow-x-auto rounded-xl border border-default-200 bg-content1 shadow-sm">
-            <table className="w-full text-xs text-right">
+          <div className="overflow-x-auto rounded-xl border border-default-200 bg-content1 print:bg-white shadow-sm print:shadow-none">
+            <table className="w-full text-xs text-right print:border-collapse">
               <thead>
                 <tr className="border-b border-default-200 bg-default-100/70 font-semibold text-default-700">
                   <th className="py-3 px-4">التاريخ</th>

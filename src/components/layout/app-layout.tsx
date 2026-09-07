@@ -24,12 +24,13 @@ export function AppLayout() {
     portal === "chat";
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background print:bg-white print:min-h-0 print:p-0">
       {showSidebar && <PortalSidebar portal={portal} />}
       <div
         className={cn(
           "flex min-h-screen flex-col transition-[padding] duration-300",
-          showSidebar && (sidebarCollapsed ? "md:ps-[5.5rem]" : "md:ps-64")
+          showSidebar && (sidebarCollapsed ? "md:ps-[5.5rem]" : "md:ps-64"),
+          "print:ps-0 print:ms-0 print:min-h-0 print:block"
         )}
       >
         <Header
@@ -39,7 +40,8 @@ export function AppLayout() {
         <main
           className={cn(
             "flex-1 pt-14 sm:pt-16",
-            isPicker ? "px-4 pb-4 md:px-8 md:pb-8" : "px-4 pb-4 md:px-6 md:pb-6"
+            isPicker ? "px-4 pb-4 md:px-8 md:pb-8" : "px-4 pb-4 md:px-6 md:pb-6",
+            "print:pt-0 print:p-0 print:m-0 print:block"
           )}
         >
           <Outlet />
