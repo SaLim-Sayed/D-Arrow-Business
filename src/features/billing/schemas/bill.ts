@@ -8,6 +8,7 @@ export const billItemSchema = z.object({
   unitPrice: z.number().min(0),
   taxRate: z.number().min(0).default(0),
   taxRateId: z.string().nullable().optional(),
+  costCenterId: z.string().optional(),
   total: z.number().min(0),
 });
 
@@ -20,6 +21,7 @@ export const billSchema = z
     /** Display / typed vendor name (works without selecting from the list). */
     vendorName: z.string().optional(),
     status: z.enum(["draft", "open", "paid", "overdue", "cancelled"]).default("draft"),
+    costCenterId: z.string().optional(),
 
     issueDate: z.date(),
     dueDate: z.date(),

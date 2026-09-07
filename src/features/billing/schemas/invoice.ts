@@ -9,6 +9,7 @@ export const invoiceItemSchema = z.object({
   taxRate: z.number().min(0).default(0),
   taxRateId: z.string().nullable().optional(),
   discount: z.number().min(0).default(0),
+  costCenterId: z.string().optional(),
   total: z.number().min(0),
 });
 
@@ -21,6 +22,7 @@ export const invoiceSchema = z
     customerId: z.string().optional().default(""),
     /** Display / typed company-or-customer name (works without selecting from the list). */
     customerName: z.string().optional(),
+    costCenterId: z.string().optional(),
 
     issueDate: z.date(),
     dueDate: z.date(),

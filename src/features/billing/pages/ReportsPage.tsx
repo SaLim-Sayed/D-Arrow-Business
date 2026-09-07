@@ -1,8 +1,8 @@
 import { Link } from "react-router-dom";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { Button } from "@heroui/react";
-import { Plus } from "lucide-react";
+import { Button, Select, SelectItem } from "@heroui/react";
+import { Plus, Calendar, Layers, FileText } from "lucide-react";
 import { toast } from "sonner";
 import { useAccounts } from "../hooks/use-accounts";
 import { cn } from "@/lib/utils";
@@ -11,6 +11,11 @@ import { useInvoices } from "../hooks/use-invoices";
 import { useBills } from "../hooks/use-bills";
 import { useContactsQuery } from "@/features/crm/hooks/use-contacts";
 import { contactDisplayName } from "@/features/crm/utils/contacts-list.utils";
+import {
+  getDateRangeBounds,
+  filterItemsByDateRange,
+  type DateRangePreset,
+} from "../utils/date-range-utils";
 import {
   buildAgedPayablesReport,
   buildAgedReceivablesReport,
@@ -95,11 +100,27 @@ function PlAmount({
 export default function ReportsPage() {
   const { t } = useTranslation("billing");
   const [activeTab, setActiveTab] = useState<ReportTabKey>("pl");
+  const [datePreset, setDatePreset] = useState<DateRangePreset>("all");
   const { data: accounts = [] } = useAccounts();
-  const { data: invoices = [] } = useInvoices();
-  const { data: bills = [] } = useBills();
+  const { data: rawInvoices = [] } = useInvoices();
+  const { data: rawBills = [] } = useBills();
   const { data: contactsRes } = useContactsQuery();
   const contacts = contactsRes?.data ?? [];
+
+  const { startDate, endDate } = useMemo(
+    () => getDateRangeBounds(datePreset),
+    [datePreset]
+  );
+
+  const invoices = useMemo(
+    () => filterItemsByDateRange(rawInvoices, startDate, endDate),
+    [rawInvoices, startDate, endDate]
+  );
+
+  const bills = useMemo(
+    () => filterItemsByDateRange(rawBills, startDate, endDate),
+    [rawBills, startDate, endDate]
+  );
 
   const getPartyName = (id: string) => {
     const contact = contacts.find((c) => c.id === id);
@@ -304,10 +325,49 @@ export default function ReportsPage() {
 
   return (
     <div className="animate-in fade-in pb-24 duration-300">
-      <ReportPageHeader
-        title={t("reports.title")}
-        description={t("reports.description")}
-      />
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-4">
+        <ReportPageHeader
+          title={t("reports.title")}
+          description={t("reports.description")}
+        />
+        <div className="flex flex-wrap items-center gap-2">
+          <Select
+            size="sm"
+            selectedKeys={[datePreset]}
+            onSelectionChange={(keys) => setDatePreset(Array.from(keys)[0] as DateRangePreset)}
+            className="w-44"
+            startContent={<Calendar className="h-4 w-4 text-default-400" />}
+            aria-label="النطاق الزمني"
+          >
+            <SelectItem key="all">جميع الفترات (All Time)</SelectItem>
+            <SelectItem key="this_month">الشهر الحالي</SelectItem>
+            <SelectItem key="last_month">الشهر السابق</SelectItem>
+            <SelectItem key="this_quarter">الربع الحالي (Q)</SelectItem>
+            <SelectItem key="this_year">السنة الحالية</SelectItem>
+          </Select>
+
+          <Button
+            as={Link}
+            to="/billing/vat-return"
+            size="sm"
+            color="primary"
+            variant="flat"
+            startContent={<FileText className="h-4 w-4" />}
+          >
+            الإقرار الضريبي
+          </Button>
+
+          <Button
+            as={Link}
+            to="/billing/cost-centers"
+            size="sm"
+            variant="flat"
+            startContent={<Layers className="h-4 w-4" />}
+          >
+            مراكز التكلفة
+          </Button>
+        </div>
+      </div>
 
       <ReportShell
         activeTab={activeTab}

@@ -64,6 +64,8 @@ import CreateVoucherPage from "@/features/billing/pages/CreateVoucherPage";
 import VoucherDetailPage from "@/features/billing/pages/VoucherDetailPage";
 import ReportsPage from "@/features/billing/pages/ReportsPage";
 import ZakatPage from "@/features/billing/pages/ZakatPage";
+import CostCentersPage from "@/features/billing/pages/CostCentersPage";
+import VatReturnPage from "@/features/billing/pages/VatReturnPage";
 import { ChatLayout } from "@/features/chat/components/ChatLayout";
 import { ChatPage } from "@/features/chat/pages/ChatPage";
 
@@ -192,6 +194,8 @@ export const router = createBrowserRouter([
               { path: "accounts", element: <ChartOfAccountsPage /> },
               { path: "journals", element: <ManualJournalsPage /> },
               { path: "zakat", element: <ZakatPage /> },
+              { path: "vat-return", element: <VatReturnPage /> },
+              { path: "cost-centers", element: <CostCentersPage /> },
               { path: "products", element: <ProductsPage /> },
               { path: "settings", element: <SettingsPage /> },
             ],

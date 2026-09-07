@@ -26,6 +26,7 @@ import type { Product, CreateProductDTO, UpdateProductDTO, ProductCategory, Prod
 import type { Payment, CreatePaymentDTO } from "../schemas/payment";
 import type { Voucher, CreateVoucherDTO, VoucherType } from "../schemas/voucher";
 import type { ZakatRecord, CreateZakatRecordDTO, UpdateZakatRecordDTO } from "../schemas/zakat";
+import type { CostCenter, CreateCostCenterDTO, UpdateCostCenterDTO } from "../schemas/cost-center";
 import type { BillingSettings } from "../schemas/settings";
 import { DEFAULT_BILLING_CURRENCY_ENTRY } from "../utils/billing-currency";
 import { DEFAULT_TAXES } from "../data/product-defaults";
@@ -207,6 +208,7 @@ export const BillingService = {
   payments: createBillingCollectionService<Payment, CreatePaymentDTO, Partial<CreatePaymentDTO>>("payments", "PaymentService"),
   vouchers: createBillingCollectionService<Voucher, CreateVoucherDTO, Partial<CreateVoucherDTO>>("vouchers", "VoucherService"),
   zakatRecords: createBillingCollectionService<ZakatRecord, CreateZakatRecordDTO, UpdateZakatRecordDTO>("zakatRecords", "ZakatRecordService"),
+  costCenters: createBillingCollectionService<CostCenter, CreateCostCenterDTO, UpdateCostCenterDTO>("costCenters", "CostCenterService"),
   
   // Generic Document System
   documents: GenericDocumentService,

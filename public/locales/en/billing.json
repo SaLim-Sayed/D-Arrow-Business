@@ -5,6 +5,8 @@
     "overview": "Overview",
     "dashboard": "Overview",
     "reports": "Financial Reports",
+    "vat_return": "VAT Declaration",
+    "cost_centers": "Cost Centers",
     "invoices": "Customer Invoices",
     "receipt_vouchers": "Receipt Vouchers",
     "bills": "Vendor Bills",

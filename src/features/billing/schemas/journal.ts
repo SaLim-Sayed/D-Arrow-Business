@@ -10,6 +10,7 @@ export const journalLineSchema = z.object({
   taxId: z.string().optional(), // Tax ID if applicable
   taxAmount: z.number().min(0).default(0), // Tax amount for this line
   analyticAccountId: z.string().optional(), // Cost center/department
+  costCenterId: z.string().optional(),
   maturityDate: z.date().optional(), // For payable/receivable lines
 }).refine(data => data.debit > 0 || data.credit > 0, {
   message: "Either debit or credit must be greater than zero",

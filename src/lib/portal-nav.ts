@@ -26,6 +26,7 @@ import {
   Banknote,
   Wallet,
   Inbox,
+  Layers,
   type LucideIcon,
 } from "lucide-react";
 
@@ -84,6 +85,8 @@ export const BILLING_NAV: PortalNavItem[] = [
   { labelKey: "nav.bills", path: "/billing/bills", icon: ReceiptText, namespace: "billing" },
   { labelKey: "nav.payment_vouchers", path: "/billing/payment-vouchers", icon: Wallet, namespace: "billing" },
   { labelKey: "nav.reports", path: "/billing/reports", icon: PieChart, namespace: "billing" },
+  { labelKey: "nav.vat_return", path: "/billing/vat-return", icon: FileText, namespace: "billing" },
+  { labelKey: "nav.cost_centers", path: "/billing/cost-centers", icon: Layers, namespace: "billing" },
   { labelKey: "nav.products", path: "/billing/products", icon: Package, namespace: "billing" },
   { labelKey: "nav.journals", path: "/billing/journals", icon: BookA, namespace: "billing" },
   { labelKey: "nav.accounts", path: "/billing/accounts", icon: BookCopy, namespace: "billing" },
