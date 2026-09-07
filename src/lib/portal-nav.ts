@@ -27,6 +27,9 @@ import {
   Wallet,
   Inbox,
   Layers,
+  Landmark,
+  HardDrive,
+  Lock,
   type LucideIcon,
 } from "lucide-react";
 
@@ -184,6 +187,7 @@ export const BILLING_NAV_TREE: PortalNavTreeGroup[] = [
     items: [
       { labelKey: "nav.reports", path: "/billing/reports", icon: PieChart, namespace: "billing" },
       { labelKey: "nav.vat_return", path: "/billing/vat-return", icon: FileText, namespace: "billing" },
+      { labelKey: "nav.bank_reconciliation", path: "/billing/bank-reconciliation", icon: Landmark, namespace: "billing" },
       { labelKey: "nav.statement_of_account", path: "/billing/statement-of-account", icon: BarChart3, namespace: "billing" },
       { labelKey: "nav.cost_centers", path: "/billing/cost-centers", icon: Layers, namespace: "billing" },
       { labelKey: "nav.zakat", path: "/billing/zakat", icon: HandCoins, namespace: "billing" },
@@ -196,6 +200,8 @@ export const BILLING_NAV_TREE: PortalNavTreeGroup[] = [
     namespace: "billing",
     items: [
       { labelKey: "nav.products", path: "/billing/products", icon: Package, namespace: "billing" },
+      { labelKey: "nav.fixed_assets", path: "/billing/fixed-assets", icon: HardDrive, namespace: "billing" },
+      { labelKey: "nav.fiscal_closing", path: "/billing/fiscal-closing", icon: Lock, namespace: "billing" },
       { labelKey: "nav.journals", path: "/billing/journals", icon: BookA, namespace: "billing" },
       { labelKey: "nav.accounts", path: "/billing/accounts", icon: BookCopy, namespace: "billing" },
       { labelKey: "nav.settings", path: "/billing/settings", icon: Settings, namespace: "billing" },

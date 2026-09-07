@@ -68,6 +68,9 @@ import CostCentersPage from "@/features/billing/pages/CostCentersPage";
 import VatReturnPage from "@/features/billing/pages/VatReturnPage";
 import CreditNotesPage from "@/features/billing/pages/CreditNotesPage";
 import StatementOfAccountPage from "@/features/billing/pages/StatementOfAccountPage";
+import BankReconciliationPage from "@/features/billing/pages/BankReconciliationPage";
+import FixedAssetsPage from "@/features/billing/pages/FixedAssetsPage";
+import FiscalClosingPage from "@/features/billing/pages/FiscalClosingPage";
 import { ChatLayout } from "@/features/chat/components/ChatLayout";
 import { ChatPage } from "@/features/chat/pages/ChatPage";
 
@@ -200,6 +203,9 @@ export const router = createBrowserRouter([
               { path: "cost-centers", element: <CostCentersPage /> },
               { path: "credit-notes", element: <CreditNotesPage /> },
               { path: "statement-of-account", element: <StatementOfAccountPage /> },
+              { path: "bank-reconciliation", element: <BankReconciliationPage /> },
+              { path: "fixed-assets", element: <FixedAssetsPage /> },
+              { path: "fiscal-closing", element: <FiscalClosingPage /> },
               { path: "products", element: <ProductsPage /> },
               { path: "settings", element: <SettingsPage /> },
             ],

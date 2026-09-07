@@ -21,6 +21,9 @@ import {
   Clock,
   Wallet,
   Banknote,
+  Landmark,
+  HardDrive,
+  Lock,
 } from "lucide-react";
 import { BillingMoney } from "../components/BillingMoney";
 import { useInvoices } from "../hooks/use-invoices";
@@ -249,6 +252,27 @@ export default function AccountingLandingPage() {
           title={t("landing.apps.journals.title")}
           description={t("landing.apps.journals.desc")}
           iconClassName="bg-orange-500/10 text-orange-600"
+        />
+        <AccountingAppTile
+          to="/billing/bank-reconciliation"
+          icon={Landmark}
+          title="التسوية والمطابقة البنكية"
+          description="مطابقة كشف الحساب البنكي مع القيود والسندات"
+          iconClassName="bg-blue-500/10 text-blue-600"
+        />
+        <AccountingAppTile
+          to="/billing/fixed-assets"
+          icon={HardDrive}
+          title="الأصول الثابتة والإهلاك"
+          description="تسجيل أصول الشركة وحساب قيود الإهلاك الدوري"
+          iconClassName="bg-purple-500/10 text-purple-600"
+        />
+        <AccountingAppTile
+          to="/billing/fiscal-closing"
+          icon={Lock}
+          title="تجميد الفترات وإقفال السنة"
+          description="قفل التعديلات التاريخية وتدوير الأرباح المبقاة"
+          iconClassName="bg-amber-500/10 text-amber-600"
         />
         <AccountingAppTile
           to="/billing/zakat"
