@@ -3,6 +3,7 @@ import { Play, Square, Clock, Coffee, Zap } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAttendanceTimer } from "../hooks/use-attendance-timer";
 import { useTranslation } from "react-i18next";
+import { DailyReportModal } from "./DailyReportModal";
 
 interface TimeTrackerWidgetProps {
   variant?: "compact" | "full";
@@ -16,9 +17,12 @@ export function TimeTrackerWidget({ variant = "compact" }: TimeTrackerWidgetProp
     liveSeconds,
     accumulatedSeconds,
     isShiftLoading,
+    isReportModalOpen,
+    setReportModalOpen,
     handleCheckIn,
     handleTakeBreak,
     handleCheckOut,
+    executeCheckOut,
     formatLiveTime
   } = useAttendanceTimer();
 
@@ -278,6 +282,15 @@ export function TimeTrackerWidget({ variant = "compact" }: TimeTrackerWidgetProp
           </div>
         </CardBody>
       </Card>
+
+      <DailyReportModal
+        isOpen={isReportModalOpen}
+        onClose={() => setReportModalOpen(false)}
+        onSuccessCheckOut={executeCheckOut}
+        attendance={todayAttendance}
+        liveSeconds={liveSeconds}
+        accumulatedSeconds={accumulatedSeconds}
+      />
     </motion.div>
   );
 }

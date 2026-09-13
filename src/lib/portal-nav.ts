@@ -30,6 +30,7 @@ import {
   Landmark,
   HardDrive,
   Lock,
+  ClipboardCheck,
   type LucideIcon,
 } from "lucide-react";
 
@@ -67,6 +68,7 @@ export const TASKS_NAV_TREE: PortalNavTreeGroup[] = [
     items: [
       { labelKey: "nav.tasks", path: "/tasks/work", icon: ListTodo },
       { labelKey: "nav.sprints", path: "/tasks/sprints", icon: Clock },
+      { labelKey: "nav.daily_reports", path: "/tasks/daily-reports", icon: ClipboardCheck },
     ],
   },
 ];
@@ -129,6 +131,7 @@ export const PEOPLE_NAV_TREE: PortalNavTreeGroup[] = [
       { labelKey: "nav.leave", path: "/people/leave", icon: Calendar },
       { labelKey: "nav.approvals", path: "/people/approvals", icon: CheckSquare },
       { labelKey: "nav.timesheets", path: "/people/timesheets", icon: Timer },
+      { labelKey: "nav.daily_reports", path: "/people/daily-reports", icon: ClipboardCheck },
       {
         labelKey: "nav.attendance_settings",
         path: "/people/attendance-settings",

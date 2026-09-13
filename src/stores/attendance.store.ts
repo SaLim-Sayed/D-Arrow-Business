@@ -40,7 +40,9 @@ interface AttendanceState {
   employeeId: string | null;
   isInitialized: boolean;
   startTime: number | null; // For precise drift-free calculation
+  isReportModalOpen: boolean;
   
+  setReportModalOpen: (open: boolean) => void;
   startTimer: () => void;
   stopTimer: () => void;
   
@@ -60,6 +62,9 @@ export const useAttendanceStore = create<AttendanceState>((set, get) => ({
   employeeId: null,
   isInitialized: false,
   startTime: null,
+  isReportModalOpen: false,
+
+  setReportModalOpen: (open: boolean) => set({ isReportModalOpen: open }),
 
   startTimer: () => {
     if (get().intervalId) return;

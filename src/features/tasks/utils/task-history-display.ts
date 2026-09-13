@@ -39,6 +39,10 @@ export function getHistoryMessage(
     return t("history.created", { user: name });
   }
 
+  if (entry.field === "daily_report") {
+    return entry.newValue || "تم إدراج المهمة في التقرير اليومي";
+  }
+
   if (entry.action === "time_logged") {
     return t("history.timeLogged", { user: name });
   }

@@ -12,6 +12,8 @@ export function useAttendanceTimer() {
     accumulatedSeconds: state.accumulatedSeconds,
     isShiftLoading: state.isShiftLoading,
     isInitialized: state.isInitialized,
+    isReportModalOpen: state.isReportModalOpen,
+    setReportModalOpen: state.setReportModalOpen,
     checkIn: state.checkIn,
     takeBreak: state.takeBreak,
     checkOut: state.checkOut,
@@ -27,19 +29,32 @@ export function useAttendanceTimer() {
     return `${h.toString().padStart(2, "0")}:${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
   }, []);
 
+  const handleCheckOut = useCallback(() => {
+    if (store.todayAttendance) {
+      store.setReportModalOpen(true);
+    }
+  }, [store]);
+
+  const executeCheckOut = useCallback(async () => {
+    if (store.todayAttendance) {
+      await store.checkOut(companyId || "", store.todayAttendance.id, "", user?.id || "");
+    }
+  }, [store, companyId, user]);
+
   return {
     todayAttendance: store.todayAttendance,
     isOnBreak: store.isOnBreak,
     liveSeconds: store.liveSeconds,
     accumulatedSeconds: store.accumulatedSeconds,
     isShiftLoading: store.isShiftLoading,
+    isReportModalOpen: store.isReportModalOpen,
+    setReportModalOpen: store.setReportModalOpen,
     handleCheckIn: () => store.checkIn(companyId || "", "", user?.id || ""),
     handleTakeBreak: () => {
       if (store.todayAttendance) store.takeBreak(companyId || "", store.todayAttendance.id, "", user?.id || "");
     },
-    handleCheckOut: () => {
-      if (store.todayAttendance) store.checkOut(companyId || "", store.todayAttendance.id, "", user?.id || "");
-    },
+    handleCheckOut,
+    executeCheckOut,
     formatLiveTime,
     isLoading: !store.isInitialized,
     isCheckedIn: !!store.todayAttendance && !store.todayAttendance.checkOut && !store.isOnBreak

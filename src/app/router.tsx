@@ -36,6 +36,8 @@ import { ApprovalsPage } from "@/features/people/pages/ApprovalsPage";
 import PerformancePage from "@/features/people/pages/PerformancePage";
 import AttendanceSettingsPage from "@/features/people/pages/AttendanceSettingsPage";
 import TimesheetsPage from "@/features/people/pages/TimesheetsPage";
+import DailyReportsPage from "@/features/people/pages/DailyReportsPage";
+import TaskDailyReportsPage from "@/features/tasks/pages/TaskDailyReportsPage";
 import { SettingsLayout } from "@/features/companies/components/SettingsLayout";
 import { CompanySettingsPage } from "@/features/companies/pages/CompanySettingsPage";
 import { PricingPage } from "@/features/companies/pages/PricingPage";
@@ -125,6 +127,7 @@ export const router = createBrowserRouter([
               { path: "list", element: <Navigate to="/tasks/work/list" replace /> },
               { path: "board", element: <Navigate to="/tasks/work" replace /> },
               { path: "sprints", element: <SprintsPage /> },
+              { path: "daily-reports", element: <TaskDailyReportsPage /> },
               { path: "meetings", element: <Navigate to="/meetings" replace /> },
               { path: "new", element: <TaskCreatePage /> },
               { path: ":taskId", element: <TaskDetailPage /> },
@@ -160,6 +163,7 @@ export const router = createBrowserRouter([
               { path: "approvals", element: <ApprovalsPage /> },
               { path: "performance", element: <PerformancePage /> },
               { path: "timesheets", element: <TimesheetsPage /> },
+              { path: "daily-reports", element: <DailyReportsPage /> },
               { path: "attendance-settings", element: <AttendanceSettingsPage /> },
               { path: ":id", element: <EmployeeProfilePage /> },
             ],

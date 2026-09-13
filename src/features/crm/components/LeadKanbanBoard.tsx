@@ -101,7 +101,7 @@ export function LeadKanbanBoard() {
 
   return (
     <DragDropContext onDragEnd={handleDragEnd}>
-      <div className="flex gap-4 overflow-x-auto pb-4 min-h-[420px] scrollbar-hide">
+      <div className="flex gap-4 overflow-x-auto pb-4 min-h-[420px] kanban-scroll kanban-scroll-x">
         {stagesToShow.map((status) => (
           <div key={status} className="flex-shrink-0 w-[280px] flex flex-col rounded-2xl bg-default-50/80 border border-default-100">
             <div className="p-3 border-b border-default-100 flex items-center justify-between">

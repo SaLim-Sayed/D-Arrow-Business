@@ -230,6 +230,7 @@ export default function TimesheetsPage() {
                 <TableColumn>{t("timesheets.col_location")}</TableColumn>
                 <TableColumn>{t("timesheets.col_hours")}</TableColumn>
                 <TableColumn>{t("timesheets.col_status")}</TableColumn>
+                <TableColumn>التقرير اليومي</TableColumn>
               </TableHeader>
               <TableBody>
                 {filteredLogs.map((log, idx) => (
@@ -257,6 +258,19 @@ export default function TimesheetsPage() {
                       <Chip size="sm" variant="flat" color={log.status === 'present' ? 'success' : log.status === 'late' ? 'warning' : 'danger'} className="capitalize font-bold">
                         {log.status.replace('-', ' ')}
                       </Chip>
+                    </TableCell>
+                    <TableCell>
+                      {log.hasDailyReport ? (
+                        <Chip size="sm" variant="flat" color="success" className="font-bold text-[10px]">
+                          ✓ تم الإرفاق
+                        </Chip>
+                      ) : log.skippedReport ? (
+                        <Chip size="sm" variant="flat" color="warning" className="font-bold text-[10px]">
+                          تخطي التقرير
+                        </Chip>
+                      ) : (
+                        <span className="text-xs text-default-300">—</span>
+                      )}
                     </TableCell>
                   </TableRow>
                 ))}

@@ -42,7 +42,10 @@ import {
   CheckCircle2,
   XCircle,
   TrendingUp,
+  ClipboardCheck,
 } from "lucide-react";
+import { DailyReportsService } from "../api/daily-reports.service";
+import type { DailyReport } from "../types/daily-report.types";
 import { motion } from "framer-motion";
 import { useEmployeesQuery, useLeaveRequestsQuery, useAssetsQuery, useUpdateEmployeeMutation, useAttendanceQuery, useWorkLocationsQuery, useAssignAttendanceLocationMutation } from "../hooks/use-people";
 import { ApplyLeaveModal } from "../components/ApplyLeaveModal";
@@ -96,6 +99,20 @@ export default function EmployeeProfilePage() {
 
   const [appraisals, setAppraisals] = useState<any[]>([]);
   const [isLoadingAppraisals, setIsLoadingAppraisals] = useState(true);
+
+  const [employeeDailyReports, setEmployeeDailyReports] = useState<DailyReport[]>([]);
+  const [isLoadingDailyReports, setIsLoadingDailyReports] = useState(false);
+
+  useEffect(() => {
+    if (!employee?.userId || !user?.companyId) return;
+    setIsLoadingDailyReports(true);
+    DailyReportsService.getDailyReports(user.companyId, { employeeId: employee.userId })
+      .then((res) => {
+        if (res.data) setEmployeeDailyReports(res.data);
+      })
+      .catch((err) => console.error("Error fetching employee daily reports:", err))
+      .finally(() => setIsLoadingDailyReports(false));
+  }, [employee?.userId, user?.companyId]);
 
   useEffect(() => {
     if (!employee?.userId) return;
@@ -560,6 +577,61 @@ export default function EmployeeProfilePage() {
                           </div>
                         </div>
                       ))
+                    )}
+                  </div>
+                </Tab>
+
+                <Tab key="daily_reports" title={<span className="flex items-center gap-1.5"><ClipboardCheck size={15} />التقارير اليومية</span>}>
+                  <div className="p-6 space-y-4">
+                    <h4 className="font-bold text-sm flex items-center gap-2">
+                      <ClipboardCheck size={16} className="text-primary" />
+                      تقارير إنجاز العمل اليومية
+                    </h4>
+                    {isLoadingDailyReports ? (
+                      <p className="text-sm text-default-500 animate-pulse">جاري تحميل التقارير اليومية...</p>
+                    ) : employeeDailyReports.length === 0 ? (
+                      <p className="text-sm text-default-500">لا توجد تقارير يومية مسجلة لهذا الموظف</p>
+                    ) : (
+                      <Table aria-label="تقارير العمل اليومية للموظف" classNames={{ wrapper: "shadow-none border border-default-100" }}>
+                        <TableHeader>
+                          <TableColumn>التاريخ</TableColumn>
+                          <TableColumn>ساعات العمل</TableColumn>
+                          <TableColumn>الحالة</TableColumn>
+                          <TableColumn>المهام المنجزة</TableColumn>
+                          <TableColumn>ملخص الإنجاز</TableColumn>
+                          <TableColumn>التقييم الذاتي</TableColumn>
+                        </TableHeader>
+                        <TableBody>
+                          {employeeDailyReports.map((report) => (
+                            <TableRow key={report.id}>
+                              <TableCell className="font-bold">{report.date}</TableCell>
+                              <TableCell>{report.totalHours ? `${report.totalHours} ساعة` : "—"}</TableCell>
+                              <TableCell>
+                                {report.isSkipped ? (
+                                  <Chip size="sm" color="warning" variant="flat" className="font-bold text-[10px]">تخطي مؤقت</Chip>
+                                ) : (
+                                  <Chip size="sm" color="success" variant="flat" className="font-bold text-[10px]">مُقدم</Chip>
+                                )}
+                              </TableCell>
+                              <TableCell>
+                                <div className="flex flex-wrap gap-1">
+                                  {report.tasksCompleted.map((t) => (
+                                    <Chip key={t.id} size="sm" color="success" variant="flat" className="font-bold text-[10px]">✓ {t.title}</Chip>
+                                  ))}
+                                </div>
+                              </TableCell>
+                              <TableCell className="max-w-xs truncate text-xs">{report.summary}</TableCell>
+                              <TableCell>
+                                <div className="flex items-center gap-1">
+                                  {[1, 2, 3, 4, 5].map((star) => (
+                                    <Star key={star} size={12} fill={star <= report.productivityRating ? "currentColor" : "none"} className={star <= report.productivityRating ? "text-amber-500" : "text-default-200"} />
+                                  ))}
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
                     )}
                   </div>
                 </Tab>

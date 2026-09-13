@@ -17,7 +17,8 @@
     "approvals": "Approvals",
     "timesheets": "Timesheets",
     "attendance_settings": "Attendance Locations",
-    "performance": "Performance"
+    "performance": "Performance",
+    "daily_reports": "Daily Reports"
   },
   "portals": {
     "pickerTitle": "Choose the system",

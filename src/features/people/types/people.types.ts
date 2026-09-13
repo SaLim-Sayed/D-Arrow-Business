@@ -102,6 +102,9 @@ export interface Attendance {
   checkOutLocationId?: string;
   checkOutLocationName?: string;
   checkOutDistanceMeters?: number;
+  hasDailyReport?: boolean;
+  dailyReportId?: string;
+  skippedReport?: boolean;
 }
 
 export type AttendanceCheckMode = "geofence" | "flexible";

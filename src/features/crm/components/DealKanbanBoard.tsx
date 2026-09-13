@@ -1,3 +1,4 @@
+import { useState, useRef, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import {
@@ -134,6 +135,43 @@ export function DealKanbanBoard() {
     }
   }
 
+  const boardRef = useRef<HTMLDivElement>(null);
+  const scrollbarRef = useRef<HTMLDivElement>(null);
+  const [scrollWidth, setScrollWidth] = useState(0);
+
+  // Sync content width for fixed bottom scrollbar
+  useEffect(() => {
+    const el = boardRef.current;
+    if (!el) return;
+
+    const updateWidth = () => {
+      setScrollWidth(el.scrollWidth);
+    };
+
+    updateWidth();
+    const observer = new ResizeObserver(updateWidth);
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [deals]);
+
+  // Handle board scroll -> sync fixed scrollbar
+  const handleBoardScroll = () => {
+    if (boardRef.current && scrollbarRef.current) {
+      if (Math.abs(scrollbarRef.current.scrollLeft - boardRef.current.scrollLeft) > 1) {
+        scrollbarRef.current.scrollLeft = boardRef.current.scrollLeft;
+      }
+    }
+  };
+
+  // Handle fixed scrollbar scroll -> sync board
+  const handleFixedScrollbarScroll = () => {
+    if (boardRef.current && scrollbarRef.current) {
+      if (Math.abs(boardRef.current.scrollLeft - scrollbarRef.current.scrollLeft) > 1) {
+        boardRef.current.scrollLeft = scrollbarRef.current.scrollLeft;
+      }
+    }
+  };
+
   function handleDragEnd(result: DropResult) {
     if (!result.destination) return;
 
@@ -150,98 +188,113 @@ export function DealKanbanBoard() {
   }
 
   return (
-    <DragDropContext onDragEnd={handleDragEnd}>
-      <div className="flex gap-8 overflow-x-auto pb-6 h-full scrollbar-hide">
-        {DEAL_STAGES.map((stage) => (
-          <div
-            key={stage}
-            className={cn(
-              "flex-shrink-0 w-[300px] flex flex-col group/column rounded-2xl transition-all duration-300",
-              columnConfig[stage].bg
-            )}
-          >
-            <div className="flex items-center gap-3 px-2 py-4 mb-2">
-              <div
-                className={cn(
-                  "h-4 w-4 rounded-full border-[3px] shrink-0",
-                  columnConfig[stage].dot
-                )}
-              />
-              <h3
-                className={cn(
-                  "text-xs font-bold uppercase tracking-wider",
-                  columnConfig[stage].color
-                )}
-              >
-                {t(`deals.stage.${stage}`)}
-              </h3>
-              <span className="text-[11px] font-medium text-default-400">
-                ( {columns[stage].length} )
-              </span>
-            </div>
-
-            <Droppable droppableId={stage}>
-              {(provided, snapshot) => (
+    <div className="relative h-full flex flex-col min-h-0">
+      <DragDropContext onDragEnd={handleDragEnd}>
+        <div 
+          ref={boardRef}
+          onScroll={handleBoardScroll}
+          className="flex gap-6 overflow-x-auto pb-6 h-full max-h-full kanban-scroll kanban-scroll-x"
+        >
+          {DEAL_STAGES.map((stage) => (
+            <div
+              key={stage}
+              className={cn(
+                "flex-shrink-0 w-[300px] flex flex-col h-full group/column rounded-2xl transition-all duration-300 overflow-hidden",
+                columnConfig[stage].bg
+              )}
+            >
+              <div className="flex items-center gap-3 px-3 py-3 mb-1 shrink-0">
                 <div
-                  ref={provided.innerRef}
-                  {...provided.droppableProps}
                   className={cn(
-                    "flex-1 overflow-y-auto overflow-x-hidden min-h-[400px] rounded-xl transition-colors duration-200 p-1",
-                    snapshot.isDraggingOver ? "bg-default-100/50" : "bg-transparent"
+                    "h-4 w-4 rounded-full border-[3px] shrink-0",
+                    columnConfig[stage].dot
+                  )}
+                />
+                <h3
+                  className={cn(
+                    "text-xs font-bold uppercase tracking-wider",
+                    columnConfig[stage].color
                   )}
                 >
-                  <div className="space-y-3">
-                    {columns[stage].map((deal, index) => (
-                      <Draggable key={deal.id} draggableId={deal.id} index={index}>
-                        {(dragProvided, dragSnapshot) => (
-                          <div
-                            ref={dragProvided.innerRef}
-                            {...dragProvided.draggableProps}
-                            {...dragProvided.dragHandleProps}
-                            className="outline-none"
-                          >
-                            <DealCard
-                              deal={deal}
-                              contactName={contactDisplayName(
-                                deal.contactId
-                                  ? contactsById.get(deal.contactId)
-                                  : undefined
-                              )}
-                              isDragging={dragSnapshot.isDragging}
-                            />
-                          </div>
-                        )}
-                      </Draggable>
-                    ))}
-                    {provided.placeholder}
+                  {t(`deals.stage.${stage}`)}
+                </h3>
+                <span className="text-[11px] font-medium text-default-400">
+                  ( {columns[stage].length} )
+                </span>
+              </div>
 
-                    {columns[stage].length === 0 && !snapshot.isDraggingOver && (
-                      <div className="flex flex-col items-center justify-center py-20 text-center px-4 animate-in fade-in duration-500">
-                        <div className="h-24 w-32 mb-6 opacity-20 dark:opacity-10">
-                          <svg
-                            viewBox="0 0 120 80"
-                            className="w-full h-full fill-current text-default-300 dark:text-default-700"
-                          >
-                            <rect x="10" y="10" width="40" height="25" rx="2" />
-                            <rect x="60" y="15" width="40" height="25" rx="2" />
-                            <rect x="20" y="45" width="40" height="25" rx="2" />
-                          </svg>
-                        </div>
-                        <h4 className="text-sm font-bold text-default-400 dark:text-default-500 mb-2">
-                          {t("deals.board.emptyTitle")}
-                        </h4>
-                        <p className="text-xs text-default-300 dark:text-default-600 leading-relaxed max-w-[200px]">
-                          {t("deals.board.emptySubtitle")}
-                        </p>
-                      </div>
+              <Droppable droppableId={stage}>
+                {(provided, snapshot) => (
+                  <div
+                    ref={provided.innerRef}
+                    {...provided.droppableProps}
+                    className={cn(
+                      "flex-1 min-h-0 overflow-y-auto overflow-x-hidden rounded-xl transition-colors duration-200 p-1.5 kanban-scroll",
+                      snapshot.isDraggingOver ? "bg-default-100/50" : "bg-transparent"
                     )}
+                  >
+                    <div className="space-y-3">
+                      {columns[stage].map((deal, index) => (
+                        <Draggable key={deal.id} draggableId={deal.id} index={index}>
+                          {(dragProvided, dragSnapshot) => (
+                            <div
+                              ref={dragProvided.innerRef}
+                              {...dragProvided.draggableProps}
+                              {...dragProvided.dragHandleProps}
+                              className="outline-none"
+                            >
+                              <DealCard
+                                deal={deal}
+                                contactName={contactDisplayName(
+                                  deal.contactId
+                                    ? contactsById.get(deal.contactId)
+                                    : undefined
+                                )}
+                                isDragging={dragSnapshot.isDragging}
+                              />
+                            </div>
+                          )}
+                        </Draggable>
+                      ))}
+                      {provided.placeholder}
+
+                      {columns[stage].length === 0 && !snapshot.isDraggingOver && (
+                        <div className="flex flex-col items-center justify-center py-20 text-center px-4 animate-in fade-in duration-500">
+                          <div className="h-24 w-32 mb-6 opacity-20 dark:opacity-10">
+                            <svg
+                              viewBox="0 0 120 80"
+                              className="w-full h-full fill-current text-default-300 dark:text-default-700"
+                            >
+                              <rect x="10" y="10" width="40" height="25" rx="2" />
+                              <rect x="60" y="15" width="40" height="25" rx="2" />
+                              <rect x="20" y="45" width="40" height="25" rx="2" />
+                            </svg>
+                          </div>
+                          <h4 className="text-sm font-bold text-default-400 dark:text-default-500 mb-2">
+                            {t("deals.board.emptyTitle")}
+                          </h4>
+                          <p className="text-xs text-default-300 dark:text-default-600 leading-relaxed max-w-[200px]">
+                            {t("deals.board.emptySubtitle")}
+                          </p>
+                        </div>
+                      )}
+                    </div>
                   </div>
-                </div>
-              )}
-            </Droppable>
-          </div>
-        ))}
+                )}
+              </Droppable>
+            </div>
+          ))}
+        </div>
+      </DragDropContext>
+
+      {/* Fixed Horizontal Scrollbar Bar at bottom of screen - Always Visible */}
+      <div 
+        ref={scrollbarRef}
+        onScroll={handleFixedScrollbarScroll}
+        className="fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-xl border-t border-default-200/80 py-1.5 px-4 overflow-x-scroll kanban-scroll-always shadow-2xl"
+      >
+        <div style={{ width: `${scrollWidth}px`, height: "4px" }} />
       </div>
-    </DragDropContext>
+    </div>
   );
 }
