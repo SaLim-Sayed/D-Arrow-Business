@@ -7,7 +7,9 @@
     "crmTasks": "CRM Tasks",
     "quotations": "Quotations",
     "contracts": "Contracts",
+    "client_reports": "Client Reports",
     "reports": "Reports"
+
   },
   "permissions": {
     "deniedTitle": "Access denied",
@@ -141,6 +143,10 @@
       "viewContact": "View contact",
       "success": "Lead converted to contact",
       "failed": "Failed to convert lead"
+    },
+    "board": {
+      "emptyTitle": "No leads in this stage",
+      "emptySubtitle": "Drag leads here to update their status"
     }
   },
   "leadDetail": {

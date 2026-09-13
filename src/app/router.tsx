@@ -25,7 +25,9 @@ import { DealsPipelinePage } from "@/features/crm/pages/DealsPipelinePage";
 import { DealDetailPage } from "@/features/crm/pages/DealDetailPage";
 import { CrmTasksPage } from "@/features/crm/pages/CrmTasksPage";
 import { CrmReportsPage } from "@/features/crm/pages/CrmReportsPage";
+import { ClientReportsPage } from "@/features/crm/pages/ClientReportsPage";
 import { QuotationPage } from "@/features/crm/pages/QuotationPage";
+
 import { ContractPage } from "@/features/crm/pages/ContractPage";
 import { PeopleLayout } from "@/features/people/components/PeopleLayout";
 import { SeedPage } from "@/features/admin/pages/SeedPage";
@@ -152,6 +154,8 @@ export const router = createBrowserRouter([
               { path: "quotations", element: <QuotationPage /> },
               { path: "contracts", element: <ContractPage /> },
               { path: "reports", element: <CrmReportsPage /> },
+              { path: "client-reports", element: <ClientReportsPage /> },
+
             ],
           },
           {

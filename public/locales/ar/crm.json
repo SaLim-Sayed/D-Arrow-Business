@@ -7,7 +7,9 @@
     "crmTasks": "مهام CRM",
     "quotations": "عروض الأسعار",
     "contracts": "العقود",
+    "client_reports": "تقارير العملاء",
     "reports": "التقارير"
+
   },
   "permissions": {
     "deniedTitle": "الوصول مرفوض",
@@ -135,6 +137,10 @@
       "viewContact": "عرض جهة الاتصال",
       "success": "تم تحويل العميل المحتمل إلى جهة اتصال بنجاح",
       "failed": "فشل تحويل العميل المحتمل"
+    },
+    "board": {
+      "emptyTitle": "لا يوجد عملاء في هذه المرحلة",
+      "emptySubtitle": "اسحب العملاء المحتملين هنا لتغيير حالتهم"
     }
   },
   "leadDetail": {

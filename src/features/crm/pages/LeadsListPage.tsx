@@ -80,26 +80,30 @@ export function LeadsListPage() {
 
   if (viewMode === "pipeline") {
     return (
-      <div className="space-y-4 animate-in fade-in duration-500">
-        <CrmListHeader
-          title={t("leads.title")}
-          description={t("leads.pipelineDescription")}
-          viewMode={viewMode}
-          onViewModeChange={setViewMode}
-          actions={
-            canManageLeads ? (
-              <Button
-                color="primary"
-                startContent={<Plus className="h-4 w-4" />}
-                className="rounded-full font-bold"
-                onPress={() => setFormOpen(true)}
-              >
-                {t("leads.addLead")}
-              </Button>
-            ) : undefined
-          }
-        />
-        <LeadKanbanBoard />
+      <div className="flex flex-col h-full min-h-0 space-y-3 animate-in fade-in duration-500 overflow-hidden">
+        <div className="shrink-0">
+          <CrmListHeader
+            title={t("leads.title")}
+            description={t("leads.pipelineDescription")}
+            viewMode={viewMode}
+            onViewModeChange={setViewMode}
+            actions={
+              canManageLeads ? (
+                <Button
+                  color="primary"
+                  startContent={<Plus className="h-4 w-4" />}
+                  className="rounded-full font-bold"
+                  onPress={() => setFormOpen(true)}
+                >
+                  {t("leads.addLead")}
+                </Button>
+              ) : undefined
+            }
+          />
+        </div>
+        <div className="flex-1 min-h-0 overflow-hidden flex flex-col">
+          <LeadKanbanBoard />
+        </div>
         <LeadFormModal isOpen={formOpen} onOpenChange={setFormOpen} />
       </div>
     );

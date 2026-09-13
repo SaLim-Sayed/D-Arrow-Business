@@ -28,6 +28,8 @@ import {
   User,
   Clock,
   CreditCard,
+  FileText,
+  Plus,
 } from "lucide-react";
 import { PageHeader } from "@/components/shared/page-header";
 import { LoadingSpinner } from "@/components/shared/loading-spinner";
@@ -35,6 +37,11 @@ import { FieldBox } from "@/components/shared/field-box";
 import { useContactQuery } from "../hooks/use-contacts";
 import { useDealsQuery } from "../hooks/use-deals";
 import { useCrmPermissions } from "../hooks/use-crm-permissions";
+import { useClientReportsQuery } from "../hooks/use-client-reports";
+import { ClientReportEditorModal } from "../components/ClientReportEditorModal";
+import { ClientReportDetailModal } from "../components/ClientReportDetailModal";
+import type { ClientReport } from "../types/client-reports.types";
+
 import {
   useCrmEntityActivities,
   useCrmEntityAttachments,
@@ -89,10 +96,16 @@ export function ContactDetailPage() {
   const { data: customerInvoices = [], isLoading: invoicesLoading } =
     useInvoicesByCustomer(contactId);
 
+  const { data: clientReports = [], isLoading: reportsLoading } = useClientReportsQuery({ contactId });
+  const [reportEditorOpen, setReportEditorOpen] = useState(false);
+  const [selectedReportForView, setSelectedReportForView] = useState<ClientReport | null>(null);
+  const [reportDetailOpen, setReportDetailOpen] = useState(false);
+
   const contactDeals = useMemo(
     () => (dealsRes?.data ?? []).filter((d) => d.contactId === contactId),
     [dealsRes?.data, contactId]
   );
+
 
   if (isLoading || !contactRes) return <LoadingSpinner />;
   const contact = contactRes.data;
@@ -425,9 +438,101 @@ export function ContactDetailPage() {
             )}
           </div>
         </Tab>
+        <Tab
+          key="reports"
+          title={
+            <span className="flex items-center gap-1.5">
+              <FileText className="h-4 w-4 text-blue-500" />
+              {t("contactDetail.tabs.reports") || "تقارير العملاء المستندية"}
+            </span>
+          }
+        >
+          <div className="pt-4 space-y-4">
+            <div className="flex justify-between items-center bg-default-50 p-4 rounded-xl border border-default-100">
+              <div>
+                <h4 className="font-bold text-sm text-foreground">
+                  تقارير العميل المستندية (Word)
+                </h4>
+                <p className="text-xs text-default-500 mt-0.5">
+                  توثيق التقارير الرسمية وملخصات الاجتماعات وكتابة الملاحظات الهامة
+                </p>
+              </div>
+              <Button
+                color="primary"
+                size="sm"
+                className="font-bold rounded-xl"
+                startContent={<Plus className="w-4 h-4" />}
+                onPress={() => setReportEditorOpen(true)}
+              >
+                تقرير مستندي جديد
+              </Button>
+            </div>
+
+            {reportsLoading ? (
+              <LoadingSpinner />
+            ) : clientReports.length === 0 ? (
+              <div className="text-center py-10 bg-default-50/50 border border-default-100 rounded-xl">
+                <FileText className="w-10 h-10 text-default-400 mx-auto mb-2" />
+                <p className="text-default-500 text-sm font-medium">لا توجد تقارير مكتوبة لهذا العميل حتى الآن.</p>
+                <p className="text-xs text-default-400 mt-1">اضغط على زر تقرير مستندي جديد بالأعلى لإنشاء أول تقرير.</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {clientReports.map((report) => (
+                  <div
+                    key={report.id}
+                    onClick={() => {
+                      setSelectedReportForView(report);
+                      setReportDetailOpen(true);
+                    }}
+                    className="p-4 rounded-xl border border-default-200 bg-background hover:bg-default-50 cursor-pointer transition-all hover:shadow-md flex flex-col justify-between"
+                  >
+                    <div>
+                      <div className="flex justify-between items-center gap-2 mb-2">
+                        <span className="text-xs font-semibold px-2 py-0.5 rounded bg-blue-500/10 text-blue-600 border border-blue-500/20">
+                          {report.reportType}
+                        </span>
+                        <span className="text-xs text-default-400">
+                          {new Date(report.createdAt).toLocaleDateString("ar-SA")}
+                        </span>
+                      </div>
+                      <h4 className="font-bold text-sm text-foreground line-clamp-1 mb-1">
+                        {report.title}
+                      </h4>
+                      <p className="text-xs text-default-500 line-clamp-2 leading-relaxed">
+                        {report.content.replace(/[#*>]/g, "")}
+                      </p>
+                    </div>
+
+                    <div className="mt-4 pt-3 border-t border-default-100 flex justify-between items-center text-xs text-default-400">
+                      <span>الموظف: <strong className="text-foreground font-semibold">{report.authorName}</strong></span>
+                      <span className="text-blue-600 font-semibold hover:underline">عرض المستند ←</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </Tab>
       </Tabs>
 
       <ContactFormModal isOpen={editOpen} onOpenChange={setEditOpen} contact={contact} />
+
+      {reportEditorOpen && (
+        <ClientReportEditorModal
+          isOpen={reportEditorOpen}
+          onClose={() => setReportEditorOpen(false)}
+          initialContactId={contact.id}
+        />
+      )}
+
+      {reportDetailOpen && (
+        <ClientReportDetailModal
+          isOpen={reportDetailOpen}
+          onClose={() => setReportDetailOpen(false)}
+          report={selectedReportForView}
+        />
+      )}
     </div>
   );
 }

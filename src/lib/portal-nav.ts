@@ -109,7 +109,9 @@ export const CRM_NAV_TREE: PortalNavTreeGroup[] = [
         namespace: "crm",
         permission: "crm.manage_contracts",
       },
+      { labelKey: "nav.client_reports", path: "/crm/client-reports", icon: ClipboardCheck, namespace: "crm" },
       { labelKey: "nav.reports", path: "/crm/reports", icon: BarChart3, namespace: "crm" },
+
     ],
   },
 ];

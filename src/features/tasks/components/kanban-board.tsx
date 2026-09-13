@@ -911,6 +911,40 @@ export function KanbanBoard() {
     );
   }
 
+  const isDraggingBoard = useRef(false);
+  const boardDragStartX = useRef(0);
+  const boardDragScrollLeft = useRef(0);
+
+  const handleBoardPointerDown = (e: React.PointerEvent) => {
+    const target = e.target as HTMLElement;
+    if (target.closest("[data-rfd-draggable-id]") || target.closest("button") || target.closest("a") || target.closest("input")) return;
+
+    isDraggingBoard.current = true;
+    boardDragStartX.current = e.clientX;
+    boardDragScrollLeft.current = scrollRef.current?.scrollLeft ?? 0;
+
+    const isRTL = document.dir === "rtl" || document.documentElement.dir === "rtl";
+
+    const handlePointerMove = (moveEvent: PointerEvent) => {
+      if (!isDraggingBoard.current || !scrollRef.current) return;
+      const deltaX = moveEvent.clientX - boardDragStartX.current;
+      if (isRTL) {
+        scrollRef.current.scrollLeft = boardDragScrollLeft.current + deltaX;
+      } else {
+        scrollRef.current.scrollLeft = boardDragScrollLeft.current - deltaX;
+      }
+    };
+
+    const handlePointerUp = () => {
+      isDraggingBoard.current = false;
+      window.removeEventListener("pointermove", handlePointerMove);
+      window.removeEventListener("pointerup", handlePointerUp);
+    };
+
+    window.addEventListener("pointermove", handlePointerMove);
+    window.addEventListener("pointerup", handlePointerUp);
+  };
+
   if (isLoading) {
     return (
       <div className="flex flex-1 items-center justify-center py-16">
@@ -1043,12 +1077,13 @@ export function KanbanBoard() {
 
           <div
             ref={scrollRef}
+            onPointerDown={handleBoardPointerDown}
             onScroll={() => {
               updateHorizontalEdges();
               updateActiveColumn();
             }}
             className={cn(
-              "kanban-scroll kanban-scroll-x flex min-h-0 flex-1 gap-3 overflow-x-auto overflow-y-hidden px-0.5 pb-2 pt-1 sm:gap-4",
+              "kanban-scroll kanban-scroll-x flex min-h-0 flex-1 gap-3 overflow-x-auto overflow-y-hidden px-0.5 pb-2 pt-1 sm:gap-4 cursor-grab active:cursor-grabbing select-none",
               "snap-x snap-mandatory md:snap-none",
               isDragging && "cursor-grabbing"
             )}

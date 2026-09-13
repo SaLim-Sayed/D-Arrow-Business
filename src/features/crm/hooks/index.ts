@@ -51,3 +51,11 @@ export {
   useUnreadNotificationCount,
 } from "./use-crm-notifications";
 export { useCrmAnalytics } from "./use-crm-analytics";
+export {
+  useClientReportsQuery,
+  useClientReportQuery,
+  useCreateClientReportMutation,
+  useUpdateClientReportMutation,
+  useDeleteClientReportMutation,
+} from "./use-client-reports";
+
