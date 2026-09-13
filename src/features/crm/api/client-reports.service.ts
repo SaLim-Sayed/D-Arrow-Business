@@ -36,6 +36,7 @@ function mapClientReportDoc(id: string, data: Record<string, unknown>): ClientRe
     authorEmail: typeof data.authorEmail === "string" ? data.authorEmail : undefined,
     title: typeof data.title === "string" ? data.title : "",
     description: typeof data.description === "string" ? data.description : undefined,
+    internalNotes: typeof data.internalNotes === "string" ? data.internalNotes : undefined,
     reportType: (data.reportType as ClientReport["reportType"]) || "general",
     content: typeof data.content === "string" ? data.content : "",
     keyOutcomes: Array.isArray(data.keyOutcomes) ? data.keyOutcomes : [],
@@ -43,6 +44,9 @@ function mapClientReportDoc(id: string, data: Record<string, unknown>): ClientRe
     clientMood: (data.clientMood as ClientReport["clientMood"]) || "satisfied",
     satisfactionRating: typeof data.satisfactionRating === "number" ? data.satisfactionRating : 5,
     status: (data.status as ClientReport["status"]) || "submitted",
+    reviewedBy: typeof data.reviewedBy === "string" ? data.reviewedBy : undefined,
+    reviewedByName: typeof data.reviewedByName === "string" ? data.reviewedByName : undefined,
+    reviewedAt: typeof data.reviewedAt === "string" ? data.reviewedAt : undefined,
     createdAt:
       data.createdAt instanceof Timestamp
         ? data.createdAt.toDate().toISOString()
@@ -128,6 +132,7 @@ export const ClientReportsService = {
         authorEmail: author.email || null,
         title: payload.title,
         description: payload.description || null,
+        internalNotes: payload.internalNotes || null,
         reportType: payload.reportType || "general",
         content: payload.content,
         keyOutcomes: payload.keyOutcomes || [],
@@ -167,6 +172,7 @@ export const ClientReportsService = {
       if (payload.dealTitle !== undefined) updateData.dealTitle = payload.dealTitle || null;
       if (payload.title !== undefined) updateData.title = payload.title;
       if (payload.description !== undefined) updateData.description = payload.description || null;
+      if (payload.internalNotes !== undefined) updateData.internalNotes = payload.internalNotes || null;
       if (payload.reportType !== undefined) updateData.reportType = payload.reportType;
       if (payload.content !== undefined) updateData.content = payload.content;
       if (payload.keyOutcomes !== undefined) updateData.keyOutcomes = payload.keyOutcomes;
@@ -181,6 +187,28 @@ export const ClientReportsService = {
       return {
         data: mapClientReportDoc(reportId, updatedSnap.data() || {}),
         message: "تم تحديث تقرير العميل بنجاح",
+      };
+    })());
+  },
+
+  async approveClientReport(
+    companyId: string,
+    reportId: string,
+    reviewer: { id: string; name: string }
+  ): Promise<ApiResponse<ClientReport>> {
+    return withLogging(SERVICE_NAME, "approveClientReport", (async () => {
+      const reportRef = doc(db, "companies", companyId, "client_reports", reportId);
+      await updateDoc(reportRef, {
+        status: "reviewed",
+        reviewedBy: reviewer.id,
+        reviewedByName: reviewer.name,
+        reviewedAt: new Date().toISOString(),
+        updatedAt: serverTimestamp(),
+      });
+      const updatedSnap = await getDoc(reportRef);
+      return {
+        data: mapClientReportDoc(reportId, updatedSnap.data() || {}),
+        message: "تم اعتماد ومراجعة التقرير بنجاح",
       };
     })());
   },

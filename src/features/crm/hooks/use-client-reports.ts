@@ -104,3 +104,29 @@ export function useDeleteClientReportMutation() {
     },
   });
 }
+
+export function useApproveClientReportMutation() {
+  const { companyId } = useCompany();
+  const user = useAuthStore((s) => s.user);
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (id: string) => {
+      if (!companyId) throw new Error("No company selected");
+      if (!user) throw new Error("User not authenticated");
+      const reviewer = {
+        id: user.id || (user as { uid?: string }).uid || "",
+        name: (user as { displayName?: string }).displayName || user.name || user.email || "مدير النظام",
+      };
+      return await ClientReportsService.approveClientReport(companyId, id, reviewer);
+    },
+    onSuccess: (res, id) => {
+      queryClient.invalidateQueries({ queryKey: ["crm", "client-reports"] });
+      queryClient.invalidateQueries({ queryKey: ["crm", "client-report", companyId, id] });
+      toast.success(res.message || "تم اعتماد ومراجعة التقرير بنجاح");
+    },
+    onError: (err: Error) => {
+      toast.error(err.message || "حدث خطأ أثناء اعتماد التقرير");
+    },
+  });
+}

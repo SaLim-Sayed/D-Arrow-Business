@@ -1,10 +1,10 @@
 import { useState, useEffect, useRef } from "react";
 import {
-  Modal,
-  ModalContent,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
+  Drawer,
+  DrawerContent,
+  DrawerHeader,
+  DrawerBody,
+  DrawerFooter,
   Button,
   Chip,
 } from "@heroui/react";
@@ -30,6 +30,8 @@ import {
   Save,
   Send,
   Calendar,
+  Lock,
+  Sparkles,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useContactsQuery, useDealsQuery } from "../hooks";
@@ -122,6 +124,7 @@ export function ClientReportEditorModal({
   const [dealId, setDealId] = useState(initialDealId || "");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [internalNotes, setInternalNotes] = useState("");
   const [reportType, setReportType] = useState<ClientReportType>("meeting_summary");
   const [content, setContent] = useState("");
   const [clientMood, setClientMood] = useState<ClientMood>("satisfied");
@@ -140,6 +143,7 @@ export function ClientReportEditorModal({
       setDealId(initialReport.dealId || "");
       setTitle(initialReport.title);
       setDescription(initialReport.description || "");
+      setInternalNotes(initialReport.internalNotes || "");
       setReportType(initialReport.reportType);
       setContent(initialReport.content);
       setClientMood(initialReport.clientMood);
@@ -151,6 +155,7 @@ export function ClientReportEditorModal({
       setDealId(initialDealId || "");
       setTitle(isAr ? DEFAULT_SAMPLE_TITLE : "Strategic Review & Client Requirements Report");
       setDescription(isAr ? DEFAULT_SAMPLE_DESCRIPTION : "Detailed client meeting report covering performance review, outcome alignment, and strategic roadmap.");
+      setInternalNotes(isAr ? "ملاحظة سرية للإدارة: أظهر العميل استعداداً لزيادة التعاقد في حال توفير خصم تجاري بنسبة 5%." : "Private management note: Client is ready to expand contract volume if 5% discount is provided.");
       setReportType("meeting_summary");
       setContent(isAr ? DEFAULT_SAMPLE_CONTENT : "# Executive Summary\n\nDetailed client report content...");
       setClientMood("satisfied");
@@ -159,6 +164,36 @@ export function ClientReportEditorModal({
       setActionItems(isAr ? DEFAULT_SAMPLE_ACTION_ITEMS : []);
     }
   }, [initialReport, initialContactId, initialDealId, isOpen]);
+
+  const generateSmartTemplate = () => {
+    if (reportType === "sales_pitch") {
+      setTitle(isAr ? "تقرير تقديم العرض الاستثماري والمبيعات" : "Sales Pitch & Proposal Presentation Report");
+      setDescription(isAr ? "تقرير توثيقي لعرض الخدمات والمميزات الاستثمارية للعميل مع تحديد خطة الأسعار والملاحظات المالية." : "Documentation report for sales presentation, financial terms, and package proposal.");
+      setContent(isAr ? `# 1. هدف العرض الاستثماري
+تم تقديم عرض شامل يستعرض الحلول الرقمية والخدمات المتاحة مع بيان القيمة المضافة ومعدل العائد على الاستثمار المتوقع.
+
+# 2. انطباع العميل والملاحظات المالية
+- أبدى العميل اهتماماً كبيراً بالحزمة الاحترافية.
+- تمت مناقشة تفاصيل الدفعات المالية والجدول الزمني للتنفيذ.
+
+> 💡 **توصية المبيعات:** إرسال العقد النهائي المعتمد خلال 48 ساعة للاستفادة من الاهتمام العالي للعميل.` : `# 1. Presentation Objective\nPresented full solution proposal and ROI projection.`);
+    } else if (reportType === "complaint_resolution") {
+      setTitle(isAr ? "تقرير معالجة وتفادي الشكاوى التشغيلية" : "Complaint Resolution & SLA Report");
+      setDescription(isAr ? "تقرير توثيقي لمعالجة ملاحظات العميل وتوفير الحلول الجذرية لضمان استقرار الخدمة وتلبية مستوى الخدمة (SLA)." : "Detailed report on resolving client complaint, root-cause analysis, and SLA alignment.");
+      setContent(isAr ? `# 1. ملخص الشكوى الواردة
+تم الاستماع لملاحظات العميل بشأن التأخير الفني وتأثيره على سير العمل.
+
+# 2. الإجراءات التصحيحية المتخذة
+- تم معالجة الخلل الفني بشكل كامل وتوفير الدعم المباشر.
+- تم تحديث آليات المتابعة وتعيين مسؤول مباشر لحساب العميل.
+
+> 💡 **تعهد الجودة:** تقديم متابعة مجانية وإحصائيات أسبوعية لضمان عدم تكرار المشكلة.` : `# 1. Complaint Summary\nAddressed technical delay and provided immediate direct support.`);
+    } else {
+      setTitle(isAr ? DEFAULT_SAMPLE_TITLE : "Strategic Review Report");
+      setDescription(isAr ? DEFAULT_SAMPLE_DESCRIPTION : "Detailed client meeting report.");
+      setContent(isAr ? DEFAULT_SAMPLE_CONTENT : "# Executive Summary\nDetailed content...");
+    }
+  };
 
   const insertFormatting = (prefix: string, suffix: string = "") => {
     const el = textareaRef.current;
@@ -238,6 +273,7 @@ export function ClientReportEditorModal({
       dealTitle: selectedDeal ? selectedDeal.title : undefined,
       title: title.trim(),
       description: description.trim() || undefined,
+      internalNotes: internalNotes.trim() || undefined,
       reportType,
       content,
       keyOutcomes: outcomes,
@@ -258,16 +294,18 @@ export function ClientReportEditorModal({
   const isSaving = createMutation.isPending || updateMutation.isPending;
 
   return (
-    <Modal
+    <Drawer
       isOpen={isOpen}
       onClose={onClose}
-      size="4xl"
-      scrollBehavior="inside"
+      placement={isAr ? "left" : "right"}
+      size="5xl"
       backdrop="blur"
-      className="max-h-[92vh]"
+      classNames={{
+        base: "bg-background dark:bg-content1 text-foreground border-s border-default-200 dark:border-default-100 shadow-2xl h-full",
+      }}
     >
-      <ModalContent className="bg-background dark:bg-content1 text-foreground border border-default-200 dark:border-default-100 shadow-2xl rounded-3xl overflow-hidden">
-        <ModalHeader className="flex flex-col gap-1 border-b border-default-200 dark:border-default-100/60 pb-4 bg-default-100/50 dark:bg-default-50/20">
+      <DrawerContent>
+        <DrawerHeader className="flex flex-col gap-1 border-b border-default-200 dark:border-default-100/60 pb-4 bg-default-100/50 dark:bg-default-50/20">
           <div className="flex items-center gap-3">
             <div className="p-2.5 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white shadow-md shadow-blue-500/20">
               <FileText className="w-6 h-6" />
@@ -289,9 +327,9 @@ export function ClientReportEditorModal({
               </p>
             </div>
           </div>
-        </ModalHeader>
+        </DrawerHeader>
 
-        <ModalBody className="p-6 gap-6 bg-content1/30 dark:bg-background/90 overflow-y-auto">
+        <DrawerBody className="p-6 gap-6 bg-content1/30 dark:bg-background/90 overflow-y-auto">
           {/* Section 1: Client & Metadata Selection */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 p-4 rounded-2xl bg-white dark:bg-content2/40 border border-default-200 dark:border-default-100/60 shadow-xs">
             {/* Select Contact */}
@@ -433,95 +471,126 @@ export function ClientReportEditorModal({
             />
           </div>
 
+          {/* Odoo & Zoho Feature: Internal Management Notes Box */}
+          <div className="bg-amber-500/10 dark:bg-amber-500/5 p-4 rounded-2xl border border-amber-500/30 shadow-xs">
+            <label className="block text-xs font-bold text-amber-700 dark:text-amber-300 mb-1.5 flex items-center gap-2">
+              <Lock className="w-4 h-4 text-amber-600 shrink-0" />
+              {isAr ? "ملاحظات داخلية وخاصة بالإدارة (سرية - ميزة Odoo/Zoho الحصرية)" : "Internal Management Notes (Private - Odoo/Zoho Feature)"}
+            </label>
+            <textarea
+              value={internalNotes}
+              onChange={(e) => setInternalNotes(e.target.value)}
+              rows={2}
+              placeholder={
+                isAr
+                  ? "ملاحظات سرية لفريق المبيعات والإدارة فقط (لن تظهر في النسخة المطبوعة أو الموجهة للعميل)..."
+                  : "Private notes for internal management only (hidden from client report)..."
+              }
+              className="w-full bg-white dark:bg-content1 border border-amber-500/30 rounded-xl p-3 text-sm text-foreground placeholder-default-400 focus:outline-none focus:border-amber-500 leading-relaxed font-normal"
+            />
+          </div>
+
           {/* Section 2: Word-like Document Canvas */}
           <div className="rounded-2xl border border-default-200 dark:border-default-100/80 bg-default-100/60 dark:bg-content2/30 overflow-hidden shadow-sm">
             {/* Word Formatting Toolbar */}
-            <div className="bg-default-100 dark:bg-content2 border-b border-default-200 dark:border-default-100 p-2 flex flex-wrap items-center gap-1.5 text-foreground">
-              <div className="text-xs font-bold text-primary px-2.5 py-1 bg-primary/10 rounded-md border border-primary/20">
-                Word Editor
+            <div className="bg-default-100 dark:bg-content2 border-b border-default-200 dark:border-default-100 p-2 flex flex-wrap items-center justify-between gap-1.5 text-foreground">
+              <div className="flex items-center gap-1.5">
+                <div className="text-xs font-bold text-primary px-2.5 py-1 bg-primary/10 rounded-md border border-primary/20">
+                  Word Editor
+                </div>
+                <div className="h-5 w-[1px] bg-default-300 dark:bg-default-100 mx-1" />
+
+                <button
+                  type="button"
+                  onClick={() => insertFormatting("**", "**")}
+                  title="Bold (غليظ)"
+                  className="p-2 hover:bg-default-200 dark:hover:bg-default-100 rounded-lg text-default-600 dark:text-default-300 hover:text-foreground transition-colors"
+                >
+                  <Bold className="w-4 h-4" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => insertFormatting("*", "*")}
+                  title="Italic (مائل)"
+                  className="p-2 hover:bg-default-200 dark:hover:bg-default-100 rounded-lg text-default-600 dark:text-default-300 hover:text-foreground transition-colors"
+                >
+                  <Italic className="w-4 h-4" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => insertFormatting("<u>", "</u>")}
+                  title="Underline (تحته خط)"
+                  className="p-2 hover:bg-default-200 dark:hover:bg-default-100 rounded-lg text-default-600 dark:text-default-300 hover:text-foreground transition-colors"
+                >
+                  <Underline className="w-4 h-4" />
+                </button>
+
+                <div className="h-5 w-[1px] bg-default-300 dark:bg-default-100 mx-1" />
+
+                <button
+                  type="button"
+                  onClick={() => insertFormatting("# ")}
+                  title="Heading 1"
+                  className="p-2 hover:bg-default-200 dark:hover:bg-default-100 rounded-lg text-default-600 dark:text-default-300 hover:text-foreground transition-colors"
+                >
+                  <Heading1 className="w-4 h-4" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => insertFormatting("## ")}
+                  title="Heading 2"
+                  className="p-2 hover:bg-default-200 dark:hover:bg-default-100 rounded-lg text-default-600 dark:text-default-300 hover:text-foreground transition-colors"
+                >
+                  <Heading2 className="w-4 h-4" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => insertFormatting("### ")}
+                  title="Heading 3"
+                  className="p-2 hover:bg-default-200 dark:hover:bg-default-100 rounded-lg text-default-600 dark:text-default-300 hover:text-foreground transition-colors"
+                >
+                  <Heading3 className="w-4 h-4" />
+                </button>
+
+                <div className="h-5 w-[1px] bg-default-300 dark:bg-default-100 mx-1" />
+
+                <button
+                  type="button"
+                  onClick={() => insertFormatting("- ")}
+                  title="Bullet List"
+                  className="p-2 hover:bg-default-200 dark:hover:bg-default-100 rounded-lg text-default-600 dark:text-default-300 hover:text-foreground transition-colors"
+                >
+                  <List className="w-4 h-4" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => insertFormatting("1. ")}
+                  title="Numbered List"
+                  className="p-2 hover:bg-default-200 dark:hover:bg-default-100 rounded-lg text-default-600 dark:text-default-300 hover:text-foreground transition-colors"
+                >
+                  <ListOrdered className="w-4 h-4" />
+                </button>
+
+                <div className="h-5 w-[1px] bg-default-300 dark:bg-default-100 mx-1" />
+
+                <button
+                  type="button"
+                  onClick={() => insertFormatting("\n> 💡 **ملاحظة رئيسية:** ", "\n")}
+                  title="Callout Box"
+                  className="p-2 hover:bg-default-200 dark:hover:bg-default-100 rounded-lg text-amber-500 hover:text-amber-400 transition-colors"
+                >
+                  <Quote className="w-4 h-4" />
+                </button>
               </div>
-              <div className="h-5 w-[1px] bg-default-300 dark:bg-default-100 mx-1" />
 
+              {/* AI Smart Template Button */}
               <button
                 type="button"
-                onClick={() => insertFormatting("**", "**")}
-                title="Bold (غليظ)"
-                className="p-2 hover:bg-default-200 dark:hover:bg-default-100 rounded-lg text-default-600 dark:text-default-300 hover:text-foreground transition-colors"
+                onClick={generateSmartTemplate}
+                className="flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-xs hover:opacity-90 transition-opacity"
               >
-                <Bold className="w-4 h-4" />
-              </button>
-              <button
-                type="button"
-                onClick={() => insertFormatting("*", "*")}
-                title="Italic (مائل)"
-                className="p-2 hover:bg-default-200 dark:hover:bg-default-100 rounded-lg text-default-600 dark:text-default-300 hover:text-foreground transition-colors"
-              >
-                <Italic className="w-4 h-4" />
-              </button>
-              <button
-                type="button"
-                onClick={() => insertFormatting("<u>", "</u>")}
-                title="Underline (تحته خط)"
-                className="p-2 hover:bg-default-200 dark:hover:bg-default-100 rounded-lg text-default-600 dark:text-default-300 hover:text-foreground transition-colors"
-              >
-                <Underline className="w-4 h-4" />
-              </button>
-
-              <div className="h-5 w-[1px] bg-default-300 dark:bg-default-100 mx-1" />
-
-              <button
-                type="button"
-                onClick={() => insertFormatting("# ")}
-                title="Heading 1"
-                className="p-2 hover:bg-default-200 dark:hover:bg-default-100 rounded-lg text-default-600 dark:text-default-300 hover:text-foreground transition-colors"
-              >
-                <Heading1 className="w-4 h-4" />
-              </button>
-              <button
-                type="button"
-                onClick={() => insertFormatting("## ")}
-                title="Heading 2"
-                className="p-2 hover:bg-default-200 dark:hover:bg-default-100 rounded-lg text-default-600 dark:text-default-300 hover:text-foreground transition-colors"
-              >
-                <Heading2 className="w-4 h-4" />
-              </button>
-              <button
-                type="button"
-                onClick={() => insertFormatting("### ")}
-                title="Heading 3"
-                className="p-2 hover:bg-default-200 dark:hover:bg-default-100 rounded-lg text-default-600 dark:text-default-300 hover:text-foreground transition-colors"
-              >
-                <Heading3 className="w-4 h-4" />
-              </button>
-
-              <div className="h-5 w-[1px] bg-default-300 dark:bg-default-100 mx-1" />
-
-              <button
-                type="button"
-                onClick={() => insertFormatting("- ")}
-                title="Bullet List"
-                className="p-2 hover:bg-default-200 dark:hover:bg-default-100 rounded-lg text-default-600 dark:text-default-300 hover:text-foreground transition-colors"
-              >
-                <List className="w-4 h-4" />
-              </button>
-              <button
-                type="button"
-                onClick={() => insertFormatting("1. ")}
-                title="Numbered List"
-                className="p-2 hover:bg-default-200 dark:hover:bg-default-100 rounded-lg text-default-600 dark:text-default-300 hover:text-foreground transition-colors"
-              >
-                <ListOrdered className="w-4 h-4" />
-              </button>
-
-              <div className="h-5 w-[1px] bg-default-300 dark:bg-default-100 mx-1" />
-
-              <button
-                type="button"
-                onClick={() => insertFormatting("\n> 💡 **ملاحظة رئيسية:** ", "\n")}
-                title="Callout Box"
-                className="p-2 hover:bg-default-200 dark:hover:bg-default-100 rounded-lg text-amber-500 hover:text-amber-400 transition-colors"
-              >
-                <Quote className="w-4 h-4" />
+                <Sparkles className="w-3.5 h-3.5" />
+                {isAr ? "توليد القالب الذكي حسب النوع" : "Auto AI Template"}
               </button>
             </div>
 
@@ -657,9 +726,9 @@ export function ClientReportEditorModal({
               )}
             </div>
           </div>
-        </ModalBody>
+        </DrawerBody>
 
-        <ModalFooter className="border-t border-default-200 dark:border-default-100 bg-default-100/50 dark:bg-default-50/20 p-4 flex justify-between">
+        <DrawerFooter className="border-t border-default-200 dark:border-default-100 bg-default-100/50 dark:bg-default-50/20 p-4 flex justify-between">
           <Button variant="flat" color="default" onClick={onClose} className="rounded-xl">
             {isAr ? "إلغاء" : "Cancel"}
           </Button>
@@ -685,8 +754,8 @@ export function ClientReportEditorModal({
               {isAr ? "إعتماد وإرسال التقرير" : "Submit Report"}
             </Button>
           </div>
-        </ModalFooter>
-      </ModalContent>
-    </Modal>
+        </DrawerFooter>
+      </DrawerContent>
+    </Drawer>
   );
 }

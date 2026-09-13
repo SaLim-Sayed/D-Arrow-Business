@@ -7,6 +7,7 @@ import { ResetPasswordPage } from "@/features/auth/pages/reset-password-page";
 import { AcceptInvitePage } from "@/features/auth/pages/accept-invite-page";
 import { ProtectedRoute } from "@/features/auth/components/protected-route";
 import PublicInvoicePdfPage from "@/features/billing/pages/PublicInvoicePdfPage";
+import PublicClientReportPage from "@/features/crm/pages/PublicClientReportPage";
 import { AppLayout } from "@/components/layout/app-layout";
 import { TasksLayout } from "@/features/tasks/components/TasksLayout";
 import { TasksDashboardPage } from "@/features/tasks/pages/tasks-dashboard-page";
@@ -106,6 +107,10 @@ export const router = createBrowserRouter([
       {
         path: "i/:token",
         element: <PublicInvoicePdfPage />,
+      },
+      {
+        path: "public/report/:companyId/:reportId",
+        element: <PublicClientReportPage />,
       },
       {
         index: true,

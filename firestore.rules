@@ -94,6 +94,12 @@ service cloud.firestore {
       allow read, write: if belongsToCompany(companyId);
       allow create: if signedIn();
 
+      // Allow public unauthenticated single GET for client reports (direct share link)
+      match /client_reports/{reportId} {
+        allow get: if true;
+        allow list, write: if belongsToCompany(companyId);
+      }
+
       match /{allSubcollections=**} {
         allow read, write: if belongsToCompany(companyId);
       }

@@ -257,14 +257,70 @@
     print-color-adjust: exact !important;
   }
 
+  /* Hide navigation, sidebars, header buttons, backdrops, and close buttons */
   header,
   aside,
   nav,
   .print\:hidden,
-  [role="dialog"],
-  button:not(.print-keep),
-  .no-print {
+  .no-print,
+  button,
+  [data-slot="backdrop"],
+  [data-slot="close-button"] {
     display: none !important;
+  }
+
+  /* Reset HeroUI Modal & Drawer containers for print */
+  [role="dialog"],
+  [data-slot="base"],
+  [data-slot="content"],
+  [data-slot="body"] {
+    display: block !important;
+    position: static !important;
+    transform: none !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  /* Force report document sheet to fill page continuously */
+  #printable-client-report {
+    display: block !important;
+    position: static !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
+    margin: 0 !important;
+    padding: 10mm !important;
+    background: #ffffff !important;
+    color: #000000 !important;
+    box-shadow: none !important;
+    border: none !important;
+    overflow: visible !important;
+  }
+
+  /* Ensure text colors in print preview are crisp black & 100% visible */
+  #printable-client-report * {
+    color: #000000 !important;
+    -webkit-text-fill-color: #000000 !important;
+    text-shadow: none !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+  }
+
+  /* Subtle background fills for badges and callout boxes */
+  #printable-client-report .bg-emerald-500\/10,
+  #printable-client-report .bg-amber-500\/10,
+  #printable-client-report .bg-primary-50\/50,
+  #printable-client-report .bg-default-50 {
+    background-color: #f8fafc !important;
+    border-color: #e2e8f0 !important;
   }
 
   main {
@@ -305,6 +361,6 @@
 
   @page {
     size: A4 portrait;
-    margin: 12mm 10mm 12mm 10mm;
+    margin: 10mm 10mm 10mm 10mm;
   }
 }

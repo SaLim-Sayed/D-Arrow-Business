@@ -1,4 +1,4 @@
-import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Button, Chip } from "@heroui/react";
+import { Drawer, DrawerContent, DrawerHeader, DrawerBody, DrawerFooter, Button, Chip } from "@heroui/react";
 import {
   FileText,
   Printer,
@@ -14,8 +14,14 @@ import {
   AlertTriangle,
   Flame,
   Briefcase,
+  Lock,
+  Share2,
+  ShieldCheck,
+  Link as LinkIcon,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { toast } from "sonner";
+import { useApproveClientReportMutation } from "../hooks/use-client-reports";
 import type { ClientReport } from "../types/client-reports.types";
 
 interface ClientReportDetailModalProps {
@@ -51,6 +57,7 @@ export function ClientReportDetailModal({
 }: ClientReportDetailModalProps) {
   const { i18n } = useTranslation();
   const isAr = i18n.language === "ar";
+  const approveMutation = useApproveClientReportMutation();
 
   if (!report) return null;
 
@@ -59,7 +66,116 @@ export function ClientReportDetailModal({
   const typeLabel = REPORT_TYPES[report.reportType]?.[isAr ? "ar" : "en"] || report.reportType;
 
   const handlePrint = () => {
-    window.print();
+    const el = document.getElementById("printable-client-report");
+    if (!el) {
+      window.print();
+      return;
+    }
+
+    const iframe = document.createElement("iframe");
+    iframe.style.position = "fixed";
+    iframe.style.right = "0";
+    iframe.style.bottom = "0";
+    iframe.style.width = "0px";
+    iframe.style.height = "0px";
+    iframe.style.border = "0";
+    iframe.style.zIndex = "-1000";
+
+    document.body.appendChild(iframe);
+
+    const doc = iframe.contentWindow?.document;
+    if (!doc) return;
+
+    // Extract styles to preserve page font & icons
+    const styles = Array.from(document.querySelectorAll("style, link[rel='stylesheet']"))
+      .map((s) => s.outerHTML)
+      .join("\n");
+
+    doc.open();
+    doc.write(`
+      <!DOCTYPE html>
+      <html dir="${isAr ? "rtl" : "ltr"}">
+        <head>
+          <title>${report.title}</title>
+          ${styles}
+          <style>
+            body {
+              font-family: "IBM Plex Sans Arabic", "Inter", sans-serif !important;
+              background: #ffffff !important;
+              color: #000000 !important;
+              margin: 0 !important;
+              padding: 12mm !important;
+              direction: ${isAr ? "rtl" : "ltr"};
+              -webkit-print-color-adjust: exact !important;
+              print-color-adjust: exact !important;
+            }
+            * {
+              color: #000000 !important;
+              -webkit-text-fill-color: #000000 !important;
+              box-shadow: none !important;
+            }
+            .print\\:hidden { display: none !important; }
+            .bg-emerald-500\\/10, .bg-amber-500\\/10, .bg-primary-50\\/50, .bg-default-50 {
+              background-color: #f8fafc !important;
+              border-color: #e2e8f0 !important;
+            }
+            @page {
+              size: A4 portrait;
+              margin: 10mm;
+            }
+          </style>
+        </head>
+        <body>
+          <div style="width: 100%; background: #ffffff; color: #000000;">
+            ${el.innerHTML}
+          </div>
+        </body>
+      </html>
+    `);
+    doc.close();
+
+    iframe.contentWindow?.focus();
+    setTimeout(() => {
+      iframe.contentWindow?.print();
+      setTimeout(() => {
+        if (document.body.contains(iframe)) {
+          document.body.removeChild(iframe);
+        }
+      }, 1000);
+    }, 350);
+  };
+
+  const handleApprove = async () => {
+    await approveMutation.mutateAsync(report.id);
+  };
+
+  const handleCopyLink = () => {
+    const publicUrl = `${window.location.origin}/public/report/${report.companyId}/${report.id}`;
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(publicUrl);
+      toast.success(isAr ? "تم نسخ رابط التقرير المباشر للحافظة بنجاح" : "Report public link copied to clipboard");
+    }
+  };
+
+  const handleShareWhatsApp = () => {
+    const publicUrl = `${window.location.origin}/public/report/${report.companyId}/${report.id}`;
+    const text = `📄 *${report.title}*\n👤 العميل: ${report.contactName}\n✍️ الموظف: ${report.authorName}\n\n🔗 *رابط التقرير المباشر:*\n${publicUrl}\n\n*الموجز التنفيذي:*\n${report.description || report.content.substring(0, 150)}\n\n_D-Arrow CRM System_`;
+    const url = `https://wa.me/?text=${encodeURIComponent(text)}`;
+    window.open(url, "_blank");
+  };
+
+  const renderFormattedText = (text: string) => {
+    const parts = text.split(/(\*\*.*?\*\*)/g);
+    return parts.map((part, i) => {
+      if (part.startsWith("**") && part.endsWith("**")) {
+        return (
+          <strong key={i} className="font-bold text-slate-900 dark:text-white">
+            {part.slice(2, -2)}
+          </strong>
+        );
+      }
+      return part;
+    });
   };
 
   const renderContentLines = (raw: string) => {
@@ -71,35 +187,35 @@ export function ClientReportDetailModal({
       if (trimmed.startsWith("# ")) {
         return (
           <h1 key={idx} className="text-2xl font-black text-slate-900 dark:text-white mt-6 mb-3 border-b pb-2 border-slate-200 dark:border-slate-800">
-            {trimmed.replace("# ", "")}
+            {renderFormattedText(trimmed.replace("# ", ""))}
           </h1>
         );
       }
       if (trimmed.startsWith("## ")) {
         return (
           <h2 key={idx} className="text-xl font-bold text-slate-800 dark:text-slate-100 mt-5 mb-2">
-            {trimmed.replace("## ", "")}
+            {renderFormattedText(trimmed.replace("## ", ""))}
           </h2>
         );
       }
       if (trimmed.startsWith("### ")) {
         return (
           <h3 key={idx} className="text-lg font-semibold text-slate-800 dark:text-slate-200 mt-4 mb-2">
-            {trimmed.replace("### ", "")}
+            {renderFormattedText(trimmed.replace("### ", ""))}
           </h3>
         );
       }
       if (trimmed.startsWith("> ")) {
         return (
           <blockquote key={idx} className="p-4 my-4 bg-amber-500/10 border-r-4 border-amber-500 rounded-lg text-amber-900 dark:text-amber-200 font-medium">
-            {trimmed.replace("> ", "")}
+            {renderFormattedText(trimmed.replace("> ", ""))}
           </blockquote>
         );
       }
       if (trimmed.startsWith("- ") || trimmed.startsWith("* ")) {
         return (
           <li key={idx} className="ms-6 list-disc text-slate-700 dark:text-slate-300 my-1">
-            {trimmed.substring(2)}
+            {renderFormattedText(trimmed.substring(2))}
           </li>
         );
       }
@@ -107,23 +223,25 @@ export function ClientReportDetailModal({
 
       return (
         <p key={idx} className="text-slate-700 dark:text-slate-300 leading-relaxed my-1.5 text-base">
-          {trimmed}
+          {renderFormattedText(trimmed)}
         </p>
       );
     });
   };
 
   return (
-    <Modal
+    <Drawer
       isOpen={isOpen}
       onClose={onClose}
-      size="4xl"
-      scrollBehavior="inside"
+      placement={isAr ? "left" : "right"}
+      size="5xl"
       backdrop="blur"
-      className="max-h-[92vh]"
+      classNames={{
+        base: "bg-background dark:bg-content1 text-foreground border-s border-default-200 dark:border-default-100 shadow-2xl h-full",
+      }}
     >
-      <ModalContent className="bg-background dark:bg-content1 text-foreground border border-default-200 dark:border-default-100 shadow-2xl rounded-3xl overflow-hidden">
-        <ModalHeader className="flex justify-between items-center border-b border-default-200 dark:border-default-100/60 pb-4 bg-default-100/50 dark:bg-default-50/20 print:hidden">
+      <DrawerContent dir={isAr ? "rtl" : "ltr"}>
+        <DrawerHeader className="flex justify-between items-center border-b border-default-200 dark:border-default-100/60 pb-4 bg-default-100/50 dark:bg-default-50/20 print:hidden">
           <div className="flex items-center gap-3">
             <div className="p-2.5 rounded-xl bg-primary/10 border border-primary/20 text-primary">
               <FileText className="w-6 h-6" />
@@ -137,12 +255,38 @@ export function ClientReportDetailModal({
                   <MoodIcon className="w-3.5 h-3.5" />
                   {isAr ? moodInfo.labelAr : moodInfo.labelEn}
                 </Chip>
+                {report.status === "reviewed" ? (
+                  <Chip size="sm" color="success" variant="flat" className="gap-1 font-bold">
+                    <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
+                    {isAr ? `معتمد (${report.reviewedByName || "الإدارة"})` : "Reviewed & Approved"}
+                  </Chip>
+                ) : (
+                  <Button
+                    size="sm"
+                    variant="flat"
+                    color="success"
+                    isLoading={approveMutation.isPending}
+                    onClick={handleApprove}
+                    className="rounded-xl font-bold h-7 text-xs"
+                  >
+                    <ShieldCheck className="w-3.5 h-3.5" />
+                    {isAr ? "اعتماد ومراجعة" : "Approve"}
+                  </Button>
+                )}
               </div>
               <h3 className="text-lg font-bold text-foreground mt-1">{report.title}</h3>
             </div>
           </div>
 
           <div className="flex items-center gap-2">
+            <Button size="sm" variant="flat" color="default" onClick={handleCopyLink} className="rounded-xl font-semibold">
+              <LinkIcon className="w-4 h-4" />
+              {isAr ? "نسخ الرابط" : "Copy Link"}
+            </Button>
+            <Button size="sm" variant="flat" color="success" onClick={handleShareWhatsApp} className="rounded-xl font-semibold">
+              <Share2 className="w-4 h-4" />
+              {isAr ? "واتساب" : "WhatsApp"}
+            </Button>
             <Button size="sm" variant="flat" color="primary" onClick={handlePrint} className="rounded-xl font-semibold">
               <Printer className="w-4 h-4" />
               {isAr ? "طباعة / PDF" : "Print / PDF"}
@@ -159,11 +303,24 @@ export function ClientReportDetailModal({
               </Button>
             )}
           </div>
-        </ModalHeader>
+        </DrawerHeader>
 
-        <ModalBody className="p-6 md:p-8 bg-content1/30 dark:bg-background/90 overflow-y-auto">
+        <DrawerBody className="p-6 md:p-8 bg-content1/30 dark:bg-background/90 overflow-y-auto">
+          {/* Internal Confidential Management Notes (Odoo/Zoho feature) */}
+          {report.internalNotes && (
+            <div className="mb-6 p-4 rounded-2xl bg-amber-500/10 dark:bg-amber-500/5 border border-amber-500/30 print:hidden shadow-xs">
+              <h4 className="text-xs font-bold text-amber-700 dark:text-amber-300 mb-1 flex items-center gap-2">
+                <Lock className="w-4 h-4 text-amber-600 shrink-0" />
+                {isAr ? "ملاحظات سرية خاصة بالإدارة والمدير (غير مخصصة للعرض للعميل):" : "Confidential Internal Management Notes:"}
+              </h4>
+              <p className="text-sm text-foreground font-medium leading-relaxed">
+                {report.internalNotes}
+              </p>
+            </div>
+          )}
+
           {/* Printable Word Document Sheet */}
-          <div className="bg-white dark:bg-content1 text-foreground rounded-2xl p-8 md:p-12 shadow-xl border border-default-200 dark:border-default-100 print:shadow-none print:border-none font-sans min-h-[700px]">
+          <div id="printable-client-report" className="bg-white dark:bg-content1 text-foreground rounded-2xl p-8 md:p-12 shadow-xl border border-default-200 dark:border-default-100 print:shadow-none print:border-none font-sans min-h-[700px]">
             {/* Header Document Bar */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center pb-6 mb-8 border-b-2 border-foreground/80 gap-4">
               <div>
@@ -306,9 +463,9 @@ export function ClientReportDetailModal({
               </div>
             </div>
           </div>
-        </ModalBody>
+        </DrawerBody>
 
-        <ModalFooter className="border-t border-default-200 dark:border-default-100 bg-default-100/50 dark:bg-default-50/20 p-4 flex justify-between print:hidden">
+        <DrawerFooter className="border-t border-default-200 dark:border-default-100 bg-default-100/50 dark:bg-default-50/20 p-4 flex justify-between print:hidden">
           <Button variant="flat" color="default" onClick={onClose} className="rounded-xl">
             {isAr ? "إغلاق" : "Close"}
           </Button>
@@ -316,8 +473,8 @@ export function ClientReportDetailModal({
             <Printer className="w-4 h-4" />
             {isAr ? "طباعة التقرير المستندي" : "Print Word Document"}
           </Button>
-        </ModalFooter>
-      </ModalContent>
-    </Modal>
+        </DrawerFooter>
+      </DrawerContent>
+    </Drawer>
   );
 }

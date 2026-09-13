@@ -33,6 +33,7 @@ export interface ClientReport {
   authorEmail?: string;
   title: string;
   description?: string;
+  internalNotes?: string; // Private management/staff notes (Odoo/Zoho feature)
   reportType: ClientReportType;
   content: string; // Rich text HTML / formatted markdown
   keyOutcomes?: string[];
@@ -40,6 +41,9 @@ export interface ClientReport {
   clientMood: ClientMood;
   satisfactionRating?: number; // 1 to 5 stars
   status: ClientReportStatus;
+  reviewedBy?: string;
+  reviewedByName?: string;
+  reviewedAt?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -51,6 +55,7 @@ export interface CreateClientReportDTO {
   dealTitle?: string;
   title: string;
   description?: string;
+  internalNotes?: string;
   reportType: ClientReportType;
   content: string;
   keyOutcomes?: string[];
