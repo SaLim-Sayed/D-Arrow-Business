@@ -74,30 +74,40 @@
   .kanban-scroll-always {
     overflow-x: scroll !important;
     scrollbar-width: auto !important;
-    scrollbar-color: hsl(var(--heroui-primary, 260 84% 60%)) rgba(161, 161, 170, 0.25) !important;
+    scrollbar-color: hsl(var(--heroui-primary)) rgba(0, 0, 0, 0.12) !important;
   }
 
   .kanban-scroll-always::-webkit-scrollbar {
-    width: 10px !important;
-    height: 14px !important;
+    height: 16px !important;
+    width: 16px !important;
     display: block !important;
+    background: rgba(0, 0, 0, 0.05) !important;
   }
 
   .kanban-scroll-always::-webkit-scrollbar-track {
-    background: rgba(161, 161, 170, 0.2) !important;
-    border-radius: 8px !important;
-    margin: 2px !important;
+    background: rgba(0, 0, 0, 0.12) !important;
+    border-radius: 9999px !important;
+    margin-inline: 8px !important;
+  }
+
+  .dark .kanban-scroll-always::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.12) !important;
   }
 
   .kanban-scroll-always::-webkit-scrollbar-thumb {
-    background-color: hsl(var(--heroui-primary, 260 84% 60%)) !important;
-    border-radius: 8px !important;
-    border: 2px solid rgba(255, 255, 255, 0.3) !important;
-    min-width: 60px !important;
+    background-color: hsl(var(--heroui-primary)) !important;
+    border-radius: 9999px !important;
+    border: 3px solid rgba(255, 255, 255, 0.8) !important;
+    min-width: 100px !important;
+    cursor: pointer !important;
+  }
+
+  .dark .kanban-scroll-always::-webkit-scrollbar-thumb {
+    border: 3px solid rgba(0, 0, 0, 0.4) !important;
   }
 
   .kanban-scroll-always::-webkit-scrollbar-thumb:hover {
-    background-color: hsl(var(--heroui-primary, 260 84% 45%)) !important;
+    background-color: hsl(var(--heroui-primary) / 0.85) !important;
   }
 
   .kanban-scroll-x {

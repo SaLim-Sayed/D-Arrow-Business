@@ -21,7 +21,7 @@ export function DealsPipelinePage() {
   const [formOpen, setFormOpen] = useState(false);
 
   return (
-    <div className="flex flex-col h-full max-h-full space-y-4 animate-in fade-in duration-500 overflow-hidden">
+    <div className="flex flex-col h-full min-h-0 space-y-3 animate-in fade-in duration-500 overflow-hidden">
       <div className="shrink-0">
         <CrmListHeader
           title={t("deals.title")}
@@ -43,7 +43,7 @@ export function DealsPipelinePage() {
         />
       </div>
 
-      <div className="flex-1 min-h-0 overflow-hidden">
+      <div className="flex-1 min-h-0 overflow-hidden flex flex-col">
         {viewMode === "pipeline" ? <DealKanbanBoard /> : <DealsListView />}
       </div>
 

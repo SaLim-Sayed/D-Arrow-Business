@@ -29,9 +29,9 @@ export function PortalPageShell({
   return (
     <div
       className={cn(
-        "animate-in fade-in slide-in-from-bottom-4 duration-500 w-full mx-auto",
+        "animate-in fade-in slide-in-from-bottom-4 duration-500 w-full mx-auto flex flex-col",
         fullBleed
-          ? "-mx-4 md:-mx-6 max-w-none"
+          ? "-mx-4 md:-mx-6 max-w-none h-[calc(100dvh-var(--header-height)-3.5rem)] min-h-0 overflow-hidden"
           : maxWidth === "wide"
             ? "max-w-[1600px]"
             : "max-w-7xl"
@@ -39,7 +39,7 @@ export function PortalPageShell({
     >
       <div
         className={cn(
-          "md:hidden sticky top-[var(--header-height)] z-30 -mx-4 px-4 py-2 glass border-b border-default-100/80 shadow-sm",
+          "md:hidden shrink-0 sticky top-[var(--header-height)] z-30 -mx-4 px-4 py-2 glass border-b border-default-100/80 shadow-sm",
           fullBleed ? "mb-2" : "mb-4"
         )}
       >
@@ -47,18 +47,12 @@ export function PortalPageShell({
       </div>
 
       {toolbar && (
-        <div className="mb-4 flex items-center gap-2 flex-wrap sm:justify-end">
+        <div className="shrink-0 mb-3 flex items-center gap-2 flex-wrap sm:justify-end">
           {toolbar}
         </div>
       )}
 
-      <div
-        className={cn(
-          fullBleed &&
-            // Mobile subnav sits above this region; desktop uses the full remainder.
-            "h-[calc(100dvh-var(--header-height)-3.25rem)] md:h-[calc(100dvh-var(--header-height))]"
-        )}
-      >
+      <div className="flex-1 min-h-0 overflow-hidden flex flex-col">
         {children}
       </div>
     </div>

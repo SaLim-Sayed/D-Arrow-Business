@@ -7,7 +7,8 @@ import {
   Draggable,
   type DropResult,
 } from "@hello-pangea/dnd";
-import { Card, CardBody } from "@heroui/react";
+import { Card, CardBody, Button } from "@heroui/react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { LoadingSpinner } from "@/components/shared/loading-spinner";
 import { cn } from "@/lib/utils";
 import { MoneyAmount } from "@/components/shared/riyal-symbol";
@@ -136,40 +137,46 @@ export function DealKanbanBoard() {
   }
 
   const boardRef = useRef<HTMLDivElement>(null);
-  const scrollbarRef = useRef<HTMLDivElement>(null);
-  const [scrollWidth, setScrollWidth] = useState(0);
+  const isDraggingBoard = useRef(false);
+  const boardDragStartX = useRef(0);
+  const boardDragScrollLeft = useRef(0);
 
-  // Sync content width for fixed bottom scrollbar
-  useEffect(() => {
+  const handleSideScroll = (direction: "left" | "right") => {
     const el = boardRef.current;
     if (!el) return;
-
-    const updateWidth = () => {
-      setScrollWidth(el.scrollWidth);
-    };
-
-    updateWidth();
-    const observer = new ResizeObserver(updateWidth);
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, [deals]);
-
-  // Handle board scroll -> sync fixed scrollbar
-  const handleBoardScroll = () => {
-    if (boardRef.current && scrollbarRef.current) {
-      if (Math.abs(scrollbarRef.current.scrollLeft - boardRef.current.scrollLeft) > 1) {
-        scrollbarRef.current.scrollLeft = boardRef.current.scrollLeft;
-      }
-    }
+    const step = 350;
+    el.scrollBy({ left: direction === "left" ? -step : step, behavior: "smooth" });
   };
 
-  // Handle fixed scrollbar scroll -> sync board
-  const handleFixedScrollbarScroll = () => {
-    if (boardRef.current && scrollbarRef.current) {
-      if (Math.abs(boardRef.current.scrollLeft - scrollbarRef.current.scrollLeft) > 1) {
-        boardRef.current.scrollLeft = scrollbarRef.current.scrollLeft;
+  // Drag-to-scroll on board background / empty column space
+  const handleBoardPointerDown = (e: React.PointerEvent) => {
+    const target = e.target as HTMLElement;
+    if (target.closest("[data-rfd-draggable-id]") || target.closest("button") || target.closest("a")) return;
+
+    isDraggingBoard.current = true;
+    boardDragStartX.current = e.clientX;
+    boardDragScrollLeft.current = boardRef.current?.scrollLeft ?? 0;
+
+    const isRTL = document.dir === "rtl" || document.documentElement.dir === "rtl";
+
+    const handlePointerMove = (moveEvent: PointerEvent) => {
+      if (!isDraggingBoard.current || !boardRef.current) return;
+      const deltaX = moveEvent.clientX - boardDragStartX.current;
+      if (isRTL) {
+        boardRef.current.scrollLeft = boardDragScrollLeft.current + deltaX;
+      } else {
+        boardRef.current.scrollLeft = boardDragScrollLeft.current - deltaX;
       }
-    }
+    };
+
+    const handlePointerUp = () => {
+      isDraggingBoard.current = false;
+      window.removeEventListener("pointermove", handlePointerMove);
+      window.removeEventListener("pointerup", handlePointerUp);
+    };
+
+    window.addEventListener("pointermove", handlePointerMove);
+    window.addEventListener("pointerup", handlePointerUp);
   };
 
   function handleDragEnd(result: DropResult) {
@@ -188,18 +195,48 @@ export function DealKanbanBoard() {
   }
 
   return (
-    <div className="relative h-full flex flex-col min-h-0">
+    <div className="relative flex flex-col h-full min-h-0 overflow-hidden group/board">
+      {/* Floating Side Scroll Button - Left */}
+      <div className="absolute left-3 top-1/2 -translate-y-1/2 z-40 pointer-events-auto">
+        <Button
+          isIconOnly
+          variant="solid"
+          color="primary"
+          size="lg"
+          className="rounded-full shadow-2xl hover:scale-110 active:scale-95 transition-all bg-primary text-white backdrop-blur-md border-2 border-white/30 h-12 w-12 min-w-12"
+          onPress={() => handleSideScroll("left")}
+          aria-label="Scroll left"
+        >
+          <ChevronLeft className="h-6 w-6 stroke-[3]" />
+        </Button>
+      </div>
+
+      {/* Floating Side Scroll Button - Right */}
+      <div className="absolute right-3 top-1/2 -translate-y-1/2 z-40 pointer-events-auto">
+        <Button
+          isIconOnly
+          variant="solid"
+          color="primary"
+          size="lg"
+          className="rounded-full shadow-2xl hover:scale-110 active:scale-95 transition-all bg-primary text-white backdrop-blur-md border-2 border-white/30 h-12 w-12 min-w-12"
+          onPress={() => handleSideScroll("right")}
+          aria-label="Scroll right"
+        >
+          <ChevronRight className="h-6 w-6 stroke-[3]" />
+        </Button>
+      </div>
+
       <DragDropContext onDragEnd={handleDragEnd}>
         <div 
           ref={boardRef}
-          onScroll={handleBoardScroll}
-          className="flex gap-6 overflow-x-auto pb-6 h-full max-h-full kanban-scroll kanban-scroll-x"
+          onPointerDown={handleBoardPointerDown}
+          className="flex-1 flex gap-6 overflow-x-auto overflow-y-hidden pb-4 min-h-0 kanban-scroll cursor-grab active:cursor-grabbing select-none px-6"
         >
           {DEAL_STAGES.map((stage) => (
             <div
               key={stage}
               className={cn(
-                "flex-shrink-0 w-[300px] flex flex-col h-full group/column rounded-2xl transition-all duration-300 overflow-hidden",
+                "flex-shrink-0 w-[300px] flex flex-col h-full group/column rounded-2xl transition-all duration-300 overflow-hidden mb-1",
                 columnConfig[stage].bg
               )}
             >
@@ -286,15 +323,7 @@ export function DealKanbanBoard() {
           ))}
         </div>
       </DragDropContext>
-
-      {/* Fixed Horizontal Scrollbar Bar at bottom of screen - Always Visible */}
-      <div 
-        ref={scrollbarRef}
-        onScroll={handleFixedScrollbarScroll}
-        className="fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-xl border-t border-default-200/80 py-1.5 px-4 overflow-x-scroll kanban-scroll-always shadow-2xl"
-      >
-        <div style={{ width: `${scrollWidth}px`, height: "4px" }} />
-      </div>
     </div>
   );
 }
+
