@@ -49,8 +49,8 @@ export function useCreateClientReportMutation() {
       if (!user) throw new Error("User not authenticated");
 
       const author = {
-        id: user.id || user.uid || "",
-        name: user.displayName || user.name || user.email || "الموظف",
+        id: user.id || (user as { uid?: string }).uid || "",
+        name: (user as { displayName?: string }).displayName || user.name || user.email || "الموظف",
         email: user.email,
       };
 

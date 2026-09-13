@@ -32,6 +32,7 @@ export interface ClientReport {
   authorName: string;
   authorEmail?: string;
   title: string;
+  description?: string;
   reportType: ClientReportType;
   content: string; // Rich text HTML / formatted markdown
   keyOutcomes?: string[];
@@ -49,6 +50,7 @@ export interface CreateClientReportDTO {
   dealId?: string;
   dealTitle?: string;
   title: string;
+  description?: string;
   reportType: ClientReportType;
   content: string;
   keyOutcomes?: string[];

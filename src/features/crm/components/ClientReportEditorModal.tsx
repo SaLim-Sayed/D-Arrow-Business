@@ -6,11 +6,7 @@ import {
   ModalBody,
   ModalFooter,
   Button,
-  Input,
-  Select,
-  SelectItem,
   Chip,
-  Divider,
 } from "@heroui/react";
 import {
   FileText,
@@ -72,6 +68,37 @@ const REPORT_TYPES: { key: ClientReportType; labelAr: string; labelEn: string }[
   { key: "general", labelAr: "تقرير عام", labelEn: "General Report" },
 ];
 
+const DEFAULT_SAMPLE_TITLE = "تقرير اجتماع المراجعة الاستراتيجية وتحديد المتطلبات الرقمية";
+const DEFAULT_SAMPLE_DESCRIPTION = "يتضمن هذا التقرير المستندي تفاصيل اجتماع العمل الشامل المجرى مع ممثلي العميل لمراجعة الأداء الحالي، مخرجات المرحلة الأولى، وتحديد الأولويات الفنية والخطط المستقبلية لتعزيز الكفاءة التشغيلية وتحقيق الأهداف الاستثمارية المرجوة.";
+const DEFAULT_SAMPLE_CONTENT = `# 1. الملخص التنفيذي والسياق العام للاجتماع
+عُقد هذا الاجتماع التنسيقي الموسع بحضور ممثلي الإدارة وفريق العمل الفني لمراجعة نطاق العمل الحالي وتقييم مخرجات المرحلة السابقة. هدف الجلسة إلى الوقوف على جميع الملاحظات الفنية والتنظيمية، وتحديد أهداف المرحلة المقبلة وفقاً لأعلى معايير الجودة والالتزام بالجدول الزمني المحدد.
+
+# 2. أبرز محاور النقاش والجلسة التفصيلية
+- **مراجعة متطلبات وتوقعات العميل:** تم استعراض كافة تفاصيل المشروع ومناقشة التعديلات المطلوبة على سير العمل بما يضمن تحقيق الكفاءة القصوى وتفادي أي تأخير تشغيلي.
+- **تحليل الجودة ومؤشرات الأداء:** أظهر التقييم الميداني استقراراً ممتازاً في سير العمل مع وجود فرص تحسين تم مناقشتها وتدوينها لضمان تطبيقها في الإصدارات التالية.
+- **التنسيق المالي والتشغيلي:** التأكيد على الميزانية المعتمدة وتوفير كافة الموارد اللوجستية والفنية اللازمة لدعم استمرارية المشروع بسلاسة.
+
+# 3. التوصيات الاستراتيجية والحلول المقترحة
+> 💡 **ملاحظة وتوصية رئيسية:** يوصي فريق العمل بضرورة تعزيز التواصل الأسبوعي المستمر وعقد جلسات مراجعة سريعة لضمان مرونة التنفيذ والاستجابة الفورية لأي تحديات طارئة.
+
+1. أتمتة إجراءات المتابعة اليومية لرفع سرعة الاستجابة.
+2. تقديم تقارير دورية كل أسبوعين تبيّن نسبة الإنجاز والمراحل المتبقية.
+3. تنظيم ورشة عمل تدريبية لموظفي العميل على التعامل مع النظام الجديد.
+
+# 4. التطلعات والخاتمة
+نؤكد حرصنا الكامل على تقديم أفضل مستويات الخدمة المتميزة، والاستمرار في متابعة تنفيذ كافة التوصيات الواردة في هذا التقرير لتحقيق نجاح كلي ومستدام للمشروع.`;
+
+const DEFAULT_SAMPLE_OUTCOMES = [
+  "المرونة والالتزام التام بالجدول الزمني المحدد للمشروع",
+  "الموافقة المبدئية على خطة الترقية والتطوير الجديدة",
+  "رفع مستوى التنسيق بين فريق العمل وممثلي العميل",
+];
+
+const DEFAULT_SAMPLE_ACTION_ITEMS: ReportActionItem[] = [
+  { id: "act_1", text: "إرسال المسودة النهائية للتقرير وعرض السعر المعدل", done: false, dueDate: "2026-09-20" },
+  { id: "act_2", text: "تنسيق اجتماع المتابعة القادم مع فريق الدعم الفني", done: false, dueDate: "2026-09-25" },
+];
+
 export function ClientReportEditorModal({
   isOpen,
   onClose,
@@ -94,6 +121,7 @@ export function ClientReportEditorModal({
   const [contactId, setContactId] = useState(initialContactId || "");
   const [dealId, setDealId] = useState(initialDealId || "");
   const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
   const [reportType, setReportType] = useState<ClientReportType>("meeting_summary");
   const [content, setContent] = useState("");
   const [clientMood, setClientMood] = useState<ClientMood>("satisfied");
@@ -111,6 +139,7 @@ export function ClientReportEditorModal({
       setContactId(initialReport.contactId);
       setDealId(initialReport.dealId || "");
       setTitle(initialReport.title);
+      setDescription(initialReport.description || "");
       setReportType(initialReport.reportType);
       setContent(initialReport.content);
       setClientMood(initialReport.clientMood);
@@ -120,13 +149,14 @@ export function ClientReportEditorModal({
     } else {
       setContactId(initialContactId || (contacts.length > 0 ? contacts[0].id : ""));
       setDealId(initialDealId || "");
-      setTitle("");
+      setTitle(isAr ? DEFAULT_SAMPLE_TITLE : "Strategic Review & Client Requirements Report");
+      setDescription(isAr ? DEFAULT_SAMPLE_DESCRIPTION : "Detailed client meeting report covering performance review, outcome alignment, and strategic roadmap.");
       setReportType("meeting_summary");
-      setContent("");
+      setContent(isAr ? DEFAULT_SAMPLE_CONTENT : "# Executive Summary\n\nDetailed client report content...");
       setClientMood("satisfied");
       setSatisfactionRating(5);
-      setOutcomes([]);
-      setActionItems([]);
+      setOutcomes(isAr ? DEFAULT_SAMPLE_OUTCOMES : ["Agreed on timeline", "Approved project scope"]);
+      setActionItems(isAr ? DEFAULT_SAMPLE_ACTION_ITEMS : []);
     }
   }, [initialReport, initialContactId, initialDealId, isOpen]);
 
@@ -207,6 +237,7 @@ export function ClientReportEditorModal({
       dealId: dealId || undefined,
       dealTitle: selectedDeal ? selectedDeal.title : undefined,
       title: title.trim(),
+      description: description.trim() || undefined,
       reportType,
       content,
       keyOutcomes: outcomes,
@@ -235,14 +266,14 @@ export function ClientReportEditorModal({
       backdrop="blur"
       className="max-h-[92vh]"
     >
-      <ModalContent className="bg-slate-900 text-slate-100 border border-slate-800">
-        <ModalHeader className="flex flex-col gap-1 border-b border-slate-800/80 pb-4 bg-slate-950/60">
+      <ModalContent className="bg-background dark:bg-content1 text-foreground border border-default-200 dark:border-default-100 shadow-2xl rounded-3xl overflow-hidden">
+        <ModalHeader className="flex flex-col gap-1 border-b border-default-200 dark:border-default-100/60 pb-4 bg-default-100/50 dark:bg-default-50/20">
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white shadow-md shadow-blue-500/20">
+            <div className="p-2.5 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white shadow-md shadow-blue-500/20">
               <FileText className="w-6 h-6" />
             </div>
             <div>
-              <h3 className="text-xl font-bold text-slate-100">
+              <h3 className="text-xl font-bold text-foreground">
                 {initialReport
                   ? isAr
                     ? "تعديل تقرير العميل"
@@ -251,7 +282,7 @@ export function ClientReportEditorModal({
                   ? "محرر تقارير العملاء احترافي (مستند Word)"
                   : "Professional Client Report Editor (Word Document)"}
               </h3>
-              <p className="text-xs text-slate-400">
+              <p className="text-xs text-default-500">
                 {isAr
                   ? "اكتب تقريراً مهيكلاً وموثقاً للعميل مع تنسيق مستندات متكامل وتحديد التوصيات والخطوات القادمة"
                   : "Draft a structured, formatted Word report for the client with action items and key outcomes."}
@@ -260,23 +291,23 @@ export function ClientReportEditorModal({
           </div>
         </ModalHeader>
 
-        <ModalBody className="p-6 gap-6 bg-slate-900 overflow-y-auto">
+        <ModalBody className="p-6 gap-6 bg-content1/30 dark:bg-background/90 overflow-y-auto">
           {/* Section 1: Client & Metadata Selection */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 p-4 rounded-2xl bg-slate-950/60 border border-slate-800">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 p-4 rounded-2xl bg-white dark:bg-content2/40 border border-default-200 dark:border-default-100/60 shadow-xs">
             {/* Select Contact */}
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+              <label className="block text-xs font-semibold text-foreground mb-1.5">
                 {isAr ? "العميل / جهة الاتصال *" : "Client Contact *"}
               </label>
               <select
                 value={contactId}
                 onChange={(e) => setContactId(e.target.value)}
-                className="w-full bg-slate-900 border border-slate-700 text-slate-200 text-sm rounded-xl px-3 py-2.5 focus:outline-none focus:border-blue-500"
+                className="w-full bg-default-100 dark:bg-content1 border border-default-200 dark:border-default-100 text-foreground text-sm rounded-xl px-3 py-2.5 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
               >
                 <option value="">{isAr ? "-- اختر العميل --" : "-- Select Client --"}</option>
                 {contacts.map((c) => (
                   <option key={c.id} value={c.id}>
-                    {c.firstName} {c.lastName} ({c.companyName || c.email})
+                    {c.firstName} {c.lastName} ({c.accountName || c.email})
                   </option>
                 ))}
               </select>
@@ -284,18 +315,18 @@ export function ClientReportEditorModal({
 
             {/* Select Deal */}
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+              <label className="block text-xs font-semibold text-foreground mb-1.5">
                 {isAr ? "الصفقة المرتبطة (اختياري)" : "Linked Deal (Optional)"}
               </label>
               <select
                 value={dealId}
                 onChange={(e) => setDealId(e.target.value)}
-                className="w-full bg-slate-900 border border-slate-700 text-slate-200 text-sm rounded-xl px-3 py-2.5 focus:outline-none focus:border-blue-500"
+                className="w-full bg-default-100 dark:bg-content1 border border-default-200 dark:border-default-100 text-foreground text-sm rounded-xl px-3 py-2.5 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
               >
                 <option value="">{isAr ? "بدون صفقة محددة" : "No Specific Deal"}</option>
                 {deals.map((d) => (
                   <option key={d.id} value={d.id}>
-                    {d.title} ({d.value?.toLocaleString()} SAR)
+                    {d.title} ({d.amount?.toLocaleString()} SAR)
                   </option>
                 ))}
               </select>
@@ -303,13 +334,13 @@ export function ClientReportEditorModal({
 
             {/* Select Report Type */}
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+              <label className="block text-xs font-semibold text-foreground mb-1.5">
                 {isAr ? "نوع التقرير *" : "Report Type *"}
               </label>
               <select
                 value={reportType}
                 onChange={(e) => setReportType(e.target.value as ClientReportType)}
-                className="w-full bg-slate-900 border border-slate-700 text-slate-200 text-sm rounded-xl px-3 py-2.5 focus:outline-none focus:border-blue-500"
+                className="w-full bg-default-100 dark:bg-content1 border border-default-200 dark:border-default-100 text-foreground text-sm rounded-xl px-3 py-2.5 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
               >
                 {REPORT_TYPES.map((rt) => (
                   <option key={rt.key} value={rt.key}>
@@ -321,13 +352,13 @@ export function ClientReportEditorModal({
 
             {/* Client Mood */}
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+              <label className="block text-xs font-semibold text-foreground mb-1.5">
                 {isAr ? "انطباع / حالة العميل" : "Client Mood / Impression"}
               </label>
               <select
                 value={clientMood}
                 onChange={(e) => setClientMood(e.target.value as ClientMood)}
-                className="w-full bg-slate-900 border border-slate-700 text-slate-200 text-sm rounded-xl px-3 py-2.5 focus:outline-none focus:border-blue-500"
+                className="w-full bg-default-100 dark:bg-content1 border border-default-200 dark:border-default-100 text-foreground text-sm rounded-xl px-3 py-2.5 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
               >
                 {MOOD_OPTIONS.map((m) => (
                   <option key={m.key} value={m.key}>
@@ -341,7 +372,7 @@ export function ClientReportEditorModal({
           {/* Title and Satisfaction Rating */}
           <div className="flex flex-col md:flex-row gap-4 items-center">
             <div className="flex-1 w-full">
-              <label className="block text-xs font-semibold text-slate-300 mb-1">
+              <label className="block text-xs font-semibold text-foreground mb-1">
                 {isAr ? "عنوان التقرير المستندي *" : "Report Title *"}
               </label>
               <input
@@ -353,13 +384,13 @@ export function ClientReportEditorModal({
                     ? "مثال: تقرير اجتماع مراجعة المتطلبات - شركة الأمل"
                     : "e.g. Requirements Review Meeting Summary - Al-Amal Co."
                 }
-                className="w-full bg-slate-950 border border-slate-700 text-slate-100 text-base font-semibold rounded-xl px-4 py-2.5 focus:outline-none focus:border-blue-500 placeholder-slate-500"
+                className="w-full bg-white dark:bg-content1 border border-default-200 dark:border-default-100 text-foreground text-base font-semibold rounded-xl px-4 py-2.5 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 placeholder-default-400 shadow-xs"
               />
             </div>
 
             {/* Star Rating */}
-            <div className="bg-slate-950 border border-slate-800 px-4 py-2 rounded-xl flex items-center gap-3">
-              <span className="text-xs text-slate-400 whitespace-nowrap font-medium">
+            <div className="bg-white dark:bg-content1 border border-default-200 dark:border-default-100 px-4 py-2 rounded-xl flex items-center gap-3 shadow-xs">
+              <span className="text-xs text-default-500 whitespace-nowrap font-medium">
                 {isAr ? "تقييم العميل:" : "Satisfaction:"}
               </span>
               <div className="flex items-center gap-1">
@@ -374,7 +405,7 @@ export function ClientReportEditorModal({
                       className={`w-5 h-5 ${
                         star <= satisfactionRating
                           ? "text-amber-400 fill-amber-400"
-                          : "text-slate-600"
+                          : "text-default-300 dark:text-default-600"
                       }`}
                     />
                   </button>
@@ -383,20 +414,39 @@ export function ClientReportEditorModal({
             </div>
           </div>
 
+          {/* Description / Executive Summary Box */}
+          <div className="bg-white dark:bg-content1 p-4 rounded-2xl border border-default-200 dark:border-default-100 shadow-xs">
+            <label className="block text-xs font-bold text-foreground mb-1.5 flex items-center gap-2">
+              <FileText className="w-4 h-4 text-primary" />
+              {isAr ? "وصف التقرير / الموجز التنفيذي (كلام تفصيلي ومختصر)" : "Report Description / Executive Summary"}
+            </label>
+            <textarea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              rows={3}
+              placeholder={
+                isAr
+                  ? "اكتب وصفاً تفصيلياً وموجزاً عما يحتوي عليه التقرير والأهداف العامة للاجتماع..."
+                  : "Write a detailed summary/description outlining the main scope and goals of this report..."
+              }
+              className="w-full bg-default-100/60 dark:bg-content2/50 border border-default-200 dark:border-default-100/80 rounded-xl p-3 text-sm text-foreground placeholder-default-400 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 leading-relaxed font-normal"
+            />
+          </div>
+
           {/* Section 2: Word-like Document Canvas */}
-          <div className="rounded-2xl border border-slate-800 bg-slate-950 overflow-hidden shadow-2xl">
+          <div className="rounded-2xl border border-default-200 dark:border-default-100/80 bg-default-100/60 dark:bg-content2/30 overflow-hidden shadow-sm">
             {/* Word Formatting Toolbar */}
-            <div className="bg-slate-900 border-b border-slate-800 p-2 flex flex-wrap items-center gap-1.5 text-slate-300">
-              <div className="text-xs font-bold text-blue-400 px-2 py-1 bg-blue-500/10 rounded-md border border-blue-500/20">
+            <div className="bg-default-100 dark:bg-content2 border-b border-default-200 dark:border-default-100 p-2 flex flex-wrap items-center gap-1.5 text-foreground">
+              <div className="text-xs font-bold text-primary px-2.5 py-1 bg-primary/10 rounded-md border border-primary/20">
                 Word Editor
               </div>
-              <div className="h-5 w-[1px] bg-slate-800 mx-1" />
+              <div className="h-5 w-[1px] bg-default-300 dark:bg-default-100 mx-1" />
 
               <button
                 type="button"
                 onClick={() => insertFormatting("**", "**")}
                 title="Bold (غليظ)"
-                className="p-2 hover:bg-slate-800 rounded-lg text-slate-300 hover:text-white transition-colors"
+                className="p-2 hover:bg-default-200 dark:hover:bg-default-100 rounded-lg text-default-600 dark:text-default-300 hover:text-foreground transition-colors"
               >
                 <Bold className="w-4 h-4" />
               </button>
@@ -404,7 +454,7 @@ export function ClientReportEditorModal({
                 type="button"
                 onClick={() => insertFormatting("*", "*")}
                 title="Italic (مائل)"
-                className="p-2 hover:bg-slate-800 rounded-lg text-slate-300 hover:text-white transition-colors"
+                className="p-2 hover:bg-default-200 dark:hover:bg-default-100 rounded-lg text-default-600 dark:text-default-300 hover:text-foreground transition-colors"
               >
                 <Italic className="w-4 h-4" />
               </button>
@@ -412,18 +462,18 @@ export function ClientReportEditorModal({
                 type="button"
                 onClick={() => insertFormatting("<u>", "</u>")}
                 title="Underline (تحته خط)"
-                className="p-2 hover:bg-slate-800 rounded-lg text-slate-300 hover:text-white transition-colors"
+                className="p-2 hover:bg-default-200 dark:hover:bg-default-100 rounded-lg text-default-600 dark:text-default-300 hover:text-foreground transition-colors"
               >
                 <Underline className="w-4 h-4" />
               </button>
 
-              <div className="h-5 w-[1px] bg-slate-800 mx-1" />
+              <div className="h-5 w-[1px] bg-default-300 dark:bg-default-100 mx-1" />
 
               <button
                 type="button"
                 onClick={() => insertFormatting("# ")}
                 title="Heading 1"
-                className="p-2 hover:bg-slate-800 rounded-lg text-slate-300 hover:text-white transition-colors"
+                className="p-2 hover:bg-default-200 dark:hover:bg-default-100 rounded-lg text-default-600 dark:text-default-300 hover:text-foreground transition-colors"
               >
                 <Heading1 className="w-4 h-4" />
               </button>
@@ -431,7 +481,7 @@ export function ClientReportEditorModal({
                 type="button"
                 onClick={() => insertFormatting("## ")}
                 title="Heading 2"
-                className="p-2 hover:bg-slate-800 rounded-lg text-slate-300 hover:text-white transition-colors"
+                className="p-2 hover:bg-default-200 dark:hover:bg-default-100 rounded-lg text-default-600 dark:text-default-300 hover:text-foreground transition-colors"
               >
                 <Heading2 className="w-4 h-4" />
               </button>
@@ -439,18 +489,18 @@ export function ClientReportEditorModal({
                 type="button"
                 onClick={() => insertFormatting("### ")}
                 title="Heading 3"
-                className="p-2 hover:bg-slate-800 rounded-lg text-slate-300 hover:text-white transition-colors"
+                className="p-2 hover:bg-default-200 dark:hover:bg-default-100 rounded-lg text-default-600 dark:text-default-300 hover:text-foreground transition-colors"
               >
                 <Heading3 className="w-4 h-4" />
               </button>
 
-              <div className="h-5 w-[1px] bg-slate-800 mx-1" />
+              <div className="h-5 w-[1px] bg-default-300 dark:bg-default-100 mx-1" />
 
               <button
                 type="button"
                 onClick={() => insertFormatting("- ")}
                 title="Bullet List"
-                className="p-2 hover:bg-slate-800 rounded-lg text-slate-300 hover:text-white transition-colors"
+                className="p-2 hover:bg-default-200 dark:hover:bg-default-100 rounded-lg text-default-600 dark:text-default-300 hover:text-foreground transition-colors"
               >
                 <List className="w-4 h-4" />
               </button>
@@ -458,26 +508,26 @@ export function ClientReportEditorModal({
                 type="button"
                 onClick={() => insertFormatting("1. ")}
                 title="Numbered List"
-                className="p-2 hover:bg-slate-800 rounded-lg text-slate-300 hover:text-white transition-colors"
+                className="p-2 hover:bg-default-200 dark:hover:bg-default-100 rounded-lg text-default-600 dark:text-default-300 hover:text-foreground transition-colors"
               >
                 <ListOrdered className="w-4 h-4" />
               </button>
 
-              <div className="h-5 w-[1px] bg-slate-800 mx-1" />
+              <div className="h-5 w-[1px] bg-default-300 dark:bg-default-100 mx-1" />
 
               <button
                 type="button"
                 onClick={() => insertFormatting("\n> 💡 **ملاحظة رئيسية:** ", "\n")}
                 title="Callout Box"
-                className="p-2 hover:bg-slate-800 rounded-lg text-amber-400 hover:text-amber-300 transition-colors"
+                className="p-2 hover:bg-default-200 dark:hover:bg-default-100 rounded-lg text-amber-500 hover:text-amber-400 transition-colors"
               >
                 <Quote className="w-4 h-4" />
               </button>
             </div>
 
             {/* Simulated Word Sheet Canvas */}
-            <div className="p-6 md:p-8 bg-slate-900/40 min-h-[300px] flex justify-center">
-              <div className="w-full max-w-3xl bg-slate-950 border border-slate-800/80 rounded-xl p-6 md:p-8 shadow-inner font-sans">
+            <div className="p-6 md:p-8 bg-default-100/50 dark:bg-background/40 min-h-[300px] flex justify-center">
+              <div className="w-full max-w-3xl bg-white dark:bg-content1 border border-default-200 dark:border-default-100/80 rounded-xl p-6 md:p-8 shadow-md font-sans">
                 <textarea
                   ref={textareaRef}
                   value={content}
@@ -488,16 +538,16 @@ export function ClientReportEditorModal({
                       ? "اكتب تفاصيل التقرير هنا...\n\n# 1. تفاصيل الاجتماع\nتمت مناقشة النقاط الرئيسية والاتفاق على الخطة التشغيلية.\n\n# 2. الملاحظات الهامة\n> 💡 ملاحظة: يبدي العميل اهتماماً كبيراً بتسريع التنفيذ."
                       : "Write detailed report here...\n\n# 1. Meeting Details\nDiscussed key requirements and finalized project plan.\n\n> 💡 Note: Client expressed strong interest in accelerated delivery."
                   }
-                  className="w-full h-full bg-transparent border-0 focus:ring-0 focus:outline-none text-slate-200 placeholder-slate-600 resize-y leading-relaxed text-sm md:text-base font-normal font-sans"
+                  className="w-full h-full bg-transparent border-0 focus:ring-0 focus:outline-none text-foreground placeholder-default-400 resize-y leading-relaxed text-sm md:text-base font-normal font-sans"
                 />
               </div>
             </div>
           </div>
 
           {/* Section 3: Key Outcomes / Highlights */}
-          <div className="p-4 rounded-2xl bg-slate-950/60 border border-slate-800">
-            <h4 className="text-sm font-bold text-slate-200 mb-3 flex items-center gap-2">
-              <CheckCircle className="w-4 h-4 text-emerald-400" />
+          <div className="p-4 rounded-2xl bg-white dark:bg-content2/40 border border-default-200 dark:border-default-100/60 shadow-xs">
+            <h4 className="text-sm font-bold text-foreground mb-3 flex items-center gap-2">
+              <CheckCircle className="w-4 h-4 text-emerald-500" />
               {isAr ? "أهم نتائج ومخرجات الاجتماع/التقرير" : "Key Outcomes & Takeaways"}
             </h4>
 
@@ -508,7 +558,7 @@ export function ClientReportEditorModal({
                 onChange={(e) => setNewOutcome(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addOutcome())}
                 placeholder={isAr ? "أضف نتيجة أ ومخرج رئيسي..." : "Add a key outcome..."}
-                className="flex-1 bg-slate-900 border border-slate-700 text-slate-200 text-sm rounded-xl px-3 py-2 focus:outline-none focus:border-blue-500"
+                className="flex-1 bg-default-100 dark:bg-content1 border border-default-200 dark:border-default-100 text-foreground text-sm rounded-xl px-3 py-2 focus:outline-none focus:border-primary"
               />
               <Button color="primary" variant="flat" size="sm" onClick={addOutcome} className="rounded-xl font-semibold">
                 <Plus className="w-4 h-4" />
@@ -523,13 +573,13 @@ export function ClientReportEditorModal({
                   onClose={() => removeOutcome(idx)}
                   variant="flat"
                   color="success"
-                  className="bg-emerald-500/10 text-emerald-300 border border-emerald-500/20 py-1"
+                  className="py-1 font-medium"
                 >
                   {out}
                 </Chip>
               ))}
               {outcomes.length === 0 && (
-                <span className="text-xs text-slate-500 italic">
+                <span className="text-xs text-default-400 italic">
                   {isAr ? "لم يتم إضافة نتائج رئيسية بعد" : "No outcomes added yet"}
                 </span>
               )}
@@ -537,9 +587,9 @@ export function ClientReportEditorModal({
           </div>
 
           {/* Section 4: Action Items & Follow-ups Checklist */}
-          <div className="p-4 rounded-2xl bg-slate-950/60 border border-slate-800">
-            <h4 className="text-sm font-bold text-slate-200 mb-3 flex items-center gap-2">
-              <Calendar className="w-4 h-4 text-blue-400" />
+          <div className="p-4 rounded-2xl bg-white dark:bg-content2/40 border border-default-200 dark:border-default-100/60 shadow-xs">
+            <h4 className="text-sm font-bold text-foreground mb-3 flex items-center gap-2">
+              <Calendar className="w-4 h-4 text-primary" />
               {isAr ? "قائمة المهام والخطوات القادمة للعميل (Action Items)" : "Action Items & Follow-ups"}
             </h4>
 
@@ -549,13 +599,13 @@ export function ClientReportEditorModal({
                 value={newActionText}
                 onChange={(e) => setNewActionText(e.target.value)}
                 placeholder={isAr ? "الوصف: إرسال عرض السعر المعدل..." : "Description: Send updated proposal..."}
-                className="md:col-span-7 bg-slate-900 border border-slate-700 text-slate-200 text-sm rounded-xl px-3 py-2 focus:outline-none focus:border-blue-500"
+                className="md:col-span-7 bg-default-100 dark:bg-content1 border border-default-200 dark:border-default-100 text-foreground text-sm rounded-xl px-3 py-2 focus:outline-none focus:border-primary"
               />
               <input
                 type="date"
                 value={newActionDate}
                 onChange={(e) => setNewActionDate(e.target.value)}
-                className="md:col-span-3 bg-slate-900 border border-slate-700 text-slate-200 text-sm rounded-xl px-3 py-2 focus:outline-none focus:border-blue-500"
+                className="md:col-span-3 bg-default-100 dark:bg-content1 border border-default-200 dark:border-default-100 text-foreground text-sm rounded-xl px-3 py-2 focus:outline-none focus:border-primary"
               />
               <Button color="secondary" variant="flat" size="sm" onClick={addActionItem} className="md:col-span-2 rounded-xl font-semibold">
                 <Plus className="w-4 h-4" />
@@ -567,18 +617,18 @@ export function ClientReportEditorModal({
               {actionItems.map((item) => (
                 <div
                   key={item.id}
-                  className="flex items-center justify-between bg-slate-900/80 border border-slate-800 rounded-xl p-3"
+                  className="flex items-center justify-between bg-default-50 dark:bg-content1 border border-default-200 dark:border-default-100 rounded-xl p-3 shadow-xs"
                 >
                   <div className="flex items-center gap-3">
                     <input
                       type="checkbox"
                       checked={item.done}
                       onChange={() => toggleActionDone(item.id)}
-                      className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500 bg-slate-950 border-slate-700"
+                      className="w-4 h-4 rounded text-primary focus:ring-primary/30 bg-default-100 dark:bg-default-50 border-default-300"
                     />
                     <span
                       className={`text-sm ${
-                        item.done ? "line-through text-slate-500" : "text-slate-200"
+                        item.done ? "line-through text-default-400" : "text-foreground"
                       }`}
                     >
                       {item.text}
@@ -586,14 +636,14 @@ export function ClientReportEditorModal({
                   </div>
                   <div className="flex items-center gap-3">
                     {item.dueDate && (
-                      <span className="text-xs text-blue-400 bg-blue-500/10 border border-blue-500/20 px-2 py-0.5 rounded-lg">
+                      <span className="text-xs text-primary bg-primary/10 border border-primary/20 px-2 py-0.5 rounded-lg">
                         {item.dueDate}
                       </span>
                     )}
                     <button
                       type="button"
                       onClick={() => removeActionItem(item.id)}
-                      className="text-slate-500 hover:text-red-400 transition-colors p-1"
+                      className="text-default-400 hover:text-danger transition-colors p-1"
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
@@ -601,7 +651,7 @@ export function ClientReportEditorModal({
                 </div>
               ))}
               {actionItems.length === 0 && (
-                <span className="text-xs text-slate-500 italic block">
+                <span className="text-xs text-default-400 italic block">
                   {isAr ? "لم يتم تحديد خطوات متابعة بعد" : "No action items added yet"}
                 </span>
               )}
@@ -609,7 +659,7 @@ export function ClientReportEditorModal({
           </div>
         </ModalBody>
 
-        <ModalFooter className="border-t border-slate-800 bg-slate-950/60 p-4 flex justify-between">
+        <ModalFooter className="border-t border-default-200 dark:border-default-100 bg-default-100/50 dark:bg-default-50/20 p-4 flex justify-between">
           <Button variant="flat" color="default" onClick={onClose} className="rounded-xl">
             {isAr ? "إلغاء" : "Cancel"}
           </Button>

@@ -35,6 +35,7 @@ function mapClientReportDoc(id: string, data: Record<string, unknown>): ClientRe
     authorName: typeof data.authorName === "string" ? data.authorName : "",
     authorEmail: typeof data.authorEmail === "string" ? data.authorEmail : undefined,
     title: typeof data.title === "string" ? data.title : "",
+    description: typeof data.description === "string" ? data.description : undefined,
     reportType: (data.reportType as ClientReport["reportType"]) || "general",
     content: typeof data.content === "string" ? data.content : "",
     keyOutcomes: Array.isArray(data.keyOutcomes) ? data.keyOutcomes : [],
@@ -126,6 +127,7 @@ export const ClientReportsService = {
         authorName: author.name,
         authorEmail: author.email || null,
         title: payload.title,
+        description: payload.description || null,
         reportType: payload.reportType || "general",
         content: payload.content,
         keyOutcomes: payload.keyOutcomes || [],
@@ -164,6 +166,7 @@ export const ClientReportsService = {
       if (payload.dealId !== undefined) updateData.dealId = payload.dealId || null;
       if (payload.dealTitle !== undefined) updateData.dealTitle = payload.dealTitle || null;
       if (payload.title !== undefined) updateData.title = payload.title;
+      if (payload.description !== undefined) updateData.description = payload.description || null;
       if (payload.reportType !== undefined) updateData.reportType = payload.reportType;
       if (payload.content !== undefined) updateData.content = payload.content;
       if (payload.keyOutcomes !== undefined) updateData.keyOutcomes = payload.keyOutcomes;
