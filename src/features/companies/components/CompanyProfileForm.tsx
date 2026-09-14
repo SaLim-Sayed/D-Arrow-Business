@@ -11,10 +11,7 @@ import {
   Select,
   SelectItem,
 } from "@heroui/react";
-import { Upload, Building2, Palette, RotateCcw, Save } from "lucide-react";
-import { uploadStorageFile } from "@/lib/storage-utils";
-import { useRef, useState } from "react";
-import { toast } from "sonner";
+import { Building2, Palette, RotateCcw, Save } from "lucide-react";
 import {
   companyProfileSchema,
   type CompanyProfileFormValues,
