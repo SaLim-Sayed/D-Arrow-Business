@@ -36,15 +36,11 @@ import {
   Share2,
   LayoutGrid,
   Table as TableIcon,
-  Flame,
   Check,
-  TrendingUp,
   Sparkles,
   MessageSquare,
   UserCheck,
   Briefcase,
-  AlertCircle,
-  X,
   Copy,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
@@ -333,7 +329,7 @@ export default function TaskDailyReportsPage() {
             <div>
               <h1 className="text-2xl md:text-3xl font-black text-foreground tracking-tight flex items-center gap-2">
                 {t("daily_report.page_title", "تقارير إنجاز المهام اليومية")}
-                <Chip size="sm" color="purple" variant="flat" className="font-bold text-xs">
+                <Chip size="sm" color="secondary" variant="flat" className="font-bold text-xs">
                   {filteredReports.length} {isAr ? "تقرير" : "reports"}
                 </Chip>
               </h1>
@@ -453,13 +449,13 @@ export default function TaskDailyReportsPage() {
               className="w-full sm:w-48"
               classNames={{ trigger: "rounded-2xl bg-default-50/50" }}
             >
-              <SelectItem key="all" value="all">
+              <SelectItem key="all">
                 {isAr ? "جميع التقارير" : "All Reports"}
               </SelectItem>
-              <SelectItem key="with_blockers" value="with_blockers">
+              <SelectItem key="with_blockers">
                 {isAr ? "⚠️ تقارير بها معوقات" : "With Blockers"}
               </SelectItem>
-              <SelectItem key="no_blockers" value="no_blockers">
+              <SelectItem key="no_blockers">
                 {isAr ? "✅ تقارير بدون معوقات" : "No Blockers"}
               </SelectItem>
             </Select>
@@ -656,7 +652,7 @@ export default function TaskDailyReportsPage() {
                     <Button
                       size="sm"
                       variant="flat"
-                      color="purple"
+                      color="secondary"
                       onPress={() => handleOpenDetail(report)}
                       startContent={<Eye size={15} />}
                       className="font-bold text-xs rounded-xl flex-1"

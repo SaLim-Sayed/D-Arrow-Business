@@ -270,7 +270,7 @@ export const PeopleService = {
     })());
   },
 
-  // Hiring
+  // Hiring & Deletion
   async createEmployee(companyId: string, employeeData: Omit<Employee, 'id'>): Promise<ApiResponse<Employee>> {
     return withLogging(SERVICE_NAME, "createEmployee", (async () => {
       const employeesRef = collection(db, "companies", companyId, "employees");
@@ -284,6 +284,17 @@ export const PeopleService = {
       return {
         data: { id: newDoc.id, ...newDoc.data() } as Employee,
         message: "Employee hired successfully",
+      };
+    })());
+  },
+
+  async deleteEmployee(companyId: string, employeeId: string): Promise<ApiResponse<void>> {
+    return withLogging(SERVICE_NAME, "deleteEmployee", (async () => {
+      const docRef = doc(db, "companies", companyId, "employees", employeeId);
+      await deleteDoc(docRef);
+      return {
+        data: undefined,
+        message: "Employee deleted successfully",
       };
     })());
   },

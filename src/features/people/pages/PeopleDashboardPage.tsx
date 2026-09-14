@@ -1,6 +1,5 @@
-import { Button, Card, CardBody, CardHeader, Input, Skeleton, Tabs, Tab, Chip } from "@heroui/react";
+import { Button, Card, CardBody, CardHeader, Input, Skeleton, Tabs, Tab, Chip, Modal, ModalContent } from "@heroui/react";
 import { 
-  Plus, 
   Search, 
   Users, 
   Network, 
@@ -17,6 +16,9 @@ import {
   Target,
   FileSpreadsheet,
   MapPin,
+  UserPlus,
+  Trash2,
+  AlertTriangle,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { EmployeeCard } from "../components/EmployeeCard";
@@ -25,7 +27,7 @@ import { OrgChart } from "../components/OrgChart";
 import { HireEmployeeModal } from "../components/HireEmployeeModal";
 import { TerminateEmployeeModal } from "../components/TerminateEmployeeModal";
 import type { TerminateAction } from "../components/TerminateEmployeeModal";
-import { useEmployeesQuery, useOffboardEmployeeMutation, useAnnouncementsQuery } from "../hooks/use-people";
+import { useEmployeesQuery, useOffboardEmployeeMutation, useDeleteEmployeeMutation, useAnnouncementsQuery } from "../hooks/use-people";
 import type { Employee } from "../types/people.types";
 import { useState } from "react";
 import { useDisclosure } from "@heroui/react";
@@ -59,12 +61,14 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 };
 
 export default function PeopleDashboardPage() {
-  const { t } = useTranslation("people");
+  const { t, i18n } = useTranslation("people");
+  const isAr = i18n.language === "ar";
   
   const navigate = useNavigate();
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
   const { data: employeesResponse, isLoading } = useEmployeesQuery();
   const offboardMutation = useOffboardEmployeeMutation();
+  const deleteEmployeeMutation = useDeleteEmployeeMutation();
   const [searchQuery, setSearchQuery] = useState("");
   const [viewMode, setViewMode] = useState<"grid" | "table">("grid");
   const { data: announcementsResponse } = useAnnouncementsQuery();
@@ -74,9 +78,25 @@ export default function PeopleDashboardPage() {
   const { isOpen: isOffboardOpen, onOpen: onOffboardOpen, onOpenChange: onOffboardOpenChange } = useDisclosure();
   const [selectedEmployeeToOffboard, setSelectedEmployeeToOffboard] = useState<Employee | null>(null);
 
+  // Delete Modal State
+  const { isOpen: isDeleteOpen, onOpen: onDeleteOpen, onOpenChange: onDeleteOpenChange } = useDisclosure();
+  const [selectedEmployeeToDelete, setSelectedEmployeeToDelete] = useState<Employee | null>(null);
+
   const handleOffboardClick = (employee: Employee) => {
     setSelectedEmployeeToOffboard(employee);
     onOffboardOpen();
+  };
+
+  const handleDeleteClick = (employee: Employee) => {
+    setSelectedEmployeeToDelete(employee);
+    onDeleteOpen();
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!selectedEmployeeToDelete) return;
+    await deleteEmployeeMutation.mutateAsync(selectedEmployeeToDelete.id);
+    onDeleteOpenChange();
+    setSelectedEmployeeToDelete(null);
   };
 
   const handleOffboardConfirm = async ({ type, reason }: { type: TerminateAction; reason: string }) => {
@@ -147,11 +167,11 @@ export default function PeopleDashboardPage() {
             <Button 
               color="primary" 
               variant="shadow" 
-              startContent={<Plus size={18} />} 
+              startContent={<UserPlus size={18} />} 
               onPress={onOpen}
-              className="font-bold shadow-lg shadow-primary/25 hover:shadow-primary/40 transition-shadow"
+              className="font-bold shadow-lg shadow-primary/25 hover:shadow-primary/40 transition-all rounded-2xl h-11 px-5 bg-gradient-to-r from-primary to-primary-600"
             >
-              {t("dashboard.new_hire")}
+              {isAr ? "دعوة موظف جديد" : "Invite Employee"}
             </Button>
           )}
         </div>
@@ -164,6 +184,41 @@ export default function PeopleDashboardPage() {
         employee={selectedEmployeeToOffboard}
         onConfirm={handleOffboardConfirm}
       />
+      <Modal isOpen={isDeleteOpen} onOpenChange={onDeleteOpenChange} size="md" classNames={{ backdrop: "backdrop-blur-sm" }}>
+        <ModalContent className="rounded-3xl p-2 border border-default-100 shadow-2xl">
+          {(onClose) => (
+            <div dir={isAr ? "rtl" : "ltr"} className="p-6 text-center space-y-4">
+              <div className="mx-auto w-14 h-14 rounded-full bg-danger-500/10 text-danger border border-danger-500/20 flex items-center justify-center">
+                <AlertTriangle size={28} />
+              </div>
+              <div>
+                <h3 className="text-xl font-black text-foreground">
+                  {isAr ? "حذف الموظف نهائياً" : "Delete Employee Permanently"}
+                </h3>
+                <p className="text-xs text-default-500 mt-1 leading-relaxed max-w-sm mx-auto">
+                  {isAr 
+                    ? `هل أنت تأكد من رغبتك في حذف سجل الموظف "${selectedEmployeeToDelete?.firstName} ${selectedEmployeeToDelete?.lastName}" نهائياً من النظام؟ لا يمكن التراجع عن هذا الإجراء.`
+                    : `Are you sure you want to permanently delete "${selectedEmployeeToDelete?.firstName} ${selectedEmployeeToDelete?.lastName}"? This action cannot be undone.`}
+                </p>
+              </div>
+              <div className="flex items-center justify-center gap-3 pt-2">
+                <Button variant="flat" onPress={onClose} className="font-bold rounded-2xl">
+                  {isAr ? "إلغاء" : "Cancel"}
+                </Button>
+                <Button 
+                  color="danger" 
+                  onPress={handleConfirmDelete} 
+                  isLoading={deleteEmployeeMutation.isPending}
+                  startContent={<Trash2 size={16} />}
+                  className="font-bold rounded-2xl shadow-lg shadow-danger/25"
+                >
+                  {isAr ? "نعم، حذف نهائي" : "Yes, Delete Permanently"}
+                </Button>
+              </div>
+            </div>
+          )}
+        </ModalContent>
+      </Modal>
 
       {/* Attendance & Quick Actions Hub */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -484,7 +539,8 @@ export default function PeopleDashboardPage() {
                         <EmployeeCard 
                           employee={employee} 
                           onClick={() => navigate(`/people/${employee.id}`)}
-                          onDelete={handleOffboardClick}
+                          onDelete={handleDeleteClick}
+                          onOffboard={handleOffboardClick}
                         />
                       </motion.div>
                     ))}
@@ -493,7 +549,7 @@ export default function PeopleDashboardPage() {
                   <EmployeeTable 
                     employees={filteredEmployees} 
                     onView={(emp) => navigate(`/people/${emp.id}`)}
-                    onDelete={handleOffboardClick}
+                    onDelete={handleDeleteClick}
                   />
                 )}
 

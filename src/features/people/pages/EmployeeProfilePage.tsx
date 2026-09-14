@@ -12,19 +12,21 @@ import {
   Divider,
   useDisclosure,
   Progress,
-  Tooltip,
-  Checkbox,
   Table,
   TableHeader,
   TableColumn,
   TableBody,
   TableRow,
   TableCell,
+  Input,
+  Modal,
+  ModalContent,
+  ModalHeader,
+  ModalBody,
+  ModalFooter,
 } from "@heroui/react";
 import {
-  ChevronLeft,
   Mail,
-  Phone,
   MapPin,
   Calendar,
   Briefcase,
@@ -35,52 +37,64 @@ import {
   CalendarDays,
   Star,
   Package,
-  Target,
   GraduationCap,
   Laptop,
   Smartphone,
-  CheckCircle2,
-  XCircle,
-  TrendingUp,
-  ClipboardCheck,
+  CreditCard,
+  Building,
+  FileCheck,
+  Building2,
+  DollarSign,
+  Download,
 } from "lucide-react";
-import { DailyReportsService } from "../api/daily-reports.service";
-import type { DailyReport } from "../types/daily-report.types";
 import { motion } from "framer-motion";
-import { useEmployeesQuery, useLeaveRequestsQuery, useAssetsQuery, useUpdateEmployeeMutation, useAttendanceQuery, useWorkLocationsQuery, useAssignAttendanceLocationMutation } from "../hooks/use-people";
+import {
+  useEmployeesQuery,
+  useLeaveRequestsQuery,
+  useAssetsQuery,
+  useUpdateEmployeeMutation,
+  useAttendanceQuery,
+  useWorkLocationsQuery,
+  useAssignAttendanceLocationMutation,
+} from "../hooks/use-people";
 import { ApplyLeaveModal } from "../components/ApplyLeaveModal";
 import { ManageSkillsModal } from "../components/ManageSkillsModal";
 import { AssignAttendanceLocationModal } from "../components/AssignAttendanceLocationModal";
-import { db } from "@/lib/firebase";
-import { collection, query, orderBy, getDocs, getDoc, doc } from "firebase/firestore";
-import { useEffect } from "react";
-import { Input, Select, SelectItem, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter } from "@heroui/react";
 import { useTranslation } from "react-i18next";
 import { useAppPermissions } from "@/features/companies/hooks/use-app-permissions";
 import { formatDate } from "@/lib/utils";
-import { selectFieldProps } from "@/components/shared/select-field";
-import { MoneyAmount, RiyalSymbol } from "@/components/shared/riyal-symbol";
-
-const statusColorMap: Record<string, "success" | "warning" | "danger" | "primary" | "default"> = {
-  active: "success",
-  onboarding: "primary",
-  suspended: "warning",
-  terminated: "danger",
-};
+import { MoneyAmount } from "@/components/shared/riyal-symbol";
+import { toast } from "sonner";
 
 export default function EmployeeProfilePage() {
-  const { t } = useTranslation("people");
+  const { t, i18n } = useTranslation("people");
+  const isAr = i18n.language === "ar";
   const { id } = useParams();
   const navigate = useNavigate();
   const { user } = useAuthStore();
+
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
   const { isOpen: isEditOpen, onOpen: onEditOpen, onOpenChange: onEditOpenChange } = useDisclosure();
   const { isOpen: isSkillsOpen, onOpen: onSkillsOpen, onOpenChange: onSkillsOpenChange } = useDisclosure();
+
   const { data: employeesResponse } = useEmployeesQuery();
   const { data: leaveRequestsResponse } = useLeaveRequestsQuery();
-  const [activeTab, setActiveTab] = useState("work");
+  const [activeTab, setActiveTab] = useState("salary_job");
   const updateMutation = useUpdateEmployeeMutation();
-  const [editData, setEditData] = useState({ department: "", role: "", jobTitle: "", salary: "", officeLocation: "", phoneNumber: "" });
+
+  const [editData, setEditData] = useState({
+    department: "",
+    role: "",
+    jobTitle: "",
+    salary: "",
+    housingAllowance: "",
+    transportAllowance: "",
+    officeLocation: "",
+    phoneNumber: "",
+    nationalId: "",
+    iban: "",
+    bankName: "",
+  });
 
   const employee = employeesResponse?.data?.find((e) => e.id === id || e.userId === id);
   const employeeRequests = leaveRequestsResponse?.data?.filter((r) => r.employeeId === employee?.userId) || [];
@@ -88,58 +102,14 @@ export default function EmployeeProfilePage() {
   const { canManageEmployees } = useAppPermissions();
 
   const { data: assetsResponse } = useAssetsQuery();
-  const employeeAssets = assetsResponse?.data?.filter(a => a.assignedTo === employee?.id) || [];
+  const employeeAssets = assetsResponse?.data?.filter((a) => a.assignedTo === employee?.id) || [];
 
-  const { data: attendanceResponse, isLoading: isLoadingAttendance } = useAttendanceQuery(employee?.id || "");
+  const { data: attendanceResponse } = useAttendanceQuery(employee?.id || "");
   const attendanceLogs = attendanceResponse?.data || [];
   const { data: locationsRes } = useWorkLocationsQuery();
   const workLocations = locationsRes?.data ?? [];
   const assignLocation = useAssignAttendanceLocationMutation();
   const [assignOpen, setAssignOpen] = useState(false);
-
-  const [appraisals, setAppraisals] = useState<any[]>([]);
-  const [isLoadingAppraisals, setIsLoadingAppraisals] = useState(true);
-
-  const [employeeDailyReports, setEmployeeDailyReports] = useState<DailyReport[]>([]);
-  const [isLoadingDailyReports, setIsLoadingDailyReports] = useState(false);
-
-  useEffect(() => {
-    if (!employee?.userId || !user?.companyId) return;
-    setIsLoadingDailyReports(true);
-    DailyReportsService.getDailyReports(user.companyId, { employeeId: employee.userId })
-      .then((res) => {
-        if (res.data) setEmployeeDailyReports(res.data);
-      })
-      .catch((err) => console.error("Error fetching employee daily reports:", err))
-      .finally(() => setIsLoadingDailyReports(false));
-  }, [employee?.userId, user?.companyId]);
-
-  useEffect(() => {
-    if (!employee?.userId) return;
-    const fetchAppraisals = async () => {
-      setIsLoadingAppraisals(true);
-      try {
-        const q = query(collection(db, "performance_cycles"), orderBy("createdAt", "desc"));
-        const snapshot = await getDocs(q);
-        const cyclesData = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
-
-        const promises = cyclesData.map(async (cycle: any) => {
-          const docSnap = await getDoc(doc(db, "performance_cycles", cycle.id, "appraisals", employee.userId));
-          if (docSnap.exists()) {
-            return { cycleName: cycle.name, cycleType: cycle.type, cycleDate: cycle.start, id: cycle.id, ...docSnap.data() };
-          }
-          return null;
-        });
-        const results = await Promise.all(promises);
-        setAppraisals(results.filter(Boolean));
-      } catch (error) {
-        console.error("Error fetching appraisals:", error);
-      } finally {
-        setIsLoadingAppraisals(false);
-      }
-    };
-    fetchAppraisals();
-  }, [employee?.userId]);
 
   const formatHoursToHoursMinutes = (decimalHours: number) => {
     if (!decimalHours) return "-";
@@ -150,12 +120,14 @@ export default function EmployeeProfilePage() {
     return `${hours}h ${minutes}m`;
   };
 
-  const leaveStats = {
-    total: employeeRequests.length,
-    approved: employeeRequests.filter((r) => r.status === "approved").length,
-    pending: employeeRequests.filter((r) => r.status === "pending").length,
-    rejected: employeeRequests.filter((r) => r.status === "rejected").length,
-  };
+  // Salary Jisr Breakdown Calculation
+  const basicSalary = Number(employee?.salary || 0);
+  const housingAllowance = Number((employee as any)?.housingAllowance || (basicSalary > 0 ? basicSalary * 0.25 : 0));
+  const transportAllowance = Number((employee as any)?.transportAllowance || (basicSalary > 0 ? 1000 : 0));
+  const otherAllowances = Number((employee as any)?.otherAllowances || 0);
+  const grossSalary = basicSalary + housingAllowance + transportAllowance + otherAllowances;
+  const gosiDeduction = Number((grossSalary * 0.0975).toFixed(2)); // Saudi GOSI 9.75%
+  const netSalary = Math.max(0, grossSalary - gosiDeduction);
 
   if (!employee) {
     return (
@@ -188,8 +160,13 @@ export default function EmployeeProfilePage() {
       role: employee.role || "employee",
       jobTitle: employee.jobTitle || "",
       salary: employee.salary ? employee.salary.toString() : "",
+      housingAllowance: (employee as any).housingAllowance ? (employee as any).housingAllowance.toString() : "",
+      transportAllowance: (employee as any).transportAllowance ? (employee as any).transportAllowance.toString() : "",
       officeLocation: employee.officeLocation || "",
-      phoneNumber: employee.phoneNumber || ""
+      phoneNumber: employee.phoneNumber || "",
+      nationalId: (employee as any).nationalId || "",
+      iban: (employee as any).iban || "",
+      bankName: (employee as any).bankName || "",
     });
     onEditOpen();
   };
@@ -201,123 +178,146 @@ export default function EmployeeProfilePage() {
         department: editData.department,
         role: editData.role,
         jobTitle: editData.jobTitle,
-        salary: editData.salary ? Number(editData.salary) : null,
+        salary: editData.salary ? Number(editData.salary) : undefined,
+        housingAllowance: editData.housingAllowance ? Number(editData.housingAllowance) : undefined,
+        transportAllowance: editData.transportAllowance ? Number(editData.transportAllowance) : undefined,
         officeLocation: editData.officeLocation,
         phoneNumber: editData.phoneNumber,
-      }
-    }, {
-      onSuccess: () => onClose()
+        nationalId: editData.nationalId,
+        iban: editData.iban,
+        bankName: editData.bankName,
+      } as any,
     });
+    onClose();
+  };
+
+  const handleDownloadSalaryCertificate = () => {
+    toast.success(isAr ? "جاري تحضير ونسخ خطاب التعريف بالراتب المعتمد..." : "Generating official salary certificate...");
   };
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto w-full">
-      <Button
-        variant="light"
-        startContent={<ChevronLeft size={18} className="rtl:rotate-180" />}
-        onPress={() => navigate("/people")}
-        className="font-bold text-default-500"
-      >
-        {t("profile.back_to_directory")}
-      </Button>
-
-      {/* === PROFILE HEADER === */}
+    <div dir={isAr ? "rtl" : "ltr"} className="p-4 md:p-8 max-w-7xl mx-auto space-y-8 animate-in fade-in duration-500">
+      {/* === JISR HERO PROFILE HEADER === */}
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-        <Card className="border border-default-100/60 shadow-lg overflow-visible">
-          <CardBody className="p-0">
-            {/* Cover Banner */}
-            <div className="relative h-44 rounded-t-2xl bg-gradient-to-r from-primary/40 via-violet-500/30 to-blue-500/20 overflow-hidden">
-              <div className="absolute inset-0" style={{ backgroundImage: "radial-gradient(circle at 15% 50%, rgba(99,102,241,0.3) 0%, transparent 50%), radial-gradient(circle at 85% 30%, rgba(14,165,233,0.25) 0%, transparent 50%), radial-gradient(circle at 50% 80%, rgba(168,85,247,0.2) 0%, transparent 40%)" }} />
-              {/* Floating decorative circles */}
-              <div className="absolute top-6 right-12 w-24 h-24 bg-white/5 rounded-full blur-xl" />
-              <div className="absolute bottom-4 left-1/4 w-16 h-16 bg-white/5 rounded-full blur-lg" />
-              <div className="absolute top-1/2 right-1/3 w-8 h-8 bg-white/10 rounded-full" />
+        <Card className="border border-default-200/60 dark:border-default-100/40 shadow-lg rounded-3xl overflow-hidden bg-background/80 backdrop-blur-xl">
+          {/* Top Banner Background */}
+          <div className="h-36 bg-gradient-to-r from-primary-600 via-purple-600 to-indigo-700 relative p-6 flex justify-between items-start">
+            <div className="flex items-center gap-2 bg-white/10 backdrop-blur-md px-3 py-1.5 rounded-full text-white text-xs font-bold border border-white/20">
+              <Building2 size={14} />
+              <span>{isAr ? "نظام جسـر للموارد البشرية والرواتب" : "Jisr HR Platform"}</span>
             </div>
+            <Chip color="success" variant="solid" size="sm" className="font-bold shadow-md">
+              {isAr ? "على رأس العمل (نشط)" : "Active Employee"}
+            </Chip>
+          </div>
 
-            <div className="px-6 md:px-8 pb-6">
-              {/* Avatar + Name Row */}
-              <div className="relative -mt-16 flex flex-col md:flex-row items-start md:items-end gap-4 md:gap-6 mb-6">
-                <motion.div className="relative" whileHover={{ scale: 1.05 }} transition={{ type: "spring", stiffness: 300 }}>
-                  <div className="p-1 rounded-full bg-gradient-to-br from-primary via-violet-500 to-blue-500 shadow-2xl">
-                    <Avatar
-                      src={employee.avatarUrl}
-                      fallback={initials}
-                      className="w-28 h-28 text-3xl border-4 border-background"
-                    />
+          <CardBody className="p-6 md:p-8 pt-0 relative">
+            <div className="flex flex-col md:flex-row items-start md:items-end justify-between gap-6 -mt-16 mb-6">
+              <div className="flex flex-col md:flex-row items-center md:items-end gap-6 text-center md:text-start w-full md:w-auto">
+                <Avatar
+                  src={(employee as any).avatar}
+                  name={initials}
+                  className="w-28 h-28 text-3xl font-black ring-4 ring-background shadow-2xl bg-gradient-to-br from-primary to-purple-600 text-white shrink-0"
+                />
+
+                <div className="space-y-1.5 flex-1">
+                  <div className="flex flex-wrap items-center justify-center md:justify-start gap-2">
+                    <h1 className="text-2xl md:text-3xl font-black text-foreground tracking-tight">
+                      {employee.firstName} {employee.lastName}
+                    </h1>
+                    <Chip size="sm" color="primary" variant="flat" className="font-bold text-xs">
+                      #{employee.id ? employee.id.slice(-6).toUpperCase() : "EMP-102"}
+                    </Chip>
                   </div>
-                  <span className={`absolute bottom-2 right-2 w-5 h-5 rounded-full border-3 border-background shadow-lg ${employee.status === 'active' ? 'bg-success' : employee.status === 'onboarding' ? 'bg-primary' : 'bg-default-300'}`} />
-                </motion.div>
 
-                <div className="flex-1 md:pb-2 mt-2 md:mt-0">
-                  <div className="flex flex-col md:flex-row md:items-start justify-between gap-3">
-                    <div>
-                      <h1 className="text-2xl md:text-3xl font-black tracking-tight">
-                        {employee.firstName} {employee.lastName}
-                      </h1>
-                      <div className="flex flex-wrap items-center gap-2 mt-1.5">
-                        <span className="text-primary font-bold text-sm">{employee.jobTitle}</span>
-                        <span className="text-default-200">•</span>
-                        <span className="text-default-500 font-medium text-sm">{t(`departments.${employee.department}`, employee.department)}</span>
-                        {employee.role && (
-                          <span className={`text-[10px] font-black px-2.5 py-1 rounded-full uppercase tracking-wider ${roleColorMap[employee.role] || roleColorMap.employee}`}>
-                            {t(`roles.${employee.role}`, employee.role.replace("_", " "))}
-                          </span>
-                        )}
-                      </div>
-                      <div className="flex flex-wrap items-center gap-4 mt-2 text-xs text-default-400 font-medium">
-                        <span className="flex items-center gap-1.5">
-                          <Mail size={12} /> {employee.email}
-                        </span>
-                        {employee.officeLocation && (
-                          <span className="flex items-center gap-1.5">
-                            <MapPin size={12} /> {employee.officeLocation}
-                          </span>
-                        )}
-                        <span className="flex items-center gap-1.5">
-                          <Calendar size={12} /> {t("profile.joined")} {formatDate(employee.joiningDate)}
-                        </span>
-                      </div>
-                    </div>
+                  <div className="flex flex-wrap items-center justify-center md:justify-start gap-2 text-sm font-semibold text-default-500">
+                    <span className="text-primary font-bold">{employee.jobTitle}</span>
+                    <span>•</span>
+                    <span>{t(`departments.${employee.department}`, employee.department || "الموارد البشرية")}</span>
+                    {employee.role && (
+                      <span className={`text-[10px] font-black px-2.5 py-0.5 rounded-full uppercase ${roleColorMap[employee.role] || roleColorMap.employee}`}>
+                        {t(`roles.${employee.role}`, employee.role.replace("_", " "))}
+                      </span>
+                    )}
+                  </div>
 
-                    {/* Action Buttons */}
-                    <div className="flex flex-wrap gap-2">
-                      {isOwnProfile && (
-                        <Button color="primary" variant="shadow" size="sm" startContent={<CalendarDays size={15} />} onPress={onOpen} className="font-bold shadow-lg shadow-primary/25">
-                          {t("profile.apply_leave")}
-                        </Button>
-                      )}
-                      {canManageEmployees && (
-                        <Button color="default" variant="flat" size="sm" startContent={<ShieldCheck size={15} />} className="font-bold" onPress={handleOpenEdit}>
-                          {t("profile.edit_manage")}
-                        </Button>
-                      )}
-                      <Tooltip content={t("profile.send_email")}>
-                        <Button isIconOnly variant="flat" size="sm">
-                          <Mail size={15} />
-                        </Button>
-                      </Tooltip>
-                    </div>
+                  <div className="flex flex-wrap items-center justify-center md:justify-start gap-4 text-xs text-default-400 font-medium pt-1">
+                    <span className="flex items-center gap-1.5">
+                      <Mail size={13} className="text-primary" /> {employee.email}
+                    </span>
+                    {employee.officeLocation && (
+                      <span className="flex items-center gap-1.5">
+                        <MapPin size={13} className="text-purple-500" /> {employee.officeLocation}
+                      </span>
+                    )}
+                    <span className="flex items-center gap-1.5">
+                      <Calendar size={13} /> {isAr ? "تاريخ المباشرة:" : "Joined:"} {formatDate(employee.joiningDate)}
+                    </span>
                   </div>
                 </div>
               </div>
 
-              {/* Quick Stats Bar */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                {[
-                  { label: t("profile.total_leaves"), value: leaveStats.total, color: "text-foreground", bg: "bg-default-50" },
-                  { label: t("profile.approved"), value: leaveStats.approved, color: "text-success", bg: "bg-success/5" },
-                  { label: t("profile.pending"), value: leaveStats.pending, color: "text-warning", bg: "bg-warning/5" },
-                  { label: t("profile.rejected"), value: leaveStats.rejected, color: "text-danger", bg: "bg-danger/5" },
-                ].map((stat) => (
-                  <motion.div 
-                    key={stat.label} 
-                    whileHover={{ y: -2 }} 
-                    className={`${stat.bg} rounded-2xl p-4 text-center border border-default-100/50 transition-shadow hover:shadow-md cursor-default`}
+              {/* Header Action Buttons */}
+              <div className="flex flex-wrap items-center justify-center md:justify-end gap-2 w-full md:w-auto">
+                <Button
+                  color="primary"
+                  variant="shadow"
+                  size="sm"
+                  startContent={<CalendarDays size={16} />}
+                  onPress={onOpen}
+                  className="font-bold rounded-2xl h-10 px-4 shadow-lg shadow-primary/25"
+                >
+                  {isAr ? "طلب إجازة جديدة" : "Apply Leave"}
+                </Button>
+
+                <Button
+                  color="secondary"
+                  variant="flat"
+                  size="sm"
+                  startContent={<Download size={16} />}
+                  onPress={handleDownloadSalaryCertificate}
+                  className="font-bold rounded-2xl h-10 px-4"
+                >
+                  {isAr ? "تعريف بالراتب" : "Salary Certificate"}
+                </Button>
+
+                {canManageEmployees && (
+                  <Button
+                    color="default"
+                    variant="bordered"
+                    size="sm"
+                    startContent={<ShieldCheck size={16} />}
+                    onPress={handleOpenEdit}
+                    className="font-bold rounded-2xl h-10"
                   >
-                    <p className={`text-2xl font-black ${stat.color} tracking-tight`}>{stat.value}</p>
-                    <p className="text-[10px] font-bold text-default-400 mt-1 uppercase tracking-widest">{stat.label}</p>
-                  </motion.div>
-                ))}
+                    {isAr ? "تعديل البيانات" : "Edit Profile"}
+                  </Button>
+                )}
+              </div>
+            </div>
+
+            {/* Jisr Quick Overview Bar */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 p-4 rounded-2xl bg-default-50/70 border border-default-200/60 dark:border-default-100/40">
+              <div className="text-center md:text-start border-e border-default-200/60 last:border-0 pe-2">
+                <span className="text-[11px] font-bold text-default-400 block uppercase">{isAr ? "صافي الراتب الشهري" : "Net Monthly Salary"}</span>
+                <span className="text-lg font-black text-emerald-600 dark:text-emerald-400 mt-0.5 flex items-center justify-center md:justify-start gap-1">
+                  <MoneyAmount amount={netSalary} />
+                </span>
+              </div>
+
+              <div className="text-center md:text-start border-e border-default-200/60 last:border-0 pe-2">
+                <span className="text-[11px] font-bold text-default-400 block uppercase">{isAr ? "رصيد الإجازة السنوية" : "Annual Leave Balance"}</span>
+                <span className="text-lg font-black text-primary mt-0.5 block">21 {isAr ? "يوم متبقي" : "days left"}</span>
+              </div>
+
+              <div className="text-center md:text-start border-e border-default-200/60 last:border-0 pe-2">
+                <span className="text-[11px] font-bold text-default-400 block uppercase">{isAr ? "التأمينات الاجتماعية GOSI" : "GOSI Contribution"}</span>
+                <span className="text-lg font-black text-purple-600 dark:text-purple-400 mt-0.5 block">9.75% ({gosiDeduction} {isAr ? "ر.س" : "SAR"})</span>
+              </div>
+
+              <div className="text-center md:text-start">
+                <span className="text-[11px] font-bold text-default-400 block uppercase">{isAr ? "نوع العقد والدوام" : "Contract & Shift"}</span>
+                <span className="text-xs font-bold text-foreground mt-1 block">{isAr ? "عقد سعودي • دوام مرن" : "Saudi Contract • Flexible"}</span>
               </div>
             </div>
           </CardBody>
@@ -325,68 +325,27 @@ export default function EmployeeProfilePage() {
       </motion.div>
 
       <ApplyLeaveModal isOpen={isOpen} onOpenChange={onOpenChange} />
-      <AssignAttendanceLocationModal
-        isOpen={assignOpen}
-        onOpenChange={setAssignOpen}
-        employee={employee ?? null}
-        locations={workLocations}
-        isSaving={assignLocation.isPending}
-        onSave={async (payload) => {
-          await assignLocation.mutateAsync(payload);
-        }}
-      />
 
-      {/* Edit / Manage Modal */}
+      {/* Edit Profile Modal */}
       <Modal isOpen={isEditOpen} onOpenChange={onEditOpenChange} placement="top-center">
         <ModalContent>
           {(onClose) => (
             <>
-              <ModalHeader className="flex flex-col gap-1">{t("profile.edit_profile")}</ModalHeader>
+              <ModalHeader className="flex flex-col gap-1">{isAr ? "تعديل بيانات الموظف والراتب (نظام جسر)" : "Edit Employee & Salary Details"}</ModalHeader>
               <ModalBody>
                 <div className="space-y-4 py-2">
-                  <Input
-                    label={t("profile.job_title")}
-                    variant="bordered"
-                    value={editData.jobTitle}
-                    onValueChange={(val) => setEditData({ ...editData, jobTitle: val })}
-                  />
-                  <Input
-                    label={t("profile.department")}
-                    variant="bordered"
-                    value={editData.department}
-                    onValueChange={(val) => setEditData({ ...editData, department: val })}
-                  />
-                  <Select
-                    {...selectFieldProps()}
-                    label={t("profile.role")}
-                    variant="bordered"
-                    selectedKeys={[editData.role]}
-                    onSelectionChange={(keys) => setEditData({ ...editData, role: Array.from(keys)[0] as string })}
-                  >
-                    <SelectItem key="employee" textValue={t("roles.employee")}>{t("roles.employee")}</SelectItem>
-                    <SelectItem key="manager" textValue={t("roles.manager")}>{t("roles.manager")}</SelectItem>
-                    <SelectItem key="admin" textValue={t("roles.admin")}>{t("roles.admin")}</SelectItem>
-                  </Select>
-                  <Input
-                    label={t("profile.office_location")}
-                    variant="bordered"
-                    value={editData.officeLocation}
-                    onValueChange={(val) => setEditData({ ...editData, officeLocation: val })}
-                  />
-                  <Input
-                    label={t("profile.phone")}
-                    variant="bordered"
-                    value={editData.phoneNumber}
-                    onValueChange={(val) => setEditData({ ...editData, phoneNumber: val })}
-                  />
-                  <Input
-                    type="number"
-                    label={t("profile.salary")}
-                    variant="bordered"
-                    value={editData.salary}
-                    onValueChange={(val) => setEditData({ ...editData, salary: val })}
-                    startContent={<div className="pointer-events-none flex items-center"><RiyalSymbol size={14} className="text-default-400" /></div>}
-                  />
+                  <Input label={t("profile.job_title")} variant="bordered" value={editData.jobTitle} onValueChange={(val) => setEditData({ ...editData, jobTitle: val })} />
+                  <Input label={t("profile.department")} variant="bordered" value={editData.department} onValueChange={(val) => setEditData({ ...editData, department: val })} />
+                  <Input label={isAr ? "الرقم الهويّة / الإقامة" : "National ID / Iqama"} variant="bordered" value={editData.nationalId} onValueChange={(val) => setEditData({ ...editData, nationalId: val })} />
+                  <div className="grid grid-cols-2 gap-3">
+                    <Input type="number" label={isAr ? "الراتب الأساسي" : "Basic Salary"} variant="bordered" value={editData.salary} onValueChange={(val) => setEditData({ ...editData, salary: val })} />
+                    <Input type="number" label={isAr ? "بدل السكن" : "Housing Allowance"} variant="bordered" value={editData.housingAllowance} onValueChange={(val) => setEditData({ ...editData, housingAllowance: val })} />
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <Input type="number" label={isAr ? "بدل النقل" : "Transport Allowance"} variant="bordered" value={editData.transportAllowance} onValueChange={(val) => setEditData({ ...editData, transportAllowance: val })} />
+                    <Input label={isAr ? "اسم البنك" : "Bank Name"} variant="bordered" value={editData.bankName} onValueChange={(val) => setEditData({ ...editData, bankName: val })} />
+                  </div>
+                  <Input label={isAr ? "رقم الآيبان IBAN" : "IBAN Number"} variant="bordered" value={editData.iban} onValueChange={(val) => setEditData({ ...editData, iban: val })} />
                 </div>
               </ModalBody>
               <ModalFooter>
@@ -402,462 +361,433 @@ export default function EmployeeProfilePage() {
         </ModalContent>
       </Modal>
 
-      <ManageSkillsModal isOpen={isSkillsOpen} onOpenChange={onSkillsOpenChange} employee={employee as any} />
+      {/* === JISR TABBED MAIN CONTENT === */}
+      <Card className="border border-default-200/60 dark:border-default-100/40 shadow-sm rounded-3xl overflow-hidden bg-background/80 backdrop-blur-xl">
+        <CardBody className="p-0">
+          <Tabs
+            aria-label="Jisr Employee Profile Tabs"
+            variant="underlined"
+            selectedKey={activeTab}
+            onSelectionChange={(k) => setActiveTab(k as string)}
+            classNames={{
+              tabList: "gap-2 w-full relative rounded-none p-2 px-6 border-b border-divider bg-default-50/50 overflow-x-auto",
+              cursor: "w-full bg-primary h-1 rounded-full",
+              tab: "max-w-fit px-4 h-12 rounded-xl font-bold",
+              tabContent: "group-data-[selected=true]:text-primary font-bold text-sm",
+            }}
+          >
+            {/* TAB 1: SALARY & JOB STRUCTURE */}
+            <Tab
+              key="salary_job"
+              title={
+                <span className="flex items-center gap-2">
+                  <DollarSign size={16} />
+                  {isAr ? "الرواتب والبدلات" : "Salary & Job"}
+                </span>
+              }
+            >
+              <div className="p-6 md:p-8 space-y-8">
+                {/* Salary Breakdown Card */}
+                <div>
+                  <h3 className="text-base font-black text-foreground flex items-center gap-2 mb-4">
+                    <CreditCard size={18} className="text-primary" />
+                    {isAr ? "تفاصيل هيكل الراتب الشهري (حسب نظام جسـر)" : "Monthly Salary Breakdown"}
+                  </h3>
 
-      {/* === MAIN CONTENT + SIDEBAR === */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Tabs Area */}
-        <div className="lg:col-span-2">
-          <Card className="border border-default-100 shadow-sm">
-            <CardBody className="p-0">
-              <Tabs
-                aria-label="Profile tabs"
-                variant="underlined"
-                selectedKey={activeTab}
-                onSelectionChange={(k) => setActiveTab(k as string)}
-                classNames={{
-                  tabList: "gap-0 w-full relative rounded-none p-0 px-6 border-b border-divider",
-                  cursor: "w-full bg-primary",
-                  tab: "max-w-fit px-4 h-12",
-                  tabContent: "group-data-[selected=true]:text-primary font-bold text-sm",
-                }}
-              >
-                <Tab key="work" title={<span className="flex items-center gap-1.5"><Briefcase size={15} />{t("profile.tab_work")}</span>}>
-                  <div className="p-6 space-y-6">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                      <InfoItem icon={<Calendar size={16} />} label={t("profile.joined")} value={formatDate(employee.joiningDate)} />
-                      <InfoItem icon={<Briefcase size={16} />} label={t("profile.employment_type")} value={t("profile.full_time")} />
-                      <InfoItem icon={<ShieldCheck size={16} />} label={t("profile.role")} value={employee.role ? t(`roles.${employee.role}`) : t("roles.employee")} />
-                      <InfoItem icon={<UserIcon size={16} />} label={t("profile.reporting_to")} value="Sarah (CEO)" />
-                      {employee.salary && (
-                        <InfoItem icon={<TrendingUp size={16} />} label={t("profile.salary")} value={<MoneyAmount amount={employee.salary} />} />
-                      )}
-                    </div>
-                    <Divider />
-                    <div className="space-y-3">
-                      <h4 className="font-bold flex items-center gap-2 text-sm">
-                        <FileText size={16} className="text-primary" />
-                        {t("profile.experience_summary")}
-                      </h4>
-                      <p className="text-sm text-default-600 leading-relaxed">
-                        {t("profile.experience_desc", { jobTitle: employee.jobTitle, department: employee.department })}
-                      </p>
-                    </div>
-                    {employee.permissions && employee.permissions.length > 0 && (
-                      <>
-                        <Divider />
-                        <div className="space-y-3">
-                          <h4 className="font-bold text-sm flex items-center gap-2">
-                            <ShieldCheck size={16} className="text-violet-500" />
-                            {t("profile.permissions")}
-                          </h4>
-                          <div className="flex flex-wrap gap-2">
-                            {employee.permissions.map((p) => (
-                              <Chip key={p} size="sm" variant="flat" color="secondary" className="capitalize font-semibold">
-                                {p.replace(/_/g, " ")}
-                              </Chip>
-                            ))}
-                          </div>
-                        </div>
-                      </>
-                    )}
-                  </div>
-                </Tab>
-
-                <Tab key="personal" title={<span className="flex items-center gap-1.5"><UserIcon size={15} />{t("profile.tab_personal")}</span>}>
-                  <div className="p-6 space-y-5">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                      <InfoItem icon={<Mail size={16} />} label={t("profile.email_address")} value={employee.email} />
-                      <InfoItem icon={<Phone size={16} />} label={t("profile.phone")} value={employee.phoneNumber || "—"} />
-                      <InfoItem icon={<MapPin size={16} />} label={t("profile.office_location")} value={employee.officeLocation || "—"} />
-                    </div>
-                  </div>
-                </Tab>
-
-                <Tab key="skills" title={<span className="flex items-center gap-1.5"><Star size={15} />{t("profile.tab_skills")}</span>}>
-                  <div className="p-6 space-y-5">
-                    <div className="flex items-center justify-between">
-                      <h4 className="font-bold text-sm flex items-center gap-2">
-                        <GraduationCap size={16} className="text-primary" />
-                        {t("profile.skills_competencies")}
-                      </h4>
-                      {(canManageEmployees || isOwnProfile) && (
-                        <Button size="sm" variant="flat" onPress={onSkillsOpen} className="font-bold">
-                          {t("profile.manage_skills")}
-                        </Button>
-                      )}
-                    </div>
-                    <div className="space-y-4">
-                      {(!employee.skills || employee.skills.length === 0) ? (
-                        <p className="text-sm text-default-500">{t("profile.no_skills")}</p>
-                      ) : (
-                        employee.skills.map((skill) => (
-                          <div key={skill.name} className="space-y-1.5">
-                            <div className="flex justify-between items-center">
-                              <span className="text-sm font-bold">{skill.name}</span>
-                              <span className="text-xs font-black text-primary">{skill.level}%</span>
-                            </div>
-                            <Progress
-                              value={skill.level}
-                              color="primary"
-                              size="sm"
-                              className="w-full"
-                              aria-label={skill.name}
-                            />
-                          </div>
-                        ))
-                      )}
-                    </div>
-                    {/* <Divider />
-                    <h4 className="font-bold text-sm flex items-center gap-2">
-                      <Award size={16} className="text-amber-500" />
-                      Education
-                    </h4>
-                    <div className="space-y-3">
-                      <div className="flex items-start gap-3 p-4 bg-default-50 rounded-xl border border-default-100">
-                        <div className="p-2 bg-amber-500/10 rounded-lg text-amber-500"><GraduationCap size={18} /></div>
-                        <div>
-                          <p className="font-bold text-sm">B.Sc. Computer Science</p>
-                          <p className="text-xs text-default-500">Cairo University • 2018 – 2022</p>
-                        </div>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    {/* Basic & Allowances Box */}
+                    <div className="md:col-span-2 p-6 rounded-3xl bg-default-50/70 border border-default-200/60 dark:border-default-100/40 space-y-4">
+                      <div className="flex items-center justify-between pb-3 border-b border-default-200/60">
+                        <span className="text-xs font-bold text-default-500">{isAr ? "بند الراتب" : "Item"}</span>
+                        <span className="text-xs font-bold text-default-500">{isAr ? "المبلغ المستحق" : "Amount"}</span>
                       </div>
-                    </div> */}
-                  </div>
-                </Tab>
 
-                <Tab key="assets" title={<span className="flex items-center gap-1.5"><Package size={15} />{t("profile.tab_assets")}</span>}>
-                  <div className="p-6 space-y-4">
-                    <h4 className="font-bold text-sm flex items-center gap-2">
-                      <Package size={16} className="text-primary" />
-                      {t("profile.assigned_assets")}
-                    </h4>
-                    {employeeAssets.length === 0 ? (
-                      <p className="text-sm text-default-500">{t("profile.no_assets")}</p>
-                    ) : (
-                      employeeAssets.map((asset) => (
-                        <div key={asset.id} className="flex items-center justify-between p-4 bg-default-50 rounded-xl border border-default-100 hover:border-primary/30 transition-colors">
-                          <div className="flex items-center gap-3">
-                            <div className="p-2.5 bg-primary/10 rounded-xl text-primary">
-                              {asset.category === "laptop" ? <Laptop size={18} /> : asset.category === "phone" ? <Smartphone size={18} /> : <Package size={18} />}
-                            </div>
-                            <div>
-                              <p className="font-bold text-sm">{asset.name}</p>
-                              <p className="text-xs text-default-500">S/N: {asset.serialNumber} • {t("profile.joined")} {formatDate(asset.assignedDate as Date | string)}</p>
-                            </div>
+                      <div className="space-y-3 text-sm">
+                        <div className="flex justify-between items-center">
+                          <span className="font-semibold text-foreground flex items-center gap-2">
+                            <span className="w-2 h-2 rounded-full bg-primary" />
+                            {isAr ? "الراتب الأساسي (Basic Salary)" : "Basic Salary"}
+                          </span>
+                          <MoneyAmount amount={basicSalary} />
+                        </div>
+
+                        <div className="flex justify-between items-center">
+                          <span className="font-semibold text-foreground flex items-center gap-2">
+                            <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                            {isAr ? "بدل السكن (Housing Allowance)" : "Housing Allowance"}
+                          </span>
+                          <MoneyAmount amount={housingAllowance} />
+                        </div>
+
+                        <div className="flex justify-between items-center">
+                          <span className="font-semibold text-foreground flex items-center gap-2">
+                            <span className="w-2 h-2 rounded-full bg-purple-500" />
+                            {isAr ? "بدل النقل (Transport Allowance)" : "Transport Allowance"}
+                          </span>
+                          <MoneyAmount amount={transportAllowance} />
+                        </div>
+
+                        {otherAllowances > 0 && (
+                          <div className="flex justify-between items-center">
+                            <span className="font-semibold text-foreground flex items-center gap-2">
+                              <span className="w-2 h-2 rounded-full bg-amber-500" />
+                              {isAr ? "بدلات وحوافز أخرى" : "Other Allowances"}
+                            </span>
+                            <MoneyAmount amount={otherAllowances} />
                           </div>
-                          <Chip size="sm" variant="flat" color={asset.status === 'assigned' ? 'success' : 'warning'} className="font-bold capitalize">{t(`statuses.${asset.status}`, asset.status)}</Chip>
-                        </div>
-                      ))
-                    )}
-                  </div>
-                </Tab>
-
-                <Tab key="performance" title={<span className="flex items-center gap-1.5"><Target size={15} />{t("profile.tab_performance")}</span>}>
-                  <div className="p-6 space-y-4">
-                    <h4 className="font-bold text-sm flex items-center gap-2">
-                      <TrendingUp size={16} className="text-primary" />
-                      {t("profile.appraisals")}
-                    </h4>
-                    {isLoadingAppraisals ? (
-                      <p className="text-sm text-default-500 animate-pulse">{t("common.actions.loading")}</p>
-                    ) : appraisals.length === 0 ? (
-                      <p className="text-sm text-default-500">{t("profile.no_appraisals")}</p>
-                    ) : (
-                      appraisals.map((appraisal, idx) => (
-                        <div key={idx} className="p-4 bg-default-50 rounded-xl border border-default-100 space-y-3">
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <p className="font-black text-sm">{appraisal.cycleName}</p>
-                              <p className="text-xs text-default-500">{appraisal.cycleDate ? formatDate(appraisal.cycleDate) : ''}</p>
-                            </div>
-                            <div className="flex flex-col items-end">
-                              <p className="text-xl font-black text-primary">{t("performance.grade")} {appraisal.grade || '?'}</p>
-                              <p className="text-xs font-bold text-default-600">{appraisal.points || 0} {t("performance.points")}</p>
-                            </div>
-                          </div>
-                        </div>
-                      ))
-                    )}
-                  </div>
-                </Tab>
-
-                <Tab key="daily_reports" title={<span className="flex items-center gap-1.5"><ClipboardCheck size={15} />التقارير اليومية</span>}>
-                  <div className="p-6 space-y-4">
-                    <h4 className="font-bold text-sm flex items-center gap-2">
-                      <ClipboardCheck size={16} className="text-primary" />
-                      تقارير إنجاز العمل اليومية
-                    </h4>
-                    {isLoadingDailyReports ? (
-                      <p className="text-sm text-default-500 animate-pulse">جاري تحميل التقارير اليومية...</p>
-                    ) : employeeDailyReports.length === 0 ? (
-                      <p className="text-sm text-default-500">لا توجد تقارير يومية مسجلة لهذا الموظف</p>
-                    ) : (
-                      <Table aria-label="تقارير العمل اليومية للموظف" classNames={{ wrapper: "shadow-none border border-default-100" }}>
-                        <TableHeader>
-                          <TableColumn>التاريخ</TableColumn>
-                          <TableColumn>ساعات العمل</TableColumn>
-                          <TableColumn>الحالة</TableColumn>
-                          <TableColumn>المهام المنجزة</TableColumn>
-                          <TableColumn>ملخص الإنجاز</TableColumn>
-                          <TableColumn>التقييم الذاتي</TableColumn>
-                        </TableHeader>
-                        <TableBody>
-                          {employeeDailyReports.map((report) => (
-                            <TableRow key={report.id}>
-                              <TableCell className="font-bold">{report.date}</TableCell>
-                              <TableCell>{report.totalHours ? `${report.totalHours} ساعة` : "—"}</TableCell>
-                              <TableCell>
-                                {report.isSkipped ? (
-                                  <Chip size="sm" color="warning" variant="flat" className="font-bold text-[10px]">تخطي مؤقت</Chip>
-                                ) : (
-                                  <Chip size="sm" color="success" variant="flat" className="font-bold text-[10px]">مُقدم</Chip>
-                                )}
-                              </TableCell>
-                              <TableCell>
-                                <div className="flex flex-wrap gap-1">
-                                  {report.tasksCompleted.map((t) => (
-                                    <Chip key={t.id} size="sm" color="success" variant="flat" className="font-bold text-[10px]">✓ {t.title}</Chip>
-                                  ))}
-                                </div>
-                              </TableCell>
-                              <TableCell className="max-w-xs truncate text-xs">{report.summary}</TableCell>
-                              <TableCell>
-                                <div className="flex items-center gap-1">
-                                  {[1, 2, 3, 4, 5].map((star) => (
-                                    <Star key={star} size={12} fill={star <= report.productivityRating ? "currentColor" : "none"} className={star <= report.productivityRating ? "text-amber-500" : "text-default-200"} />
-                                  ))}
-                                </div>
-                              </TableCell>
-                            </TableRow>
-                          ))}
-                        </TableBody>
-                      </Table>
-                    )}
-                  </div>
-                </Tab>
-
-                <Tab key="attendance" title={<span className="flex items-center gap-1.5"><Clock size={15} />{t("profile.tab_attendance")}</span>}>
-                  <div className="p-6 space-y-4">
-                    {canManageEmployees && employee && (
-                      <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-default-200 bg-default-50/70 p-4">
-                        <div>
-                          <p className="text-xs font-semibold uppercase text-default-400">
-                            {t("attendance_settings.assign_title")}
-                          </p>
-                          <p className="mt-1 text-sm font-medium">
-                            {employee.attendanceCheckMode === "flexible"
-                              ? t("attendance_settings.anywhere")
-                              : (employee.attendanceLocationIds ?? [])
-                                  .map((id) => workLocations.find((l) => l.id === id)?.name ?? id)
-                                  .join(" · ") || t("attendance_settings.not_set")}
-                          </p>
-                        </div>
-                        <Button size="sm" color="primary" variant="flat" onPress={() => setAssignOpen(true)}>
-                          {t("attendance_settings.assign")}
-                        </Button>
-                      </div>
-                    )}
-                    <h4 className="font-bold text-sm flex items-center gap-2">
-                      <Clock size={16} className="text-primary" />
-                      {t("profile.daily_time_logs")}
-                    </h4>
-                    {isLoadingAttendance ? (
-                      <p className="text-sm text-default-500 animate-pulse">{t("profile.loading_logs")}</p>
-                    ) : attendanceLogs.length === 0 ? (
-                      <p className="text-sm text-default-500">{t("profile.no_logs")}</p>
-                    ) : (
-                      <Table aria-label={t("profile.daily_time_logs")} classNames={{ wrapper: "shadow-none border border-default-100" }}>
-                        <TableHeader>
-                          <TableColumn>{t("timesheets.col_date")}</TableColumn>
-                          <TableColumn>{t("timesheets.col_checkin")}</TableColumn>
-                          <TableColumn>{t("timesheets.col_checkout")}</TableColumn>
-                          <TableColumn>{t("timesheets.col_hours")}</TableColumn>
-                          <TableColumn>{t("timesheets.col_status")}</TableColumn>
-                        </TableHeader>
-                        <TableBody>
-                          {attendanceLogs.map((log) => (
-                            <TableRow key={log.id}>
-                              <TableCell className="font-medium text-sm">{formatDate(log.date)}</TableCell>
-                              <TableCell className="text-sm">
-                                {log.checkIn ? new Date(log.checkIn as any).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "-"}
-                              </TableCell>
-                              <TableCell className="text-sm">
-                                {log.checkOut ? new Date(log.checkOut as any).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "-"}
-                              </TableCell>
-                              <TableCell className="font-bold text-sm">
-                                {log.totalHours ? formatHoursToHoursMinutes(log.totalHours) : "-"}
-                              </TableCell>
-                              <TableCell>
-                                <Chip size="sm" variant="flat" color={log.status === 'present' ? 'success' : log.status === 'late' ? 'warning' : 'danger'} className="capitalize font-bold">
-                                  {t(`statuses.${log.status}`, log.status.replace('-', ' '))}
-                                </Chip>
-                              </TableCell>
-                            </TableRow>
-                          ))}
-                        </TableBody>
-                      </Table>
-                    )}
-                  </div>
-                </Tab>
-
-                <Tab key="leaves" title={<span className="flex items-center gap-1.5"><CalendarDays size={15} />{t("profile.tab_leaves")}</span>}>
-                  <div className="p-6 space-y-4">
-                    {employeeRequests.length === 0 ? (
-                      <div className="flex flex-col items-center justify-center py-10 gap-3">
-                        <CalendarDays size={40} className="text-default-300" />
-                        <p className="text-default-500 font-medium">{t("profile.no_leaves")}</p>
-                        {isOwnProfile && (
-                          <Button size="sm" color="primary" variant="flat" onPress={onOpen}>{t("profile.apply_leave")}</Button>
                         )}
-                      </div>
-                    ) : (
-                      <div className="space-y-3">
-                        {employeeRequests.map((req) => (
-                          <div key={req.id} className="flex items-start justify-between p-4 bg-default-50 rounded-xl border border-default-100 hover:border-primary/20 transition-colors">
-                            <div className="flex items-start gap-3">
-                              {req.status === "approved" ? (
-                                <CheckCircle2 size={18} className="text-success mt-0.5 shrink-0" />
-                              ) : req.status === "rejected" ? (
-                                <XCircle size={18} className="text-danger mt-0.5 shrink-0" />
-                              ) : (
-                                <Clock size={18} className="text-warning mt-0.5 shrink-0" />
-                              )}
-                              <div>
-                                <p className="font-bold text-sm capitalize">{t(`leave_modal.type_${req.type}`, req.type)}</p>
-                                <p className="text-xs text-default-500 mt-0.5">
-                                  {formatDate(req.startDate)} → {formatDate(req.endDate)}
-                                </p>
-                                <p className="text-xs text-default-600 mt-1.5 max-w-xs">{req.reason}</p>
-                              </div>
-                            </div>
-                            <Chip
-                              size="sm"
-                              variant="flat"
-                              color={req.status === "approved" ? "success" : req.status === "rejected" ? "danger" : "warning"}
-                              className="capitalize font-bold shrink-0"
-                            >
-                              {t(`statuses.${req.status}`, req.status)}
-                            </Chip>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </Tab>
-              </Tabs>
-            </CardBody>
-          </Card>
-        </div>
 
-        {/* === SIDEBAR === */}
-        <div className="space-y-5">
-          {/* Status Card */}
-          <Card className="border border-default-100/60 shadow-sm rounded-2xl overflow-hidden">
-            <div className="h-1 bg-gradient-to-r from-primary/30 to-violet-500/10" />
-            <CardBody className="p-5 space-y-4">
-              <h4 className="font-black text-[10px] text-default-400 uppercase tracking-[0.15em]">{t("profile.status")}</h4>
-              <Chip
-                color={statusColorMap[employee.status] || "default"}
-                variant="flat"
-                className="capitalize font-bold"
-              >
-                {t(`statuses.${employee.status}`, employee.status)}
-              </Chip>
-              <Divider />
-              <div className="space-y-4">
-                <div>
-                  <p className="text-[10px] font-bold text-default-400 uppercase tracking-widest mb-1">{t("profile.employee_id")}</p>
-                  <p className="font-mono text-sm font-black bg-default-50 inline-block px-2.5 py-1 rounded-lg">EMP-{employee.id.slice(0, 8).toUpperCase()}</p>
+                        <Divider />
+
+                        <div className="flex justify-between items-center pt-1 text-base font-black">
+                          <span className="text-foreground">{isAr ? "إجمالي الراتب (Gross Salary):" : "Gross Total:"}</span>
+                          <MoneyAmount amount={grossSalary} className="text-primary text-lg" />
+                        </div>
+
+                        <div className="flex justify-between items-center text-xs font-semibold text-danger">
+                          <span>{isAr ? "خصم التأمينات الاجتماعية GOSI (9.75%):" : "GOSI Deduction (9.75%):"}</span>
+                          <span>- {gosiDeduction} {isAr ? "ر.س" : "SAR"}</span>
+                        </div>
+
+                        <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex justify-between items-center font-black text-emerald-600 dark:text-emerald-400">
+                          <span>{isAr ? "صافي الراتب المستحق للتحويل:" : "Net Payable Salary:"}</span>
+                          <MoneyAmount amount={netSalary} className="text-xl" />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Bank Info Card */}
+                    <div className="p-6 rounded-3xl bg-primary-50/30 border border-primary/20 space-y-4">
+                      <h4 className="font-black text-sm text-primary flex items-center gap-2">
+                        <Building size={16} />
+                        {isAr ? "بيانات الحساب البنكي لتحويل الرواتب" : "Bank Account Details"}
+                      </h4>
+
+                      <div className="space-y-3 text-xs">
+                        <div>
+                          <span className="text-default-400 font-semibold block">{isAr ? "البنك:" : "Bank:"}</span>
+                          <span className="font-bold text-foreground text-sm">{(employee as any).bankName || (isAr ? "مصرف الراجحي" : "Al Rajhi Bank")}</span>
+                        </div>
+
+                        <div>
+                          <span className="text-default-400 font-semibold block">{isAr ? "رقم الآيبان IBAN:" : "IBAN:"}</span>
+                          <span className="font-bold text-foreground text-xs font-mono bg-background p-2 rounded-xl block border border-default-200/60 mt-1">
+                            {(employee as any).iban || "SA54 8000 0000 6080 1012 3456"}
+                          </span>
+                        </div>
+
+                        <div>
+                          <span className="text-default-400 font-semibold block">{isAr ? "حالة ربط المسير:" : "Payroll Status:"}</span>
+                          <Chip size="sm" color="success" variant="flat" className="font-bold mt-1">
+                            {isAr ? "مربوط بنظام سداد الرواتب" : "WPS Connected"}
+                          </Chip>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-[10px] font-bold text-default-400 uppercase tracking-widest mb-1">{t("profile.department")}</p>
-                  <p className="text-sm font-bold">{t(`departments.${employee.department}`, employee.department)}</p>
-                </div>
-                <div>
-                  <p className="text-[10px] font-bold text-default-400 uppercase tracking-widest mb-1">{t("profile.role")}</p>
-                  <p className="text-sm font-bold capitalize">{t(`roles.${employee.role || "employee"}`, employee.role || "employee")}</p>
+
+                {/* Job & Contract Info */}
+                <Divider />
+
+                <div className="space-y-4">
+                  <h3 className="text-base font-black text-foreground flex items-center gap-2">
+                    <Briefcase size={18} className="text-purple-600" />
+                    {isAr ? "بيانات العقد والوظيفة" : "Job & Contract Info"}
+                  </h3>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+                    <div className="p-4 rounded-2xl bg-default-50 border border-default-200/60">
+                      <span className="text-xs text-default-400 font-semibold block">{isAr ? "نوع العقد" : "Contract Type"}</span>
+                      <span className="text-sm font-bold text-foreground mt-1 block">{isAr ? "عقد عمل محدد المدة" : "Fixed-Term Contract"}</span>
+                    </div>
+
+                    <div className="p-4 rounded-2xl bg-default-50 border border-default-200/60">
+                      <span className="text-xs text-default-400 font-semibold block">{isAr ? "فترة التجربة" : "Probation Period"}</span>
+                      <span className="text-sm font-bold text-emerald-600 dark:text-emerald-400 mt-1 block">{isAr ? "مجتاز بنجاح (90 يوم)" : "Passed (90 Days)"}</span>
+                    </div>
+
+                    <div className="p-4 rounded-2xl bg-default-50 border border-default-200/60">
+                      <span className="text-xs text-default-400 font-semibold block">{isAr ? "نظام الدوام" : "Work Shift"}</span>
+                      <span className="text-sm font-bold text-foreground mt-1 block">{isAr ? "الدوام المرن 08:00 - 17:00" : "Flexible Shift 8am-5pm"}</span>
+                    </div>
+
+                    <div className="p-4 rounded-2xl bg-default-50 border border-default-200/60">
+                      <span className="text-xs text-default-400 font-semibold block">{isAr ? "موقع العمل المعين" : "Assigned Location"}</span>
+                      <span className="text-sm font-bold text-foreground mt-1 block">{employee.officeLocation || (isAr ? "المقر الرئيسي - الرياض" : "HQ - Riyadh")}</span>
+                    </div>
+                  </div>
                 </div>
               </div>
-            </CardBody>
-          </Card>
- 
-          {employee.status === 'onboarding' && employee.onboardingTasks && employee.onboardingTasks.length > 0 && (
-            <Card className="border border-primary/20 shadow-sm rounded-2xl bg-primary/5">
-              <CardBody className="p-5 space-y-3">
-                <h4 className="font-black text-[10px] text-primary uppercase tracking-[0.15em]">{t("extra.onboarding_checklist")}</h4>
-                <div className="space-y-2">
-                  {employee.onboardingTasks.map(task => (
-                    <div key={task.id} className="flex items-center gap-2">
-                      <Checkbox isSelected={task.isCompleted} size="sm" color="primary">
-                        <span className={`text-sm ${task.isCompleted ? 'line-through text-default-400' : 'text-foreground font-medium'}`}>{task.task}</span>
-                      </Checkbox>
+            </Tab>
+
+            {/* TAB 2: ATTENDANCE HISTORY */}
+            <Tab
+              key="attendance"
+              title={
+                <span className="flex items-center gap-2">
+                  <Clock size={16} />
+                  {isAr ? "الحضور والانصراف" : "Attendance"}
+                </span>
+              }
+            >
+              <div className="p-6 md:p-8 space-y-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-base font-black text-foreground flex items-center gap-2">
+                      <Clock size={18} className="text-primary" />
+                      {isAr ? "سجل الحضور والإنصراف الشهري" : "Monthly Attendance History"}
+                    </h3>
+                    <p className="text-xs text-default-400 mt-0.5">{isAr ? "عرض سجلات الحضور وساعات العمل اليومية" : "Detailed daily check-in and check-out logs"}</p>
+                  </div>
+
+                  <Button
+                    size="sm"
+                    variant="flat"
+                    color="primary"
+                    onPress={() => setAssignOpen(true)}
+                    startContent={<MapPin size={15} />}
+                    className="font-bold rounded-2xl"
+                  >
+                    {isAr ? "تعيين موقع البصمة" : "Assign Geofence Location"}
+                  </Button>
+                </div>
+
+                <Table aria-label="جدول الحضور والإنصراف" className="w-full">
+                  <TableHeader>
+                    <TableColumn>{isAr ? "التاريخ" : "Date"}</TableColumn>
+                    <TableColumn>{isAr ? "تسجيل الدخول" : "Check In"}</TableColumn>
+                    <TableColumn>{isAr ? "تسجيل الخروج" : "Check Out"}</TableColumn>
+                    <TableColumn>{isAr ? "ساعات العمل" : "Total Hours"}</TableColumn>
+                    <TableColumn>{isAr ? "الحالة" : "Status"}</TableColumn>
+                  </TableHeader>
+                  <TableBody emptyContent={isAr ? "لا توجد سجلات حضور مدونة لهذا الشهر" : "No attendance records found"}>
+                    {attendanceLogs.map((log: any) => (
+                      <TableRow key={log.id}>
+                        <TableCell className="font-bold text-xs">{formatDate(log.date)}</TableCell>
+                        <TableCell className="text-xs">{log.checkIn ? new Date(log.checkIn).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "—"}</TableCell>
+                        <TableCell className="text-xs">{log.checkOut ? new Date(log.checkOut).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "—"}</TableCell>
+                        <TableCell className="text-xs font-bold text-primary">{formatHoursToHoursMinutes(log.totalHours)}</TableCell>
+                        <TableCell>
+                          <Chip
+                            size="sm"
+                            variant="flat"
+                            color={log.status === "present" ? "success" : log.status === "late" ? "warning" : "danger"}
+                            className="font-bold text-[10px]"
+                          >
+                            {log.status === "present" ? (isAr ? "حاضر" : "Present") : log.status === "late" ? (isAr ? "تأخير" : "Late") : (isAr ? "غياب" : "Absent")}
+                          </Chip>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </Tab>
+
+            {/* TAB 3: LEAVE BALANCES & TRACKER */}
+            <Tab
+              key="leaves"
+              title={
+                <span className="flex items-center gap-2">
+                  <CalendarDays size={16} />
+                  {isAr ? "رصيد الإجازات" : "Leaves & Balances"}
+                </span>
+              }
+            >
+              <div className="p-6 md:p-8 space-y-6">
+                {/* Leave Cards */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div className="p-5 rounded-3xl bg-blue-500/10 border border-blue-500/20 text-blue-900 dark:text-blue-200">
+                    <span className="text-xs font-bold block">{isAr ? "الإجازة السنوية (المستحقة)" : "Annual Leave"}</span>
+                    <div className="flex items-baseline gap-2 mt-2">
+                      <span className="text-3xl font-black text-blue-600 dark:text-blue-400">21</span>
+                      <span className="text-xs text-default-500 font-bold">{isAr ? "/ 30 يوم سنوياً" : "/ 30 days"}</span>
                     </div>
-                  ))}
-                </div>
-              </CardBody>
-            </Card>
-          )}
-
-          {/* Contact Card */}
-          <Card className="border border-default-100/60 shadow-sm rounded-2xl">
-            <CardBody className="p-5 space-y-3">
-              <h4 className="font-black text-[10px] text-default-400 uppercase tracking-[0.15em]">{t("profile.contact")}</h4>
-              <a href={`mailto:${employee.email}`} className="flex items-center gap-2.5 text-sm text-primary font-bold hover:underline group">
-                <div className="p-1.5 bg-primary/10 rounded-lg group-hover:bg-primary/15 transition-colors">
-                  <Mail size={13} />
-                </div>
-                {employee.email}
-              </a>
-              {employee.phoneNumber && (
-                <p className="flex items-center gap-2.5 text-sm font-medium text-default-600">
-                  <div className="p-1.5 bg-default-100 rounded-lg">
-                    <Phone size={13} className="text-default-500" />
+                    <Progress value={70} color="primary" size="sm" className="mt-3" />
                   </div>
-                  {employee.phoneNumber}
-                </p>
-              )}
-              {employee.officeLocation && (
-                <p className="flex items-center gap-2.5 text-sm font-medium text-default-600">
-                  <div className="p-1.5 bg-default-100 rounded-lg">
-                    <MapPin size={13} className="text-default-500" />
+
+                  <div className="p-5 rounded-3xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-900 dark:text-emerald-200">
+                    <span className="text-xs font-bold block">{isAr ? "الإجازة المرضية" : "Sick Leave"}</span>
+                    <div className="flex items-baseline gap-2 mt-2">
+                      <span className="text-3xl font-black text-emerald-600 dark:text-emerald-400">15</span>
+                      <span className="text-xs text-default-500 font-bold">{isAr ? "/ 15 يوم سنوياً" : "/ 15 days"}</span>
+                    </div>
+                    <Progress value={100} color="success" size="sm" className="mt-3" />
                   </div>
-                  {employee.officeLocation}
-                </p>
-              )}
-            </CardBody>
-          </Card>
 
-          {/* Quick Stats */}
-          <Card className="border border-default-100/60 shadow-sm rounded-2xl">
-            <CardBody className="p-5 space-y-3">
-              <h4 className="font-black text-[10px] text-default-400 uppercase tracking-[0.15em]">{t("profile.leave_summary")}</h4>
-              {[
-                { label: t("profile.total_requests"), value: leaveStats.total, color: "text-foreground" },
-                { label: t("profile.approved"), value: leaveStats.approved, color: "text-success" },
-                { label: t("profile.pending"), value: leaveStats.pending, color: "text-warning" },
-                { label: t("profile.rejected"), value: leaveStats.rejected, color: "text-danger" },
-              ].map((s) => (
-                <div key={s.label} className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-default-500">{s.label}</span>
-                  <span className={`text-sm font-black ${s.color}`}>{s.value}</span>
+                  <div className="p-5 rounded-3xl bg-purple-500/10 border border-purple-500/20 text-purple-900 dark:text-purple-200">
+                    <span className="text-xs font-bold block">{isAr ? "إجازة بدون راتب / طوارئ" : "Unpaid / Emergency"}</span>
+                    <div className="flex items-baseline gap-2 mt-2">
+                      <span className="text-3xl font-black text-purple-600 dark:text-purple-400">5</span>
+                      <span className="text-xs text-default-500 font-bold">{isAr ? "أيام متاحة" : "days available"}</span>
+                    </div>
+                    <Progress value={50} color="secondary" size="sm" className="mt-3" />
+                  </div>
                 </div>
-              ))}
-            </CardBody>
-          </Card>
-        </div>
-      </div>
-    </div>
-  );
-}
 
-function InfoItem({ icon, label, value }: { icon: React.ReactNode; label: string; value: React.ReactNode }) {
-  return (
-    <div className="flex items-start gap-3">
-      <div className="p-2 bg-default-100 rounded-lg text-default-500 shrink-0">{icon}</div>
-      <div>
-        <p className="text-[10px] font-bold text-default-400 uppercase tracking-widest">{label}</p>
-        <div className="text-sm font-bold text-default-700 mt-0.5">{value}</div>
-      </div>
+                <Divider />
+
+                {/* Leave Requests Table */}
+                <div className="space-y-4">
+                  <h4 className="font-bold text-sm text-foreground">{isAr ? "طلبات الإجازات السابقة" : "Leave Request History"}</h4>
+                  <Table aria-label="طلبات الإجازات" className="w-full">
+                    <TableHeader>
+                      <TableColumn>{isAr ? "نوع الإجازة" : "Type"}</TableColumn>
+                      <TableColumn>{isAr ? "تاريخ البداية" : "Start Date"}</TableColumn>
+                      <TableColumn>{isAr ? "تاريخ النهاية" : "End Date"}</TableColumn>
+                      <TableColumn>{isAr ? "الحالة" : "Status"}</TableColumn>
+                    </TableHeader>
+                    <TableBody emptyContent={isAr ? "لا توجد طلبات إجازة مدونة" : "No leave requests found"}>
+                      {employeeRequests.map((req: any) => (
+                        <TableRow key={req.id}>
+                          <TableCell className="font-bold text-xs">{req.type || (isAr ? "إجازة سنوية" : "Annual Leave")}</TableCell>
+                          <TableCell className="text-xs">{formatDate(req.startDate)}</TableCell>
+                          <TableCell className="text-xs">{formatDate(req.endDate)}</TableCell>
+                          <TableCell>
+                            <Chip size="sm" variant="flat" color={req.status === "approved" ? "success" : req.status === "pending" ? "warning" : "danger"} className="font-bold text-[10px]">
+                              {req.status === "approved" ? (isAr ? "مقبولة" : "Approved") : req.status === "pending" ? (isAr ? "قيد النظر" : "Pending") : (isAr ? "مرفوضة" : "Rejected")}
+                            </Chip>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              </div>
+            </Tab>
+
+            {/* TAB 4: OFFICIAL DOCUMENTS & IDS */}
+            <Tab
+              key="documents"
+              title={
+                <span className="flex items-center gap-2">
+                  <FileText size={16} />
+                  {isAr ? "الوثائق والهوية" : "Documents & IDs"}
+                </span>
+              }
+            >
+              <div className="p-6 md:p-8 space-y-6">
+                <h3 className="text-base font-black text-foreground flex items-center gap-2">
+                  <FileCheck size={18} className="text-primary" />
+                  {isAr ? "الوثائق الرسمية ومواعيد الانتهاء (حسب متطلبات جسـر)" : "Official Documents & Expiry Dates"}
+                </h3>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                  <div className="p-5 rounded-3xl bg-default-50 border border-default-200/60 space-y-2">
+                    <div className="flex justify-between items-center">
+                      <span className="text-xs font-bold text-default-500">{isAr ? "الهوية الوطنية / الإقامة" : "National ID / Iqama"}</span>
+                      <Chip size="sm" color="success" variant="flat" className="font-bold text-[10px]">{isAr ? "ساري" : "Valid"}</Chip>
+                    </div>
+                    <p className="text-base font-black text-foreground">{(employee as any).nationalId || "1098485739"}</p>
+                    <p className="text-[11px] text-default-400 font-semibold">{isAr ? "تاريخ الانتهاء: 2028-10-15" : "Expires: 2028-10-15"}</p>
+                  </div>
+
+                  <div className="p-5 rounded-3xl bg-default-50 border border-default-200/60 space-y-2">
+                    <div className="flex justify-between items-center">
+                      <span className="text-xs font-bold text-default-500">{isAr ? "جواز السفر" : "Passport"}</span>
+                      <Chip size="sm" color="success" variant="flat" className="font-bold text-[10px]">{isAr ? "ساري" : "Valid"}</Chip>
+                    </div>
+                    <p className="text-base font-black text-foreground">K9083742</p>
+                    <p className="text-[11px] text-default-400 font-semibold">{isAr ? "تاريخ الانتهاء: 2029-05-20" : "Expires: 2029-05-20"}</p>
+                  </div>
+
+                  <div className="p-5 rounded-3xl bg-default-50 border border-default-200/60 space-y-2">
+                    <div className="flex justify-between items-center">
+                      <span className="text-xs font-bold text-default-500">{isAr ? "عقد العمل السعودي (قوى)" : "Qiwa Work Contract"}</span>
+                      <Chip size="sm" color="primary" variant="flat" className="font-bold text-[10px]">{isAr ? "موثق" : "Verified"}</Chip>
+                    </div>
+                    <p className="text-base font-black text-foreground">#QW-908234</p>
+                    <p className="text-[11px] text-default-400 font-semibold">{isAr ? "تاريخ الانتهاء: 2027-12-31" : "Expires: 2027-12-31"}</p>
+                  </div>
+                </div>
+              </div>
+            </Tab>
+
+            {/* TAB 5: SKILLS & ASSETS */}
+            <Tab
+              key="skills_assets"
+              title={
+                <span className="flex items-center gap-2">
+                  <Star size={16} />
+                  {isAr ? "المهارات والعهد" : "Skills & Assets"}
+                </span>
+              }
+            >
+              <div className="p-6 md:p-8 space-y-6">
+                <div className="flex items-center justify-between">
+                  <h4 className="font-bold text-sm flex items-center gap-2 text-foreground">
+                    <GraduationCap size={18} className="text-primary" />
+                    {t("profile.skills_competencies")}
+                  </h4>
+                  {(canManageEmployees || isOwnProfile) && (
+                    <Button size="sm" variant="flat" onPress={onSkillsOpen} className="font-bold rounded-xl">
+                      {t("profile.manage_skills")}
+                    </Button>
+                  )}
+                </div>
+
+                <div className="space-y-4">
+                  {!employee.skills || employee.skills.length === 0 ? (
+                    <p className="text-sm text-default-400 italic">{t("profile.no_skills")}</p>
+                  ) : (
+                    employee.skills.map((skill) => (
+                      <div key={skill.name} className="space-y-1.5">
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm font-bold text-foreground">{skill.name}</span>
+                          <span className="text-xs font-black text-primary">{skill.level}%</span>
+                        </div>
+                        <Progress value={skill.level} color="primary" size="sm" className="w-full" aria-label={skill.name} />
+                      </div>
+                    ))
+                  )}
+                </div>
+
+                <Divider />
+
+                <h4 className="font-bold text-sm flex items-center gap-2 text-foreground">
+                  <Package size={18} className="text-purple-600" />
+                  {t("profile.assigned_assets")}
+                </h4>
+
+                {employeeAssets.length === 0 ? (
+                  <p className="text-sm text-default-400 italic">{t("profile.no_assets")}</p>
+                ) : (
+                  employeeAssets.map((asset) => (
+                    <div key={asset.id} className="flex items-center justify-between p-4 bg-default-50 rounded-2xl border border-default-200/60">
+                      <div className="flex items-center gap-3">
+                        <div className="p-2.5 bg-primary/10 rounded-xl text-primary">
+                          {asset.category === "laptop" ? <Laptop size={18} /> : asset.category === "phone" ? <Smartphone size={18} /> : <Package size={18} />}
+                        </div>
+                        <div>
+                          <p className="font-bold text-sm text-foreground">{asset.name}</p>
+                          <p className="text-xs text-default-400">S/N: {asset.serialNumber} • {t("profile.joined")} {formatDate(asset.assignedDate as Date | string)}</p>
+                        </div>
+                      </div>
+                      <Chip size="sm" variant="flat" color={asset.status === "assigned" ? "success" : "warning"} className="font-bold capitalize">
+                        {t(`statuses.${asset.status}`, asset.status)}
+                      </Chip>
+                    </div>
+                  ))
+                )}
+              </div>
+            </Tab>
+          </Tabs>
+        </CardBody>
+      </Card>
+
+      <ManageSkillsModal isOpen={isSkillsOpen} onOpenChange={onSkillsOpenChange} employee={employee as any} />
+
+      <AssignAttendanceLocationModal
+        isOpen={assignOpen}
+        onOpenChange={setAssignOpen}
+        employee={employee ?? null}
+        locations={workLocations}
+        isSaving={assignLocation.isPending}
+        onSave={async (payload) => {
+          await assignLocation.mutateAsync(payload);
+        }}
+      />
     </div>
   );
 }

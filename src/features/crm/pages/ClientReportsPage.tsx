@@ -112,8 +112,8 @@ export function ClientReportsPage() {
     setIsEditorOpen(true);
   };
 
-  const handleOpenEdit = (report: ClientReport, e?: React.MouseEvent) => {
-    if (e) e.stopPropagation();
+  const handleOpenEdit = (report: ClientReport, e?: any) => {
+    if (e && typeof e.stopPropagation === "function") e.stopPropagation();
     setIsDetailOpen(false);
     setEditingReport(report);
     setIsEditorOpen(true);
@@ -124,8 +124,8 @@ export function ClientReportsPage() {
     setIsDetailOpen(true);
   };
 
-  const handleCopyPublicLink = (report: ClientReport, e: React.MouseEvent) => {
-    e.stopPropagation();
+  const handleCopyPublicLink = (report: ClientReport, e?: any) => {
+    if (e && typeof e.stopPropagation === "function") e.stopPropagation();
     const publicUrl = `${window.location.origin}/public/report/${report.companyId}/${report.id}`;
     if (navigator.clipboard) {
       navigator.clipboard.writeText(publicUrl);
@@ -479,10 +479,7 @@ export function ClientReportsPage() {
                         isIconOnly
                         variant="flat"
                         color="danger"
-                        onPress={(e) => {
-                          e.stopPropagation();
-                          handleDelete(report.id);
-                        }}
+                        onPress={() => handleDelete(report.id)}
                         className="rounded-xl"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -622,10 +619,7 @@ export function ClientReportsPage() {
                           isIconOnly
                           variant="flat"
                           color="danger"
-                          onPress={(e) => {
-                            e.stopPropagation();
-                            handleDelete(report.id);
-                          }}
+                          onPress={() => handleDelete(report.id)}
                           className="rounded-xl h-8 w-8 min-w-0"
                         >
                           <Trash2 className="w-4 h-4" />

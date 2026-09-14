@@ -6,9 +6,10 @@ interface EmployeeCardProps {
   employee: Employee;
   onClick?: () => void;
   onDelete?: (employee: Employee) => void;
+  onOffboard?: (employee: Employee) => void;
 }
 
-export function EmployeeCard({ employee, onClick, onDelete }: EmployeeCardProps) {
+export function EmployeeCard({ employee, onClick, onDelete, onOffboard }: EmployeeCardProps) {
   const initials = `${employee.firstName?.[0] || ""}${employee.lastName?.[0] || ""}`.toUpperCase() || "E";
 
   const statusColors: Record<string, string> = {
@@ -72,17 +73,25 @@ export function EmployeeCard({ employee, onClick, onDelete }: EmployeeCardProps)
                     <MoreVertical size={16} />
                   </Button>
                 </DropdownTrigger>
-                <DropdownMenu aria-label="Employee Actions" disabledKeys={['view']}>
+                <DropdownMenu aria-label="Employee Actions">
                   <DropdownItem key="view" onPress={() => onClick?.()}>
-                    View Profile
+                    عرض الملف (View Profile)
                   </DropdownItem>
                   <DropdownItem 
                     key="offboard" 
+                    className="text-warning" 
+                    color="warning"
+                    onPress={() => onOffboard?.(employee)}
+                  >
+                    إنهاء خدمة / استقالة
+                  </DropdownItem>
+                  <DropdownItem 
+                    key="delete" 
                     className="text-danger" 
                     color="danger"
                     onPress={() => onDelete?.(employee)}
                   >
-                    Offboard / Resign
+                    حذف الموظف نهائياً
                   </DropdownItem>
                 </DropdownMenu>
               </Dropdown>
