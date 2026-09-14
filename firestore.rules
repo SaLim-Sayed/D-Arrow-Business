@@ -7,12 +7,16 @@ service cloud.firestore {
       return request.auth != null;
     }
 
+    function hasUserDoc() {
+      return signedIn() && exists(/databases/$(database)/documents/users/$(request.auth.uid));
+    }
+
     function userDoc() {
       return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
     }
 
     function belongsToCompany(companyId) {
-      return signedIn() && userDoc().companyId == companyId;
+      return signedIn() && hasUserDoc() && userDoc().companyId == companyId;
     }
 
     function isCompanyAdmin(companyId) {
@@ -25,7 +29,7 @@ service cloud.firestore {
       // Own profile, or teammates in the same company
       allow read: if signedIn() && (
         request.auth.uid == userId
-        || resource.data.companyId == userDoc().companyId
+        || (hasUserDoc() && resource.data.companyId == userDoc().companyId)
       );
 
       // New account (register / invite accept / Google)
@@ -34,10 +38,10 @@ service cloud.firestore {
       // Self update, or company admin updating teammates
       allow update: if signedIn() && (
         request.auth.uid == userId
-        || isCompanyAdmin(resource.data.companyId)
+        || (hasUserDoc() && isCompanyAdmin(resource.data.companyId))
       );
 
-      allow delete: if isCompanyAdmin(resource.data.companyId);
+      allow delete: if hasUserDoc() && isCompanyAdmin(resource.data.companyId);
     }
 
     // Team invitations (token = document id)

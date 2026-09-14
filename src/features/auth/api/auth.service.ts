@@ -68,26 +68,31 @@ export const AuthService = {
       
       const firebaseUser = userCredential.user;
 
-      const userDocRef = doc(db, "users", firebaseUser.uid);
-      const userDoc = await getDoc(userDocRef);
-      let userData = userDoc.data() as Record<string, unknown> | undefined;
+      let userData: Record<string, unknown> | undefined;
+      try {
+        const userDocRef = doc(db, "users", firebaseUser.uid);
+        const userDoc = await getDoc(userDocRef);
+        userData = userDoc.data() as Record<string, unknown> | undefined;
 
-      if (!userDoc.exists()) {
-        const defaultUserData: Partial<User> = {
-          email: firebaseUser.email || "",
-          name: firebaseUser.displayName || firebaseUser.email?.split("@")[0] || "User",
-          nameAr: "",
-          avatar: firebaseUser.photoURL || `https://avatar.vercel.sh/${firebaseUser.uid}`,
-          role: "employee",
-          companyId: "default-company",
-        };
-        await setDoc(userDocRef, {
-          ...defaultUserData,
-          id: firebaseUser.uid,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        });
-        userData = defaultUserData as Record<string, unknown>;
+        if (!userDoc.exists()) {
+          const defaultUserData: Partial<User> = {
+            email: firebaseUser.email || "",
+            name: firebaseUser.displayName || firebaseUser.email?.split("@")[0] || "User",
+            nameAr: "",
+            avatar: firebaseUser.photoURL || `https://avatar.vercel.sh/${firebaseUser.uid}`,
+            role: "employee",
+            companyId: "default-company",
+          };
+          await setDoc(userDocRef, {
+            ...defaultUserData,
+            id: firebaseUser.uid,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          });
+          userData = defaultUserData as Record<string, unknown>;
+        }
+      } catch (err) {
+        console.warn("Could not fetch or create user document during login:", err);
       }
 
       return {

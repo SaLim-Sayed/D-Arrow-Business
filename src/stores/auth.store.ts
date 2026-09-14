@@ -93,27 +93,28 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     set({ isLoading: true });
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
+        let userData: any = undefined;
         try {
           await getIdToken(firebaseUser);
-          
           const userDoc = await getDoc(doc(db, "users", firebaseUser.uid));
-          const userData = userDoc.data() as any;
-
-          const user = mapFirestoreUser(firebaseUser.uid, userData, {
-            email: firebaseUser.email || "",
-            name: firebaseUser.displayName || firebaseUser.email?.split("@")[0] || "User",
-            avatar: firebaseUser.photoURL || `https://avatar.vercel.sh/${firebaseUser.uid}`,
-          });
-
-          set({
-            user,
-            isAuthenticated: true,
-            isLoading: false,
-          });
+          if (userDoc.exists()) {
+            userData = userDoc.data();
+          }
         } catch (error) {
-          console.error("Error fetching user data:", error);
-          set({ isLoading: false });
+          console.warn("Could not fetch user document during initialize:", error);
         }
+
+        const user = mapFirestoreUser(firebaseUser.uid, userData, {
+          email: firebaseUser.email || "",
+          name: firebaseUser.displayName || firebaseUser.email?.split("@")[0] || "User",
+          avatar: firebaseUser.photoURL || `https://avatar.vercel.sh/${firebaseUser.uid}`,
+        });
+
+        set({
+          user,
+          isAuthenticated: true,
+          isLoading: false,
+        });
       } else {
         set({
           user: null,

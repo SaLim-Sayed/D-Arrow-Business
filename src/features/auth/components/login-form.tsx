@@ -56,8 +56,18 @@ export function LoginForm() {
     try {
       await login(data.email, data.password);
       navigate("/", { replace: true, state: { choosePortal: true } });
-    } catch {
-      setError(t("login.error"));
+    } catch (err: any) {
+      console.error("Login attempt error:", err);
+      const code = err?.code || "";
+      if (code === "auth/user-not-found" || code === "auth/wrong-password" || code === "auth/invalid-credential") {
+        setError(t("login.error"));
+      } else if (code === "auth/too-many-requests") {
+        setError("تم حظر الدخول مؤقتاً لكثرة المحاولات الخاطئة. حاول لاحقاً.");
+      } else if (err?.message) {
+        setError(err.message);
+      } else {
+        setError(t("login.error"));
+      }
     }
   }
 
