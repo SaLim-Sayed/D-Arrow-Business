@@ -133,28 +133,43 @@ export function MeetingFormModal({
     isSubmitting || createMeeting.isPending || updateMeeting.isPending;
 
   return (
-    <Modal isOpen={isOpen} onOpenChange={onOpenChange} size="2xl" scrollBehavior="inside">
+    <Modal
+      isOpen={isOpen}
+      onOpenChange={onOpenChange}
+      size="2xl"
+      scrollBehavior="inside"
+      classNames={{
+        base: "max-h-[90vh] flex flex-col rounded-3xl overflow-hidden shadow-2xl bg-background",
+        header: "border-b border-default-100 px-6 py-4 text-xl font-black shrink-0",
+        body: "px-6 py-5 gap-5 overflow-y-auto flex-1",
+        footer: "border-t border-default-100 px-6 py-4 flex items-center justify-end gap-3 shrink-0 bg-background/95 backdrop-blur-md",
+      }}
+    >
       <ModalContent>
         {(onClose) => (
-          <form onSubmit={handleSubmit(onSubmit)}>
+          <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col flex-1 min-h-0 overflow-hidden">
             <ModalHeader>
               {isEdit ? t("form.editTitle") : t("form.createTitle")}
             </ModalHeader>
-            <ModalBody className="gap-4">
+            <ModalBody>
               <Input
                 label={t("form.title")}
                 placeholder={t("form.titlePlaceholder")}
+                variant="bordered"
                 {...register("title")}
                 isInvalid={!!errors.title}
                 errorMessage={errors.title?.message}
                 isRequired
+                className="font-bold"
               />
               <Input
                 label={t("form.team")}
                 placeholder={t("form.teamPlaceholder")}
+                variant="bordered"
                 {...register("team")}
                 isInvalid={!!errors.team}
                 errorMessage={errors.team?.message}
+                className="font-bold"
               />
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -170,16 +185,18 @@ export function MeetingFormModal({
                       }}
                       isInvalid={!!errors.dateIso}
                       errorMessage={errors.dateIso?.message}
-                      className="w-full"
+                      className="w-full font-bold"
                     />
                   )}
                 />
                 <Input
                   label={t("form.time")}
                   type="time"
+                  variant="bordered"
                   {...register("time")}
                   isInvalid={!!errors.time}
                   errorMessage={errors.time?.message}
+                  className="font-bold"
                 />
               </div>
 
@@ -191,11 +208,13 @@ export function MeetingFormModal({
                     <Select
                       {...selectFieldProps()}
                       label={t("form.duration")}
+                      variant="bordered"
                       selectedKeys={[String(field.value)]}
                       onSelectionChange={(keys) => {
                         const v = Array.from(keys)[0] as string;
                         if (v) field.onChange(Number(v));
                       }}
+                      className="font-bold"
                     >
                       {MEETING_DURATIONS.map((minutes) => (
                         <SelectItem
@@ -215,11 +234,13 @@ export function MeetingFormModal({
                     <Select
                       {...selectFieldProps()}
                       label={t("form.reminder")}
+                      variant="bordered"
                       selectedKeys={[String(field.value)]}
                       onSelectionChange={(keys) => {
                         const v = Array.from(keys)[0] as string;
                         if (v !== undefined) field.onChange(Number(v));
                       }}
+                      className="font-bold"
                     >
                       {MEETING_REMINDER_OPTIONS.map((minutes) => (
                         <SelectItem
@@ -243,7 +264,9 @@ export function MeetingFormModal({
               <Input
                 label={t("form.location")}
                 placeholder={t("form.locationPlaceholder")}
+                variant="bordered"
                 {...register("location")}
+                className="font-bold"
               />
 
               <Controller
@@ -254,11 +277,13 @@ export function MeetingFormModal({
                     {...selectFieldProps()}
                     label={t("form.attendees")}
                     placeholder={t("form.attendeesPlaceholder")}
+                    variant="bordered"
                     selectionMode="multiple"
                     selectedKeys={new Set(field.value ?? [])}
                     onSelectionChange={(keys) => {
                       field.onChange(Array.from(keys as Set<string>));
                     }}
+                    className="font-bold"
                   >
                     {(users ?? []).map((user) => (
                       <SelectItem key={user.id} textValue={user.name ?? user.id}>
@@ -272,15 +297,17 @@ export function MeetingFormModal({
               <Textarea
                 label={t("form.agenda")}
                 placeholder={t("form.agendaPlaceholder")}
+                variant="bordered"
                 {...register("agenda")}
                 minRows={3}
+                className="font-bold"
               />
             </ModalBody>
             <ModalFooter>
-              <Button variant="light" onPress={onClose}>
+              <Button variant="flat" color="default" onPress={onClose} className="font-bold rounded-2xl">
                 {t("form.cancel")}
               </Button>
-              <Button color="primary" type="submit" isLoading={busy}>
+              <Button color="primary" type="submit" isLoading={busy} className="font-bold rounded-2xl shadow-lg shadow-primary/20">
                 {isEdit ? t("form.save") : t("form.create")}
               </Button>
             </ModalFooter>

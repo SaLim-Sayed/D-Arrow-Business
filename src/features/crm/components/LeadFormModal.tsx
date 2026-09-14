@@ -102,14 +102,25 @@ export function LeadFormModal({ isOpen, onOpenChange, lead }: LeadFormModalProps
   const busy = isSubmitting || createLead.isPending || updateLead.isPending;
 
   return (
-    <Modal isOpen={isOpen} onOpenChange={onOpenChange} size="2xl" scrollBehavior="inside">
+    <Modal
+      isOpen={isOpen}
+      onOpenChange={onOpenChange}
+      size="2xl"
+      scrollBehavior="inside"
+      classNames={{
+        base: "max-h-[90vh] flex flex-col rounded-3xl overflow-hidden shadow-2xl bg-background",
+        header: "border-b border-default-100 px-6 py-4 text-xl font-black shrink-0",
+        body: "px-6 py-5 gap-5 overflow-y-auto flex-1",
+        footer: "border-t border-default-100 px-6 py-4 flex items-center justify-end gap-3 shrink-0 bg-background/95 backdrop-blur-md",
+      }}
+    >
       <ModalContent>
         {(onClose) => (
-          <form onSubmit={handleSubmit(onSubmit)}>
+          <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col flex-1 min-h-0 overflow-hidden">
             <ModalHeader>
               {isEdit ? t("leads.form.editTitle") : t("leads.form.createTitle")}
             </ModalHeader>
-            <ModalBody className="gap-4">
+            <ModalBody>
               <Input
                 label={t("leads.form.name")}
                 {...register("name")}

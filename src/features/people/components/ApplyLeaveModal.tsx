@@ -66,11 +66,22 @@ export function ApplyLeaveModal({ isOpen, onOpenChange }: ApplyLeaveModalProps) 
   };
 
   return (
-    <Modal isOpen={isOpen} onOpenChange={onOpenChange} size="lg">
+    <Modal
+      isOpen={isOpen}
+      onOpenChange={onOpenChange}
+      size="lg"
+      scrollBehavior="inside"
+      classNames={{
+        base: "max-h-[90vh] flex flex-col rounded-3xl overflow-hidden shadow-2xl bg-background",
+        header: "border-b border-default-100 px-6 py-4 text-xl font-black shrink-0",
+        body: "px-6 py-5 gap-5 overflow-y-auto flex-1",
+        footer: "border-t border-default-100 px-6 py-4 flex items-center justify-end gap-3 shrink-0 bg-background/95 backdrop-blur-md",
+      }}
+    >
       <ModalContent>
         {(onClose) => (
-          <form onSubmit={handleSubmit(onSubmit)}>
-            <ModalHeader className="flex flex-col gap-1">{t("leave_modal.title")}</ModalHeader>
+          <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col flex-1 min-h-0 overflow-hidden">
+            <ModalHeader>{t("leave_modal.title")}</ModalHeader>
             <ModalBody>
               <div className="space-y-4">
                 <Select 
