@@ -1,7 +1,19 @@
-import { Avatar, Card, CardBody, Chip, Button, Dropdown, DropdownTrigger, DropdownMenu, DropdownItem } from "@heroui/react";
-import { Mail, Phone, MapPin, Calendar, MoreVertical } from "lucide-react";
+import {
+  Avatar,
+  Button,
+  Card,
+  CardBody,
+  Chip,
+  Dropdown,
+  DropdownItem,
+  DropdownMenu,
+  DropdownTrigger,
+} from "@heroui/react";
+import { Calendar, Mail, MapPin, MoreVertical, Phone } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import type { Employee } from "../types/people.types";
-import { employeeDisplayName } from "../utils/geo";
+import { employeeDisplayName, employeeInitials } from "../utils/geo";
+import { formatDate } from "@/lib/utils";
 
 interface EmployeeCardProps {
   employee: Employee;
@@ -10,136 +22,178 @@ interface EmployeeCardProps {
   onOffboard?: (employee: Employee) => void;
 }
 
-export function EmployeeCard({ employee, onClick, onDelete, onOffboard }: EmployeeCardProps) {
-  const displayName = employeeDisplayName(employee);
-  const initials =
-    displayName
-      .split(/\s+/)
-      .filter(Boolean)
-      .map((part) => part.charAt(0))
-      .join("")
-      .toUpperCase()
-      .slice(0, 2) || "E";
+const statusColorMap: Record<
+  string,
+  "success" | "primary" | "warning" | "danger" | "default"
+> = {
+  active: "success",
+  onboarding: "primary",
+  suspended: "warning",
+  terminated: "danger",
+};
 
-  const statusColors: Record<string, string> = {
-    active: "success",
-    onboarding: "primary",
-    suspended: "warning",
-    terminated: "danger",
-  };
+export function EmployeeCard({
+  employee,
+  onClick,
+  onDelete,
+  onOffboard,
+}: EmployeeCardProps) {
+  const { t, i18n } = useTranslation("people");
+  const displayName = employeeDisplayName(employee, i18n.language);
+  const initials = employeeInitials(employee, i18n.language);
+  const statusColor = statusColorMap[employee.status] ?? "default";
 
-  const statusGlow: Record<string, string> = {
-    active: "ring-success/30",
-    onboarding: "ring-primary/30",
-    suspended: "ring-warning/30",
-    terminated: "ring-danger/30",
-  };
+  const departmentRaw = employee.department?.trim() || "";
+  const departmentLabel = departmentRaw
+    ? t(`departments.${departmentRaw}`, {
+        defaultValue: t(`departments.${departmentRaw.toUpperCase()}`, {
+          defaultValue: departmentRaw,
+        }),
+      })
+    : "";
+
+  const locationRaw = employee.officeLocation?.trim() || "";
+  const locationNormalized = locationRaw.toLowerCase();
+  const locationLabel = !locationRaw
+    ? ""
+    : locationNormalized.startsWith("remot")
+      ? t("locations.remote")
+      : t(`locations.${locationRaw}`, { defaultValue: locationRaw });
 
   return (
-    <Card 
-      isPressable 
-      onClick={onClick}
-      className="border border-default-100/60 shadow-sm hover:shadow-xl transition-all duration-300 rounded-2xl bg-white/80 dark:bg-content1/50 backdrop-blur-sm group overflow-hidden"
+    <Card
+      isPressable
+      onPress={onClick}
+      className="group h-full overflow-hidden rounded-2xl border border-default-200/80 bg-content1 shadow-sm transition-all hover:border-primary/30 hover:shadow-md"
     >
-      <CardBody className="p-0">
-        {/* Top gradient accent */}
-        <div className={`h-1 bg-gradient-to-r ${
-          employee.status === 'active' ? 'from-success/40 to-success/10' :
-          employee.status === 'onboarding' ? 'from-primary/40 to-primary/10' :
-          employee.status === 'suspended' ? 'from-warning/40 to-warning/10' :
-          'from-danger/40 to-danger/10'
-        }`} />
-        
-        <div className="p-5">
-          <div className="flex justify-between items-start mb-4">
-            <div className={`ring-2 ${statusGlow[employee.status] || 'ring-default-200'} rounded-full p-0.5`}>
-              <Avatar
-                src={employee.avatarUrl}
-                fallback={initials}
-                className="w-14 h-14 text-large"
-                isBordered
-                color={statusColors[employee.status] as any}
-              />
-            </div>
-            <div className="flex flex-col items-end gap-2">
-              <Chip 
-                size="sm" 
-                variant="flat" 
-                color={statusColors[employee.status] as any}
-                className="capitalize font-bold text-[10px]"
-              >
-                {employee.status}
-              </Chip>
-              <div onClick={(e) => e.stopPropagation()}>
-              <Dropdown placement="bottom-end">
-                <DropdownTrigger>
-                  <Button 
-                    isIconOnly 
-                    size="sm" 
-                    variant="light" 
-                    className="text-default-300 opacity-0 group-hover:opacity-100 transition-opacity"
+      <CardBody className="gap-0 p-0">
+        <div
+          className={
+            employee.status === "active"
+              ? "h-1 bg-success"
+              : employee.status === "onboarding"
+                ? "h-1 bg-primary"
+                : employee.status === "suspended"
+                  ? "h-1 bg-warning"
+                  : "h-1 bg-danger"
+          }
+        />
+
+        <div className="flex flex-col gap-4 p-4">
+          <div className="flex items-start gap-3">
+            <Avatar
+              src={employee.avatarUrl}
+              name={initials}
+              className="h-14 w-14 shrink-0 text-sm font-bold"
+              classNames={{
+                base: "bg-primary/10 text-primary",
+                name: "text-sm font-bold",
+              }}
+              isBordered
+              color={statusColor}
+            />
+
+            <div className="min-w-0 flex-1 pt-0.5">
+              <div className="flex items-start justify-between gap-2">
+                <div className="min-w-0 space-y-0.5">
+                  <h3 className="truncate text-base font-bold leading-tight text-foreground transition-colors group-hover:text-primary">
+                    {displayName}
+                  </h3>
+                  {employee.jobTitle ? (
+                    <p className="truncate text-sm text-default-500">
+                      {employee.jobTitle}
+                    </p>
+                  ) : null}
+                </div>
+
+                <div
+                  className="shrink-0"
+                  onClick={(e) => e.stopPropagation()}
+                  onKeyDown={(e) => e.stopPropagation()}
+                >
+                  <Dropdown placement="bottom-end">
+                    <DropdownTrigger>
+                      <Button
+                        isIconOnly
+                        size="sm"
+                        variant="light"
+                        className="text-default-400 opacity-60 transition-opacity group-hover:opacity-100"
+                        aria-label={t("extra.view_profile")}
+                      >
+                        <MoreVertical size={16} />
+                      </Button>
+                    </DropdownTrigger>
+                    <DropdownMenu aria-label={t("extra.view_profile")}>
+                      <DropdownItem key="view" onPress={() => onClick?.()}>
+                        {t("extra.view_profile")}
+                      </DropdownItem>
+                      <DropdownItem
+                        key="offboard"
+                        className="text-warning"
+                        color="warning"
+                        onPress={() => onOffboard?.(employee)}
+                      >
+                        {t("profile.terminate")}
+                      </DropdownItem>
+                      <DropdownItem
+                        key="delete"
+                        className="text-danger"
+                        color="danger"
+                        onPress={() => onDelete?.(employee)}
+                      >
+                        {t("extra.remove_employee")}
+                      </DropdownItem>
+                    </DropdownMenu>
+                  </Dropdown>
+                </div>
+              </div>
+
+              <div className="mt-2 flex flex-wrap gap-1.5">
+                {departmentLabel ? (
+                  <Chip
+                    size="sm"
+                    variant="flat"
+                    className="h-5 max-w-full text-[10px] font-semibold"
                   >
-                    <MoreVertical size={16} />
-                  </Button>
-                </DropdownTrigger>
-                <DropdownMenu aria-label="Employee Actions">
-                  <DropdownItem key="view" onPress={() => onClick?.()}>
-                    عرض الملف (View Profile)
-                  </DropdownItem>
-                  <DropdownItem 
-                    key="offboard" 
-                    className="text-warning" 
-                    color="warning"
-                    onPress={() => onOffboard?.(employee)}
-                  >
-                    إنهاء خدمة / استقالة
-                  </DropdownItem>
-                  <DropdownItem 
-                    key="delete" 
-                    className="text-danger" 
-                    color="danger"
-                    onPress={() => onDelete?.(employee)}
-                  >
-                    حذف الموظف نهائياً
-                  </DropdownItem>
-                </DropdownMenu>
-              </Dropdown>
+                    <span className="truncate">{departmentLabel}</span>
+                  </Chip>
+                ) : null}
+                <Chip
+                  size="sm"
+                  variant="flat"
+                  color={statusColor}
+                  className="h-5 text-[10px] font-bold capitalize"
+                >
+                  {t(`statuses.${employee.status}`, employee.status)}
+                </Chip>
               </div>
             </div>
           </div>
 
-          <div className="space-y-1 mb-4">
-            <h3 className="text-base font-black text-foreground tracking-tight group-hover:text-primary transition-colors">
-              {displayName}
-            </h3>
-            <p className="text-sm font-bold text-primary/80">
-              {employee.jobTitle || "—"}
-            </p>
-            <p className="text-[11px] text-default-400 font-bold uppercase tracking-widest">
-              {employee.department}
-            </p>
-          </div>
-
-          <div className="space-y-2 pt-4 border-t border-default-100/60">
+          <div className="space-y-2 border-t border-default-100 pt-3">
             <div className="flex items-center gap-2 text-xs text-default-500">
-              <Mail size={13} className="text-default-300 shrink-0" />
-              <span className="truncate font-medium">{employee.email}</span>
+              <Mail size={13} className="shrink-0 text-default-300" />
+              <span className="truncate" dir="ltr">
+                {employee.email || "—"}
+              </span>
             </div>
-            {employee.phoneNumber && (
+            {employee.phoneNumber ? (
               <div className="flex items-center gap-2 text-xs text-default-500">
-                <Phone size={13} className="text-default-300 shrink-0" />
-                <span className="font-medium">{employee.phoneNumber}</span>
+                <Phone size={13} className="shrink-0 text-default-300" />
+                <span dir="ltr">{employee.phoneNumber}</span>
               </div>
-            )}
-            {employee.officeLocation && (
+            ) : null}
+            {locationLabel ? (
               <div className="flex items-center gap-2 text-xs text-default-500">
-                <MapPin size={13} className="text-default-300 shrink-0" />
-                <span className="font-medium">{employee.officeLocation}</span>
+                <MapPin size={13} className="shrink-0 text-default-300" />
+                <span className="truncate">{locationLabel}</span>
               </div>
-            )}
+            ) : null}
             <div className="flex items-center gap-2 text-xs text-default-500">
-              <Calendar size={13} className="text-default-300 shrink-0" />
-              <span className="font-medium">Joined {new Date(employee.joiningDate as any).toLocaleDateString()}</span>
+              <Calendar size={13} className="shrink-0 text-default-300" />
+              <span>
+                {t("profile.joined")} {formatDate(employee.joiningDate)}
+              </span>
             </div>
           </div>
         </div>

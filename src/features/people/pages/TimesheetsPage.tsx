@@ -69,7 +69,7 @@ export default function TimesheetsPage() {
 
     if (empStartDate > actualEnd) return;
 
-    let employeeName = employeeDisplayName(employee);
+    let employeeName = employeeDisplayName(employee, i18n.language);
     if (!employeeName || employeeName === "—") {
       employeeName = isAr ? "موظف" : "Employee";
     }

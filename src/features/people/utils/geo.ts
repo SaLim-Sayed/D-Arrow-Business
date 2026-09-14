@@ -1,4 +1,5 @@
 import type { Employee, WorkLocation } from "../types/people.types";
+import { initialsFromName, localizedName, nameFromEmail } from "@/lib/localized-name";
 
 export type AttendanceGeoCode =
   | "permission_denied"
@@ -35,12 +36,29 @@ export class AttendanceGeoError extends Error {
 export function employeeDisplayName(
   employee: Pick<Employee, "firstName" | "lastName" | "email"> & {
     name?: string;
-  }
+    nameAr?: string;
+  },
+  locale?: string
 ): string {
-  const full = `${employee.firstName ?? ""} ${employee.lastName ?? ""}`.trim();
-  if (full) return full;
-  if (employee.name?.trim()) return employee.name.trim();
-  return employee.email || "—";
+  const fromParts = `${employee.firstName ?? ""} ${employee.lastName ?? ""}`.trim();
+  const bilingual = localizedName(locale, {
+    name: fromParts || employee.name,
+    nameAr: employee.nameAr,
+  });
+  if (bilingual) return bilingual;
+  const fromEmail = nameFromEmail(employee.email);
+  if (fromEmail) return fromEmail;
+  return employee.email?.trim() || "—";
+}
+
+export function employeeInitials(
+  employee: Pick<Employee, "firstName" | "lastName" | "email"> & {
+    name?: string;
+    nameAr?: string;
+  },
+  locale?: string
+): string {
+  return initialsFromName(employeeDisplayName(employee, locale), "?");
 }
 
 /** Earth-surface distance in meters. */

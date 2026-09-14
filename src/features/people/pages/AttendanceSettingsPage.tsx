@@ -26,7 +26,7 @@ import type { Employee, WorkLocation } from "../types/people.types";
 import { employeeDisplayName, osmEmbedUrl } from "../utils/geo";
 
 export default function AttendanceSettingsPage() {
-  const { t } = useTranslation("people");
+  const { t, i18n } = useTranslation("people");
   const navigate = useNavigate();
   const { canManageEmployees } = useAppPermissions();
   const { data: locationsRes, isLoading: loadingLocations } = useWorkLocationsQuery();
@@ -49,11 +49,11 @@ export default function AttendanceSettingsPage() {
     const q = search.trim().toLowerCase();
     if (!q) return employees;
     return employees.filter((e) =>
-      `${employeeDisplayName(e)} ${e.department ?? ""} ${e.jobTitle ?? ""}`
+      `${employeeDisplayName(e, i18n.language)} ${e.department ?? ""} ${e.jobTitle ?? ""}`
         .toLowerCase()
         .includes(q)
     );
-  }, [employees, search]);
+  }, [employees, search, i18n.language]);
 
   if (!canManageEmployees) {
     return <Navigate to="/people" replace />;
@@ -198,7 +198,7 @@ export default function AttendanceSettingsPage() {
                               className="text-start hover:text-primary"
                               onClick={() => navigate(`/people/${emp.id}`)}
                             >
-                              {employeeDisplayName(emp)}
+                              {employeeDisplayName(emp, i18n.language)}
                             </button>
                           </td>
                           <td className="hidden px-3 py-2.5 text-default-500 md:table-cell">

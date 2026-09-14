@@ -11,3 +11,27 @@ export function localizedName(
   if ((locale ?? "").toLowerCase().startsWith("ar")) return ar || en;
   return en || ar;
 }
+
+/** Turn `khulod.ahmed390@gmail.com` into `Khulod Ahmed390`. */
+export function nameFromEmail(email?: string | null): string {
+  const local = email?.split("@")[0]?.trim();
+  if (!local) return "";
+  return local
+    .replace(/[._+-]+/g, " ")
+    .split(/\s+/)
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
+}
+
+export function initialsFromName(name: string, fallback = "?"): string {
+  const parts = name
+    .replace(/@.*$/, "")
+    .split(/[\s._+-]+/)
+    .filter(Boolean);
+  if (!parts.length) return fallback;
+  return parts
+    .slice(0, 2)
+    .map((p) => p.charAt(0).toUpperCase())
+    .join("");
+}

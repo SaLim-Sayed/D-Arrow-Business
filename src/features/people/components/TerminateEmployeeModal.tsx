@@ -16,7 +16,7 @@ import { AlertTriangle, UserMinus } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { selectFieldProps } from "@/components/shared/select-field";
 import type { Employee } from "../types/people.types";
-import { employeeDisplayName } from "../utils/geo";
+import { employeeDisplayName, employeeInitials } from "../utils/geo";
 
 export type TerminateAction = "resigned" | "terminated";
 
@@ -28,7 +28,7 @@ interface TerminateEmployeeModalProps {
 }
 
 export function TerminateEmployeeModal({ isOpen, onOpenChange, employee, onConfirm }: TerminateEmployeeModalProps) {
-  const { t } = useTranslation("people");
+  const { t, i18n } = useTranslation("people");
   const [actionType, setActionType] = useState<TerminateAction>("terminated");
   const [reason, setReason] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -48,15 +48,8 @@ export function TerminateEmployeeModal({ isOpen, onOpenChange, employee, onConfi
 
   if (!employee) return null;
 
-  const displayName = employeeDisplayName(employee);
-  const initials =
-    displayName
-      .split(/\s+/)
-      .filter(Boolean)
-      .map((part) => part.charAt(0))
-      .join("")
-      .toUpperCase()
-      .slice(0, 2) || "E";
+  const displayName = employeeDisplayName(employee, i18n.language);
+  const initials = employeeInitials(employee, i18n.language);
 
   return (
     <Modal isOpen={isOpen} onOpenChange={onOpenChange} size="md">

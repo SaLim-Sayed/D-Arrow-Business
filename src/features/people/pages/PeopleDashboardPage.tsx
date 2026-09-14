@@ -1,70 +1,120 @@
-import { Button, Card, CardBody, CardHeader, Input, Skeleton, Tabs, Tab, Chip, Modal, ModalContent } from "@heroui/react";
-import { 
-  Search, 
-  Users, 
-  Network, 
-  CalendarDays, 
-  LayoutGrid, 
-  List,
-  ArrowRight,
-  ShieldCheck,
-  Sparkles,
-  UserCircle,
-  ClipboardList,
-  Palmtree,
-  Megaphone,
-  Target,
-  FileSpreadsheet,
-  MapPin,
-  UserPlus,
-  Trash2,
+import {
+  Button,
+  Card,
+  CardBody,
+  CardHeader,
+  Chip,
+  Input,
+  Modal,
+  ModalContent,
+  Skeleton,
+  Tab,
+  Tabs,
+  useDisclosure,
+} from "@heroui/react";
+import {
   AlertTriangle,
+  ArrowRight,
+  CalendarDays,
+  ClipboardList,
+  FileSpreadsheet,
+  LayoutGrid,
+  List,
+  MapPin,
+  Megaphone,
+  Network,
+  Palmtree,
+  Search,
+  ShieldCheck,
+  Target,
+  Trash2,
+  UserCircle,
+  UserPlus,
+  Users,
+  UserCheck,
+  UserCog,
+  Building2,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { EmployeeCard } from "../components/EmployeeCard";
 import { EmployeeTable } from "../components/EmployeeTable";
 import { OrgChart } from "../components/OrgChart";
 import { HireEmployeeModal } from "../components/HireEmployeeModal";
-import { TerminateEmployeeModal } from "../components/TerminateEmployeeModal";
-import type { TerminateAction } from "../components/TerminateEmployeeModal";
-import { useEmployeesQuery, useOffboardEmployeeMutation, useDeleteEmployeeMutation, useAnnouncementsQuery } from "../hooks/use-people";
+import {
+  TerminateEmployeeModal,
+  type TerminateAction,
+} from "../components/TerminateEmployeeModal";
+import {
+  useAnnouncementsQuery,
+  useDeleteEmployeeMutation,
+  useEmployeesQuery,
+  useOffboardEmployeeMutation,
+} from "../hooks/use-people";
 import type { Employee } from "../types/people.types";
 import { employeeDisplayName } from "../utils/geo";
-import { useState } from "react";
-import { useDisclosure } from "@heroui/react";
+import { useMemo, useState } from "react";
 import { TimeTrackerWidget } from "../components/TimeTrackerWidget";
 import { motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
 import { useAppPermissions } from "@/features/companies/hooks/use-app-permissions";
-import { 
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer,
-  PieChart, Pie, Cell, Legend
+import { cn } from "@/lib/utils";
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Cell,
+  Legend,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Tooltip as RechartsTooltip,
+  XAxis,
+  YAxis,
 } from "recharts";
 
-const COLORS = ['#006fee', '#17c964', '#f5a524', '#f31260', '#7828c8', '#a1a1aa'];
+const CHART_COLORS = [
+  "hsl(var(--heroui-primary))",
+  "hsl(var(--heroui-success))",
+  "hsl(var(--heroui-warning))",
+  "hsl(var(--heroui-danger))",
+  "hsl(var(--heroui-secondary))",
+  "#a1a1aa",
+];
 
-const CustomTooltip = ({ active, payload, label }: any) => {
-  if (active && payload && payload.length) {
-    return (
-      <div className="bg-background/80 backdrop-blur-md border border-default-200 p-3 rounded-xl shadow-lg">
-        <p className="font-bold text-sm mb-2">{label || payload[0].name}</p>
-        {payload.map((entry: any, index: number) => (
-          <div key={index} className="flex items-center gap-2 text-sm">
-            <div className="w-2 h-2 rounded-full" style={{ backgroundColor: entry.color || entry.fill }} />
-            <span className="text-default-600 capitalize">{entry.name}:</span>
-            <span className="font-bold text-default-900">{entry.value}</span>
-          </div>
-        ))}
-      </div>
-    );
-  }
-  return null;
+type MainTab = "directory" | "org-chart";
+
+const CustomTooltip = ({
+  active,
+  payload,
+  label,
+}: {
+  active?: boolean;
+  payload?: Array<{ name: string; value: number; color?: string; fill?: string }>;
+  label?: string;
+}) => {
+  if (!active || !payload?.length) return null;
+  return (
+    <div className="rounded-xl border border-default-200 bg-content1 px-3 py-2 shadow-md">
+      <p className="mb-1.5 text-xs font-bold text-default-700">
+        {label || payload[0].name}
+      </p>
+      {payload.map((entry, index) => (
+        <div key={index} className="flex items-center gap-2 text-xs">
+          <span
+            className="h-2 w-2 rounded-full"
+            style={{ backgroundColor: entry.color || entry.fill }}
+          />
+          <span className="capitalize text-default-500">{entry.name}</span>
+          <span className="font-bold text-default-900">{entry.value}</span>
+        </div>
+      ))}
+    </div>
+  );
 };
 
 export default function PeopleDashboardPage() {
   const { t, i18n } = useTranslation("people");
   const isAr = i18n.language === "ar";
-  
   const navigate = useNavigate();
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
   const { data: employeesResponse, isLoading } = useEmployeesQuery();
@@ -72,16 +122,25 @@ export default function PeopleDashboardPage() {
   const deleteEmployeeMutation = useDeleteEmployeeMutation();
   const [searchQuery, setSearchQuery] = useState("");
   const [viewMode, setViewMode] = useState<"grid" | "table">("grid");
+  const [activeTab, setActiveTab] = useState<MainTab>("directory");
   const { data: announcementsResponse } = useAnnouncementsQuery();
   const announcements = announcementsResponse?.data || [];
 
-  // Offboard Modal State
-  const { isOpen: isOffboardOpen, onOpen: onOffboardOpen, onOpenChange: onOffboardOpenChange } = useDisclosure();
-  const [selectedEmployeeToOffboard, setSelectedEmployeeToOffboard] = useState<Employee | null>(null);
+  const {
+    isOpen: isOffboardOpen,
+    onOpen: onOffboardOpen,
+    onOpenChange: onOffboardOpenChange,
+  } = useDisclosure();
+  const [selectedEmployeeToOffboard, setSelectedEmployeeToOffboard] =
+    useState<Employee | null>(null);
 
-  // Delete Modal State
-  const { isOpen: isDeleteOpen, onOpen: onDeleteOpen, onOpenChange: onDeleteOpenChange } = useDisclosure();
-  const [selectedEmployeeToDelete, setSelectedEmployeeToDelete] = useState<Employee | null>(null);
+  const {
+    isOpen: isDeleteOpen,
+    onOpen: onDeleteOpen,
+    onOpenChange: onDeleteOpenChange,
+  } = useDisclosure();
+  const [selectedEmployeeToDelete, setSelectedEmployeeToDelete] =
+    useState<Employee | null>(null);
 
   const handleOffboardClick = (employee: Employee) => {
     setSelectedEmployeeToOffboard(employee);
@@ -100,7 +159,13 @@ export default function PeopleDashboardPage() {
     setSelectedEmployeeToDelete(null);
   };
 
-  const handleOffboardConfirm = async ({ type, reason }: { type: TerminateAction; reason: string }) => {
+  const handleOffboardConfirm = async ({
+    type,
+    reason,
+  }: {
+    type: TerminateAction;
+    reason: string;
+  }) => {
     if (!selectedEmployeeToOffboard) return;
     await offboardMutation.mutateAsync({
       employeeId: selectedEmployeeToOffboard.id,
@@ -111,112 +176,237 @@ export default function PeopleDashboardPage() {
 
   const { canManageEmployees } = useAppPermissions();
   const employees = employeesResponse?.data || [];
-  const filteredEmployees = employees.filter(e => {
-    const q = searchQuery.toLowerCase();
-    return (
-      employeeDisplayName(e).toLowerCase().includes(q) ||
-      (e.jobTitle || "").toLowerCase().includes(q) ||
-      (e.department || "").toLowerCase().includes(q)
+
+  const filteredEmployees = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    if (!q) return employees;
+    return employees.filter(
+      (e) =>
+        employeeDisplayName(e, i18n.language).toLowerCase().includes(q) ||
+        (e.nameAr || "").toLowerCase().includes(q) ||
+        (e.jobTitle || "").toLowerCase().includes(q) ||
+        (e.department || "").toLowerCase().includes(q) ||
+        (e.email || "").toLowerCase().includes(q)
     );
-  });
+  }, [employees, searchQuery, i18n.language]);
 
-  const activeCount = employees.filter(e => e.status === 'active').length;
+  const activeCount = employees.filter((e) => e.status === "active").length;
+  const onboardingCount = employees.filter(
+    (e) => e.status === "onboarding"
+  ).length;
+  const departmentCount = useMemo(
+    () =>
+      new Set(
+        employees.map((e) => e.department).filter((d): d is string => Boolean(d))
+      ).size,
+    [employees]
+  );
 
-  // Chart Data
-  const departmentCounts = employees.reduce((acc, emp) => {
-    const dept = emp.department || 'Unassigned';
-    acc[dept] = (acc[dept] || 0) + 1;
-    return acc;
-  }, {} as Record<string, number>);
+  const departmentData = useMemo(() => {
+    const counts = employees.reduce(
+      (acc, emp) => {
+        const dept = emp.department || t("dashboard.unassigned");
+        acc[dept] = (acc[dept] || 0) + 1;
+        return acc;
+      },
+      {} as Record<string, number>
+    );
+    return Object.entries(counts).map(([name, value], index) => ({
+      name: t(`departments.${name}`, t(`departments.${name.toUpperCase()}`, name)),
+      value,
+      color: CHART_COLORS[index % CHART_COLORS.length],
+    }));
+  }, [employees, t]);
 
-  const departmentData = Object.entries(departmentCounts).map(([name, value], index) => ({
-    name,
-    value,
-    color: COLORS[index % COLORS.length]
-  }));
+  const statusData = useMemo(() => {
+    const counts = employees.reduce(
+      (acc, emp) => {
+        const status = emp.status || "active";
+        acc[status] = (acc[status] || 0) + 1;
+        return acc;
+      },
+      {} as Record<string, number>
+    );
+    return Object.entries(counts).map(([status, count]) => ({
+      key: status,
+      name: t(`statuses.${status}`, status),
+      count,
+    }));
+  }, [employees, t]);
 
-  const statusCounts = employees.reduce((acc, emp) => {
-    const status = emp.status || 'unknown';
-    acc[status] = (acc[status] || 0) + 1;
-    return acc;
-  }, {} as Record<string, number>);
+  const metrics = [
+    {
+      key: "total",
+      label: t("dashboard.metric_total"),
+      value: employees.length,
+      icon: Users,
+      className: "bg-primary/10 text-primary",
+      onPress: () => setActiveTab("directory"),
+    },
+    {
+      key: "active",
+      label: t("dashboard.metric_active"),
+      value: activeCount,
+      icon: UserCheck,
+      className: "bg-success/10 text-success",
+      onPress: () => setActiveTab("directory"),
+    },
+    {
+      key: "onboarding",
+      label: t("dashboard.metric_onboarding"),
+      value: onboardingCount,
+      icon: UserCog,
+      className: "bg-warning/10 text-warning",
+      onPress: () => setActiveTab("directory"),
+    },
+    {
+      key: "departments",
+      label: t("dashboard.metric_departments"),
+      value: departmentCount,
+      icon: Building2,
+      className: "bg-secondary/10 text-secondary",
+      onPress: () => setActiveTab("org-chart"),
+    },
+  ];
 
-  const statusData = Object.entries(statusCounts).map(([name, count]) => ({
-    name: name.charAt(0).toUpperCase() + name.slice(1),
-    count
-  }));
+  const navItems = [
+    {
+      key: "directory",
+      title: t("dashboard.nav_directory"),
+      desc: t("dashboard.nav_directory_desc"),
+      icon: Users,
+      count: String(employees.length),
+      onPress: () => setActiveTab("directory"),
+    },
+    {
+      key: "leave",
+      title: t("dashboard.nav_leave"),
+      desc: t("dashboard.nav_leave_desc"),
+      icon: CalendarDays,
+      onPress: () => navigate("/people/leave"),
+    },
+    {
+      key: "approvals",
+      title: t("dashboard.nav_approvals"),
+      desc: t("dashboard.nav_approvals_desc"),
+      icon: ShieldCheck,
+      onPress: () => navigate("/people/approvals"),
+    },
+    {
+      key: "performance",
+      title: t("dashboard.nav_performance"),
+      desc: t("dashboard.nav_performance_desc"),
+      icon: Target,
+      onPress: () => navigate("/people/performance"),
+    },
+    {
+      key: "timesheets",
+      title: t("dashboard.nav_timesheets"),
+      desc: t("dashboard.nav_timesheets_desc"),
+      icon: FileSpreadsheet,
+      onPress: () => navigate("/people/timesheets"),
+    },
+    ...(canManageEmployees
+      ? [
+          {
+            key: "attendance",
+            title: t("dashboard.nav_attendance"),
+            desc: t("dashboard.nav_attendance_desc"),
+            icon: MapPin,
+            onPress: () => navigate("/people/attendance-settings"),
+          },
+        ]
+      : []),
+    {
+      key: "org",
+      title: t("dashboard.nav_org"),
+      desc: t("dashboard.nav_org_desc"),
+      icon: Network,
+      onPress: () => setActiveTab("org-chart"),
+    },
+  ];
 
   return (
-    <div className="space-y-8">
-      {/* Module Header */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <div>
-          <div className="flex items-center gap-3 mb-1">
-            <h1 className="text-3xl font-black tracking-tight text-foreground">
+    <div className="mx-auto max-w-7xl space-y-6 pb-10 animate-in fade-in duration-300">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div className="min-w-0">
+          <div className="mb-1 flex flex-wrap items-center gap-2">
+            <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
               {t("dashboard.title")}
             </h1>
-            <Chip size="sm" variant="flat" color="primary" className="font-bold">
-              <span className="flex items-center gap-1">
-                <Sparkles size={12} />
-                {employees.length} {t("dashboard.members")}
-              </span>
+            <Chip size="sm" variant="flat" color="primary" className="font-semibold">
+              {employees.length} {t("dashboard.members")}
             </Chip>
           </div>
-          <p className="text-default-500 font-medium">
+          <p className="max-w-xl text-sm text-default-500">
             {t("dashboard.subtitle")}
           </p>
         </div>
-        <div className="flex gap-2">
-          {canManageEmployees && (
-            <Button 
-              color="primary" 
-              variant="shadow" 
-              startContent={<UserPlus size={18} />} 
-              onPress={onOpen}
-              className="font-bold shadow-lg shadow-primary/25 hover:shadow-primary/40 transition-all rounded-2xl h-11 px-5 bg-gradient-to-r from-primary to-primary-600"
-            >
-              {isAr ? "دعوة موظف جديد" : "Invite Employee"}
-            </Button>
-          )}
-        </div>
+        {canManageEmployees && (
+          <Button
+            color="primary"
+            startContent={<UserPlus size={18} />}
+            onPress={onOpen}
+            className="h-11 shrink-0 rounded-xl px-5 font-semibold"
+          >
+            {t("dashboard.new_hire")}
+          </Button>
+        )}
       </div>
 
       <HireEmployeeModal isOpen={isOpen} onOpenChange={onOpenChange} />
-      <TerminateEmployeeModal 
-        isOpen={isOffboardOpen} 
-        onOpenChange={onOffboardOpenChange} 
+      <TerminateEmployeeModal
+        isOpen={isOffboardOpen}
+        onOpenChange={onOffboardOpenChange}
         employee={selectedEmployeeToOffboard}
         onConfirm={handleOffboardConfirm}
       />
-      <Modal isOpen={isDeleteOpen} onOpenChange={onDeleteOpenChange} size="md" classNames={{ backdrop: "backdrop-blur-sm" }}>
-        <ModalContent className="rounded-3xl p-2 border border-default-100 shadow-2xl">
+      <Modal
+        isOpen={isDeleteOpen}
+        onOpenChange={onDeleteOpenChange}
+        size="md"
+        classNames={{ backdrop: "backdrop-blur-sm" }}
+      >
+        <ModalContent className="rounded-2xl border border-default-100 p-2">
           {(onClose) => (
-            <div dir={isAr ? "rtl" : "ltr"} className="p-6 text-center space-y-4">
-              <div className="mx-auto w-14 h-14 rounded-full bg-danger-500/10 text-danger border border-danger-500/20 flex items-center justify-center">
+            <div
+              dir={isAr ? "rtl" : "ltr"}
+              className="space-y-4 p-6 text-center"
+            >
+              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full border border-danger-500/20 bg-danger-500/10 text-danger">
                 <AlertTriangle size={28} />
               </div>
               <div>
-                <h3 className="text-xl font-black text-foreground">
-                  {isAr ? "حذف الموظف نهائياً" : "Delete Employee Permanently"}
+                <h3 className="text-xl font-bold text-foreground">
+                  {t("dashboard.delete_title")}
                 </h3>
-                <p className="text-xs text-default-500 mt-1 leading-relaxed max-w-sm mx-auto">
-                  {isAr 
-                    ? `هل أنت تأكد من رغبتك في حذف سجل الموظف "${selectedEmployeeToDelete ? employeeDisplayName(selectedEmployeeToDelete) : ""}" نهائياً من النظام؟ لا يمكن التراجع عن هذا الإجراء.`
-                    : `Are you sure you want to permanently delete "${selectedEmployeeToDelete ? employeeDisplayName(selectedEmployeeToDelete) : ""}"? This action cannot be undone.`}
+                <p className="mx-auto mt-1 max-w-sm text-xs leading-relaxed text-default-500">
+                  {t("dashboard.delete_confirm", {
+                    name: selectedEmployeeToDelete
+                      ? employeeDisplayName(
+                          selectedEmployeeToDelete,
+                          i18n.language
+                        )
+                      : "",
+                  })}
                 </p>
               </div>
               <div className="flex items-center justify-center gap-3 pt-2">
-                <Button variant="flat" onPress={onClose} className="font-bold rounded-2xl">
-                  {isAr ? "إلغاء" : "Cancel"}
+                <Button
+                  variant="flat"
+                  onPress={onClose}
+                  className="rounded-xl font-semibold"
+                >
+                  {t("dashboard.cancel")}
                 </Button>
-                <Button 
-                  color="danger" 
-                  onPress={handleConfirmDelete} 
+                <Button
+                  color="danger"
+                  onPress={handleConfirmDelete}
                   isLoading={deleteEmployeeMutation.isPending}
                   startContent={<Trash2 size={16} />}
-                  className="font-bold rounded-2xl shadow-lg shadow-danger/25"
+                  className="rounded-xl font-semibold"
                 >
-                  {isAr ? "نعم، حذف نهائي" : "Yes, Delete Permanently"}
+                  {t("dashboard.delete_confirm_btn")}
                 </Button>
               </div>
             </div>
@@ -224,156 +414,121 @@ export default function PeopleDashboardPage() {
         </ModalContent>
       </Modal>
 
-      {/* Attendance & Quick Actions Hub */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+        {metrics.map(({ key, label, value, icon: Icon, className, onPress }) => (
+          <button
+            key={key}
+            type="button"
+            onClick={onPress}
+            className="flex items-center gap-3 rounded-xl border border-default-200 bg-content1 px-3 py-3 text-start transition-colors hover:border-primary/30 hover:bg-primary/[0.03]"
+          >
+            <div className={cn("rounded-lg p-2.5", className)}>
+              <Icon size={18} />
+            </div>
+            <div className="min-w-0">
+              <p className="text-[11px] font-medium uppercase tracking-wide text-default-400">
+                {label}
+              </p>
+              <p className="text-xl font-bold tabular-nums text-foreground">
+                {value}
+              </p>
+            </div>
+          </button>
+        ))}
+      </div>
+
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
         <div className="lg:col-span-2">
           <TimeTrackerWidget variant="full" />
         </div>
-        <Card className="border border-default-100/60 shadow-lg bg-gradient-to-br from-background via-background to-primary/5 overflow-hidden relative">
-          {/* Decorative corner gradient */}
-          <div className="absolute -top-12 -right-12 w-32 h-32 bg-gradient-to-bl from-primary/15 to-transparent rounded-full blur-2xl" />
-          <CardBody className="p-6 flex flex-col justify-center relative z-10">
-            <h3 className="font-black text-lg mb-5 flex items-center gap-2">
-              <div className="p-2 bg-primary/10 rounded-xl">
-                <CalendarDays className="text-primary" size={20} />
-              </div>
+        <Card className="border border-default-200 bg-content1 shadow-sm">
+          <CardBody className="flex flex-col justify-center gap-3 p-5">
+            <h3 className="flex items-center gap-2 text-sm font-bold text-foreground">
+              <span className="rounded-lg bg-primary/10 p-2 text-primary">
+                <CalendarDays size={16} />
+              </span>
               {t("dashboard.quick_actions")}
             </h3>
-            <div className="space-y-2.5">
-              <motion.div whileHover={{ x: 4 }} transition={{ type: "spring", stiffness: 300 }}>
-                <Button 
-                  color="primary" 
-                  variant="flat" 
-                  className="w-full justify-start font-bold h-12 rounded-xl" 
-                  onPress={() => navigate("/people/leave")}
-                  startContent={
-                    <div className="p-1.5 bg-primary/10 rounded-lg">
-                      <Palmtree size={16} className="text-primary" />
-                    </div>
-                  }
-                  endContent={<ArrowRight size={14} className="text-primary/60 rtl:rotate-180" />}
-                >
-                  {t("dashboard.apply_leave")}
-                </Button>
-              </motion.div>
-              <motion.div whileHover={{ x: 4 }} transition={{ type: "spring", stiffness: 300 }}>
-                <Button 
-                  color="secondary" 
-                  variant="flat" 
-                  className="w-full justify-start font-bold h-12 rounded-xl" 
-                  onPress={() => navigate("/people/approvals")}
-                  startContent={
-                    <div className="p-1.5 bg-secondary/10 rounded-lg">
-                      <ClipboardList size={16} className="text-secondary" />
-                    </div>
-                  }
-                  endContent={<ArrowRight size={14} className="text-secondary/60 rtl:rotate-180" />}
-                >
-                  {t("dashboard.view_approvals")}
-                </Button>
-              </motion.div>
-              <motion.div whileHover={{ x: 4 }} transition={{ type: "spring", stiffness: 300 }}>
-                <Button 
-                  color="default" 
-                  variant="flat" 
-                  className="w-full justify-start font-bold h-12 rounded-xl" 
-                  onPress={() => navigate("/profile")}
-                  startContent={
-                    <div className="p-1.5 bg-default-200/50 rounded-lg">
-                      <UserCircle size={16} className="text-default-600" />
-                    </div>
-                  }
-                  endContent={<ArrowRight size={14} className="text-default-400 rtl:rotate-180" />}
-                >
-                  {t("dashboard.my_profile")}
-                </Button>
-              </motion.div>
+            <div className="space-y-2">
+              <QuickActionButton
+                label={t("dashboard.apply_leave")}
+                icon={<Palmtree size={15} />}
+                onPress={() => navigate("/people/leave")}
+                color="primary"
+              />
+              <QuickActionButton
+                label={t("dashboard.view_approvals")}
+                icon={<ClipboardList size={15} />}
+                onPress={() => navigate("/people/approvals")}
+                color="secondary"
+              />
+              <QuickActionButton
+                label={t("dashboard.my_profile")}
+                icon={<UserCircle size={15} />}
+                onPress={() => navigate("/profile")}
+                color="default"
+              />
             </div>
           </CardBody>
         </Card>
       </div>
 
-      {/* Quick Navigation Cards — unified strip */}
-      <Card className="border border-default-100/60 shadow-sm overflow-x-auto">
-        <CardBody className="p-0">
-          <div className="flex divide-x divide-default-100 min-w-max">
-            <div className="flex-1 min-w-[200px]">
-              <NavCard 
-                title={t("dashboard.nav_directory")} 
-                desc={t("dashboard.nav_directory_desc")} 
-                icon={<Users size={20} />}
-                iconBg="bg-blue-50 dark:bg-blue-500/10 text-blue-500"
-                count={employees.length.toString()}
-                onPress={() => {}}
-              />
-            </div>
-            <div className="flex-1 min-w-[200px]">
-              <NavCard 
-                title={t("dashboard.nav_leave")} 
-                desc={t("dashboard.nav_leave_desc")} 
-                icon={<CalendarDays size={20} />}
-                iconBg="bg-amber-50 dark:bg-amber-500/10 text-amber-500"
-                onPress={() => navigate("/people/leave")}
-              />
-            </div>
-            <div className="flex-1 min-w-[200px]">
-              <NavCard 
-                title={t("dashboard.nav_approvals")} 
-                desc={t("dashboard.nav_approvals_desc")} 
-                icon={<ShieldCheck size={20} />}
-                iconBg="bg-rose-50 dark:bg-rose-500/10 text-rose-500"
-                onPress={() => navigate("/people/approvals")}
-              />
-            </div>
-            <div className="flex-1 min-w-[200px]">
-              <NavCard 
-                title={t("dashboard.nav_performance")} 
-                desc={t("dashboard.nav_performance_desc")} 
-                icon={<Target size={20} />}
-                iconBg="bg-emerald-50 dark:bg-emerald-500/10 text-emerald-500"
-                onPress={() => navigate("/people/performance")}
-              />
-            </div>
-            <div className="flex-1 min-w-[200px]">
-              <NavCard 
-                title={t("dashboard.nav_timesheets")} 
-                desc={t("dashboard.nav_timesheets_desc")} 
-                icon={<FileSpreadsheet size={20} />}
-                iconBg="bg-indigo-50 dark:bg-indigo-500/10 text-indigo-500"
-                onPress={() => navigate("/people/timesheets")}
-              />
-            </div>
-            {canManageEmployees && (
-            <div className="flex-1 min-w-[200px]">
-              <NavCard 
-                title={t("dashboard.nav_attendance")} 
-                desc={t("dashboard.nav_attendance_desc")} 
-                icon={<MapPin size={20} />}
-                iconBg="bg-teal-50 dark:bg-teal-500/10 text-teal-500"
-                onPress={() => navigate("/people/attendance-settings")}
-              />
-            </div>
-            )}
-            <div className="flex-1 min-w-[200px]">
-              <NavCard 
-                title={t("dashboard.nav_org")} 
-                desc={t("dashboard.nav_org_desc")} 
-                icon={<Network size={20} />}
-                iconBg="bg-violet-50 dark:bg-violet-500/10 text-violet-500"
-                onPress={() => {}}
-              />
-            </div>
-          </div>
-        </CardBody>
-      </Card>
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
+        {navItems.map((item) => (
+          <NavCard
+            key={item.key}
+            title={item.title}
+            desc={item.desc}
+            icon={<item.icon size={18} />}
+            count={item.count}
+            onPress={item.onPress}
+            active={
+              (item.key === "directory" && activeTab === "directory") ||
+              (item.key === "org" && activeTab === "org-chart")
+            }
+          />
+        ))}
+      </div>
 
-      {/* Analytics Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card className="shadow-sm border border-default-100 rounded-2xl bg-white dark:bg-content1">
-          <CardHeader className="px-6 py-5 border-b border-default-100">
-            <h3 className="font-bold text-lg">Department Distribution (Pie Chart)</h3>
+      {announcements.length > 0 && (
+        <Card className="border border-primary/20 bg-primary/5 shadow-sm">
+          <CardBody className="flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5">
+            <div className="flex items-start gap-3 sm:items-center">
+              <div className="shrink-0 rounded-xl bg-primary/15 p-3 text-primary">
+                <Megaphone size={20} />
+              </div>
+              <div className="min-w-0">
+                <p className="mb-0.5 text-[10px] font-bold uppercase tracking-widest text-primary">
+                  {t("dashboard.announcement")}
+                </p>
+                <p className="truncate font-bold text-foreground">
+                  {announcements[0].title}
+                </p>
+                <p className="mt-0.5 line-clamp-1 text-sm text-default-500">
+                  {announcements[0].content}
+                </p>
+              </div>
+            </div>
+            <Button
+              size="sm"
+              color="primary"
+              variant="flat"
+              className="shrink-0 font-semibold"
+            >
+              {t("dashboard.view_all")}
+            </Button>
+          </CardBody>
+        </Card>
+      )}
+
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+        <Card className="border border-default-200 bg-content1 shadow-sm">
+          <CardHeader className="border-b border-default-100 px-5 py-4">
+            <h3 className="text-sm font-bold text-foreground">
+              {t("dashboard.chart_departments")}
+            </h3>
           </CardHeader>
-          <CardBody className="p-6 h-[300px]">
+          <CardBody className="h-[280px] p-4">
             {departmentData.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
@@ -381,9 +536,9 @@ export default function PeopleDashboardPage() {
                     data={departmentData}
                     cx="50%"
                     cy="50%"
-                    innerRadius={65}
-                    outerRadius={100}
-                    paddingAngle={8}
+                    innerRadius={58}
+                    outerRadius={92}
+                    paddingAngle={6}
                     dataKey="value"
                     stroke="none"
                   >
@@ -391,196 +546,223 @@ export default function PeopleDashboardPage() {
                       <Cell key={`cell-${index}`} fill={entry.color} />
                     ))}
                   </Pie>
-                  <RechartsTooltip content={<CustomTooltip />} cursor={{fill: 'transparent'}} />
-                  <Legend iconType="circle" wrapperStyle={{ fontSize: '12px', paddingTop: '20px' }} />
+                  <RechartsTooltip content={<CustomTooltip />} />
+                  <Legend
+                    iconType="circle"
+                    wrapperStyle={{ fontSize: "11px", paddingTop: "12px" }}
+                  />
                 </PieChart>
               </ResponsiveContainer>
             ) : (
-              <p className="text-sm text-default-500 flex h-full items-center justify-center">No data available</p>
+              <p className="flex h-full items-center justify-center text-sm text-default-400">
+                {t("dashboard.no_chart_data")}
+              </p>
             )}
           </CardBody>
         </Card>
 
-        <Card className="shadow-sm border border-default-100 rounded-2xl bg-white dark:bg-content1">
-          <CardHeader className="px-6 py-5 border-b border-default-100">
-            <h3 className="font-bold text-lg">Employee Status (Bar Chart)</h3>
+        <Card className="border border-default-200 bg-content1 shadow-sm">
+          <CardHeader className="border-b border-default-100 px-5 py-4">
+            <h3 className="text-sm font-bold text-foreground">
+              {t("dashboard.chart_status")}
+            </h3>
           </CardHeader>
-          <CardBody className="p-6 h-[300px]">
+          <CardBody className="h-[280px] p-4">
             {statusData.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={statusData} margin={{ top: 20, right: 30, left: 0, bottom: 5 }}>
-                  <defs>
-                    <linearGradient id="colorCount" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#17c964" stopOpacity={0.8}/>
-                      <stop offset="95%" stopColor="#17c964" stopOpacity={0.2}/>
-                    </linearGradient>
-                    <linearGradient id="colorTerminated" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#f31260" stopOpacity={0.8}/>
-                      <stop offset="95%" stopColor="#f31260" stopOpacity={0.2}/>
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" strokeOpacity={0.3} />
-                  <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#71717a' }} dy={10} />
-                  <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#71717a' }} dx={-10} />
-                  <RechartsTooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(0,0,0,0.05)' }} />
-                  <Bar dataKey="count" radius={[6, 6, 0, 0]} barSize={40}>
-                    {statusData.map((entry, index) => (
-                      <Cell 
-                        key={`cell-${index}`} 
-                        fill={entry.name.toLowerCase() === 'terminated' ? 'url(#colorTerminated)' : 'url(#colorCount)'} 
+                <BarChart
+                  data={statusData}
+                  margin={{ top: 12, right: 12, left: 0, bottom: 4 }}
+                >
+                  <CartesianGrid
+                    strokeDasharray="3 3"
+                    vertical={false}
+                    className="stroke-default-200"
+                  />
+                  <XAxis
+                    dataKey="name"
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{ fontSize: 11, fill: "currentColor" }}
+                    className="text-default-400"
+                    dy={8}
+                  />
+                  <YAxis
+                    allowDecimals={false}
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{ fontSize: 11, fill: "currentColor" }}
+                    className="text-default-400"
+                    width={28}
+                  />
+                  <RechartsTooltip content={<CustomTooltip />} />
+                  <Bar dataKey="count" radius={[6, 6, 0, 0]} barSize={36}>
+                    {statusData.map((entry) => (
+                      <Cell
+                        key={entry.key}
+                        fill={
+                          entry.key === "terminated"
+                            ? "hsl(var(--heroui-danger))"
+                            : entry.key === "active"
+                              ? "hsl(var(--heroui-success))"
+                              : entry.key === "onboarding"
+                                ? "hsl(var(--heroui-primary))"
+                                : "hsl(var(--heroui-warning))"
+                        }
                       />
                     ))}
                   </Bar>
                 </BarChart>
               </ResponsiveContainer>
-             ) : (
-              <p className="text-sm text-default-500 flex h-full items-center justify-center">No data available</p>
-             )}
+            ) : (
+              <p className="flex h-full items-center justify-center text-sm text-default-400">
+                {t("dashboard.no_chart_data")}
+              </p>
+            )}
           </CardBody>
         </Card>
       </div>
 
-      {/* Announcements Widget */}
-      {announcements.length > 0 && (
-        <Card className="border border-primary/20 shadow-sm bg-gradient-to-r from-primary/5 to-violet-500/5">
-          <CardBody className="p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            <div className="flex items-start sm:items-center gap-4">
-              <div className="p-3 bg-primary/20 rounded-2xl text-primary shrink-0">
-                <Megaphone size={24} />
-              </div>
-              <div>
-                <h3 className="font-black text-[10px] text-primary uppercase tracking-widest mb-1">{t("dashboard.announcement")}</h3>
-                <p className="font-bold text-foreground">{announcements[0].title}</p>
-                <p className="text-sm text-default-500 mt-0.5 line-clamp-1">{announcements[0].content}</p>
-              </div>
-            </div>
-            <Button size="sm" variant="shadow" color="primary" className="font-bold shrink-0">
-              {t("dashboard.view_all")}
-            </Button>
-          </CardBody>
-        </Card>
-      )}
-
-      {/* Main Content Tabs */}
-      <Tabs 
-        aria-label="HR Operations" 
-        color="primary" 
+      <Tabs
+        aria-label="HR Operations"
+        color="primary"
         variant="underlined"
+        selectedKey={activeTab}
+        onSelectionChange={(key) => setActiveTab(key as MainTab)}
         classNames={{
-          tabList: "gap-6 w-full relative rounded-none p-0 border-b border-divider",
+          tabList:
+            "gap-6 w-full relative rounded-none p-0 border-b border-divider",
           cursor: "w-full bg-primary",
           tab: "max-w-fit px-0 h-12",
-          tabContent: "group-data-[selected=true]:text-primary font-bold"
+          tabContent: "group-data-[selected=true]:text-primary font-semibold",
         }}
       >
         <Tab
           key="directory"
           title={
-            <div className="flex items-center space-x-2">
-              <Users size={18} />
+            <div className="flex items-center gap-2">
+              <Users size={16} />
               <span>{t("dashboard.tab_directory")}</span>
-              <Chip size="sm" variant="flat" className="font-bold text-[10px] h-5 min-w-0 px-1.5">
+              <Chip
+                size="sm"
+                variant="flat"
+                className="h-5 min-w-0 px-1.5 text-[10px] font-bold"
+              >
                 {activeCount}
               </Chip>
             </div>
           }
         >
-          <div className="pt-6 space-y-6">
-            <div className="flex flex-col md:flex-row gap-4 justify-between items-center">
+          <div className="space-y-5 pt-5">
+            <div className="flex flex-col items-stretch justify-between gap-3 sm:flex-row sm:items-center">
               <Input
                 isClearable
-                className="w-full md:max-w-sm"
+                className="w-full sm:max-w-sm"
                 placeholder={t("dashboard.search_placeholder")}
                 startContent={<Search className="text-default-300" size={18} />}
                 value={searchQuery}
                 onValueChange={setSearchQuery}
                 classNames={{
-                  inputWrapper: "shadow-sm",
+                  inputWrapper: "border border-default-200 bg-content1 shadow-none",
                 }}
               />
-              <div className="flex items-center gap-2">
-                <div className="flex bg-default-100 p-1 rounded-xl mr-2">
-                  <Button 
-                    isIconOnly 
-                    size="sm" 
+              <div className="flex items-center justify-end gap-2">
+                <div className="flex rounded-xl bg-default-100 p-1">
+                  <Button
+                    isIconOnly
+                    size="sm"
                     variant={viewMode === "grid" ? "solid" : "light"}
                     color={viewMode === "grid" ? "primary" : "default"}
                     onPress={() => setViewMode("grid")}
-                    className="rounded-lg shadow-none"
+                    className="rounded-lg"
+                    aria-label={t("dashboard.view_grid")}
                   >
                     <LayoutGrid size={16} />
                   </Button>
-                  <Button 
-                    isIconOnly 
-                    size="sm" 
+                  <Button
+                    isIconOnly
+                    size="sm"
                     variant={viewMode === "table" ? "solid" : "light"}
                     color={viewMode === "table" ? "primary" : "default"}
                     onPress={() => setViewMode("table")}
-                    className="rounded-lg shadow-none"
+                    className="rounded-lg"
+                    aria-label={t("dashboard.view_table")}
                   >
                     <List size={16} />
                   </Button>
                 </div>
-                <Button variant="flat" size="sm" className="font-bold">{t("dashboard.filters")}</Button>
               </div>
             </div>
 
             {isLoading ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                {[1, 2, 3, 4].map(i => <Skeleton key={i} className="h-64 rounded-xl" />)}
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                {[1, 2, 3, 4].map((i) => (
+                  <Skeleton key={i} className="h-56 rounded-2xl" />
+                ))}
+              </div>
+            ) : filteredEmployees.length === 0 ? (
+              <div className="flex flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-default-200 py-16">
+                <div className="rounded-full bg-default-100 p-4">
+                  <Users size={28} className="text-default-400" />
+                </div>
+                <p className="font-semibold text-default-600">
+                  {t("dashboard.no_employees")}
+                </p>
+                <p className="text-sm text-default-400">
+                  {t("dashboard.try_adjusting")}
+                </p>
+                {searchQuery && (
+                  <Button
+                    size="sm"
+                    variant="flat"
+                    onPress={() => setSearchQuery("")}
+                  >
+                    {t("extra.clear_filters")}
+                  </Button>
+                )}
+              </div>
+            ) : viewMode === "grid" ? (
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                {filteredEmployees.map((employee, index) => (
+                  <motion.div
+                    key={employee.id}
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: Math.min(index * 0.03, 0.3), duration: 0.25 }}
+                  >
+                    <EmployeeCard
+                      employee={employee}
+                      onClick={() => navigate(`/people/${employee.id}`)}
+                      onDelete={handleDeleteClick}
+                      onOffboard={handleOffboardClick}
+                    />
+                  </motion.div>
+                ))}
               </div>
             ) : (
-              <>
-                {viewMode === "grid" ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                    {filteredEmployees.map((employee, index) => (
-                      <motion.div
-                        key={employee.id}
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: index * 0.05, duration: 0.3 }}
-                      >
-                        <EmployeeCard 
-                          employee={employee} 
-                          onClick={() => navigate(`/people/${employee.id}`)}
-                          onDelete={handleDeleteClick}
-                          onOffboard={handleOffboardClick}
-                        />
-                      </motion.div>
-                    ))}
-                  </div>
-                ) : (
-                  <EmployeeTable 
-                    employees={filteredEmployees} 
-                    onView={(emp) => navigate(`/people/${emp.id}`)}
-                    onDelete={handleDeleteClick}
-                  />
-                )}
-
-                {filteredEmployees.length === 0 && !isLoading && (
-                  <div className="flex flex-col items-center justify-center py-16 gap-3">
-                    <div className="p-4 bg-default-100 rounded-full">
-                      <Users size={32} className="text-default-400" />
-                    </div>
-                    <p className="text-default-500 font-bold">{t("dashboard.no_employees")}</p>
-                    <p className="text-default-400 text-sm">{t("dashboard.try_adjusting")}</p>
-                  </div>
-                )}
-              </>
+              <EmployeeTable
+                employees={filteredEmployees}
+                onView={(emp) => navigate(`/people/${emp.id}`)}
+                onDelete={handleDeleteClick}
+              />
             )}
           </div>
         </Tab>
+
         <Tab
           key="org-chart"
           title={
-            <div className="flex items-center space-x-2">
-              <Network size={18} />
+            <div className="flex items-center gap-2">
+              <Network size={16} />
               <span>{t("dashboard.tab_org")}</span>
             </div>
           }
         >
-          <div className="pt-6 max-w-4xl mx-auto">
-            <OrgChart employees={employees} />
+          <div className="pt-5">
+            <OrgChart
+              employees={employees}
+              onSelect={(emp) => navigate(`/people/${emp.id}`)}
+            />
           </div>
         </Tab>
       </Tabs>
@@ -588,42 +770,86 @@ export default function PeopleDashboardPage() {
   );
 }
 
-function NavCard({ 
-  title, 
-  desc, 
-  icon, 
-  count, 
-  iconBg = "bg-default-100 text-default-500",
-  onPress 
-}: { 
-  title: string; 
-  desc: string; 
-  icon: any; 
-  count?: string; 
-  iconBg?: string;
-  onPress: () => void; 
+function QuickActionButton({
+  label,
+  icon,
+  onPress,
+  color,
+}: {
+  label: string;
+  icon: React.ReactNode;
+  onPress: () => void;
+  color: "primary" | "secondary" | "default";
 }) {
   return (
-    <button 
+    <Button
+      color={color}
+      variant="flat"
+      className="h-11 w-full justify-start rounded-xl font-semibold"
+      onPress={onPress}
+      startContent={
+        <span className="rounded-md bg-default-100/80 p-1.5">{icon}</span>
+      }
+      endContent={
+        <ArrowRight size={14} className="ms-auto opacity-50 rtl:rotate-180" />
+      }
+    >
+      {label}
+    </Button>
+  );
+}
+
+function NavCard({
+  title,
+  desc,
+  icon,
+  count,
+  onPress,
+  active,
+}: {
+  title: string;
+  desc: string;
+  icon: React.ReactNode;
+  count?: string;
+  onPress: () => void;
+  active?: boolean;
+}) {
+  return (
+    <button
       type="button"
       onClick={onPress}
-      className="flex items-center gap-4 p-5 hover:bg-default-50 transition-colors cursor-pointer text-left w-full group"
+      className={cn(
+        "group flex w-full items-center gap-3 rounded-xl border bg-content1 p-4 text-start transition-colors",
+        active
+          ? "border-primary/40 bg-primary/[0.04]"
+          : "border-default-200 hover:border-primary/30 hover:bg-default-50"
+      )}
     >
-      <div className={`p-3.5 rounded-2xl ${iconBg} shrink-0`}>
+      <div
+        className={cn(
+          "shrink-0 rounded-xl p-2.5",
+          active
+            ? "bg-primary/15 text-primary"
+            : "bg-default-100 text-default-600 group-hover:bg-primary/10 group-hover:text-primary"
+        )}
+      >
         {icon}
       </div>
-      <div className="flex-1 min-w-0">
+      <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">
-          <h3 className="font-bold text-sm text-foreground">{title}</h3>
+          <h3 className="truncate text-sm font-bold text-foreground">{title}</h3>
           {count && (
-            <span className="bg-primary/10 text-primary text-[10px] font-black min-w-[20px] h-5 px-1.5 rounded-full flex items-center justify-center">
+            <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-primary/10 px-1.5 text-[10px] font-bold text-primary">
               {count}
             </span>
           )}
         </div>
-        <p className="text-default-400 text-xs font-medium mt-0.5 truncate">{desc}</p>
+        <p className="mt-0.5 truncate text-xs text-default-400">{desc}</p>
       </div>
-      <ArrowRight size={15} className="text-default-200 group-hover:text-default-400 transition-colors shrink-0 rtl:rotate-180" />
+      <ArrowRight
+        size={14}
+        className="shrink-0 text-default-300 transition-colors group-hover:text-primary rtl:rotate-180"
+      />
     </button>
   );
 }

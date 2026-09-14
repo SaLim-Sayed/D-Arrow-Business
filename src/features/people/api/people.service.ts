@@ -29,20 +29,91 @@ import type {
 
 const SERVICE_NAME = "PeopleService";
 
+function enrichEmployeeFromUser(
+  id: string,
+  data: Record<string, unknown>,
+  usersById: Map<string, Record<string, unknown>>,
+  usersByEmail: Map<string, Record<string, unknown>>
+): Employee {
+  const userId = String(data.userId || "");
+  const email = String(data.email || "")
+    .trim()
+    .toLowerCase();
+  const user =
+    (userId && usersById.get(userId)) ||
+    (email && usersByEmail.get(email)) ||
+    null;
+
+  const userName = typeof user?.name === "string" ? user.name.trim() : "";
+  const userNameAr =
+    typeof user?.nameAr === "string" ? user.nameAr.trim() : "";
+  const userAvatar =
+    (typeof user?.avatar === "string" && user.avatar.trim()) ||
+    (typeof user?.photoURL === "string" &&
+      (user.photoURL as string).trim()) ||
+    "";
+  const userEmail =
+    typeof user?.email === "string" ? user.email.trim() : "";
+
+  const firstName = String(data.firstName || "").trim();
+  const lastName = String(data.lastName || "").trim();
+  const name =
+    String(data.name || "").trim() || userName || undefined;
+  const nameAr =
+    String(data.nameAr || "").trim() || userNameAr || undefined;
+  const avatarUrl =
+    String(data.avatarUrl || "").trim() || userAvatar || undefined;
+  const joiningDate =
+    data.joiningDate instanceof Timestamp
+      ? data.joiningDate.toDate().toISOString()
+      : data.joiningDate;
+
+  return {
+    id,
+    ...data,
+    firstName,
+    lastName,
+    name,
+    nameAr,
+    avatarUrl,
+    email: String(data.email || "").trim() || userEmail,
+    joiningDate,
+  } as Employee;
+}
+
 export const PeopleService = {
   // Employee Management
   async getEmployees(companyId: string): Promise<ApiResponse<Employee[]>> {
     return withLogging(SERVICE_NAME, "getEmployees", (async () => {
       const employeesRef = collection(db, "companies", companyId, "employees");
-      const querySnapshot = await getDocs(employeesRef);
-      
-      const employees = querySnapshot.docs.map(docSnap => {
-        const data = docSnap.data();
-        return {
-          id: docSnap.id,
-          ...data,
-          joiningDate: data.joiningDate instanceof Timestamp ? data.joiningDate.toDate().toISOString() : data.joiningDate,
-        } as Employee;
+      const usersQuery = query(
+        collection(db, "users"),
+        where("companyId", "==", companyId)
+      );
+      const [querySnapshot, usersSnap] = await Promise.all([
+        getDocs(employeesRef),
+        getDocs(usersQuery),
+      ]);
+
+      const usersById = new Map<string, Record<string, unknown>>();
+      const usersByEmail = new Map<string, Record<string, unknown>>();
+      for (const userDoc of usersSnap.docs) {
+        const userData = userDoc.data() as Record<string, unknown>;
+        usersById.set(userDoc.id, userData);
+        const email = String(userData.email || "")
+          .trim()
+          .toLowerCase();
+        if (email) usersByEmail.set(email, userData);
+      }
+
+      const employees = querySnapshot.docs.map((docSnap) => {
+        const data = docSnap.data() as Record<string, unknown>;
+        return enrichEmployeeFromUser(
+          docSnap.id,
+          data,
+          usersById,
+          usersByEmail
+        );
       });
 
       return {
@@ -73,8 +144,26 @@ export const PeopleService = {
       const docRef = doc(db, "companies", companyId, "employees", employeeId);
       const snap = await getDoc(docRef);
       if (!snap.exists()) throw new Error("Employee not found");
+
+      const data = snap.data() as Record<string, unknown>;
+      const usersQuery = query(
+        collection(db, "users"),
+        where("companyId", "==", companyId)
+      );
+      const usersSnap = await getDocs(usersQuery);
+      const usersById = new Map<string, Record<string, unknown>>();
+      const usersByEmail = new Map<string, Record<string, unknown>>();
+      for (const userDoc of usersSnap.docs) {
+        const userData = userDoc.data() as Record<string, unknown>;
+        usersById.set(userDoc.id, userData);
+        const email = String(userData.email || "")
+          .trim()
+          .toLowerCase();
+        if (email) usersByEmail.set(email, userData);
+      }
+
       return {
-        data: { id: snap.id, ...snap.data() } as Employee,
+        data: enrichEmployeeFromUser(snap.id, data, usersById, usersByEmail),
         message: "Success",
       };
     })());

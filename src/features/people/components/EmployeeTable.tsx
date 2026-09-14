@@ -20,7 +20,7 @@ import { useTranslation } from "react-i18next";
 import { formatDate } from "@/lib/utils";
 import { selectFieldProps } from "@/components/shared/select-field";
 import type { Employee } from "../types/people.types";
-import { employeeDisplayName } from "../utils/geo";
+import { employeeDisplayName, employeeInitials } from "../utils/geo";
 
 interface EmployeeTableProps {
   employees: Employee[];
@@ -30,7 +30,16 @@ interface EmployeeTableProps {
   onHire?: () => void;
 }
 
-const DEPARTMENTS = ["Engineering", "Product", "Sales", "Marketing", "HR", "Finance", "Design"];
+const DEPARTMENTS = [
+  "Engineering",
+  "Product",
+  "Sales",
+  "Marketing",
+  "HR",
+  "Finance",
+  "Design",
+  "GENERAL",
+];
 const STATUSES = ["active", "onboarding", "suspended", "terminated"];
 const ROLES = ["super_admin", "admin", "manager", "employee"];
 
@@ -51,7 +60,7 @@ const roleColorMap: Record<string, "default" | "primary" | "secondary" | "succes
 const ROWS_PER_PAGE = 8;
 
 export function EmployeeTable({ employees, onView, onEdit, onDelete, onHire }: EmployeeTableProps) {
-  const { t } = useTranslation("people");
+  const { t, i18n } = useTranslation("people");
   const [search, setSearch] = useState("");
   const [departmentFilter, setDepartmentFilter] = useState<string>("");
   const [statusFilter, setStatusFilter] = useState<string>("");
@@ -60,7 +69,7 @@ export function EmployeeTable({ employees, onView, onEdit, onDelete, onHire }: E
 
   const filtered = useMemo(() => {
     return employees.filter((e) => {
-      const fullName = employeeDisplayName(e).toLowerCase();
+      const fullName = employeeDisplayName(e, i18n.language).toLowerCase();
       const matchSearch =
         !search ||
         fullName.includes(search.toLowerCase()) ||
@@ -71,7 +80,7 @@ export function EmployeeTable({ employees, onView, onEdit, onDelete, onHire }: E
       const matchRole = !roleFilter || e.role === roleFilter;
       return matchSearch && matchDept && matchStatus && matchRole;
     });
-  }, [employees, search, departmentFilter, statusFilter, roleFilter]);
+  }, [employees, search, departmentFilter, statusFilter, roleFilter, i18n.language]);
 
   const pages = Math.ceil(filtered.length / ROWS_PER_PAGE) || 1;
   const paginated = filtered.slice((page - 1) * ROWS_PER_PAGE, page * ROWS_PER_PAGE);
@@ -90,15 +99,8 @@ export function EmployeeTable({ employees, onView, onEdit, onDelete, onHire }: E
     (employee: Employee, columnKey: React.Key) => {
       switch (columnKey) {
         case "name": {
-          const displayName = employeeDisplayName(employee);
-          const initials =
-            displayName
-              .split(/\s+/)
-              .filter(Boolean)
-              .map((part) => part.charAt(0))
-              .join("")
-              .toUpperCase()
-              .slice(0, 2) || "E";
+          const displayName = employeeDisplayName(employee, i18n.language);
+          const initials = employeeInitials(employee, i18n.language);
           return (
             <User
               avatarProps={{
@@ -124,7 +126,15 @@ export function EmployeeTable({ employees, onView, onEdit, onDelete, onHire }: E
           return (
             <div className="flex flex-col gap-0.5">
               <span className="font-bold text-sm">{employee.jobTitle}</span>
-              <span className="text-xs text-default-400 font-medium">{t(`departments.${employee.department}`, employee.department)}</span>
+              <span className="text-xs text-default-400 font-medium">
+                {t(
+                  `departments.${employee.department}`,
+                  t(
+                    `departments.${(employee.department || "").toUpperCase()}`,
+                    employee.department
+                  )
+                )}
+              </span>
             </div>
           );
 
@@ -206,7 +216,7 @@ export function EmployeeTable({ employees, onView, onEdit, onDelete, onHire }: E
           return null;
       }
     },
-    [onView, onEdit, onDelete, t]
+    [onView, onEdit, onDelete, t, i18n.language]
   );
 
   const columns = [

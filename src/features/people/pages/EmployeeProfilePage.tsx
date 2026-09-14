@@ -65,7 +65,7 @@ import { useAppPermissions } from "@/features/companies/hooks/use-app-permission
 import { formatDate } from "@/lib/utils";
 import { MoneyAmount } from "@/components/shared/riyal-symbol";
 import { toast } from "sonner";
-import { employeeDisplayName } from "../utils/geo";
+import { employeeDisplayName, employeeInitials } from "../utils/geo";
 
 export default function EmployeeProfilePage() {
   const { t, i18n } = useTranslation("people");
@@ -147,15 +147,8 @@ export default function EmployeeProfilePage() {
     );
   }
 
-  const displayName = employeeDisplayName(employee);
-  const initials =
-    displayName
-      .split(/\s+/)
-      .filter(Boolean)
-      .map((part) => part.charAt(0))
-      .join("")
-      .toUpperCase()
-      .slice(0, 2) || "E";
+  const displayName = employeeDisplayName(employee, i18n.language);
+  const initials = employeeInitials(employee, i18n.language);
   const roleColorMap: Record<string, string> = {
     super_admin: "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300",
     admin: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300",

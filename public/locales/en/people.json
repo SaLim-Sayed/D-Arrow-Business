@@ -29,7 +29,23 @@
     "search_placeholder": "Search by name, role or department...",
     "filters": "Filters",
     "no_employees": "No employees found",
-    "try_adjusting": "Try adjusting your search or filters"
+    "try_adjusting": "Try adjusting your search or filters",
+    "metric_total": "Total staff",
+    "metric_active": "Active",
+    "metric_onboarding": "Onboarding",
+    "metric_departments": "Departments",
+    "chart_departments": "Department distribution",
+    "chart_status": "Employee status",
+    "no_chart_data": "No data available yet",
+    "unassigned": "Unassigned",
+    "view_grid": "Grid view",
+    "view_table": "Table view",
+    "org_hint": "Reporting lines across the company",
+    "org_empty_hint": "Add employees to build the org chart",
+    "delete_title": "Delete employee permanently",
+    "delete_confirm": "Are you sure you want to permanently delete \"{{name}}\"? This cannot be undone.",
+    "delete_confirm_btn": "Yes, delete permanently",
+    "cancel": "Cancel"
   },
   "timesheets": {
     "title": "Company Timesheets",
@@ -271,7 +287,15 @@
     "Marketing": "Marketing",
     "HR": "HR",
     "Finance": "Finance",
-    "Design": "Design"
+    "Design": "Design",
+    "GENERAL": "General",
+    "General": "General",
+    "general": "General"
+  },
+  "locations": {
+    "remote": "Remote",
+    "office": "Office",
+    "hybrid": "Hybrid"
   },
   "statuses": {
     "active": "Active",

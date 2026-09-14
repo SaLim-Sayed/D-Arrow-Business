@@ -19,6 +19,8 @@ export interface Employee {
   lastName: string;
   /** Some auto-provisioned records use a single name field. */
   name?: string;
+  /** Arabic display name (often from the linked user profile). */
+  nameAr?: string;
   email: string;
   avatarUrl?: string;
   jobTitle: string;

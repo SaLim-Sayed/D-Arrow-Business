@@ -37,7 +37,7 @@ export function AssignAttendanceLocationModal({
   isSaving,
   onSave,
 }: AssignAttendanceLocationModalProps) {
-  const { t } = useTranslation("people");
+  const { t, i18n } = useTranslation("people");
   const [mode, setMode] = useState<"geofence" | "flexible">("geofence");
   const [selected, setSelected] = useState<string[]>([]);
 
@@ -58,7 +58,7 @@ export function AssignAttendanceLocationModal({
               {t("attendance_settings.assign_title")}
               {employee && (
                 <p className="text-sm font-normal text-default-500">
-                  {employeeDisplayName(employee)}
+                  {employeeDisplayName(employee, i18n.language)}
                 </p>
               )}
             </ModalHeader>

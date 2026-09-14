@@ -29,7 +29,23 @@
     "search_placeholder": "ابحث بالاسم أو المنصب أو القسم...",
     "filters": "تصفية",
     "no_employees": "لم يتم العثور على موظفين",
-    "try_adjusting": "حاول تعديل البحث أو التصفية"
+    "try_adjusting": "حاول تعديل البحث أو التصفية",
+    "metric_total": "إجمالي الموظفين",
+    "metric_active": "نشط",
+    "metric_onboarding": "قيد التعيين",
+    "metric_departments": "الأقسام",
+    "chart_departments": "توزيع الأقسام",
+    "chart_status": "حالة الموظفين",
+    "no_chart_data": "لا توجد بيانات بعد",
+    "unassigned": "بدون قسم",
+    "view_grid": "عرض شبكي",
+    "view_table": "عرض جدول",
+    "org_hint": "خطوط التقارير داخل الشركة",
+    "org_empty_hint": "أضف موظفين لبناء الهيكل التنظيمي",
+    "delete_title": "حذف الموظف نهائياً",
+    "delete_confirm": "هل أنت متأكد من حذف سجل الموظف \"{{name}}\" نهائياً؟ لا يمكن التراجع عن هذا الإجراء.",
+    "delete_confirm_btn": "نعم، حذف نهائي",
+    "cancel": "إلغاء"
   },
   "timesheets": {
     "title": "سجلات دوام الشركة",
@@ -271,7 +287,15 @@
     "Marketing": "التسويق",
     "HR": "الموارد البشرية",
     "Finance": "المالية",
-    "Design": "التصميم"
+    "Design": "التصميم",
+    "GENERAL": "عام",
+    "General": "عام",
+    "general": "عام"
+  },
+  "locations": {
+    "remote": "عن بُعد",
+    "office": "المكتب",
+    "hybrid": "هجين"
   },
   "statuses": {
     "active": "نشط",
