@@ -23,7 +23,7 @@ export function TaskCreatePage() {
   const title = parentId ? t("detail.addSubtask") : t("form.createTitle");
 
   return (
-    <div className="mx-auto max-w-4xl animate-in fade-in pb-24 duration-300">
+    <div className="w-full animate-in fade-in pb-24 duration-300">
       <TasksPageHeader
         title={title}
         description={parentId ? t("form.createSubtaskFor") : t("form.pageDescription")}

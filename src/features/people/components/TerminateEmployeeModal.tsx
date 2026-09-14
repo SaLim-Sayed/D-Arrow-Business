@@ -16,6 +16,7 @@ import { AlertTriangle, UserMinus } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { selectFieldProps } from "@/components/shared/select-field";
 import type { Employee } from "../types/people.types";
+import { employeeDisplayName } from "../utils/geo";
 
 export type TerminateAction = "resigned" | "terminated";
 
@@ -47,7 +48,15 @@ export function TerminateEmployeeModal({ isOpen, onOpenChange, employee, onConfi
 
   if (!employee) return null;
 
-  const initials = `${employee.firstName?.[0] || ""}${employee.lastName?.[0] || ""}`.toUpperCase() || "E";
+  const displayName = employeeDisplayName(employee);
+  const initials =
+    displayName
+      .split(/\s+/)
+      .filter(Boolean)
+      .map((part) => part.charAt(0))
+      .join("")
+      .toUpperCase()
+      .slice(0, 2) || "E";
 
   return (
     <Modal isOpen={isOpen} onOpenChange={onOpenChange} size="md">
@@ -74,9 +83,9 @@ export function TerminateEmployeeModal({ isOpen, onOpenChange, employee, onConfi
                 />
                 <div className="flex-1">
                   <h3 className="font-bold text-sm">
-                    {employee.firstName} {employee.lastName}
+                    {displayName}
                   </h3>
-                  <p className="text-xs text-default-500">{employee.jobTitle}</p>
+                  <p className="text-xs text-default-500">{employee.jobTitle || "—"}</p>
                 </div>
                 <Chip size="sm" variant="flat" color="danger" className="font-bold">
                   {t(`statuses.${employee.status}`, employee.status)}

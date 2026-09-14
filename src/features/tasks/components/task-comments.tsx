@@ -8,6 +8,7 @@ import {
 } from "../hooks/use-comments";
 import { Avatar, Button, Textarea, Skeleton, Spinner } from "@heroui/react";
 import { formatDate } from "@/lib/utils";
+import { localizedName } from "@/lib/localized-name";
 import { Pencil, Send, Trash2 } from "lucide-react";
 import { useAuthStore } from "@/stores/auth.store";
 
@@ -81,11 +82,11 @@ export function TaskComments({ taskId }: { taskId: string }) {
       )}
 
       {comments.map((comment) => {
-        const name =
-          i18n.language === "ar"
-            ? comment.author?.nameAr
-            : comment.author?.name;
-        const initials = (comment.author?.name ?? "U")
+        const name = localizedName(i18n.language, {
+          name: comment.author?.name,
+          nameAr: comment.author?.nameAr,
+        });
+        const initials = (name || comment.author?.name || "U")
           .split(" ")
           .map((n) => n[0])
           .join("")

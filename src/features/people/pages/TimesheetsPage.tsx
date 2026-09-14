@@ -27,6 +27,7 @@ import {
 import { useEmployeesQuery, useAllAttendanceQuery } from "../hooks/use-people";
 import { useTranslation } from "react-i18next";
 import { TimeTrackerWidget } from "../components/TimeTrackerWidget";
+import { employeeDisplayName } from "../utils/geo";
 
 export default function TimesheetsPage() {
   const { i18n } = useTranslation("people");
@@ -68,13 +69,9 @@ export default function TimesheetsPage() {
 
     if (empStartDate > actualEnd) return;
 
-    let employeeName = isAr ? "موظف" : "Employee";
-    if (employee.firstName || employee.lastName) {
-      employeeName = `${employee.firstName || ""} ${employee.lastName || ""}`.trim();
-    } else if ((employee as any).name) {
-      employeeName = (employee as any).name;
-    } else if ((employee as any).email) {
-      employeeName = (employee as any).email.split("@")[0];
+    let employeeName = employeeDisplayName(employee);
+    if (!employeeName || employeeName === "—") {
+      employeeName = isAr ? "موظف" : "Employee";
     }
 
     for (let d = new Date(empStartDate); d <= actualEnd; d.setDate(d.getDate() + 1)) {

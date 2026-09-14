@@ -23,7 +23,7 @@ import {
   ModalBody,
   Chip,
 } from "@heroui/react";
-import { AppDatePicker } from "@/components/shared/app-date-picker";
+import { NativeDateInput } from "@/components/shared/native-date-input";
 import { TASK_PRIORITIES, TASK_STATUSES } from "@/lib/constants";
 import { useAllUsers } from "@/features/users/hooks/use-users";
 import { useAuthStore } from "@/stores/auth.store";
@@ -31,8 +31,8 @@ import { useTasksPermissions } from "../hooks/use-tasks-permissions";
 import { useAllTasksQuery, useSprintsQuery } from "../hooks/use-tasks";
 import type { CreateTaskDTO, Task, TaskPriority, TaskStatus } from "../types/task.types";
 import { toast } from "sonner";
-import { parseDate } from "@internationalized/date";
 import { cn } from "@/lib/utils";
+import { localizedName } from "@/lib/localized-name";
 import { SearchableSelect } from "@/components/shared/searchable-select";
 import {
   normalizeTaskPriorityValue,
@@ -142,7 +142,7 @@ export function TaskForm({
   };
 
   const displayUserName = (user: { name: string; nameAr?: string | null }) =>
-    isRtl && user.nameAr ? user.nameAr : user.name;
+    localizedName(i18n.language, { name: user.name, nameAr: user.nameAr });
 
   const form = useForm<TaskFormValues>({
     resolver: taskFormResolver,
@@ -612,12 +612,11 @@ export function TaskForm({
         name="dueDate"
         control={control}
         render={({ field }: { field: any }) => (
-          <AppDatePicker
+          <NativeDateInput
             label={t("form.dueDate.label")}
-            radius="sm"
             className="max-w-full"
-            value={field.value ? parseDate(field.value) : null}
-            onChange={(date: any) => field.onChange(date?.toString() || null)}
+            value={field.value ? field.value.split("T")[0] : ""}
+            onChange={(e: any) => field.onChange(e.target.value || null)}
             isInvalid={!!errors.dueDate}
             errorMessage={errors.dueDate?.message}
           />

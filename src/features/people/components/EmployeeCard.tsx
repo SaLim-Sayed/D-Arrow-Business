@@ -1,6 +1,7 @@
 import { Avatar, Card, CardBody, Chip, Button, Dropdown, DropdownTrigger, DropdownMenu, DropdownItem } from "@heroui/react";
 import { Mail, Phone, MapPin, Calendar, MoreVertical } from "lucide-react";
 import type { Employee } from "../types/people.types";
+import { employeeDisplayName } from "../utils/geo";
 
 interface EmployeeCardProps {
   employee: Employee;
@@ -10,7 +11,15 @@ interface EmployeeCardProps {
 }
 
 export function EmployeeCard({ employee, onClick, onDelete, onOffboard }: EmployeeCardProps) {
-  const initials = `${employee.firstName?.[0] || ""}${employee.lastName?.[0] || ""}`.toUpperCase() || "E";
+  const displayName = employeeDisplayName(employee);
+  const initials =
+    displayName
+      .split(/\s+/)
+      .filter(Boolean)
+      .map((part) => part.charAt(0))
+      .join("")
+      .toUpperCase()
+      .slice(0, 2) || "E";
 
   const statusColors: Record<string, string> = {
     active: "success",
@@ -101,10 +110,10 @@ export function EmployeeCard({ employee, onClick, onDelete, onOffboard }: Employ
 
           <div className="space-y-1 mb-4">
             <h3 className="text-base font-black text-foreground tracking-tight group-hover:text-primary transition-colors">
-              {employee.firstName} {employee.lastName}
+              {displayName}
             </h3>
             <p className="text-sm font-bold text-primary/80">
-              {employee.jobTitle}
+              {employee.jobTitle || "—"}
             </p>
             <p className="text-[11px] text-default-400 font-bold uppercase tracking-widest">
               {employee.department}

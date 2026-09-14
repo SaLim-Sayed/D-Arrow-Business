@@ -29,6 +29,7 @@ import { TerminateEmployeeModal } from "../components/TerminateEmployeeModal";
 import type { TerminateAction } from "../components/TerminateEmployeeModal";
 import { useEmployeesQuery, useOffboardEmployeeMutation, useDeleteEmployeeMutation, useAnnouncementsQuery } from "../hooks/use-people";
 import type { Employee } from "../types/people.types";
+import { employeeDisplayName } from "../utils/geo";
 import { useState } from "react";
 import { useDisclosure } from "@heroui/react";
 import { TimeTrackerWidget } from "../components/TimeTrackerWidget";
@@ -110,11 +111,14 @@ export default function PeopleDashboardPage() {
 
   const { canManageEmployees } = useAppPermissions();
   const employees = employeesResponse?.data || [];
-  const filteredEmployees = employees.filter(e => 
-    `${e.firstName} ${e.lastName}`.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    e.jobTitle.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    e.department.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredEmployees = employees.filter(e => {
+    const q = searchQuery.toLowerCase();
+    return (
+      employeeDisplayName(e).toLowerCase().includes(q) ||
+      (e.jobTitle || "").toLowerCase().includes(q) ||
+      (e.department || "").toLowerCase().includes(q)
+    );
+  });
 
   const activeCount = employees.filter(e => e.status === 'active').length;
 
@@ -197,8 +201,8 @@ export default function PeopleDashboardPage() {
                 </h3>
                 <p className="text-xs text-default-500 mt-1 leading-relaxed max-w-sm mx-auto">
                   {isAr 
-                    ? `هل أنت تأكد من رغبتك في حذف سجل الموظف "${selectedEmployeeToDelete?.firstName} ${selectedEmployeeToDelete?.lastName}" نهائياً من النظام؟ لا يمكن التراجع عن هذا الإجراء.`
-                    : `Are you sure you want to permanently delete "${selectedEmployeeToDelete?.firstName} ${selectedEmployeeToDelete?.lastName}"? This action cannot be undone.`}
+                    ? `هل أنت تأكد من رغبتك في حذف سجل الموظف "${selectedEmployeeToDelete ? employeeDisplayName(selectedEmployeeToDelete) : ""}" نهائياً من النظام؟ لا يمكن التراجع عن هذا الإجراء.`
+                    : `Are you sure you want to permanently delete "${selectedEmployeeToDelete ? employeeDisplayName(selectedEmployeeToDelete) : ""}"? This action cannot be undone.`}
                 </p>
               </div>
               <div className="flex items-center justify-center gap-3 pt-2">

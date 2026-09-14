@@ -16,6 +16,7 @@ import {
   Button,
 } from "@heroui/react";
 import { MailPlus, Trash2 } from "lucide-react";
+import { localizedName } from "@/lib/localized-name";
 import { PermissionGuard } from "../components/PermissionGuard";
 import { InviteUserModal } from "../components/InviteUserModal";
 import { useAllUsers } from "@/features/users/hooks/use-users";
@@ -111,7 +112,10 @@ export function TeamMembersPage() {
                       <TableRow key={member.id}>
                         <TableCell>
                           <User
-                            name={member.nameAr && i18n.language === "ar" ? member.nameAr : member.name}
+                            name={localizedName(i18n.language, {
+                              name: member.name,
+                              nameAr: member.nameAr,
+                            })}
                             description={isSelf ? t("team.you") : undefined}
                             avatarProps={{
                               src: member.avatar,

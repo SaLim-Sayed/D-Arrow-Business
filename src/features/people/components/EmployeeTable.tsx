@@ -20,6 +20,7 @@ import { useTranslation } from "react-i18next";
 import { formatDate } from "@/lib/utils";
 import { selectFieldProps } from "@/components/shared/select-field";
 import type { Employee } from "../types/people.types";
+import { employeeDisplayName } from "../utils/geo";
 
 interface EmployeeTableProps {
   employees: Employee[];
@@ -59,12 +60,12 @@ export function EmployeeTable({ employees, onView, onEdit, onDelete, onHire }: E
 
   const filtered = useMemo(() => {
     return employees.filter((e) => {
-      const fullName = `${e.firstName} ${e.lastName}`.toLowerCase();
+      const fullName = employeeDisplayName(e).toLowerCase();
       const matchSearch =
         !search ||
         fullName.includes(search.toLowerCase()) ||
         e.email.toLowerCase().includes(search.toLowerCase()) ||
-        e.jobTitle.toLowerCase().includes(search.toLowerCase());
+        (e.jobTitle || "").toLowerCase().includes(search.toLowerCase());
       const matchDept = !departmentFilter || e.department === departmentFilter;
       const matchStatus = !statusFilter || e.status === statusFilter;
       const matchRole = !roleFilter || e.role === roleFilter;
@@ -88,13 +89,22 @@ export function EmployeeTable({ employees, onView, onEdit, onDelete, onHire }: E
   const renderCell = React.useCallback(
     (employee: Employee, columnKey: React.Key) => {
       switch (columnKey) {
-        case "name":
+        case "name": {
+          const displayName = employeeDisplayName(employee);
+          const initials =
+            displayName
+              .split(/\s+/)
+              .filter(Boolean)
+              .map((part) => part.charAt(0))
+              .join("")
+              .toUpperCase()
+              .slice(0, 2) || "E";
           return (
             <User
               avatarProps={{
                 radius: "full",
                 src: employee.avatarUrl,
-                name: `${employee.firstName?.charAt(0) || ""}${employee.lastName?.charAt(0) || ""}`,
+                name: initials,
                 size: "sm",
                 className: "shrink-0",
               }}
@@ -103,11 +113,12 @@ export function EmployeeTable({ employees, onView, onEdit, onDelete, onHire }: E
               }
               name={
                 <span className="font-bold text-sm">
-                  {employee.firstName} {employee.lastName}
+                  {displayName}
                 </span>
               }
             />
           );
+        }
 
         case "role":
           return (

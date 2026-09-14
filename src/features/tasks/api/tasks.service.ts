@@ -345,6 +345,16 @@ export const TaskService = {
     })());
   },
 
+  async deleteAllTasks(companyId: string): Promise<void> {
+    return withLogging(SERVICE_NAME, "deleteAllTasks", (async () => {
+      if (!companyId) return;
+      const tasksRef = collection(db, "companies", companyId, "tasks");
+      const querySnapshot = await getDocs(tasksRef);
+      const deletePromises = querySnapshot.docs.map((docSnap) => deleteDoc(docSnap.ref));
+      await Promise.all(deletePromises);
+    })());
+  },
+
   // Sprint Management
   async getSprints(companyId: string): Promise<ApiResponse<Sprint[]>> {
     return withLogging(SERVICE_NAME, "getSprints", (async () => {

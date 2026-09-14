@@ -21,6 +21,7 @@ import {
 } from "@heroui/react";
 import { Menu, Moon, Sun, LogOut, User, Clock, Settings } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { localizedName } from "@/lib/localized-name";
 import { MobileSidebar } from "./mobile-sidebar";
 import { Logo } from "../shared/logo";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -53,7 +54,10 @@ export function Header({
       : undefined;
 
   const { isCheckedIn, isOnBreak } = useAttendanceTimer();
-  const displayName = i18n.language === "ar" ? user?.nameAr : user?.name;
+  const displayName = localizedName(i18n.language, {
+    name: user?.name,
+    nameAr: user?.nameAr,
+  });
   const initials = (user?.name ?? "U")
     .split(" ")
     .map((n) => n[0])

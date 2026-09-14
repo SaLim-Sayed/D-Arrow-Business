@@ -121,3 +121,19 @@ export function useDeleteTask() {
     },
   });
 }
+
+export function useDeleteAllTasks() {
+  const queryClient = useQueryClient();
+  const { companyId } = useCompany();
+
+  return useMutation({
+    mutationFn: () => TaskService.deleteAllTasks(companyId!),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.tasks.all });
+      toast.success(i18n.language === "ar" ? "تم حذف جميع المهام بنجاح! 🧹" : "All tasks deleted successfully! 🧹");
+    },
+    onError: () => {
+      toast.error(i18n.language === "ar" ? "فشل حذف جميع المهام" : "Failed to delete all tasks");
+    },
+  });
+}

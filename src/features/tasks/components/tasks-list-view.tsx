@@ -4,6 +4,7 @@ import { Pagination } from "@/components/shared/pagination";
 import { PriorityBadge } from "@/components/shared/priority-badge";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { formatDate } from "@/lib/utils";
+import { localizedName } from "@/lib/localized-name";
 import {
   Avatar,
   Button,
@@ -96,9 +97,11 @@ export function TasksListView() {
         </TableHeader>
         <TableBody items={tasks}>
           {(task: Task) => {
-            const assigneeName =
-              i18n.language === "ar" ? task.assignee?.nameAr : task.assignee?.name;
-            const initials = (task.assignee?.name ?? "")
+            const assigneeName = localizedName(i18n.language, {
+              name: task.assignee?.name,
+              nameAr: task.assignee?.nameAr,
+            });
+            const initials = (assigneeName || task.assignee?.name || "")
               .split(" ")
               .map((n: string) => n[0])
               .join("")

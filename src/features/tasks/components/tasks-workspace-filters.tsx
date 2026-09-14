@@ -11,6 +11,7 @@ import {
 import { Filter, Search, UserCircle2, X, CircleDot } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
+import { localizedName } from "@/lib/localized-name";
 import { TASK_STATUSES } from "@/lib/constants";
 import { useAllUsers } from "@/features/users/hooks/use-users";
 import { useTasksUIStore } from "../store/tasks-ui.store";
@@ -153,9 +154,10 @@ export function TasksWorkspaceFilters({ compact }: TasksWorkspaceFiltersProps) {
             }
           >
             {selectedAssignee
-              ? i18n.language === "ar"
-                ? selectedAssignee.nameAr
-                : selectedAssignee.name
+              ? localizedName(i18n.language, {
+                  name: selectedAssignee.name,
+                  nameAr: selectedAssignee.nameAr,
+                })
               : t("form.assignee.label")}
             {selectedAssignee && !compact && (
               <span
@@ -193,7 +195,7 @@ export function TasksWorkspaceFilters({ compact }: TasksWorkspaceFiltersProps) {
                 />
               }
             >
-              {i18n.language === "ar" ? u.nameAr : u.name}
+              {localizedName(i18n.language, { name: u.name, nameAr: u.nameAr })}
             </DropdownItem>
           ))}
         </DropdownMenu>

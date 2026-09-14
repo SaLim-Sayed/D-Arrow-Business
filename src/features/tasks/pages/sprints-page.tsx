@@ -11,7 +11,7 @@ import {
   useDisclosure,
   Spinner,
 } from "@heroui/react";
-import { AppDatePicker } from "@/components/shared/app-date-picker";
+import { NativeDateInput } from "@/components/shared/native-date-input";
 import {
   Calendar,
   Flag,
@@ -28,7 +28,6 @@ import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { useNavigate } from "react-router-dom";
-import { parseDate } from "@internationalized/date";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 import { TasksPageHeader, TasksPanel } from "../components/tasks-ui";
@@ -252,28 +251,20 @@ export function SprintsPage() {
                   onChange={(e) => setNewSprint({ ...newSprint, name: e.target.value })}
                 />
                 <div className="grid grid-cols-2 gap-4">
-                  <AppDatePicker
+                  <NativeDateInput
                     label={t("sprints.startDate")}
                     variant="bordered"
-                    value={
-                      newSprint.startDate
-                        ? parseDate(newSprint.startDate.split("T")[0])
-                        : null
-                    }
-                    onChange={(date: { toString(): string } | null) =>
-                      setNewSprint({ ...newSprint, startDate: date?.toString() || "" })
+                    value={newSprint.startDate ? newSprint.startDate.split("T")[0] : ""}
+                    onChange={(e) =>
+                      setNewSprint({ ...newSprint, startDate: e.target.value })
                     }
                   />
-                  <AppDatePicker
+                  <NativeDateInput
                     label={t("sprints.endDate")}
                     variant="bordered"
-                    value={
-                      newSprint.endDate
-                        ? parseDate(newSprint.endDate.split("T")[0])
-                        : null
-                    }
-                    onChange={(date: { toString(): string } | null) =>
-                      setNewSprint({ ...newSprint, endDate: date?.toString() || "" })
+                    value={newSprint.endDate ? newSprint.endDate.split("T")[0] : ""}
+                    onChange={(e) =>
+                      setNewSprint({ ...newSprint, endDate: e.target.value })
                     }
                   />
                 </div>

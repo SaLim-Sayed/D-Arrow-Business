@@ -54,6 +54,7 @@ import {
 } from "lucide-react";
 import { TASK_STATUSES, TASK_PRIORITIES } from "@/lib/constants";
 import { formatDate } from "@/lib/utils";
+import { localizedName } from "@/lib/localized-name";
 import {
   normalizeTaskPriorityValue,
   normalizeTaskStatusValue,
@@ -393,13 +394,14 @@ export function TaskDetailPage() {
   const isRtl = i18n.language === "ar";
 
   const assigneeName = task.assignee
-    ? isRtl
-      ? task.assignee.nameAr || task.assignee.name
-      : task.assignee.name
+    ? localizedName(i18n.language, {
+        name: task.assignee.name,
+        nameAr: task.assignee.nameAr,
+      })
     : null;
 
   const displayUserName = (user: { name: string; nameAr?: string | null }) =>
-    isRtl && user.nameAr ? user.nameAr : user.name;
+    localizedName(i18n.language, { name: user.name, nameAr: user.nameAr });
 
   const copyTaskRef = () => {
     navigator.clipboard.writeText(taskRef);

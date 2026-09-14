@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import type { Employee } from "../types/people.types";
 import { Users } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { employeeDisplayName } from "../utils/geo";
 
 interface OrgChartProps {
   employees: Employee[];
@@ -39,7 +40,15 @@ export function OrgChart({ employees }: OrgChartProps) {
 function OrgNode({ employee, allEmployees, level }: { employee: Employee, allEmployees: Employee[], level: number }) {
   const { t } = useTranslation("people");
   const directReports = allEmployees.filter(e => e.managerId === employee.id);
-  const initials = `${employee.firstName?.charAt(0) || ""}${employee.lastName?.charAt(0) || ""}`.toUpperCase();
+  const displayName = employeeDisplayName(employee);
+  const initials =
+    displayName
+      .split(/\s+/)
+      .filter(Boolean)
+      .map((part) => part.charAt(0))
+      .join("")
+      .toUpperCase()
+      .slice(0, 2) || "E";
 
   return (
     <div className="space-y-2">
@@ -57,9 +66,9 @@ function OrgNode({ employee, allEmployees, level }: { employee: Employee, allEmp
         />
         <div className="flex-1 min-w-0">
           <h4 className="text-sm font-bold truncate">
-            {employee.firstName} {employee.lastName}
+            {displayName}
           </h4>
-          <p className="text-xs text-default-500 truncate">{employee.jobTitle}</p>
+          <p className="text-xs text-default-500 truncate">{employee.jobTitle || "—"}</p>
         </div>
         {directReports.length > 0 && (
           <div className="px-2 py-1 bg-primary/10 text-primary text-[10px] font-bold rounded-full">

@@ -65,6 +65,7 @@ import { useAppPermissions } from "@/features/companies/hooks/use-app-permission
 import { formatDate } from "@/lib/utils";
 import { MoneyAmount } from "@/components/shared/riyal-symbol";
 import { toast } from "sonner";
+import { employeeDisplayName } from "../utils/geo";
 
 export default function EmployeeProfilePage() {
   const { t, i18n } = useTranslation("people");
@@ -146,7 +147,15 @@ export default function EmployeeProfilePage() {
     );
   }
 
-  const initials = `${employee.firstName?.charAt(0) || ""}${employee.lastName?.charAt(0) || ""}`.toUpperCase();
+  const displayName = employeeDisplayName(employee);
+  const initials =
+    displayName
+      .split(/\s+/)
+      .filter(Boolean)
+      .map((part) => part.charAt(0))
+      .join("")
+      .toUpperCase()
+      .slice(0, 2) || "E";
   const roleColorMap: Record<string, string> = {
     super_admin: "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300",
     admin: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300",
@@ -223,7 +232,7 @@ export default function EmployeeProfilePage() {
                 <div className="space-y-1.5 flex-1">
                   <div className="flex flex-wrap items-center justify-center md:justify-start gap-2">
                     <h1 className="text-2xl md:text-3xl font-black text-foreground tracking-tight">
-                      {employee.firstName} {employee.lastName}
+                      {displayName}
                     </h1>
                     <Chip size="sm" color="primary" variant="flat" className="font-bold text-xs">
                       #{employee.id ? employee.id.slice(-6).toUpperCase() : "EMP-102"}
