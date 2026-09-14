@@ -56,7 +56,7 @@ export function HireEmployeeModal({ isOpen, onOpenChange }: HireEmployeeModalPro
   const { register, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm<HireFormData>({
     resolver: zodResolver(hireSchema),
     defaultValues: {
-      status: "onboarding",
+      status: "active",
       joiningDate: new Date().toISOString().split("T")[0],
       sendEmailInvite: true,
       role: "employee",
@@ -74,13 +74,13 @@ export function HireEmployeeModal({ isOpen, onOpenChange }: HireEmployeeModalPro
         ...data,
         permissions: data.permissions ? (typeof data.permissions === 'string' ? data.permissions.split(',') : Array.from(data.permissions)) : [],
         userId: "user-" + Math.random().toString(36).substring(2, 9),
-        status: (data.status || "onboarding") as any,
+        status: (data.status || "active") as any,
         joiningDate: new Date(data.joiningDate || new Date().toISOString()),
         inviteToken,
         invitedAt: new Date().toISOString(),
       } as any);
 
-      toast.success(isAr ? "تم إنشاء وإرسال دعوة التعيين بنجاح! 🎉" : "Employee invitation sent successfully! 🎉");
+      toast.success(isAr ? "تم إضافة الموظف وتفعيل حسابه مباشرة! 🎉" : "Employee added and activated successfully! 🎉");
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.people.employees(companyId) });
 
       setCreatedInvite({
