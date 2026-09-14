@@ -10,15 +10,16 @@ import {
   Select,
   SelectItem,
   Chip,
-  User,
+  User as HeroUser,
   Card,
   CardBody,
   Button,
 } from "@heroui/react";
-import { MailPlus, Trash2 } from "lucide-react";
+import { MailPlus, Trash2, Key } from "lucide-react";
 import { localizedName } from "@/lib/localized-name";
 import { PermissionGuard } from "../components/PermissionGuard";
 import { InviteUserModal } from "../components/InviteUserModal";
+import { CustomPermissionsModal } from "../components/CustomPermissionsModal";
 import { useAllUsers } from "@/features/users/hooks/use-users";
 import { useUpdateUserRoleMutation } from "@/features/users/hooks/use-user-role-mutation";
 import {
@@ -36,7 +37,7 @@ import {
 } from "@/lib/permissions/role-assignment";
 import { PortalAccessEditor } from "../components/PortalAccessEditor";
 import { canManagePortalAccess } from "@/lib/permissions/portal-access";
-import type { UserRole } from "@/features/auth/types/auth.types";
+import type { UserRole, User as UserType } from "@/features/auth/types/auth.types";
 
 const ROLE_COLORS: Record<UserRole, "primary" | "secondary" | "success" | "warning" | "default"> = {
   super_admin: "primary",
@@ -58,6 +59,7 @@ export function TeamMembersPage() {
   const assignableRoles = getAssignableRoles(actorRole);
   const canEditPortals = canManagePortalAccess(actorRole);
   const [inviteOpen, setInviteOpen] = useState(false);
+  const [customPermsMember, setCustomPermsMember] = useState<UserType | null>(null);
 
   const roleLabel = (role: UserRole) => t(`team.globalRoles.${role}`);
 
@@ -93,11 +95,11 @@ export function TeamMembersPage() {
             ) : (
               <Table aria-label={t("team.pageTitle")} removeWrapper>
                 <TableHeader>
-                  <TableColumn>{t("team.member")}</TableColumn>
-                  <TableColumn>{t("team.email")}</TableColumn>
-                  <TableColumn>{t("team.currentRole")}</TableColumn>
-                  <TableColumn>{t("team.assignRole")}</TableColumn>
-                  <TableColumn>{t("team.portalAccess")}</TableColumn>
+                  <TableColumn className="bg-default-50 text-default-500 font-bold text-xs py-3">{t("team.member")}</TableColumn>
+                  <TableColumn className="bg-default-50 text-default-500 font-bold text-xs py-3">{t("team.email")}</TableColumn>
+                  <TableColumn className="bg-default-50 text-default-500 font-bold text-xs py-3">{t("team.currentRole")}</TableColumn>
+                  <TableColumn className="bg-default-50 text-default-500 font-bold text-xs py-3">{t("team.assignRole")}</TableColumn>
+                  <TableColumn className="bg-default-50 text-default-500 font-bold text-xs py-3">{t("team.portalAccess")}</TableColumn>
                 </TableHeader>
                 <TableBody>
                   {users.map((member) => {
@@ -111,7 +113,7 @@ export function TeamMembersPage() {
                     return (
                       <TableRow key={member.id}>
                         <TableCell>
-                          <User
+                          <HeroUser
                             name={localizedName(i18n.language, {
                               name: member.name,
                               nameAr: member.nameAr,
@@ -171,7 +173,20 @@ export function TeamMembersPage() {
                         </TableCell>
                         <TableCell>
                           {canEditPortals ? (
-                            <PortalAccessEditor member={member} />
+                            <div className="flex items-center gap-2">
+                              <PortalAccessEditor member={member} />
+                              <Button
+                                size="sm"
+                                variant="flat"
+                                color="secondary"
+                                isIconOnly
+                                className="rounded-xl h-8 w-8 shrink-0"
+                                title={t("team.customPermissionsTitle", "صلاحيات مخصصة للموظف")}
+                                onPress={() => setCustomPermsMember(member)}
+                              >
+                                <Key className="h-4 w-4" />
+                              </Button>
+                            </div>
                           ) : (
                             <span className="text-xs text-default-400">—</span>
                           )}
@@ -262,6 +277,11 @@ export function TeamMembersPage() {
         </Card>
 
         <InviteUserModal isOpen={inviteOpen} onOpenChange={setInviteOpen} />
+        <CustomPermissionsModal
+          isOpen={!!customPermsMember}
+          onOpenChange={(open) => !open && setCustomPermsMember(null)}
+          member={customPermsMember}
+        />
       </div>
     </PermissionGuard>
   );

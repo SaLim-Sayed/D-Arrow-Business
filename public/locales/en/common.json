@@ -16,9 +16,14 @@
     "leave": "Leave",
     "approvals": "Approvals",
     "timesheets": "Timesheets",
-    "attendance_settings": "Attendance Locations",
+    "attendance_settings": "Work Locations & Geofence",
     "performance": "Performance",
-    "daily_reports": "Daily Reports"
+    "daily_reports": "Daily Reports",
+    "team_and_roles": "Team, Roles & Settings",
+    "team_members": "Team Members & Invites",
+    "roles_permissions": "Roles & Permissions",
+    "company_settings": "Company Settings",
+    "hr_settings": "Settings Hub"
   },
   "portals": {
     "pickerTitle": "Choose the system",

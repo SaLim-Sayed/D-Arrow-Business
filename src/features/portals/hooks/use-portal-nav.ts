@@ -11,6 +11,7 @@ export function usePortalNav(portal: PortalId): PortalNavItem[] {
   const ctx = {
     role: user?.role as UserRole | undefined,
     portalSubRoles: user?.portalSubRoles,
+    customPermissions: user?.customPermissions,
   };
 
   return useMemo(() => {
@@ -18,5 +19,5 @@ export function usePortalNav(portal: PortalId): PortalNavItem[] {
       if (!item.permission) return true;
       return hasEffectivePermission(ctx, item.permission);
     });
-  }, [portal, ctx.role, user?.portalSubRoles]);
+  }, [portal, ctx.role, user?.portalSubRoles, user?.customPermissions]);
 }

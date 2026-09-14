@@ -8,7 +8,7 @@ import { getPortalFromPath } from "@/lib/portal-permissions";
 import { cn } from "@/lib/utils";
 import { useLayoutStore } from "@/stores/layout.store";
 
-export function AppLayout() {
+export function AppLayout({ children }: { children?: React.ReactNode } = {}) {
   useSyncLastPortal();
   useMeetingReminders();
   const { pathname } = useLocation();
@@ -44,7 +44,7 @@ export function AppLayout() {
             "print:pt-0 print:p-0 print:m-0 print:block"
           )}
         >
-          <Outlet />
+          {children ?? <Outlet />}
         </main>
       </div>
       <PortalPickerDrawer

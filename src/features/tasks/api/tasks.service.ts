@@ -306,7 +306,7 @@ export const TaskService = {
           method: "POST",
           headers: {
             "Content-Type": file.type || "application/octet-stream",
-            ...(token ? { "Authorization": `Bearer ${token}` } : {})
+            ...(token ? { "Authorization": `Firebase ${token}` } : {})
           },
           body: file
         });

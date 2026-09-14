@@ -4,6 +4,7 @@ import type { Employee } from "../types/people.types";
 import { Network, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { employeeDisplayName, employeeInitials } from "../utils/geo";
+import { avatarSrc } from "@/lib/image-utils";
 
 interface OrgChartProps {
   employees: Employee[];
@@ -99,7 +100,7 @@ function OrgNode({
           />
         )}
         <Avatar
-          src={employee.avatarUrl}
+          src={avatarSrc(employee.avatarUrl)}
           fallback={initials}
           size="md"
           className="shrink-0"

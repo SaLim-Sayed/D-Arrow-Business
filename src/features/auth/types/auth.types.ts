@@ -16,6 +16,8 @@ export interface User {
   portalAccess?: PortalId[];
   /** Per-portal sub-roles (Tasks / CRM / People). */
   portalSubRoles?: PortalSubRoles;
+  /** Granular custom permissions granted to this user. */
+  customPermissions?: import("@/lib/permissions").Permission[];
 }
 
 export interface LoginRequest {

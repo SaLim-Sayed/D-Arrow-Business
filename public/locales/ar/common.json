@@ -16,9 +16,14 @@
     "leave": "الإجازات",
     "approvals": "الموافقات",
     "timesheets": "سجلات الوقت",
-    "attendance_settings": "مواقع الحضور",
+    "attendance_settings": "مواقع الحضور والبصمة",
     "performance": "الأداء",
-    "daily_reports": "التقارير اليومية"
+    "daily_reports": "التقارير اليومية",
+    "team_and_roles": "الفريق والأدوار والإعدادات",
+    "team_members": "أعضاء الفريق والدعوات",
+    "roles_permissions": "الأدوار والصلاحيات",
+    "company_settings": "إعدادات الشركة",
+    "hr_settings": "مركز الإعدادات"
   },
   "portals": {
     "pickerTitle": "اختر النظام",

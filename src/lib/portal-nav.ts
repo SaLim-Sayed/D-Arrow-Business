@@ -31,6 +31,8 @@ import {
   HardDrive,
   Lock,
   ClipboardCheck,
+  ShieldCheck,
+  Building2,
   type LucideIcon,
 } from "lucide-react";
 
@@ -134,12 +136,6 @@ export const PEOPLE_NAV_TREE: PortalNavTreeGroup[] = [
       { labelKey: "nav.approvals", path: "/people/approvals", icon: CheckSquare },
       { labelKey: "nav.timesheets", path: "/people/timesheets", icon: Timer },
       { labelKey: "nav.daily_reports", path: "/people/daily-reports", icon: ClipboardCheck },
-      {
-        labelKey: "nav.attendance_settings",
-        path: "/people/attendance-settings",
-        icon: MapPin,
-        permission: "people.manage_employees",
-      },
     ],
   },
   {
@@ -148,6 +144,37 @@ export const PEOPLE_NAV_TREE: PortalNavTreeGroup[] = [
     icon: TrendingUp,
     items: [
       { labelKey: "nav.performance", path: "/people/performance", icon: TrendingUp },
+    ],
+  },
+  {
+    id: "team_settings",
+    labelKey: "nav.team_and_roles",
+    icon: Settings,
+    items: [
+      {
+        labelKey: "nav.team_members",
+        path: "/people/team",
+        icon: Users,
+        permission: "users.manage_roles",
+      },
+      {
+        labelKey: "nav.roles_permissions",
+        path: "/people/roles",
+        icon: ShieldCheck,
+        permission: "users.manage_roles",
+      },
+      {
+        labelKey: "nav.attendance_settings",
+        path: "/people/attendance-settings",
+        icon: MapPin,
+        permission: "people.manage_employees",
+      },
+      {
+        labelKey: "nav.company_settings",
+        path: "/people/company-settings",
+        icon: Building2,
+        permission: "company.manage",
+      },
     ],
   },
 ];

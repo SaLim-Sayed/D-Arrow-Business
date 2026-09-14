@@ -78,4 +78,17 @@ export const UsersService = {
       await updateDoc(doc(db, "users", targetUserId), payload);
     })());
   },
+
+  async updateUserCustomPermissions(
+    _actorRole: UserRole,
+    targetUserId: string,
+    customPermissions: string[]
+  ): Promise<void> {
+    return withLogging(SERVICE_NAME, "updateUserCustomPermissions", (async () => {
+      await updateDoc(doc(db, "users", targetUserId), {
+        customPermissions: customPermissions ?? [],
+        updatedAt: new Date().toISOString(),
+      });
+    })());
+  },
 };

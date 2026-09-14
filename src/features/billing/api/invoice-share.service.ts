@@ -246,7 +246,7 @@ async function uploadInvoicePdf(
       method: "POST",
       headers: {
         "Content-Type": "application/pdf",
-        ...(idToken ? { Authorization: `Bearer ${idToken}` } : {}),
+        ...(idToken ? { Authorization: `Firebase ${idToken}` } : {}),
       },
       body: blob,
     });

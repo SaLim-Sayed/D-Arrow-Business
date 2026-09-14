@@ -17,6 +17,7 @@ import { useTranslation } from "react-i18next";
 import { selectFieldProps } from "@/components/shared/select-field";
 import type { Employee } from "../types/people.types";
 import { employeeDisplayName, employeeInitials } from "../utils/geo";
+import { avatarSrc } from "@/lib/image-utils";
 
 export type TerminateAction = "resigned" | "terminated";
 
@@ -70,7 +71,7 @@ export function TerminateEmployeeModal({ isOpen, onOpenChange, employee, onConfi
             <ModalBody className="py-6">
               <div className="flex items-center gap-4 p-4 bg-default-50 rounded-xl border border-default-100">
                 <Avatar
-                  src={employee.avatarUrl}
+                  src={avatarSrc(employee.avatarUrl)}
                   fallback={initials}
                   className="w-12 h-12"
                 />

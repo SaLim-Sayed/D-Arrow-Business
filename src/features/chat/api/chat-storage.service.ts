@@ -1,5 +1,4 @@
-import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
-import { auth, storage } from "@/lib/firebase";
+import { uploadStorageFile } from "@/lib/storage-utils";
 import type { ChatAttachment } from "../types/chat.types";
 
 const MAX_FILE_BYTES = 25 * 1024 * 1024;
@@ -87,61 +86,6 @@ function extensionForMime(mimeType: string, fallbackName?: string): string {
   return map[mimeType] ?? "bin";
 }
 
-function buildMediaUrl(bucket: string, path: string, downloadToken: string): string {
-  return `https://firebasestorage.googleapis.com/v0/b/${bucket}/o/${encodeURIComponent(path)}?alt=media&token=${downloadToken}`;
-}
-
-/**
- * Prefer REST media upload (same pattern as CRM/tasks) — avoids SDK multipart
- * issues on some mobile browsers talking to localhost.
- */
-async function uploadViaRest(path: string, blob: Blob, contentType: string): Promise<string> {
-  const bucket = storage.app.options.storageBucket;
-  if (!bucket) throw new Error("Storage bucket is not configured");
-
-  const user = auth.currentUser;
-  if (!user) throw new Error("You must be signed in to upload");
-
-  const token = await user.getIdToken();
-  const uploadUrl = `https://firebasestorage.googleapis.com/v0/b/${bucket}/o?uploadType=media&name=${encodeURIComponent(path)}`;
-
-  const response = await fetch(uploadUrl, {
-    method: "POST",
-    headers: {
-      "Content-Type": contentType,
-      Authorization: `Bearer ${token}`,
-    },
-    body: blob,
-  });
-
-  if (!response.ok) {
-    const body = await response.text().catch(() => "");
-    throw new Error(
-      `Storage upload failed (${response.status} ${response.statusText})${body ? `: ${body.slice(0, 200)}` : ""}`,
-    );
-  }
-
-  const data = (await response.json()) as { downloadTokens?: string };
-  if (data.downloadTokens) {
-    return buildMediaUrl(bucket, path, data.downloadTokens);
-  }
-
-  return getDownloadURL(ref(storage, path));
-}
-
-async function uploadViaSdk(path: string, blob: Blob, contentType: string): Promise<string> {
-  const storageRef = ref(storage, path);
-  const result = await uploadBytes(storageRef, blob, { contentType });
-  try {
-    return await getDownloadURL(result.ref);
-  } catch {
-    const tokens = (result.metadata as { downloadTokens?: string } | undefined)?.downloadTokens;
-    const bucket = storage.app.options.storageBucket;
-    if (tokens && bucket) return buildMediaUrl(bucket, path, tokens);
-    throw new Error("Upload succeeded but download URL could not be resolved");
-  }
-}
-
 async function uploadBytesToChat(
   companyId: string,
   conversationId: string,
@@ -158,28 +102,7 @@ async function uploadBytesToChat(
   const ext = extensionForMime(mimeType, fileName);
   const path = `chat/${companyId}/${conversationId}/${id}.${ext}`;
 
-  // REST-only (same as CRM/tasks). SDK uploadBytes uses XHR + resumable
-  // protocol and fails harder under missing Storage CORS from localhost.
-  let url: string;
-  try {
-    url = await uploadViaRest(path, file, mimeType);
-  } catch (restError) {
-    console.warn("[chat-storage] REST upload failed, trying SDK:", restError);
-    try {
-      url = await uploadViaSdk(path, file, mimeType);
-    } catch (sdkError) {
-      const restMsg =
-        restError instanceof Error ? restError.message : String(restError);
-      const sdkMsg =
-        sdkError instanceof Error ? sdkError.message : String(sdkError);
-      // Prefer the REST error — usually clearer than opaque XHR CORS failures.
-      throw new Error(
-        /failed to fetch|network|cors|err_failed/i.test(restMsg)
-          ? `Storage upload blocked. The bucket may be missing or CORS is not set. Enable Billing (Blaze) → create Storage in Firebase Console → run: node scripts/set-storage-cors.mjs. Detail: ${restMsg}`
-          : `${restMsg}${sdkMsg && sdkMsg !== restMsg ? ` | SDK: ${sdkMsg}` : ""}`,
-      );
-    }
-  }
+  const url = await uploadStorageFile(path, file, mimeType);
 
   return {
     name: fileName,

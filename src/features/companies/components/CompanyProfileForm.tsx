@@ -11,16 +11,26 @@ import {
   Select,
   SelectItem,
 } from "@heroui/react";
-import { Building2, Palette, RotateCcw, Save } from "lucide-react";
+import { Upload, Building2, Palette, RotateCcw, Save } from "lucide-react";
+import { uploadStorageFile } from "@/lib/storage-utils";
+import { useRef, useState } from "react";
+import { toast } from "sonner";
 import {
   companyProfileSchema,
   type CompanyProfileFormValues,
 } from "../schemas/company.schema";
-import { useCompanyProfile, useUpdateCompanyProfileMutation } from "../hooks/use-company-profile";
+import {
+  useCompanyProfile,
+  useUpdateCompanyProfileMutation,
+} from "../hooks/use-company-profile";
 import { LoadingSpinner } from "@/components/shared/loading-spinner";
 import { selectFieldProps } from "@/components/shared/select-field";
 import { useAppPermissions } from "../hooks/use-app-permissions";
-import { BRAND_PRIMARY_HEX, BRAND_SECONDARY_HEX, THEME_PRESETS } from "@/theme/brand-colors";
+import {
+  BRAND_PRIMARY_HEX,
+  BRAND_SECONDARY_HEX,
+  THEME_PRESETS,
+} from "@/theme/brand-colors";
 import { cn } from "@/lib/utils";
 
 const CURRENCIES = ["SAR"];
@@ -57,7 +67,7 @@ function ThemePresetPicker({
               isActive
                 ? "border-primary ring-2 ring-primary/30"
                 : "border-default-200 hover:border-default-300",
-              disabled && "cursor-not-allowed opacity-60"
+              disabled && "cursor-not-allowed opacity-60",
             )}
           >
             <span
@@ -234,7 +244,11 @@ export function CompanyProfileForm({ readOnly }: CompanyProfileFormProps) {
               label={t("company.fields.name")}
               variant="bordered"
               isReadOnly={!canEditIdentity}
-              description={!canEditIdentity ? t("company.fields.superAdminOnly") : undefined}
+              description={
+                !canEditIdentity
+                  ? t("company.fields.superAdminOnly")
+                  : undefined
+              }
               {...register("name")}
               isInvalid={!!errors.name}
               errorMessage={errors.name?.message}
@@ -244,7 +258,11 @@ export function CompanyProfileForm({ readOnly }: CompanyProfileFormProps) {
               variant="bordered"
               dir="rtl"
               isReadOnly={!canEditIdentity}
-              description={!canEditIdentity ? t("company.fields.superAdminOnly") : undefined}
+              description={
+                !canEditIdentity
+                  ? t("company.fields.superAdminOnly")
+                  : undefined
+              }
               {...register("nameAr")}
             />
             <Controller
@@ -267,7 +285,11 @@ export function CompanyProfileForm({ readOnly }: CompanyProfileFormProps) {
                     variant="bordered"
                     dir="ltr"
                     isReadOnly={!canEditIdentity}
-                    description={!canEditIdentity ? t("company.fields.superAdminOnly") : undefined}
+                    description={
+                      !canEditIdentity
+                        ? t("company.fields.superAdminOnly")
+                        : undefined
+                    }
                     isInvalid={!!errors.logoUrl}
                     errorMessage={errors.logoUrl?.message}
                     className="flex-1"
@@ -349,7 +371,9 @@ export function CompanyProfileForm({ readOnly }: CompanyProfileFormProps) {
                   }}
                 >
                   {CURRENCIES.map((c) => (
-                    <SelectItem key={c} textValue={c}>{c}</SelectItem>
+                    <SelectItem key={c} textValue={c}>
+                      {c}
+                    </SelectItem>
                   ))}
                 </Select>
               )}
@@ -361,8 +385,12 @@ export function CompanyProfileForm({ readOnly }: CompanyProfileFormProps) {
               <div className="flex items-center gap-2">
                 <Palette className="h-4 w-4 text-primary" />
                 <div>
-                  <h3 className="text-sm font-bold">{t("company.branding.title")}</h3>
-                  <p className="text-xs text-default-500">{t("company.branding.subtitle")}</p>
+                  <h3 className="text-sm font-bold">
+                    {t("company.branding.title")}
+                  </h3>
+                  <p className="text-xs text-default-500">
+                    {t("company.branding.subtitle")}
+                  </p>
                 </div>
               </div>
               {editable && (
@@ -374,7 +402,9 @@ export function CompanyProfileForm({ readOnly }: CompanyProfileFormProps) {
                     startContent={<RotateCcw className="h-3.5 w-3.5" />}
                     onPress={() => {
                       setValue("brandColor", "", { shouldDirty: true });
-                      setValue("brandSecondaryColor", "", { shouldDirty: true });
+                      setValue("brandSecondaryColor", "", {
+                        shouldDirty: true,
+                      });
                     }}
                   >
                     {t("company.branding.reset")}
@@ -395,11 +425,15 @@ export function CompanyProfileForm({ readOnly }: CompanyProfileFormProps) {
             </div>
             <ThemePresetPicker
               activePrimary={watch("brandColor") || BRAND_PRIMARY_HEX}
-              activeSecondary={watch("brandSecondaryColor") || BRAND_SECONDARY_HEX}
+              activeSecondary={
+                watch("brandSecondaryColor") || BRAND_SECONDARY_HEX
+              }
               disabled={!editable}
               onSelect={(primary, secondary) => {
                 setValue("brandColor", primary, { shouldDirty: true });
-                setValue("brandSecondaryColor", secondary, { shouldDirty: true });
+                setValue("brandSecondaryColor", secondary, {
+                  shouldDirty: true,
+                });
               }}
             />
             <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">

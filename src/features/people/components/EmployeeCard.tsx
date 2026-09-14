@@ -14,6 +14,7 @@ import { useTranslation } from "react-i18next";
 import type { Employee } from "../types/people.types";
 import { employeeDisplayName, employeeInitials } from "../utils/geo";
 import { formatDate } from "@/lib/utils";
+import { avatarSrc } from "@/lib/image-utils";
 
 interface EmployeeCardProps {
   employee: Employee;
@@ -82,7 +83,7 @@ export function EmployeeCard({
         <div className="flex flex-col gap-4 p-4">
           <div className="flex items-start gap-3">
             <Avatar
-              src={employee.avatarUrl}
+              src={avatarSrc(employee.avatarUrl)}
               name={initials}
               className="h-14 w-14 shrink-0 text-sm font-bold"
               classNames={{

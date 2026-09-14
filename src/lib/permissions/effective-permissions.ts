@@ -11,17 +11,23 @@ import {
 export interface PermissionContext {
   role: UserRole | undefined;
   portalSubRoles?: PortalSubRoles | null;
+  customPermissions?: Permission[] | null;
 }
 
 export function hasEffectivePermission(
   ctx: PermissionContext,
   permission: Permission
 ): boolean {
-  const { role, portalSubRoles } = ctx;
+  const { role, portalSubRoles, customPermissions } = ctx;
   if (!role) return false;
 
   if (role === "super_admin") {
     return ROLE_PERMISSIONS.super_admin.includes(permission);
+  }
+
+  // Explicit custom permission override granted to individual user
+  if (customPermissions && customPermissions.includes(permission)) {
+    return true;
   }
 
   const portal = permissionPortal(permission);

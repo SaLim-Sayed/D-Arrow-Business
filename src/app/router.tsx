@@ -38,6 +38,7 @@ import EmployeeProfilePage from "@/features/people/pages/EmployeeProfilePage";
 import { ApprovalsPage } from "@/features/people/pages/ApprovalsPage";
 import PerformancePage from "@/features/people/pages/PerformancePage";
 import AttendanceSettingsPage from "@/features/people/pages/AttendanceSettingsPage";
+import HrSettingsHubPage from "@/features/people/pages/HrSettingsHubPage";
 import TimesheetsPage from "@/features/people/pages/TimesheetsPage";
 import DailyReportsPage from "@/features/people/pages/DailyReportsPage";
 import TaskDailyReportsPage from "@/features/tasks/pages/TaskDailyReportsPage";
@@ -174,6 +175,10 @@ export const router = createBrowserRouter([
               { path: "timesheets", element: <TimesheetsPage /> },
               { path: "daily-reports", element: <DailyReportsPage /> },
               { path: "attendance-settings", element: <AttendanceSettingsPage /> },
+              { path: "team", element: <TeamMembersPage /> },
+              { path: "roles", element: <RolesPermissionsPage /> },
+              { path: "company-settings", element: <CompanySettingsPage /> },
+              { path: "settings", element: <HrSettingsHubPage /> },
               { path: ":id", element: <EmployeeProfilePage /> },
             ],
           },

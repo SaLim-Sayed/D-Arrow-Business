@@ -1,5 +1,5 @@
-import { auth, storage } from "@/lib/firebase";
 import { withLogging } from "@/lib/service-utils";
+import { uploadStorageFile } from "@/lib/storage-utils";
 
 const SERVICE_NAME = "CrmStorageService";
 
@@ -31,32 +31,9 @@ export async function uploadCrmAttachment(
     const ext = file.name.split(".").pop() ?? "bin";
     const randomId = Math.random().toString(36).substring(2, 15);
     const path = `crm/${companyId}/${entityType}/${entityId}/${randomId}.${ext}`;
-    const bucket = storage.app.options.storageBucket;
 
-    try {
-      const token = await auth.currentUser?.getIdToken();
-      const uploadUrl = `https://firebasestorage.googleapis.com/v0/b/${bucket}/o?uploadType=media&name=${encodeURIComponent(path)}`;
-      const response = await fetch(uploadUrl, {
-        method: "POST",
-        headers: {
-          "Content-Type": file.type || "application/octet-stream",
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-        body: file,
-      });
-      if (!response.ok) throw new Error(response.statusText);
-      const data = await response.json();
-      const downloadToken = data.downloadTokens;
-      const fileUrl = downloadToken
-        ? `https://firebasestorage.googleapis.com/v0/b/${bucket}/o/${encodeURIComponent(path)}?alt=media&token=${downloadToken}`
-        : path;
-      return { fileUrl, mimeType: file.type || "application/octet-stream", sizeBytes: file.size };
-    } catch {
-      const { ref, uploadBytes, getDownloadURL } = await import("firebase/storage");
-      const storageRef = ref(storage, path);
-      await uploadBytes(storageRef, file, { contentType: file.type });
-      const fileUrl = await getDownloadURL(storageRef);
-      return { fileUrl, mimeType: file.type || "application/octet-stream", sizeBytes: file.size };
-    }
+    const fileUrl = await uploadStorageFile(path, file, file.type);
+    return { fileUrl, mimeType: file.type || "application/octet-stream", sizeBytes: file.size };
   })());
 }
+

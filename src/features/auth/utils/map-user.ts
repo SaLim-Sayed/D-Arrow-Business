@@ -15,6 +15,11 @@ export function parsePortalAccess(raw: unknown): PortalId[] | undefined {
   return valid.length ? valid : undefined;
 }
 
+export function parseCustomPermissions(raw: unknown): import("@/lib/permissions").Permission[] | undefined {
+  if (!Array.isArray(raw)) return undefined;
+  return raw as import("@/lib/permissions").Permission[];
+}
+
 export function mapFirestoreUser(
   id: string,
   data: Record<string, unknown> | undefined,
@@ -29,15 +34,13 @@ export function mapFirestoreUser(
       fallbacks.email?.split("@")[0] ||
       "User",
     nameAr: (data?.nameAr as string) || fallbacks.nameAr || "",
-    avatar:
-      (data?.avatar as string) ||
-      fallbacks.avatar ||
-      `https://avatar.vercel.sh/${id}`,
+    avatar: (data?.avatar as string) || fallbacks.avatar || "",
     role: (data?.role as User["role"]) || fallbacks.role || "employee",
     companyId: (data?.companyId as string) || fallbacks.companyId || "default-company",
     companyName:
       (data?.companyName as string) || fallbacks.companyName || "D-Arrow Business",
     portalAccess: parsePortalAccess(data?.portalAccess),
     portalSubRoles: parsePortalSubRoles(data?.portalSubRoles),
+    customPermissions: parseCustomPermissions(data?.customPermissions),
   };
 }

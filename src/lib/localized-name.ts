@@ -24,6 +24,10 @@ export function nameFromEmail(email?: string | null): string {
     .join(" ");
 }
 
+/**
+ * First letter of the first two words, dot-separated: `Salim Sayed` → `S.S`.
+ * A single-word name yields a single letter with no dot.
+ */
 export function initialsFromName(name: string, fallback = "?"): string {
   const parts = name
     .replace(/@.*$/, "")
@@ -33,5 +37,5 @@ export function initialsFromName(name: string, fallback = "?"): string {
   return parts
     .slice(0, 2)
     .map((p) => p.charAt(0).toUpperCase())
-    .join("");
+    .join(".");
 }

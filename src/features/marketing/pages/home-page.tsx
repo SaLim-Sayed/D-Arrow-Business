@@ -2,6 +2,8 @@ import { useAuth } from "@/features/auth/context/auth-context";
 import { PortalPickerPage } from "@/features/portals/pages/PortalPickerPage";
 import { LandingPage } from "./landing-page";
 import { Spinner } from "@heroui/react";
+import { AppLayout } from "@/components/layout/app-layout";
+import { ProtectedRoute } from "@/features/auth/components/protected-route";
 
 export function HomePage() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -15,8 +17,15 @@ export function HomePage() {
   }
 
   if (isAuthenticated) {
-    return <PortalPickerPage />;
+    return (
+      <ProtectedRoute>
+        <AppLayout>
+          <PortalPickerPage />
+        </AppLayout>
+      </ProtectedRoute>
+    );
   }
 
   return <LandingPage />;
 }
+
