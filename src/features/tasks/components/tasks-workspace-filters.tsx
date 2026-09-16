@@ -8,12 +8,13 @@ import {
   DropdownTrigger,
   Input,
 } from "@heroui/react";
-import { Filter, Search, UserCircle2, X, CircleDot, AlertTriangle, CheckCircle2 } from "lucide-react";
+import { Filter, Search, UserCircle2, X, CircleDot, AlertTriangle, CheckCircle2, Zap } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 import { localizedName } from "@/lib/localized-name";
 import { TASK_STATUSES } from "@/lib/constants";
 import { useAllUsers } from "@/features/users/hooks/use-users";
+import { useSprintsQuery } from "../hooks/use-tasks";
 import { useTasksUIStore } from "../store/tasks-ui.store";
 import type { TaskPriority, TaskStatus } from "../types/task.types";
 
@@ -23,9 +24,14 @@ interface TasksWorkspaceFiltersProps {
 
 export function TasksWorkspaceFilters({ compact }: TasksWorkspaceFiltersProps) {
   const { t, i18n } = useTranslation("tasks");
+  const isAr = i18n.language === "ar";
   const { t: tc } = useTranslation();
   const { filters, setFilter, resetFilters } = useTasksUIStore();
   const { data: allUsers } = useAllUsers();
+  const { data: allSprints } = useSprintsQuery();
+
+  const sprints = allSprints?.data || [];
+  const selectedSprint = sprints.find((s) => s.id === filters.sprintId) ?? null;
 
   const priorities = ["low", "medium", "high", "urgent"] as const;
   const selectedAssignee = allUsers?.find((u) => u.id === filters.assigneeId) ?? null;
@@ -54,6 +60,63 @@ export function TasksWorkspaceFilters({ compact }: TasksWorkspaceFiltersProps) {
           inputWrapper: "rounded-xl border-default-200/80 bg-content1 shadow-xs h-9 min-h-9",
         }}
       />
+
+      <Dropdown>
+        <DropdownTrigger>
+          <Button
+            size="sm"
+            variant="bordered"
+            className={cn(
+              "rounded-xl border-default-200/80 bg-content1 font-semibold gap-1.5 h-9 min-h-9",
+              compact ? "text-xs" : "text-xs",
+              filters.sprintId && "border-primary/40 bg-primary/10 text-primary"
+            )}
+            startContent={<Zap className="h-3.5 w-3.5 text-primary" />}
+          >
+            {selectedSprint
+              ? selectedSprint.name
+              : isAr
+              ? "الدورة (Sprint)"
+              : "Sprint"}
+            {filters.sprintId && (
+              <span
+                role="button"
+                className="ms-1 hover:text-danger p-0.5"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setFilter("sprintId", null);
+                }}
+              >
+                <X className="h-3 w-3" />
+              </span>
+            )}
+          </Button>
+        </DropdownTrigger>
+        <DropdownMenu
+          aria-label="Filter by sprint"
+          selectionMode="single"
+          selectedKeys={filters.sprintId ? new Set([filters.sprintId]) : new Set()}
+          onSelectionChange={(keys) => {
+            const selected = Array.from(keys)[0] as string | undefined;
+            setFilter("sprintId", selected ?? null);
+          }}
+        >
+          {sprints.map((s) => (
+            <DropdownItem
+              key={s.id}
+              endContent={
+                s.status === "active" ? (
+                  <Chip size="sm" color="primary" variant="flat" className="h-4 text-[9px] font-extrabold px-1">
+                    🚀 {isAr ? "النشطة" : "Active"}
+                  </Chip>
+                ) : undefined
+              }
+            >
+              {s.name}
+            </DropdownItem>
+          ))}
+        </DropdownMenu>
+      </Dropdown>
 
       <Dropdown>
         <DropdownTrigger>

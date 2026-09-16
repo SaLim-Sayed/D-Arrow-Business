@@ -2,18 +2,20 @@ import { useEffect } from "react";
 import { Link, useLocation, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Button, Dropdown, DropdownItem, DropdownMenu, DropdownTrigger, Modal, ModalContent, useDisclosure } from "@heroui/react";
-import { Kanban, List, Plus, Trash2, AlertTriangle } from "lucide-react";
+import { Kanban, List, Plus, Trash2, AlertTriangle, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTasksUIStore } from "../store/tasks-ui.store";
 import { TasksWorkspaceFilters } from "../components/tasks-workspace-filters";
 import { TasksListView } from "../components/tasks-list-view";
 import { KanbanBoard } from "../components/kanban-board";
-import { useDeleteAllTasks } from "../hooks/use-task-mutations";
+import { useDeleteAllTasks, useSeedWorkedTasks } from "../hooks/use-task-mutations";
 import {
   TasksPageHeader,
   TasksShell,
   TasksTabBar,
 } from "../components/tasks-ui";
+
+import { useSprintsQuery } from "../hooks/use-tasks";
 
 const WORK_BASE = "/tasks/work";
 
@@ -22,20 +24,27 @@ export function TasksWorkspacePage() {
   const isAr = i18n.language === "ar";
   const location = useLocation();
   const [searchParams] = useSearchParams();
-  const { setFilter } = useTasksUIStore();
+  const { filters, setFilter } = useTasksUIStore();
+  const { data: allSprints } = useSprintsQuery();
 
   const { isOpen: isOpenDeleteAll, onOpen: onOpenDeleteAll, onOpenChange: onOpenChangeDeleteAll } = useDisclosure();
   const deleteAllTasksMutation = useDeleteAllTasks();
+  const seedTasksMutation = useSeedWorkedTasks();
 
   const isList = location.pathname.endsWith("/list");
   const isBoard = !isList;
 
   useEffect(() => {
-    const sprintId = searchParams.get("sprintId");
-    if (sprintId) {
-      setFilter("sprintId", sprintId);
+    const sprintIdFromUrl = searchParams.get("sprintId");
+    if (sprintIdFromUrl) {
+      setFilter("sprintId", sprintIdFromUrl);
+    } else if (!filters.sprintId && allSprints?.data && allSprints.data.length > 0) {
+      const activeSprint = allSprints.data.find((s) => s.status === "active") || allSprints.data[0];
+      if (activeSprint) {
+        setFilter("sprintId", activeSprint.id);
+      }
     }
-  }, [searchParams, setFilter]);
+  }, [searchParams, allSprints, setFilter, filters.sprintId]);
 
   const viewTabs = [
     {
@@ -81,11 +90,22 @@ export function TasksWorkspacePage() {
                 }))}
               />
               <Button
+                size="sm"
+                variant="flat"
+                color="secondary"
+                isLoading={seedTasksMutation.isPending}
+                onPress={() => seedTasksMutation.mutate()}
+                className="font-bold rounded-xl h-9"
+                startContent={!seedTasksMutation.isPending && <Sparkles className="h-4 w-4 text-purple-500" />}
+              >
+                {isAr ? "إضافة مهام الأيام السابقة 🚀" : "Add Worked Tasks 🚀"}
+              </Button>
+              <Button
                 as={Link}
                 to="/tasks/new"
                 size="sm"
                 color="primary"
-                className="font-bold rounded-xl shadow-sm shadow-primary/25"
+                className="font-bold rounded-xl shadow-sm shadow-primary/25 h-9"
                 startContent={<Plus className="h-4 w-4" />}
               >
                 {t("list.newTask")}

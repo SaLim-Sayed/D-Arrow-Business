@@ -113,7 +113,12 @@ function KanbanScrollButton({
   label: string;
   onPress: () => void;
 }) {
-  const Icon = direction === "start" ? ChevronLeft : ChevronRight;
+  const { i18n } = useTranslation();
+  const isRtl = i18n.language === "ar";
+  const Icon =
+    (direction === "start" && !isRtl) || (direction === "end" && isRtl)
+      ? ChevronLeft
+      : ChevronRight;
 
   return (
     <Button

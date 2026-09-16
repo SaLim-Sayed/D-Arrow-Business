@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useForm, Controller, type FieldErrors, type Resolver } from "react-hook-form";
 import { useCompany } from "@/features/companies/context/company-context";
@@ -74,6 +75,13 @@ const taskSchema = z
         code: z.ZodIssueCode.custom,
         message: "Parent task is required for subtasks",
         path: ["parentId"],
+      });
+    }
+    if (!data.sprintId || data.sprintId === "no-sprint") {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "يجب اختيار الدورة (Sprint) للمهمة",
+        path: ["sprintId"],
       });
     }
   });
@@ -186,6 +194,16 @@ export function TaskForm({
     if (taskType !== "subtask" || parentIdValue || parentTaskId) return;
     form.setValue("parentId", null);
   }, [taskType, parentIdValue, parentTaskId, form]);
+
+  useEffect(() => {
+    if (defaultValues?.sprintId) return;
+    if (sprints.length > 0 && !form.getValues("sprintId")) {
+      const activeSprint = sprints.find((s) => s.status === "active") || sprints[0];
+      if (activeSprint) {
+        form.setValue("sprintId", activeSprint.id);
+      }
+    }
+  }, [sprints, defaultValues?.sprintId, form]);
 
   async function handleSubmit(values: TaskFormValues) {
     if (!companyId) {
@@ -345,37 +363,67 @@ export function TaskForm({
           )}
         />
 
-        <Controller
-          name="sprintId"
-          control={control}
-          render={({ field }: { field: any }) => (
-            <SearchableSelect
-              label={t("form.sprint.label")}
-              aria-label={t("form.sprint.label")}
-              searchPlaceholder={t("form.search.placeholder")}
-              selectedKey={field.value ?? "no-sprint"}
-              triggerLabel={
-                field.value
-                  ? sprints.find((s) => s.id === field.value)?.name ??
-                    t("form.sprint.unassigned")
-                  : t("form.sprint.unassigned")
-              }
-              onSelectionChange={(key) => {
-                const val = key as string;
-                field.onChange(val === "no-sprint" ? null : val);
-              }}
-            >
-              {[
-                <SelectItem key="no-sprint" textValue={t("form.sprint.unassigned")}>{t("form.sprint.unassigned")}</SelectItem>,
-                ...sprints.map((s) => (
+        <div className="flex flex-col gap-1 w-full">
+          <Controller
+            name="sprintId"
+            control={control}
+            render={({ field }: { field: any }) => (
+              <SearchableSelect
+                label={`${t("form.sprint.label")} *`}
+                aria-label={t("form.sprint.label")}
+                searchPlaceholder={t("form.search.placeholder")}
+                selectedKey={field.value ?? ""}
+                triggerLabel={
+                  field.value
+                    ? sprints.find((s) => s.id === field.value)?.name ??
+                      (isRtl ? "اختر الدورة..." : "Select Sprint...")
+                    : (isRtl ? "اختر الدورة (إجباري) *" : "Select Sprint (Required) *")
+                }
+                onSelectionChange={(key) => {
+                  const val = key as string;
+                  field.onChange(val === "no-sprint" ? null : val);
+                }}
+              >
+                {sprints.map((s) => (
                   <SelectItem key={s.id} textValue={s.name}>
-                    <span dir="auto">{s.name}</span>
+                    <div className="flex items-center justify-between gap-2 w-full" dir="auto">
+                      <span className="font-semibold">{s.name}</span>
+                      {s.status === "active" && (
+                        <span className="text-[10px] font-black bg-primary/15 text-primary px-2 py-0.5 rounded-full shrink-0">
+                          🚀 {isRtl ? "نشط" : "Active"}
+                        </span>
+                      )}
+                    </div>
                   </SelectItem>
-                ))
-              ]}
-            </SearchableSelect>
+                ))}
+              </SearchableSelect>
+            )}
+          />
+          {errors.sprintId && (
+            <p className="text-xs text-danger font-bold ms-1">
+              {errors.sprintId.message}
+            </p>
           )}
-        />
+          {sprints.length === 0 && (
+            <div className="p-3 bg-warning-50/90 border border-warning-200/90 rounded-xl text-warning-800 text-xs flex items-center justify-between gap-2 mt-1">
+              <span>
+                {isRtl
+                  ? "⚠️ لا توجد دورات تطوير (Sprints). يجب إنشاء دورة أولاً لتتمكن من إضافة المهمة."
+                  : "No sprints available. Please create a sprint first."}
+              </span>
+              <Button
+                as={Link}
+                to="/tasks/sprints"
+                size="sm"
+                color="warning"
+                variant="flat"
+                className="font-bold text-xs h-7 min-h-7 rounded-lg shrink-0"
+              >
+                {isRtl ? "+ إضافة دورة" : "+ Create Sprint"}
+              </Button>
+            </div>
+          )}
+        </div>
       </div>
 
       {isSubtaskMode && (
