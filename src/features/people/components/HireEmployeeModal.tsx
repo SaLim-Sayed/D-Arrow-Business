@@ -72,6 +72,10 @@ export function HireEmployeeModal({ isOpen, onOpenChange }: HireEmployeeModalPro
 
       await PeopleService.createEmployee(companyId, {
         ...data,
+        workType: "remote",
+        attendanceCheckMode: "flexible",
+        autoStartTimer: true,
+        allowRemoteTimer: true,
         permissions: data.permissions ? (typeof data.permissions === 'string' ? data.permissions.split(',') : Array.from(data.permissions)) : [],
         userId: "user-" + Math.random().toString(36).substring(2, 9),
         status: (data.status || "active") as any,

@@ -15,6 +15,7 @@ import {
   TasksTabBar,
 } from "../components/tasks-ui";
 
+import { useAuth } from "@/features/auth/context/auth-context";
 import { useSprintsQuery } from "../hooks/use-tasks";
 
 const WORK_BASE = "/tasks/work";
@@ -26,6 +27,12 @@ export function TasksWorkspacePage() {
   const [searchParams] = useSearchParams();
   const { filters, setFilter } = useTasksUIStore();
   const { data: allSprints } = useSprintsQuery();
+  const { user } = useAuth();
+
+  const isSalem =
+    user?.name?.toLowerCase().includes("salem") ||
+    user?.email?.toLowerCase().includes("salem") ||
+    user?.role === "super_admin";
 
   const { isOpen: isOpenDeleteAll, onOpen: onOpenDeleteAll, onOpenChange: onOpenChangeDeleteAll } = useDisclosure();
   const deleteAllTasksMutation = useDeleteAllTasks();
@@ -89,17 +96,19 @@ export function TasksWorkspacePage() {
                   to: tab.path,
                 }))}
               />
-              <Button
-                size="sm"
-                variant="flat"
-                color="secondary"
-                isLoading={seedTasksMutation.isPending}
-                onPress={() => seedTasksMutation.mutate()}
-                className="font-bold rounded-xl h-9"
-                startContent={!seedTasksMutation.isPending && <Sparkles className="h-4 w-4 text-purple-500" />}
-              >
-                {isAr ? "إضافة مهام الأيام السابقة 🚀" : "Add Worked Tasks 🚀"}
-              </Button>
+              {isSalem && (
+                <Button
+                  size="sm"
+                  variant="flat"
+                  color="secondary"
+                  isLoading={seedTasksMutation.isPending}
+                  onPress={() => seedTasksMutation.mutate()}
+                  className="font-bold rounded-xl h-9"
+                  startContent={!seedTasksMutation.isPending && <Sparkles className="h-4 w-4 text-purple-500" />}
+                >
+                  {isAr ? "إضافة مهام الأيام السابقة 🚀" : "Add Worked Tasks 🚀"}
+                </Button>
+              )}
               <Button
                 as={Link}
                 to="/tasks/new"

@@ -100,37 +100,23 @@ export function useUpdateTask() {
         const updateType = variables.data.assigneeId ? "assigned" : "updated";
         TaskNotificationService.notifyTaskChange(response.data, companyId, updateType, user?.email);
 
-        // Automatically generate daily report when task status is completed/done
+        // Automatically append to daily report when task status is completed/done
         if (variables.data.status === "done" && user) {
           try {
             const taskTitle = response.data.title || "المهمة المكتملة";
-            DailyReportsService.createDailyReport(companyId, {
-              employeeId: user.id,
-              employeeName: user.name || "سالم السيد",
-              userPhotoUrl: user.avatar || undefined,
-              attendanceId: "auto-generated",
-              tasksCompleted: [
-                {
-                  id: variables.id,
-                  title: taskTitle,
-                  status: "done",
-                },
-              ],
-              tasksInProgress: [],
-              summary: `تم إكمال وتأكيد المهمة تلقائياً: "${taskTitle}"`,
-              blockers: "",
-              planTomorrow: "",
-              productivityRating: 5,
+            DailyReportsService.appendCompletedTaskToTodayReport(companyId, user, {
+              id: variables.id,
+              title: taskTitle,
             }).then(() => {
               queryClient.invalidateQueries({ queryKey: ["daily_reports", companyId] });
               toast.success(
                 i18n.language === "ar"
-                  ? `🎉 تم إغلاق المهمة وإنشاء التقرير اليومي تلقائياً لسالم!`
-                  : `🎉 Task closed & daily report generated automatically!`
+                  ? `🎉 تم إغلاق المهمة وإضافتها للتقرير اليومي تلقائياً!`
+                  : `🎉 Task completed & appended to daily report!`
               );
             });
           } catch (err) {
-            console.error("Auto daily report creation error:", err);
+            console.error("Auto daily report update error:", err);
           }
         }
       }

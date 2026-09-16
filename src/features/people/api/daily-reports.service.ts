@@ -222,4 +222,68 @@ export const DailyReportsService = {
       };
     })());
   },
+
+  async appendCompletedTaskToTodayReport(
+    companyId: string,
+    user: { id: string; name?: string; avatar?: string },
+    task: { id: string; title: string }
+  ): Promise<ApiResponse<void>> {
+    return withLogging(SERVICE_NAME, "appendCompletedTaskToTodayReport", (async () => {
+      const date = new Date().toISOString().split("T")[0];
+      const reportsRef = collection(db, "companies", companyId, "daily_reports");
+      const q = query(
+        reportsRef,
+        where("employeeId", "==", user.id),
+        where("date", "==", date)
+      );
+      const snap = await getDocs(q);
+
+      const newTaskItem = {
+        id: task.id,
+        title: task.title,
+        status: "done",
+      };
+
+      if (!snap.empty) {
+        const docRef = snap.docs[0].ref;
+        const data = snap.docs[0].data();
+        const existingCompleted = Array.isArray(data.tasksCompleted) ? data.tasksCompleted : [];
+
+        if (!existingCompleted.some((t: any) => t.id === task.id)) {
+          existingCompleted.push(newTaskItem);
+          const updatedSummary =
+            data.summary && data.summary.trim()
+              ? `${data.summary}\n• تم إكمال: "${task.title}"`
+              : `تم إكمال وتأكيد المهمة تلقائياً: "${task.title}"`;
+
+          await updateDoc(docRef, {
+            tasksCompleted: existingCompleted,
+            summary: updatedSummary,
+            updatedAt: serverTimestamp(),
+          });
+        }
+      } else {
+        await addDoc(reportsRef, {
+          companyId,
+          employeeId: user.id,
+          employeeName: user.name || "سالم السيد",
+          userPhotoUrl: user.avatar || null,
+          date,
+          attendanceId: "auto-generated",
+          tasksCompleted: [newTaskItem],
+          tasksInProgress: [],
+          summary: `تم إكمال وتأكيد المهمة تلقائياً: "${task.title}"`,
+          blockers: "",
+          planTomorrow: "",
+          productivityRating: 5,
+          status: "submitted",
+          isSkipped: false,
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp(),
+        });
+      }
+
+      return { data: undefined, message: "Task added to daily report" };
+    })());
+  },
 };
