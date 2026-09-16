@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { Link, useLocation, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Button, Modal, ModalContent, useDisclosure } from "@heroui/react";
+import { Button, Dropdown, DropdownItem, DropdownMenu, DropdownTrigger, Modal, ModalContent, useDisclosure } from "@heroui/react";
 import { Kanban, List, Plus, Trash2, AlertTriangle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTasksUIStore } from "../store/tasks-ui.store";
@@ -69,6 +69,48 @@ export function TasksWorkspacePage() {
           description={isList ? t("list.description") : t("board.description")}
           breadcrumbLabel={t("nav.dashboard")}
           breadcrumbTo="/tasks"
+          action={
+            <div className="flex items-center gap-2">
+              <TasksTabBar
+                tabs={viewTabs.map((tab) => ({
+                  key: tab.key,
+                  label: tab.label,
+                  icon: tab.icon,
+                  active: tab.active,
+                  to: tab.path,
+                }))}
+              />
+              <Button
+                as={Link}
+                to="/tasks/new"
+                size="sm"
+                color="primary"
+                className="font-bold rounded-xl shadow-sm shadow-primary/25"
+                startContent={<Plus className="h-4 w-4" />}
+              >
+                {t("list.newTask")}
+              </Button>
+
+              <Dropdown>
+                <DropdownTrigger>
+                  <Button isIconOnly size="sm" variant="flat" className="rounded-xl border border-default-200/80 bg-content1 h-9 w-9 min-w-9">
+                    <Trash2 className="h-4 w-4 text-default-500 hover:text-danger" />
+                  </Button>
+                </DropdownTrigger>
+                <DropdownMenu aria-label="Workspace Options">
+                  <DropdownItem
+                    key="delete-all"
+                    color="danger"
+                    className="text-danger font-bold"
+                    onPress={onOpenDeleteAll}
+                    startContent={<Trash2 className="h-4 w-4" />}
+                  >
+                    {isAr ? "حذف جميع المهام" : "Delete All Tasks"}
+                  </DropdownItem>
+                </DropdownMenu>
+              </Dropdown>
+            </div>
+          }
         />
       </div>
 
@@ -76,41 +118,8 @@ export function TasksWorkspacePage() {
         bleed={isBoard}
         className={cn(isBoard && "flex min-h-0 flex-1 flex-col")}
         toolbar={
-          <div className="flex flex-wrap items-center gap-2">
-            <TasksTabBar
-              tabs={viewTabs.map((tab) => ({
-                key: tab.key,
-                label: tab.label,
-                icon: tab.icon,
-                active: tab.active,
-                to: tab.path,
-              }))}
-            />
-            <div className="ms-auto flex shrink-0 items-center gap-2">
-              <TasksWorkspaceFilters compact={isBoard} />
-              
-              <Button
-                size="sm"
-                color="danger"
-                variant="flat"
-                onPress={onOpenDeleteAll}
-                className="font-bold border border-danger/20"
-                startContent={<Trash2 className="h-4 w-4" />}
-              >
-                {isAr ? "حذف جميع المهام" : "Delete All Tasks"}
-              </Button>
-
-              <Button
-                as={Link}
-                to="/tasks/new"
-                size="sm"
-                color="primary"
-                className="font-semibold"
-                startContent={<Plus className="h-4 w-4" />}
-              >
-                {t("list.newTask")}
-              </Button>
-            </div>
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <TasksWorkspaceFilters compact={isBoard} />
           </div>
         }
       >

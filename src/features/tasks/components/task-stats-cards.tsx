@@ -1,5 +1,5 @@
 import { useTranslation } from "react-i18next";
-import { ListTodo, Clock, AlertTriangle, CheckCircle } from "lucide-react";
+import { ListTodo, Clock, AlertTriangle, CheckCircle2 } from "lucide-react";
 import type { Task } from "../types/task.types";
 import { TasksMetricCards } from "./tasks-ui";
 import { useTasksWorkspaceNavigation } from "../hooks/use-tasks-workspace-navigation";
@@ -37,7 +37,7 @@ export function TaskStatsCards({ tasks }: TaskStatsCardsProps) {
           label: t("dashboard.totalTasks"),
           value: total,
           icon: ListTodo,
-          className: "text-primary bg-primary/10",
+          className: "text-primary bg-primary/10 border border-primary/20",
           onPress: () => openAllTasks(),
         },
         {
@@ -45,7 +45,7 @@ export function TaskStatsCards({ tasks }: TaskStatsCardsProps) {
           label: t("dashboard.inProgress"),
           value: inProgress,
           icon: Clock,
-          className: "text-warning-700 bg-warning/10 dark:text-warning",
+          className: "text-blue-600 dark:text-blue-400 bg-blue-500/10 border border-blue-500/20",
           onPress: () => openInProgress(),
         },
         {
@@ -53,18 +53,19 @@ export function TaskStatsCards({ tasks }: TaskStatsCardsProps) {
           label: t("dashboard.overdue"),
           value: overdue,
           icon: AlertTriangle,
-          className: "text-danger bg-danger/10",
+          className: "text-danger bg-danger/10 border border-danger/20",
           onPress: () => openOverdue(),
         },
         {
           key: "completed",
           label: t("dashboard.completedThisWeek"),
           value: completedThisWeek,
-          icon: CheckCircle,
-          className: "text-success bg-success/10",
+          icon: CheckCircle2,
+          className: "text-success bg-success/10 border border-success/20",
           onPress: () => openCompletedThisWeek(),
         },
       ]}
     />
   );
 }
+

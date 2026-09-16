@@ -25,37 +25,39 @@ export function TasksPageHeader({
     <>
       <nav
         className={cn(
-          "flex items-center gap-1 text-sm text-default-500",
-          compact ? "mb-1.5" : "mb-3"
+          "flex items-center gap-1.5 text-xs font-medium text-default-500",
+          compact ? "mb-1" : "mb-2.5"
         )}
       >
-        <Link to={breadcrumbTo} className="hover:text-primary">
+        <Link to={breadcrumbTo} className="transition-colors hover:text-primary">
           {rootLabel}
         </Link>
         {title !== rootLabel && (
           <>
-            <ChevronRight className="h-3.5 w-3.5 rtl:rotate-180" />
-            <span className="font-medium text-default-800">{title}</span>
+            <ChevronRight className="h-3 w-3 text-default-400 rtl:rotate-180" />
+            <span className="font-semibold text-default-800">{title}</span>
           </>
         )}
       </nav>
       <div
         className={cn(
-          "flex flex-wrap items-start justify-between gap-3",
+          "flex flex-wrap items-center justify-between gap-3",
           compact ? "mb-2" : "mb-4"
         )}
       >
         <div className="min-w-0">
           <h1
             className={cn(
-              "font-bold tracking-tight text-default-900",
-              compact ? "text-lg" : "text-2xl"
+              "font-extrabold tracking-tight text-foreground",
+              compact ? "text-base md:text-lg" : "text-xl md:text-2xl"
             )}
           >
             {title}
           </h1>
           {!compact && description && (
-            <p className="mt-1 max-w-2xl text-sm text-default-500">{description}</p>
+            <p className="mt-1 max-w-2xl text-xs md:text-sm text-default-500 leading-relaxed">
+              {description}
+            </p>
           )}
         </div>
         {action && <div className="shrink-0">{action}</div>}
@@ -77,7 +79,7 @@ export function TasksMetricCards({
   }[];
 }) {
   return (
-    <div className="mb-4 grid grid-cols-2 gap-2 lg:grid-cols-4">
+    <div className="mb-6 grid grid-cols-2 gap-3.5 lg:grid-cols-4">
       {items.map(({ key, label, value, icon: Icon, className, onPress }) => {
         const Wrapper = onPress ? "button" : "div";
         return (
@@ -86,16 +88,24 @@ export function TasksMetricCards({
             type={onPress ? "button" : undefined}
             onClick={onPress}
             className={cn(
-              "flex items-center gap-3 rounded-lg border border-default-200 bg-content1 px-3 py-2.5 text-start shadow-sm transition-colors",
-              onPress && "hover:bg-primary/[0.03] cursor-pointer"
+              "group relative flex items-center gap-4 rounded-3xl border border-default-200/70 bg-background/70 p-4 text-start shadow-sm backdrop-blur-xl transition-all duration-300",
+              onPress &&
+                "cursor-pointer hover:-translate-y-1 hover:border-primary/40 hover:bg-background/90 hover:shadow-lg hover:shadow-primary/5 active:translate-y-0"
             )}
           >
-            <div className={cn("rounded-lg p-2", className)}>
-              <Icon className="h-4 w-4" />
+            <div
+              className={cn(
+                "flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl transition-transform duration-300 group-hover:scale-110 shadow-sm",
+                className
+              )}
+            >
+              <Icon className="h-6 w-6" />
             </div>
-            <div className="min-w-0">
-              <p className="truncate text-xs text-default-500">{label}</p>
-              <p className="truncate text-base font-bold tabular-nums text-default-900">
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-xs font-semibold text-default-400">
+                {label}
+              </p>
+              <p className="truncate text-2xl font-black tabular-nums tracking-tight text-foreground mt-0.5">
                 {value}
               </p>
             </div>
@@ -120,15 +130,15 @@ export function TasksPanel({
   return (
     <div
       className={cn(
-        "flex h-full flex-col overflow-hidden rounded-lg border border-default-200 bg-content1 shadow-sm",
+        "flex h-full flex-col overflow-hidden rounded-3xl border border-default-200/70 bg-background/80 shadow-sm backdrop-blur-xl",
         className
       )}
     >
-      <div className="flex items-center justify-between gap-2 border-b border-default-200 bg-default-50/90 px-4 py-3">
-        <h3 className="text-sm font-bold text-default-800">{title}</h3>
+      <div className="flex items-center justify-between gap-2 border-b border-default-100/70 bg-default-50/50 px-6 py-4">
+        <h3 className="text-sm font-black text-foreground tracking-tight">{title}</h3>
         {action}
       </div>
-      <div className="flex flex-1 flex-col p-4">{children}</div>
+      <div className="flex flex-1 flex-col p-4 md:p-6">{children}</div>
     </div>
   );
 }
@@ -147,23 +157,25 @@ export function TasksTabBar({
   }[];
 }) {
   return (
-    <div className="flex gap-1 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+    <div className="inline-flex items-center gap-1 rounded-2xl border border-default-200/70 bg-default-100/60 p-1.5 backdrop-blur-md">
       {tabs.map(({ key, label, icon: Icon, active, onClick, to, badge }) => {
         const className = cn(
-          "inline-flex shrink-0 items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors",
+          "inline-flex shrink-0 items-center gap-2 rounded-xl px-3.5 py-2 text-xs font-extrabold transition-all duration-200",
           active
-            ? "bg-primary text-primary-foreground shadow-sm"
-            : "bg-content1 text-default-600 hover:bg-default-100 dark:bg-content1"
+            ? "bg-background text-primary shadow-sm ring-1 ring-default-200/80"
+            : "text-default-600 hover:bg-background/50 hover:text-foreground"
         );
         const content = (
           <>
-            <Icon className="h-3.5 w-3.5" />
+            <Icon className={cn("h-4 w-4", active ? "text-primary" : "text-default-400")} />
             {label}
             {badge !== undefined && badge > 0 && (
               <span
                 className={cn(
-                  "rounded px-1.5 py-0.5 text-[10px] font-semibold tabular-nums",
-                  active ? "bg-primary-foreground/20" : "bg-default-200"
+                  "rounded-full px-2 py-0.5 text-[10px] font-black tabular-nums",
+                  active
+                    ? "bg-primary/15 text-primary"
+                    : "bg-default-200 text-default-700"
                 )}
               >
                 {badge}
@@ -203,15 +215,15 @@ export function TasksShell({
   return (
     <div
       className={cn(
-        "overflow-hidden rounded-lg border border-default-200 bg-content1 shadow-sm",
+        "overflow-hidden rounded-3xl border border-default-200/80 bg-background/80 shadow-md backdrop-blur-xl",
         className
       )}
     >
       {toolbar && (
         <div
           className={cn(
-            "shrink-0 border-b border-default-200 bg-default-50/90 px-3",
-            bleed ? "py-1.5" : "py-2"
+            "shrink-0 border-b border-default-100 bg-default-50/60 px-5",
+            bleed ? "py-2.5" : "py-3.5"
           )}
         >
           {toolbar}
@@ -219,7 +231,7 @@ export function TasksShell({
       )}
       <div
         className={cn(
-          bleed ? "flex min-h-0 flex-1 flex-col" : "p-4 md:p-5"
+          bleed ? "flex min-h-0 flex-1 flex-col" : "p-4 md:p-6"
         )}
       >
         {children}
@@ -246,25 +258,36 @@ export function TasksAppTile({
   return (
     <Link
       to={to}
-      className="group flex flex-col rounded-xl border border-default-200 bg-content1 p-4 shadow-sm transition-all hover:border-primary/40 hover:bg-primary/[0.02] hover:shadow-md"
+      className="group relative flex flex-col justify-between rounded-3xl border border-default-200/70 bg-background/70 p-6 shadow-sm backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 hover:border-primary/40 hover:bg-background/90 hover:shadow-xl hover:shadow-primary/5"
     >
-      <div className="mb-3 flex items-start justify-between gap-2">
-        <div
-          className={cn(
-            "flex h-11 w-11 items-center justify-center rounded-xl",
-            iconClassName ?? "bg-primary/10 text-primary"
+      <div>
+        <div className="mb-4 flex items-start justify-between gap-3">
+          <div
+            className={cn(
+              "flex h-13 w-13 items-center justify-center rounded-2xl shadow-sm transition-transform duration-300 group-hover:scale-110",
+              iconClassName ?? "bg-primary/10 text-primary border border-primary/20"
+            )}
+          >
+            <Icon className="h-6 w-6" />
+          </div>
+          {badge !== undefined && badge !== "" && (
+            <span className="rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-xs font-black tabular-nums text-primary shadow-sm">
+              {badge}
+            </span>
           )}
-        >
-          <Icon className="h-5 w-5" />
         </div>
-        {badge !== undefined && badge !== "" && (
-          <span className="rounded-full bg-default-100 px-2 py-0.5 text-xs font-semibold tabular-nums text-default-600">
-            {badge}
-          </span>
-        )}
+        <h3 className="text-base font-extrabold text-foreground transition-colors group-hover:text-primary">
+          {title}
+        </h3>
+        <p className="mt-1.5 line-clamp-2 text-xs leading-relaxed text-default-500 font-medium">
+          {description}
+        </p>
       </div>
-      <h3 className="text-sm font-bold text-default-900 group-hover:text-primary">{title}</h3>
-      <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-default-500">{description}</p>
+
+      <div className="mt-4 flex items-center gap-1.5 text-xs font-bold text-primary opacity-0 group-hover:opacity-100 transition-all transform translate-x-1 group-hover:translate-x-0 rtl:-translate-x-1 rtl:group-hover:translate-x-0">
+        <span>الانتقال للموديل</span>
+        <ChevronRight size={14} className="rtl:rotate-180" />
+      </div>
     </Link>
   );
 }
@@ -283,24 +306,24 @@ export function TasksModuleSection({
   children: React.ReactNode;
 }) {
   return (
-    <section className="mb-6">
-      <div className="mb-3 flex items-center gap-2.5">
+    <section className="mb-8 space-y-4">
+      <div className="flex items-center gap-3">
         <div
           className={cn(
-            "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg",
-            iconClassName ?? "bg-primary/10 text-primary"
+            "flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl shadow-sm border",
+            iconClassName ?? "bg-primary/10 text-primary border-primary/20"
           )}
         >
-          <Icon className="h-4 w-4" />
+          <Icon className="h-5 w-5" />
         </div>
         <div className="min-w-0">
-          <h2 className="text-sm font-bold text-default-900">{title}</h2>
+          <h2 className="text-lg font-black tracking-tight text-foreground">{title}</h2>
           {description && (
-            <p className="text-xs text-default-500">{description}</p>
+            <p className="text-xs font-medium text-default-400">{description}</p>
           )}
         </div>
       </div>
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-2">
         {children}
       </div>
     </section>
@@ -321,11 +344,11 @@ export function TasksQuickAction({
   onPress?: () => void;
 }) {
   const className = cn(
-    "inline-flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold transition-colors shadow-sm",
+    "inline-flex items-center gap-2 rounded-2xl px-5 py-3 text-xs font-extrabold transition-all duration-200 shadow-md hover:-translate-y-0.5 active:translate-y-0",
     color === "primary" &&
-      "bg-primary text-primary-foreground hover:bg-primary/90",
+      "bg-gradient-to-r from-primary to-purple-600 text-primary-foreground shadow-primary/25 hover:shadow-lg hover:shadow-primary/30",
     color === "default" &&
-      "border border-default-200 bg-content1 text-default-800 hover:bg-default-50"
+      "border border-default-200/80 bg-background text-foreground hover:border-default-300 hover:bg-default-50"
   );
 
   if (to) {
@@ -344,3 +367,4 @@ export function TasksQuickAction({
     </button>
   );
 }
+

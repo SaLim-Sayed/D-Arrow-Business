@@ -61,29 +61,42 @@ export function TaskCard({
     task.status !== "done" &&
     new Date(task.dueDate) < new Date(new Date().setHours(0, 0, 0, 0));
 
+  const completedSubtasksCount = subtasks.filter((st) => st.status === "done").length;
+  const subtasksProgress = subtasks.length > 0 ? (completedSubtasksCount / subtasks.length) * 100 : 0;
+
+  const priorityBorderColor =
+    task.priority === "urgent"
+      ? "border-s-danger"
+      : task.priority === "high"
+        ? "border-s-warning"
+        : task.priority === "medium"
+          ? "border-s-primary"
+          : "border-s-default-300";
+
   return (
     <div
       onClick={() => navigate(`/tasks/${task.id}`)}
       className={cn(
         "group cursor-pointer transition-all duration-200",
-        isDragging ? "opacity-50 scale-105" : "hover:scale-[1.01]",
+        isDragging ? "opacity-50 scale-105" : "hover:-translate-y-0.5"
       )}
     >
       <Card
         className={cn(
-          "border border-default-200 dark:border-default-100 shadow-sm hover:shadow-md dark:hover:shadow-primary/10 transition-all duration-300 rounded-xl bg-white dark:bg-content1/50 backdrop-blur-sm",
-          compact && "rounded-lg",
+          "relative overflow-hidden border border-default-200/80 dark:border-default-100 shadow-sm hover:shadow-lg dark:hover:shadow-primary/10 transition-all duration-300 rounded-2xl bg-white dark:bg-content1/70 backdrop-blur-sm border-s-4",
+          priorityBorderColor,
+          compact && "rounded-xl border-s-3",
           isDragging &&
-            "shadow-2xl ring-2 ring-primary/20 rotate-1 scale-[1.02]",
+            "shadow-2xl ring-2 ring-primary/30 rotate-1 scale-[1.02]"
         )}
       >
         <CardBody className={cn("space-y-3", compact ? "p-2.5 space-y-2" : "p-4")}>
           {/* Header: ID and Assignee */}
           <div className="flex items-center justify-between mb-1">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5">
               {!compact && (
-                <span className="text-[10px] font-bold text-default-400 uppercase tracking-wider">
-                  TASK-{task.id.slice(-4).toUpperCase()}
+                <span className="text-[10px] font-extrabold text-default-400 uppercase tracking-wider bg-default-100 dark:bg-default-100/30 px-1.5 py-0.5 rounded-md">
+                  TSK-{task.id.slice(-4).toUpperCase()}
                 </span>
               )}
               {compact && (
@@ -91,11 +104,11 @@ export function TaskCard({
                   className={cn(
                     "h-2 w-2 shrink-0 rounded-full",
                     task.priority === "urgent"
-                      ? "bg-danger"
+                      ? "bg-danger shadow-sm shadow-danger/50"
                       : task.priority === "high"
-                        ? "bg-warning"
+                        ? "bg-warning shadow-sm shadow-warning/50"
                         : task.priority === "medium"
-                          ? "bg-primary/60"
+                          ? "bg-primary"
                           : "bg-default-300"
                   )}
                   title={t(`priority.${task.priority}`)}
@@ -109,8 +122,8 @@ export function TaskCard({
                 fallback={initials}
                 showFallback
                 className={cn(
-                  "ring-2 ring-background",
-                  compact ? "h-5 w-5" : "h-6 w-6"
+                  "ring-2 ring-background shadow-xs",
+                  compact ? "h-5 w-5 text-[8px]" : "h-6 w-6 text-[10px]"
                 )}
               />
             )}
@@ -120,7 +133,7 @@ export function TaskCard({
           <div className="space-y-1">
             {!compact && parentTask && (
               <div
-                className="text-[10px] font-medium text-primary hover:underline cursor-pointer flex items-center gap-1"
+                className="text-[10px] font-semibold text-primary hover:underline cursor-pointer flex items-center gap-1"
                 onClick={(e) => {
                   e.stopPropagation();
                   navigate(`/tasks/${parentTask.id}`);
@@ -131,7 +144,7 @@ export function TaskCard({
             )}
             <h4
               className={cn(
-                "font-bold text-primary leading-snug group-hover:text-primary transition-colors",
+                "font-bold text-foreground leading-snug group-hover:text-primary transition-colors",
                 compact ? "text-xs line-clamp-2" : "text-sm"
               )}
             >
@@ -139,98 +152,72 @@ export function TaskCard({
             </h4>
           </div>
 
-          {/* Tags / Labels */}
+          {/* Priority & Tags */}
           {!compact && (
-          <div className="flex flex-wrap gap-2 pt-1">
-            <Chip
-              size="sm"
-              variant="flat"
-              className={cn(
-                "h-5 text-[9px] font-bold uppercase tracking-tighter px-1",
-                task.priority === "urgent"
-                  ? "bg-danger/10 text-danger"
-                  : task.priority === "high"
-                    ? "bg-warning/10 text-warning"
-                    : "bg-default-100 dark:bg-default-100/20 text-default-600 dark:text-default-400",
-              )}
-            >
-              {t(`priority.${task.priority}`)}
-            </Chip>
-            {task.tags?.slice(0, 2).map((tag) => (
+            <div className="flex flex-wrap gap-1.5 pt-0.5">
               <Chip
-                key={tag}
                 size="sm"
                 variant="flat"
-                className="h-5 text-[9px] font-medium bg-default-100"
+                className={cn(
+                  "h-5 text-[9px] font-extrabold uppercase tracking-tight px-1.5 rounded-md",
+                  task.priority === "urgent"
+                    ? "bg-danger/15 text-danger border border-danger/20"
+                    : task.priority === "high"
+                      ? "bg-warning/15 text-warning-700 dark:text-warning border border-warning/20"
+                      : task.priority === "medium"
+                        ? "bg-primary/15 text-primary border border-primary/20"
+                        : "bg-default-100 text-default-600 border border-default-200"
+                )}
               >
-                {tag}
+                {t(`priority.${task.priority}`)}
               </Chip>
-            ))}
-          </div>
+              {task.tags?.slice(0, 2).map((tag) => (
+                <Chip
+                  key={tag}
+                  size="sm"
+                  variant="flat"
+                  className="h-5 text-[9px] font-bold bg-default-100 text-default-600 rounded-md"
+                >
+                  {tag}
+                </Chip>
+              ))}
+            </div>
           )}
 
-          {/* Subtasks */}
+          {/* Subtasks Visual Progress Bar */}
           {!compact && subtasks.length > 0 && (
-            <div className="pt-2 space-y-1">
-              <div className="text-[10px] font-bold text-default-400 uppercase tracking-wider">
-                {t("detail.subtasks")} ({subtasks.filter((st) => st.status === "done").length}
-                /{subtasks.length})
+            <div className="pt-1.5 space-y-1.5">
+              <div className="flex items-center justify-between text-[10px] font-bold text-default-500">
+                <span>{t("detail.subtasks")}</span>
+                <span>
+                  {completedSubtasksCount}/{subtasks.length}
+                </span>
               </div>
-              <div className="space-y-1">
-                {subtasks.slice(0, 3).map((st) => (
-                  <div
-                    key={st.id}
-                    className="flex items-center gap-2 text-xs p-1 rounded-md hover:bg-default-100 transition-colors"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      navigate(`/tasks/${st.id}`);
-                    }}
-                  >
-                    <div
-                      className={cn(
-                        "w-1.5 h-1.5 rounded-full shrink-0",
-                        st.status === "done"
-                          ? "bg-success"
-                          : st.status === "in_progress"
-                            ? "bg-blue-500"
-                            : "bg-default-300",
-                      )}
-                    />
-                    <span
-                      className={cn(
-                        "truncate font-medium",
-                        st.status === "done"
-                          ? "text-default-400 line-through"
-                          : "text-default-600",
-                      )}
-                    >
-                      {st.title}
-                    </span>
-                  </div>
-                ))}
-                {subtasks.length > 3 && (
-                  <div className="text-[10px] text-default-400 pl-3">
-                    {t("detail.more", { count: subtasks.length - 3 })}
-                  </div>
-                )}
+              <div className="h-1.5 w-full bg-default-100 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-primary rounded-full transition-all duration-300"
+                  style={{ width: `${subtasksProgress}%` }}
+                />
               </div>
             </div>
           )}
 
-          {/* Footer: Icons */}
+          {/* Footer Metadata */}
           <div
             className={cn(
-              "flex items-center justify-between border-t border-default-100/50",
-              compact ? "pt-1.5" : "pt-2"
+              "flex items-center justify-between border-t border-default-100/60 pt-2",
+              compact && "pt-1.5"
             )}
           >
-            <div className="flex items-center gap-2 sm:gap-3">
+            <div className="flex items-center gap-2.5">
               {task.dueDate && (
                 <div
                   className={cn(
-                    "flex items-center gap-1 font-semibold",
+                    "flex items-center gap-1 font-bold rounded-md px-1.5 py-0.5",
                     compact ? "text-[9px]" : "text-[10px]",
-                    isOverdue ? "text-danger" : "text-default-400"
+                    isOverdue
+                      ? "bg-danger/10 text-danger border border-danger/20 animate-pulse"
+                      : "bg-default-100/70 text-default-500"
                   )}
                 >
                   <CalendarClock className={cn(compact ? "h-3 w-3" : "h-3.5 w-3.5")} />
@@ -255,9 +242,16 @@ export function TaskCard({
               )}
             </div>
             {!compact && (
-            <button className="text-default-400 hover:text-primary transition-colors">
-              <MoreHorizontal className="h-4 w-4" />
-            </button>
+              <button
+                type="button"
+                className="text-default-400 hover:text-primary transition-colors p-1 rounded-md hover:bg-default-100"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  navigate(`/tasks/${task.id}`);
+                }}
+              >
+                <MoreHorizontal className="h-4 w-4" />
+              </button>
             )}
           </div>
         </CardBody>
@@ -265,3 +259,4 @@ export function TaskCard({
     </div>
   );
 }
+

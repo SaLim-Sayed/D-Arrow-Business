@@ -347,28 +347,40 @@ function KanbanColumn({
     );
   }
 
+  const statusAccentBg =
+    status === "todo"
+      ? "bg-default-400"
+      : status === "in_progress"
+        ? "bg-blue-500"
+        : status === "in_review"
+          ? "bg-orange-500"
+          : "bg-emerald-500";
+
   return (
     <div
       ref={columnRef}
       data-kanban-column={status}
       className={cn(
-        "flex h-full min-h-0 w-[min(300px,calc(100vw-2.5rem))] shrink-0 snap-center flex-col rounded-2xl transition-all duration-300 md:w-[300px]",
+        "relative flex h-full min-h-0 w-[min(300px,calc(100vw-2.5rem))] shrink-0 snap-center flex-col overflow-hidden rounded-2xl transition-all duration-300 md:w-[300px]",
         compact && "md:w-[260px] w-[min(260px,calc(100vw-2.5rem))]",
         config.bg,
         activeColumn === status && "ring-2 ring-primary/25 shadow-md",
         dimmed && "opacity-45 saturate-75 scale-[0.98]"
       )}
     >
-      <div className="sticky top-0 z-[2] flex shrink-0 items-center gap-1 px-2 py-2">
+      {/* Top status accent bar */}
+      <div className={cn("h-1 w-full shrink-0", statusAccentBg)} aria-hidden />
+
+      <div className="sticky top-0 z-[2] flex shrink-0 items-center gap-1 px-2.5 py-2">
         <button
           type="button"
           onClick={onJump}
-          className="flex min-w-0 flex-1 items-center gap-2 rounded-lg px-1 py-1 text-start transition-colors hover:bg-content1/40"
+          className="flex min-w-0 flex-1 items-center gap-2 rounded-xl px-1.5 py-1 text-start transition-colors hover:bg-content1/60"
           aria-label={t("board.jumpToColumn", { status: t(`status.${status}`) })}
         >
           <div
             className={cn(
-              "h-4 w-4 shrink-0 rounded-full border-[3px]",
+              "h-3.5 w-3.5 shrink-0 rounded-full border-[3px]",
               config.dot
             )}
           />
@@ -380,15 +392,27 @@ function KanbanColumn({
           >
             {t(`status.${status}`)}
           </h3>
-          <span className="ms-auto rounded-full bg-content1/80 px-2 py-0.5 text-[11px] font-semibold tabular-nums text-default-500">
+          <span className="ms-auto rounded-full bg-content1/90 px-2 py-0.5 text-[11px] font-extrabold tabular-nums text-default-600 shadow-xs">
             {tasks.length}
           </span>
         </button>
+
+        <Button
+          as={Link}
+          to={`/tasks/new?status=${status}`}
+          isIconOnly
+          size="sm"
+          variant="light"
+          className="h-7 w-7 min-w-7 rounded-lg text-default-500 hover:text-primary"
+          aria-label={t("board.addTask")}
+        >
+          <Plus className="h-3.5 w-3.5" />
+        </Button>
         <Button
           isIconOnly
           size="sm"
           variant="light"
-          className="h-7 w-7 min-w-7"
+          className="h-7 w-7 min-w-7 rounded-lg text-default-500 hover:text-primary"
           aria-label={t("board.focusMode.enter", { status: t(`status.${status}`) })}
           onPress={onFocusColumn}
         >
@@ -398,7 +422,7 @@ function KanbanColumn({
           isIconOnly
           size="sm"
           variant="light"
-          className="h-7 w-7 min-w-7"
+          className="h-7 w-7 min-w-7 rounded-lg text-default-500 hover:text-primary"
           aria-label={t("board.collapseColumn", { status: t(`status.${status}`) })}
           onPress={onToggleCollapse}
         >

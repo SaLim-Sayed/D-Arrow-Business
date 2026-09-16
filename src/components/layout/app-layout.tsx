@@ -29,7 +29,7 @@ export function AppLayout({ children }: { children?: React.ReactNode } = {}) {
       <div
         className={cn(
           "flex min-h-screen flex-col transition-[padding] duration-300",
-          showSidebar && (sidebarCollapsed ? "md:ps-[5.5rem]" : "md:ps-64"),
+          showSidebar && (sidebarCollapsed ? "md:ps-[5.5rem]" : "md:ps-72"),
           "print:ps-0 print:ms-0 print:min-h-0 print:block"
         )}
       >

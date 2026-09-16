@@ -5,6 +5,7 @@ import { PriorityBadge } from "@/components/shared/priority-badge";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { formatDate } from "@/lib/utils";
 import { localizedName } from "@/lib/localized-name";
+import { TASK_STATUSES, TASK_PRIORITIES } from "@/lib/constants";
 import {
   Avatar,
   Button,
@@ -22,11 +23,11 @@ import {
 import { Eye, MoreHorizontal, Plus, Trash2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Link, useNavigate } from "react-router-dom";
-import { useDeleteTask } from "../hooks/use-task-mutations";
+import { useDeleteTask, useUpdateTask } from "../hooks/use-task-mutations";
 import { useTasksQuery } from "../hooks/use-tasks";
 import { useTasksUIStore } from "../store/tasks-ui.store";
 import { useAllUsers } from "@/features/users/hooks/use-users";
-import type { Task } from "../types/task.types";
+import type { Task, TaskPriority, TaskStatus } from "../types/task.types";
 
 export function TasksListView() {
   const { t, i18n } = useTranslation("tasks");
@@ -50,6 +51,7 @@ export function TasksListView() {
   });
 
   const deleteTask = useDeleteTask();
+  const updateTask = useUpdateTask();
   const isLoading = isTasksLoading || !allUsers;
 
   const tasks = (data?.data ?? []).map((task: Task) => ({
@@ -69,7 +71,7 @@ export function TasksListView() {
         action={
           <Link
             to="/tasks/new"
-            className="inline-flex items-center justify-center rounded-lg border border-default-200 bg-content2 px-4 py-2 text-sm font-medium hover:bg-content3 transition-colors gap-2"
+            className="inline-flex items-center justify-center rounded-xl border border-default-200 bg-content2 px-4 py-2 text-sm font-semibold hover:bg-content3 transition-colors gap-2"
           >
             <Plus className="h-4 w-4" />
             {t("list.newTask")}
@@ -85,7 +87,7 @@ export function TasksListView() {
         aria-label="Tasks table"
         selectionMode="single"
         onRowAction={(key) => navigate(`/tasks/${key}`)}
-        className="bg-content1 rounded-xl"
+        className="bg-content1 rounded-2xl shadow-sm border border-default-200/80 overflow-hidden"
       >
         <TableHeader>
           <TableColumn className="min-w-[250px]">{t("list.columns.title")}</TableColumn>
@@ -109,28 +111,74 @@ export function TasksListView() {
               .slice(0, 2);
 
             return (
-              <TableRow key={task.id}>
+              <TableRow key={task.id} className="hover:bg-default-100/50 transition-colors">
                 <TableCell>
                   <div className="flex flex-col gap-0.5">
                     {task.parentId && (
                       <span
-                        className="text-[10px] font-medium text-primary cursor-pointer hover:underline"
+                        className="text-[10px] font-bold text-primary cursor-pointer hover:underline"
                         onClick={(e) => {
                           e.stopPropagation();
                           navigate(`/tasks/${task.parentId}`);
                         }}
                       >
-                        ↑ TASK-{task.parentId.slice(-4).toUpperCase()}
+                        ↑ TSK-{task.parentId.slice(-4).toUpperCase()}
                       </span>
                     )}
-                    <span className="font-medium">{task.title}</span>
+                    <span className="font-bold text-foreground text-sm">{task.title}</span>
                   </div>
                 </TableCell>
-                <TableCell>
-                  <StatusBadge status={task.status} />
+                <TableCell onClick={(e) => e.stopPropagation()}>
+                  <Dropdown>
+                    <DropdownTrigger>
+                      <button type="button" className="cursor-pointer hover:opacity-80 transition-opacity">
+                        <StatusBadge status={task.status} />
+                      </button>
+                    </DropdownTrigger>
+                    <DropdownMenu
+                      aria-label="Change status"
+                      selectionMode="single"
+                      selectedKeys={new Set([task.status])}
+                      onSelectionChange={(keys) => {
+                        const newStatus = Array.from(keys)[0] as TaskStatus;
+                        if (newStatus && newStatus !== task.status) {
+                          updateTask.mutate({ id: task.id, data: { status: newStatus } });
+                        }
+                      }}
+                    >
+                      {TASK_STATUSES.map((st) => (
+                        <DropdownItem key={st}>
+                          {t(`status.${st}`)}
+                        </DropdownItem>
+                      ))}
+                    </DropdownMenu>
+                  </Dropdown>
                 </TableCell>
-                <TableCell>
-                  <PriorityBadge priority={task.priority} />
+                <TableCell onClick={(e) => e.stopPropagation()}>
+                  <Dropdown>
+                    <DropdownTrigger>
+                      <button type="button" className="cursor-pointer hover:opacity-80 transition-opacity">
+                        <PriorityBadge priority={task.priority} />
+                      </button>
+                    </DropdownTrigger>
+                    <DropdownMenu
+                      aria-label="Change priority"
+                      selectionMode="single"
+                      selectedKeys={new Set([task.priority])}
+                      onSelectionChange={(keys) => {
+                        const newPriority = Array.from(keys)[0] as TaskPriority;
+                        if (newPriority && newPriority !== task.priority) {
+                          updateTask.mutate({ id: task.id, data: { priority: newPriority } });
+                        }
+                      }}
+                    >
+                      {TASK_PRIORITIES.map((pr) => (
+                        <DropdownItem key={pr} className="capitalize">
+                          {t(`priority.${pr}`)}
+                        </DropdownItem>
+                      ))}
+                    </DropdownMenu>
+                  </Dropdown>
                 </TableCell>
                 <TableCell className="hidden md:table-cell">
                   {task.assignee ? (
@@ -140,20 +188,21 @@ export function TasksListView() {
                         src={task.assignee.avatar}
                         fallback={initials}
                         showFallback
+                        className="h-6 w-6 text-[10px]"
                       />
-                      <span className="text-sm">{assigneeName}</span>
+                      <span className="text-xs font-semibold">{assigneeName}</span>
                     </div>
                   ) : (
-                    <span className="text-sm text-default-400">{t("form.assignee.unassigned")}</span>
+                    <span className="text-xs text-default-400">{t("form.assignee.unassigned")}</span>
                   )}
                 </TableCell>
-                <TableCell className="hidden md:table-cell text-sm">
+                <TableCell className="hidden md:table-cell text-xs font-semibold text-default-500">
                   {task.dueDate ? formatDate(task.dueDate) : "—"}
                 </TableCell>
-                <TableCell>
+                <TableCell onClick={(e) => e.stopPropagation()}>
                   <Dropdown>
                     <DropdownTrigger>
-                      <Button isIconOnly variant="light" size="sm">
+                      <Button isIconOnly variant="light" size="sm" className="rounded-lg">
                         <MoreHorizontal className="h-4 w-4" />
                       </Button>
                     </DropdownTrigger>
@@ -161,22 +210,18 @@ export function TasksListView() {
                       <DropdownItem
                         key="edit"
                         onPress={() => navigate(`/tasks/${task.id}`)}
-                        className="flex items-center gap-2"
+                        startContent={<Eye className="h-4 w-4 text-default-500" />}
                       >
-                        <div className="flex items-center gap-2">
-                          <Eye className="h-4 w-4" />
-                          {tc("actions.edit")}
-                        </div>
+                        {tc("actions.edit")}
                       </DropdownItem>
                       <DropdownItem
                         key="delete"
-                        className="text-danger flex items-center gap-2"
+                        className="text-danger"
+                        color="danger"
                         onPress={() => deleteTask.mutate(task.id)}
+                        startContent={<Trash2 className="h-4 w-4 text-danger" />}
                       >
-                        <div className="flex items-center gap-2">
-                          <Trash2 className="h-4 w-4" />
-                          {tc("actions.delete")}
-                        </div>
+                        {tc("actions.delete")}
                       </DropdownItem>
                     </DropdownMenu>
                   </Dropdown>

@@ -395,18 +395,18 @@ export function PortalSidebar({ portal }: PortalSidebarProps) {
     <aside
       className={cn(
         "fixed inset-y-0 start-0 z-30 hidden md:flex flex-col",
-        "border-e border-default-100 bg-sidebar text-sidebar-foreground",
+        "border-e border-default-200/80 bg-sidebar text-sidebar-foreground",
         "transition-all duration-300 shadow-premium overflow-y-auto print:hidden",
-        sidebarCollapsed ? "w-[5.5rem]" : "w-64"
+        sidebarCollapsed ? "w-[5.5rem]" : "w-72"
       )}
     >
       {/* Unified Top Header & Search Bar Section (Single Section) */}
       <div
         className={cn(
-          "border-b border-default-100/80 transition-all duration-300 bg-default-50/40",
+          "border-b border-default-200/80 transition-all duration-300 bg-default-50/60",
           sidebarCollapsed
             ? "flex h-16 items-center justify-center gap-1 px-1.5"
-            : "flex flex-col gap-2.5 p-3"
+            : "flex flex-col gap-3 p-3.5"
         )}
       >
         {sidebarCollapsed ? (
@@ -442,23 +442,23 @@ export function PortalSidebar({ portal }: PortalSidebarProps) {
         ) : (
           <>
             {/* Top Row: Logo + Portal Title + Collapse Button in Single Background */}
-            <div className="flex items-center justify-between gap-1.5 w-full">
-              <div className="flex items-center gap-2 min-w-0 flex-1">
+            <div className="flex items-center justify-between gap-2 w-full">
+              <div className="flex items-center gap-2.5 min-w-0 flex-1">
                 <Logo
                   size="sm"
                   variant="icon"
                   to="/"
                   title={t("portals.allApps")}
-                  className="h-8 w-8 shrink-0 [&_img]:h-8"
+                  className="h-9 w-9 shrink-0 [&_img]:h-9"
                 />
                 <Tooltip
                   content={portalDetails.titleAr}
                   placement={isRtl ? "bottom-start" : "bottom-end"}
                   delay={300}
                 >
-                  <div className="flex items-center gap-1.5 min-w-0 flex-1 px-1 py-1 transition-all cursor-default">
-                    <PortalIcon className={cn("h-4 w-4 shrink-0", portalDetails.iconColor)} />
-                    <span className="text-xs font-black truncate text-default-900 leading-none">
+                  <div className="flex items-center gap-2 min-w-0 flex-1 px-1 py-1 transition-all cursor-default">
+                    <PortalIcon className={cn("h-5 w-5 shrink-0", portalDetails.iconColor)} />
+                    <span className="text-sm font-extrabold truncate text-foreground leading-snug">
                       {portalDetails.titleAr}
                     </span>
                   </div>
@@ -470,11 +470,11 @@ export function PortalSidebar({ portal }: PortalSidebarProps) {
                   isIconOnly
                   variant="flat"
                   size="sm"
-                  className="h-7.5 w-7.5 min-w-7.5 shrink-0 bg-transparent hover:bg-default-100/70 text-default-500 hover:text-default-900 border-none shadow-none"
+                  className="h-8 w-8 min-w-8 shrink-0 bg-transparent hover:bg-default-200/60 text-default-500 hover:text-foreground border-none shadow-none rounded-xl"
                   aria-label={expandLabel}
                   onPress={toggleSidebar}
                 >
-                  <CollapseIcon className="h-4 w-4" />
+                  <CollapseIcon className="h-4.5 w-4.5" />
                 </Button>
               </Tooltip>
             </div>
@@ -482,15 +482,15 @@ export function PortalSidebar({ portal }: PortalSidebarProps) {
             {/* Bottom Row: Search Input Bar & Action Buttons */}
             <div className="flex items-center gap-1.5 w-full">
               {/* Search Input Bar (Flex-1) */}
-              <div className="group/search relative flex flex-1 items-center min-w-0 rounded-xl bg-default-100/80 hover:bg-default-200/50 border border-default-200/80 focus-within:border-primary focus-within:bg-background focus-within:ring-2 focus-within:ring-primary/15 transition-all shadow-2xs">
-                <Search className="absolute start-2.5 h-3.5 w-3.5 text-default-400 group-focus-within/search:text-primary transition-colors pointer-events-none" />
+              <div className="group/search relative flex flex-1 items-center min-w-0 rounded-xl bg-default-100/90 hover:bg-default-200/60 border border-default-200/80 focus-within:border-primary focus-within:bg-background focus-within:ring-2 focus-within:ring-primary/20 transition-all shadow-2xs">
+                <Search className="absolute start-3 h-4 w-4 text-default-400 group-focus-within/search:text-primary transition-colors pointer-events-none" />
                 <input
                   ref={searchInputRef}
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="ابحث هنا..."
-                  className="w-full h-8 ps-8 pe-7 text-xs font-medium bg-transparent outline-none transition-all placeholder:text-default-400"
+                  className="w-full h-9 ps-9 pe-7 text-xs md:text-sm font-medium bg-transparent outline-none transition-all placeholder:text-default-400"
                 />
                 {searchQuery ? (
                   <button
@@ -499,7 +499,7 @@ export function PortalSidebar({ portal }: PortalSidebarProps) {
                     className="absolute end-2 p-0.5 text-default-400 hover:text-default-700 rounded-full hover:bg-default-200 transition-colors"
                     title="مسح"
                   >
-                    <X className="h-3 w-3" />
+                    <X className="h-3.5 w-3.5" />
                   </button>
                 ) : null}
               </div>
@@ -510,10 +510,10 @@ export function PortalSidebar({ portal }: PortalSidebarProps) {
                   <button
                     type="button"
                     onClick={handleExpandAll}
-                    className="h-8 w-8 flex items-center justify-center rounded-xl text-default-600 hover:text-primary bg-background hover:bg-default-100 transition-all border border-default-200/70 shadow-2xs"
+                    className="h-9 w-9 flex items-center justify-center rounded-xl text-default-600 hover:text-primary bg-background hover:bg-default-100 transition-all border border-default-200/70 shadow-2xs"
                     aria-label="توسيع الكل"
                   >
-                    <Maximize2 className="h-3.5 w-3.5 text-primary/80" />
+                    <Maximize2 className="h-4 w-4 text-primary/80" />
                   </button>
                 </Tooltip>
 
@@ -521,10 +521,10 @@ export function PortalSidebar({ portal }: PortalSidebarProps) {
                   <button
                     type="button"
                     onClick={handleCollapseAll}
-                    className="h-8 w-8 flex items-center justify-center rounded-xl text-default-600 hover:text-primary bg-background hover:bg-default-100 transition-all border border-default-200/70 shadow-2xs"
+                    className="h-9 w-9 flex items-center justify-center rounded-xl text-default-600 hover:text-primary bg-background hover:bg-default-100 transition-all border border-default-200/70 shadow-2xs"
                     aria-label="طي الكل"
                   >
-                    <Minimize2 className="h-3.5 w-3.5 text-default-500" />
+                    <Minimize2 className="h-4 w-4 text-default-500" />
                   </button>
                 </Tooltip>
               </div>
@@ -540,13 +540,13 @@ export function PortalSidebar({ portal }: PortalSidebarProps) {
             <nav
               ref={provided.innerRef}
               {...provided.droppableProps}
-              className="flex-1 space-y-2 p-2.5 overflow-y-auto"
+              className="flex-1 space-y-2 p-3 overflow-y-auto"
             >
               {/* Favorites Category Section */}
               {favoriteItems.length > 0 && !searchQuery.trim() && !sidebarCollapsed && (
-                <div className="mb-3 p-2 rounded-xl bg-amber-500/10 border border-amber-500/20 space-y-1">
-                  <div className="flex items-center gap-1.5 px-1 py-0.5 text-xs font-bold text-amber-600 dark:text-amber-400">
-                    <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-500" />
+                <div className="mb-3 p-2.5 rounded-2xl bg-amber-500/10 border border-amber-500/25 space-y-1.5 shadow-2xs">
+                  <div className="flex items-center gap-1.5 px-1 py-0.5 text-xs md:text-sm font-extrabold text-amber-600 dark:text-amber-400">
+                    <Star className="h-4 w-4 fill-amber-400 text-amber-500" />
                     <span>المفضلة والوصول السريع</span>
                   </div>
                   <div className="space-y-1 pt-1">
@@ -560,15 +560,15 @@ export function PortalSidebar({ portal }: PortalSidebarProps) {
                           end={item.end}
                           className={({ isActive }) =>
                             cn(
-                              "flex items-center justify-between rounded-lg px-2.5 py-1.5 text-xs font-medium transition-all",
+                              "flex items-center justify-between rounded-xl px-3 py-2 text-xs md:text-sm font-bold transition-all",
                               isActive
-                                ? "text-amber-600 dark:text-amber-400 font-extrabold bg-amber-500/15"
-                                : "text-default-700 hover:bg-amber-500/10 hover:text-amber-900 font-medium"
+                                ? "text-amber-600 dark:text-amber-400 font-black bg-amber-500/20 shadow-2xs"
+                                : "text-default-700 hover:bg-amber-500/10 hover:text-amber-900"
                             )
                           }
                         >
-                          <div className="flex items-center gap-2 min-w-0">
-                            <Icon className="h-3.5 w-3.5 shrink-0" />
+                          <div className="flex items-center gap-2.5 min-w-0">
+                            <Icon className="h-4 w-4 shrink-0 text-amber-500" />
                             <span className="truncate">{label}</span>
                           </div>
                           <button
@@ -577,7 +577,7 @@ export function PortalSidebar({ portal }: PortalSidebarProps) {
                             className="text-amber-400 hover:text-amber-600 p-0.5"
                             title="إزالة من المفضلة"
                           >
-                            <Star className="h-3 w-3 fill-current" />
+                            <Star className="h-3.5 w-3.5 fill-current" />
                           </button>
                         </NavLink>
                       );
@@ -608,7 +608,7 @@ export function PortalSidebar({ portal }: PortalSidebarProps) {
                         ref={draggableProvided.innerRef}
                         {...draggableProvided.draggableProps}
                         className={cn(
-                          "rounded-xl transition-all duration-200",
+                          "rounded-2xl transition-all duration-200",
                           snapshot.isDragging &&
                             "z-50 shadow-xl scale-[1.02] bg-background border border-primary/40"
                         )}
@@ -617,9 +617,9 @@ export function PortalSidebar({ portal }: PortalSidebarProps) {
                         {!sidebarCollapsed ? (
                           <div
                             className={cn(
-                              "group/node flex items-center justify-between px-2.5 py-2 rounded-xl transition-all duration-200 cursor-pointer select-none",
+                              "group/node flex items-center justify-between px-3 py-2.5 rounded-xl transition-all duration-200 cursor-pointer select-none",
                               containsActiveChild
-                                ? "text-primary font-black bg-transparent"
+                                ? "text-primary font-black bg-primary/5"
                                 : "hover:bg-default-100/80"
                             )}
                             onClick={() => toggleGroup(group.id)}
@@ -631,29 +631,29 @@ export function PortalSidebar({ portal }: PortalSidebarProps) {
                                 className="cursor-grab active:cursor-grabbing p-0.5 text-default-300 hover:text-default-600 opacity-0 group-hover/node:opacity-100 transition-opacity"
                                 title="اسحب لإعادة ترتيب المجموعة"
                               >
-                                <GripVertical className="h-3.5 w-3.5" />
+                                <GripVertical className="h-4 w-4" />
                               </div>
 
-                              <div className="flex items-center gap-2 min-w-0 flex-1 text-start">
+                              <div className="flex items-center gap-2.5 min-w-0 flex-1 text-start">
                                 {isExpanded ? (
                                   <FolderOpen
                                     className={cn(
-                                      "h-4 w-4 shrink-0 transition-colors",
+                                      "h-4.5 w-4.5 shrink-0 transition-colors",
                                       containsActiveChild ? "text-primary fill-primary/20" : "text-primary/70"
                                     )}
                                   />
                                 ) : (
                                   <Folder
                                     className={cn(
-                                      "h-4 w-4 shrink-0 transition-colors",
+                                      "h-4.5 w-4.5 shrink-0 transition-colors",
                                       containsActiveChild ? "text-primary fill-primary/20" : "text-default-400"
                                     )}
                                   />
                                 )}
                                 <span
                                   className={cn(
-                                    "text-xs font-bold truncate",
-                                    containsActiveChild ? "text-primary font-black" : "text-default-800"
+                                    "text-xs md:text-sm font-extrabold truncate",
+                                    containsActiveChild ? "text-primary font-black" : "text-foreground"
                                   )}
                                 >
                                   {getGroupLabel(group)}
@@ -665,7 +665,7 @@ export function PortalSidebar({ portal }: PortalSidebarProps) {
                               <div className="p-0.5 text-default-400 group-hover/node:text-default-700 transition-transform">
                                 <ChevronDown
                                   className={cn(
-                                    "h-3.5 w-3.5 transition-transform duration-200",
+                                    "h-4 w-4 transition-transform duration-200",
                                     !isExpanded && "-rotate-90 rtl:rotate-90"
                                   )}
                                 />
@@ -684,7 +684,7 @@ export function PortalSidebar({ portal }: PortalSidebarProps) {
                                 className={cn(
                                   sidebarCollapsed
                                     ? "space-y-1.5"
-                                    : "relative ms-5 ps-3 border-s-2 space-y-1 my-1 transition-colors",
+                                    : "relative ms-6 ps-3 border-s-2 space-y-1.5 my-1.5 transition-colors",
                                   containsActiveChild ? "border-primary/50" : "border-default-200"
                                 )}
                               >
@@ -732,7 +732,7 @@ export function PortalSidebar({ portal }: PortalSidebarProps) {
                                                   className="cursor-grab active:cursor-grabbing p-1 text-default-300 hover:text-default-600 opacity-0 group-hover/item:opacity-100 transition-opacity"
                                                   title="اسحب لإعادة الترتيب داخل المجموعة"
                                                 >
-                                                  <GripVertical className="h-3 w-3" />
+                                                  <GripVertical className="h-3.5 w-3.5" />
                                                 </div>
                                               )}
 
@@ -741,11 +741,11 @@ export function PortalSidebar({ portal }: PortalSidebarProps) {
                                                 end={item.end}
                                                 className={({ isActive }) =>
                                                   cn(
-                                                    "relative flex flex-1 items-center gap-2 rounded-xl px-2.5 py-1.5 text-xs transition-all duration-200",
+                                                    "relative flex flex-1 items-center gap-2.5 rounded-xl px-3 py-2 text-xs md:text-sm transition-all duration-200",
                                                     "hover:scale-[1.01] active:scale-[0.98]",
                                                     isActive
-                                                      ? "text-primary font-black bg-transparent"
-                                                      : "text-default-600 hover:bg-default-100/70 hover:text-default-900 font-semibold",
+                                                      ? "text-primary font-black bg-primary/10 border-s-3 border-primary shadow-2xs"
+                                                      : "text-default-700 hover:bg-default-100/80 hover:text-foreground font-bold",
                                                     sidebarCollapsed && "justify-center px-0 py-3"
                                                   )
                                                 }
@@ -754,19 +754,19 @@ export function PortalSidebar({ portal }: PortalSidebarProps) {
                                                   <>
                                                     <Icon
                                                       className={cn(
-                                                        "h-4 w-4 shrink-0 transition-transform group-hover/item:scale-110",
+                                                        "h-4.5 w-4.5 shrink-0 transition-transform group-hover/item:scale-110",
                                                         isActive
                                                           ? "text-primary fill-primary/20"
-                                                          : "text-default-500 group-hover/item:text-default-900"
+                                                          : "text-default-500 group-hover/item:text-foreground"
                                                       )}
                                                     />
                                                     {!sidebarCollapsed && (
                                                       <span
                                                         className={cn(
-                                                          "truncate flex-1",
+                                                          "truncate flex-1 text-xs md:text-sm",
                                                           isActive
                                                             ? "text-primary font-black"
-                                                            : "text-default-700 font-semibold"
+                                                            : "text-default-800 font-bold"
                                                         )}
                                                       >
                                                         {label}
@@ -833,14 +833,14 @@ export function PortalSidebar({ portal }: PortalSidebarProps) {
 
       {/* Footer controls */}
       {portals.length > 1 && (
-        <div className="border-t border-default-100 p-2.5 space-y-1.5 bg-default-50/40">
+        <div className="border-t border-default-200/80 p-3 space-y-1.5 bg-default-50/60">
           {!sidebarCollapsed && (
             <button
               type="button"
               onClick={handleResetOrder}
-              className="flex items-center justify-center gap-2 text-[11px] text-default-400 hover:text-default-700 px-3 py-1.5 w-full rounded-lg transition-colors"
+              className="flex items-center justify-center gap-2 text-xs font-bold text-default-400 hover:text-foreground px-3 py-1.5 w-full rounded-xl transition-colors"
             >
-              <RotateCcw className="h-3 w-3" />
+              <RotateCcw className="h-3.5 w-3.5" />
               <span>إعادة الترتيب الشجري الافتراضي</span>
             </button>
           )}
@@ -854,12 +854,12 @@ export function PortalSidebar({ portal }: PortalSidebarProps) {
               type="button"
               onClick={() => setPortalPickerOpen(true)}
               className={cn(
-                "flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-xs font-semibold transition-all",
-                "text-default-500 hover:bg-default-100",
+                "flex w-full items-center gap-3 rounded-xl px-3.5 py-2.5 text-xs md:text-sm font-extrabold transition-all",
+                "text-default-700 hover:bg-default-200/60 hover:text-foreground",
                 sidebarCollapsed && "justify-center px-0"
               )}
             >
-              <LayoutGrid className="h-4 w-4 shrink-0" />
+              <LayoutGrid className="h-4.5 w-4.5 shrink-0 text-primary" />
               {!sidebarCollapsed && (
                 <span className="truncate">{t("portals.allApps")}</span>
               )}

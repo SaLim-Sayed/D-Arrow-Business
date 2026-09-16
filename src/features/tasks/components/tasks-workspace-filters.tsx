@@ -8,7 +8,7 @@ import {
   DropdownTrigger,
   Input,
 } from "@heroui/react";
-import { Filter, Search, UserCircle2, X, CircleDot } from "lucide-react";
+import { Filter, Search, UserCircle2, X, CircleDot, AlertTriangle, CheckCircle2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 import { localizedName } from "@/lib/localized-name";
@@ -39,7 +39,7 @@ export function TasksWorkspaceFilters({ compact }: TasksWorkspaceFiltersProps) {
     filters.completedThisWeek;
 
   return (
-    <div className="flex flex-wrap items-center gap-3">
+    <div className="flex flex-wrap items-center gap-2">
       <Input
         isClearable
         size="sm"
@@ -48,10 +48,10 @@ export function TasksWorkspaceFilters({ compact }: TasksWorkspaceFiltersProps) {
         value={filters.search}
         onValueChange={(val) => setFilter("search", val)}
         startContent={<Search className="h-3.5 w-3.5 text-default-400" />}
-        className={compact ? "w-64" : "w-60"}
+        className={compact ? "w-56" : "w-60"}
         classNames={{
-          input: compact ? "text-xs" : "text-sm",
-          inputWrapper: "rounded-lg border-default-200",
+          input: compact ? "text-xs" : "text-xs font-medium",
+          inputWrapper: "rounded-xl border-default-200/80 bg-content1 shadow-xs h-9 min-h-9",
         }}
       />
 
@@ -61,15 +61,15 @@ export function TasksWorkspaceFilters({ compact }: TasksWorkspaceFiltersProps) {
             size="sm"
             variant="bordered"
             className={cn(
-              "rounded-lg border-default-200 font-medium gap-2",
-              compact ? "text-xs font-bold" : "text-sm",
-              filters.status.length > 0 && "border-primary/40 bg-primary/5 text-primary"
+              "rounded-xl border-default-200/80 bg-content1 font-semibold gap-1.5 h-9 min-h-9",
+              compact ? "text-xs" : "text-xs",
+              filters.status.length > 0 && "border-primary/40 bg-primary/10 text-primary"
             )}
             startContent={<CircleDot className="h-3.5 w-3.5" />}
           >
             {t("list.columns.status")}
             {filters.status.length > 0 && (
-              <Chip size="sm" color="primary" variant="flat" className="h-4 text-[9px]">
+              <Chip size="sm" color="primary" variant="flat" className="h-4 text-[9px] font-bold px-1 min-w-4">
                 {filters.status.length}
               </Chip>
             )}
@@ -99,15 +99,15 @@ export function TasksWorkspaceFilters({ compact }: TasksWorkspaceFiltersProps) {
             size="sm"
             variant="bordered"
             className={cn(
-              "rounded-lg border-default-200 font-medium gap-2",
-              compact ? "text-xs font-bold" : "text-sm",
-              filters.priority.length > 0 && "border-primary/40 bg-primary/5 text-primary"
+              "rounded-xl border-default-200/80 bg-content1 font-semibold gap-1.5 h-9 min-h-9",
+              compact ? "text-xs" : "text-xs",
+              filters.priority.length > 0 && "border-primary/40 bg-primary/10 text-primary"
             )}
             startContent={<Filter className="h-3.5 w-3.5" />}
           >
             {t("form.priority.label")}
             {filters.priority.length > 0 && (
-              <Chip size="sm" color="primary" variant="flat" className="h-4 text-[9px]">
+              <Chip size="sm" color="primary" variant="flat" className="h-4 text-[9px] font-bold px-1 min-w-4">
                 {filters.priority.length}
               </Chip>
             )}
@@ -135,9 +135,9 @@ export function TasksWorkspaceFilters({ compact }: TasksWorkspaceFiltersProps) {
             size="sm"
             variant="bordered"
             className={cn(
-              "rounded-lg border-default-200 font-medium gap-2",
-              compact ? "text-xs font-bold" : "text-sm",
-              filters.assigneeId && "border-primary/40 bg-primary/5 text-primary"
+              "rounded-xl border-default-200/80 bg-content1 font-semibold gap-1.5 h-9 min-h-9",
+              compact ? "text-xs" : "text-xs",
+              filters.assigneeId && "border-primary/40 bg-primary/10 text-primary"
             )}
             startContent={
               selectedAssignee ? (
@@ -145,7 +145,7 @@ export function TasksWorkspaceFilters({ compact }: TasksWorkspaceFiltersProps) {
                   src={selectedAssignee.avatar}
                   name={selectedAssignee.name}
                   size="sm"
-                  className={compact ? "h-4 w-4 text-[8px]" : "h-5 w-5 text-[9px]"}
+                  className={compact ? "h-4 w-4 text-[8px]" : "h-4.5 w-4.5 text-[9px]"}
                   showFallback
                 />
               ) : (
@@ -159,10 +159,10 @@ export function TasksWorkspaceFilters({ compact }: TasksWorkspaceFiltersProps) {
                   nameAr: selectedAssignee.nameAr,
                 })
               : t("form.assignee.label")}
-            {selectedAssignee && !compact && (
+            {selectedAssignee && (
               <span
                 role="button"
-                className="ml-1 hover:text-danger"
+                className="ms-1 hover:text-danger p-0.5"
                 onClick={(e) => {
                   e.stopPropagation();
                   setFilter("assigneeId", null);
@@ -190,7 +190,7 @@ export function TasksWorkspaceFilters({ compact }: TasksWorkspaceFiltersProps) {
                   src={u.avatar}
                   name={u.name}
                   size="sm"
-                  className="h-6 w-6 text-[10px]"
+                  className="h-5 w-5 text-[9px]"
                   showFallback
                 />
               }
@@ -201,13 +201,45 @@ export function TasksWorkspaceFilters({ compact }: TasksWorkspaceFiltersProps) {
         </DropdownMenu>
       </Dropdown>
 
+      {/* Quick Filter Pill: Overdue */}
+      <Button
+        size="sm"
+        variant="bordered"
+        onPress={() => setFilter("overdueOnly", !filters.overdueOnly)}
+        className={cn(
+          "rounded-xl font-bold gap-1 h-9 min-h-9 text-xs transition-colors",
+          filters.overdueOnly
+            ? "border-danger/40 bg-danger/10 text-danger"
+            : "border-default-200/80 bg-content1 text-default-600 hover:text-danger"
+        )}
+        startContent={<AlertTriangle className="h-3.5 w-3.5" />}
+      >
+        {t("dashboard.overdue")}
+      </Button>
+
+      {/* Quick Filter Pill: Completed This Week */}
+      <Button
+        size="sm"
+        variant="bordered"
+        onPress={() => setFilter("completedThisWeek", !filters.completedThisWeek)}
+        className={cn(
+          "rounded-xl font-bold gap-1 h-9 min-h-9 text-xs transition-colors",
+          filters.completedThisWeek
+            ? "border-success/40 bg-success/10 text-success"
+            : "border-default-200/80 bg-content1 text-default-600 hover:text-success"
+        )}
+        startContent={<CheckCircle2 className="h-3.5 w-3.5" />}
+      >
+        {t("dashboard.completedThisWeek")}
+      </Button>
+
       {hasActiveFilters && (
         <Button
           size="sm"
           variant="light"
           color="danger"
           onPress={resetFilters}
-          className={cn("font-medium", compact ? "text-xs font-bold" : "text-sm")}
+          className="font-bold text-xs h-9 min-h-9 rounded-xl"
           startContent={<X className="h-3.5 w-3.5" />}
         >
           {tc("actions.reset")}
@@ -216,3 +248,4 @@ export function TasksWorkspaceFilters({ compact }: TasksWorkspaceFiltersProps) {
     </div>
   );
 }
+

@@ -71,7 +71,7 @@ export function Header({
         hasPortalSidebar &&
           (sidebarCollapsed
             ? "md:inset-x-auto md:start-[5.5rem] md:end-0"
-            : "md:inset-x-auto md:start-64 md:end-0")
+            : "md:inset-x-auto md:start-72 md:end-0")
       )}
     >
       {/* Start side controls */}

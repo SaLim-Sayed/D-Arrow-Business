@@ -6,12 +6,6 @@ import {
   Input,
   Chip,
   User,
-  Table,
-  TableHeader,
-  TableColumn,
-  TableBody,
-  TableRow,
-  TableCell,
   Drawer,
   DrawerContent,
   DrawerHeader,
@@ -63,7 +57,7 @@ export default function TaskDailyReportsPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [blockersFilter, setBlockersFilter] = useState<string>("all");
   const [selectedDate, setSelectedDate] = useState<string>("");
-  const [viewMode, setViewMode] = useState<"grid" | "table">("grid");
+  const [viewMode, setViewMode] = useState<"grid" | "table">("table");
 
   // Selected Detail Drawer State
   const [selectedReport, setSelectedReport] = useState<DailyReport | null>(null);
@@ -318,22 +312,22 @@ export default function TaskDailyReportsPage() {
   };
 
   return (
-    <div dir={isAr ? "rtl" : "ltr"} className="p-6 md:p-10 space-y-8 max-w-7xl mx-auto">
+    <div dir={isAr ? "rtl" : "ltr"} className="w-full space-y-5 overflow-hidden p-3 sm:p-4 md:p-6">
       {/* Top Banner & Title */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 w-full">
         <div>
           <div className="flex items-center gap-3">
-            <div className="p-3.5 rounded-2xl bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20 shadow-sm">
-              <ListTodo size={28} />
+            <div className="p-2.5 rounded-2xl bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20 shadow-sm">
+              <ListTodo size={24} />
             </div>
             <div>
-              <h1 className="text-2xl md:text-3xl font-black text-foreground tracking-tight flex items-center gap-2">
+              <h1 className="text-xl md:text-2xl font-black text-foreground tracking-tight flex items-center gap-2">
                 {t("daily_report.page_title", "تقارير إنجاز المهام اليومية")}
-                <Chip size="sm" color="secondary" variant="flat" className="font-bold text-xs">
+                <Chip size="sm" color="secondary" variant="flat" className="font-bold text-[11px] h-5">
                   {filteredReports.length} {isAr ? "تقرير" : "reports"}
                 </Chip>
               </h1>
-              <p className="text-sm text-default-400 mt-1">
+              <p className="text-xs text-default-400 mt-0.5">
                 {t("daily_report.page_subtitle", "متابعة إنجازات الفريق والمهام المكتملة والمعوقات اليومية")}
               </p>
             </div>
@@ -346,8 +340,8 @@ export default function TaskDailyReportsPage() {
             color="primary"
             onPress={fetchReports}
             isLoading={loading}
-            startContent={<RefreshCw size={16} />}
-            className="font-bold text-xs rounded-2xl h-11"
+            startContent={<RefreshCw size={15} />}
+            className="font-bold text-xs rounded-xl h-9 px-3"
           >
             {t("daily_report.refresh", "تحديث البيانات")}
           </Button>
@@ -355,70 +349,70 @@ export default function TaskDailyReportsPage() {
       </div>
 
       {/* Analytics KPI Section */}
-      <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
-        <Card className="border border-default-200/60 shadow-sm rounded-3xl bg-background/60 backdrop-blur-xl hover:border-purple-500/30 transition-all">
-          <CardBody className="p-4 flex items-center gap-3">
-            <div className="p-3 rounded-2xl bg-purple-500/10 text-purple-600 dark:text-purple-400">
-              <Briefcase size={22} />
+      <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-5 gap-3 w-full">
+        <Card className="border border-default-200/60 shadow-sm rounded-2xl bg-background/60 backdrop-blur-xl hover:border-purple-500/30 transition-all">
+          <CardBody className="p-3 flex items-center gap-2.5">
+            <div className="p-2.5 rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400 shrink-0">
+              <Briefcase size={18} />
             </div>
-            <div>
-              <p className="text-xs text-default-400 font-semibold">{isAr ? "إجمالي التقارير" : "Total Reports"}</p>
-              <h3 className="text-xl font-black text-foreground">{metrics.totalReports}</h3>
+            <div className="min-w-0">
+              <p className="text-[11px] text-default-400 font-semibold truncate">{isAr ? "إجمالي التقارير" : "Total Reports"}</p>
+              <h3 className="text-lg font-black text-foreground">{metrics.totalReports}</h3>
             </div>
           </CardBody>
         </Card>
 
-        <Card className="border border-default-200/60 shadow-sm rounded-3xl bg-background/60 backdrop-blur-xl hover:border-emerald-500/30 transition-all">
-          <CardBody className="p-4 flex items-center gap-3">
-            <div className="p-3 rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
-              <CheckCircle2 size={22} />
+        <Card className="border border-default-200/60 shadow-sm rounded-2xl bg-background/60 backdrop-blur-xl hover:border-emerald-500/30 transition-all">
+          <CardBody className="p-3 flex items-center gap-2.5">
+            <div className="p-2.5 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 shrink-0">
+              <CheckCircle2 size={18} />
             </div>
-            <div>
-              <p className="text-xs text-default-400 font-semibold">{isAr ? "المهام المنجزة" : "Tasks Done"}</p>
-              <h3 className="text-xl font-black text-emerald-600 dark:text-emerald-400">
+            <div className="min-w-0">
+              <p className="text-[11px] text-default-400 font-semibold truncate">{isAr ? "المهام المنجزة" : "Tasks Done"}</p>
+              <h3 className="text-lg font-black text-emerald-600 dark:text-emerald-400">
                 {metrics.totalCompletedTasks}
               </h3>
             </div>
           </CardBody>
         </Card>
 
-        <Card className="border border-default-200/60 shadow-sm rounded-3xl bg-background/60 backdrop-blur-xl hover:border-amber-500/30 transition-all">
-          <CardBody className="p-4 flex items-center gap-3">
-            <div className="p-3 rounded-2xl bg-amber-500/10 text-amber-600 dark:text-amber-400">
-              <Clock size={22} />
+        <Card className="border border-default-200/60 shadow-sm rounded-2xl bg-background/60 backdrop-blur-xl hover:border-amber-500/30 transition-all">
+          <CardBody className="p-3 flex items-center gap-2.5">
+            <div className="p-2.5 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 shrink-0">
+              <Clock size={18} />
             </div>
-            <div>
-              <p className="text-xs text-default-400 font-semibold">{isAr ? "قيد التنفيذ" : "In Progress"}</p>
-              <h3 className="text-xl font-black text-amber-600 dark:text-amber-400">
+            <div className="min-w-0">
+              <p className="text-[11px] text-default-400 font-semibold truncate">{isAr ? "قيد التنفيذ" : "In Progress"}</p>
+              <h3 className="text-lg font-black text-amber-600 dark:text-amber-400">
                 {metrics.totalInProgressTasks}
               </h3>
             </div>
           </CardBody>
         </Card>
 
-        <Card className="border border-default-200/60 shadow-sm rounded-3xl bg-background/60 backdrop-blur-xl hover:border-danger-500/30 transition-all">
-          <CardBody className="p-4 flex items-center gap-3">
-            <div className="p-3 rounded-2xl bg-danger-500/10 text-danger">
-              <AlertTriangle size={22} />
+        <Card className="border border-default-200/60 shadow-sm rounded-2xl bg-background/60 backdrop-blur-xl hover:border-danger-500/30 transition-all">
+          <CardBody className="p-3 flex items-center gap-2.5">
+            <div className="p-2.5 rounded-xl bg-danger-500/10 text-danger shrink-0">
+              <AlertTriangle size={18} />
             </div>
-            <div>
-              <p className="text-xs text-default-400 font-semibold">{isAr ? "المعوقات والمخاطر" : "Blockers"}</p>
-              <h3 className="text-xl font-black text-danger">
+            <div className="min-w-0">
+              <p className="text-[11px] text-default-400 font-semibold truncate">{isAr ? "المعوقات" : "Blockers"}</p>
+              <h3 className="text-lg font-black text-danger">
                 {metrics.reportsWithBlockers}
               </h3>
             </div>
           </CardBody>
         </Card>
 
-        <Card className="col-span-2 lg:col-span-1 border border-default-200/60 shadow-sm rounded-3xl bg-background/60 backdrop-blur-xl hover:border-primary-500/30 transition-all">
-          <CardBody className="p-4 flex items-center gap-3">
-            <div className="p-3 rounded-2xl bg-primary/10 text-primary">
-              <Star size={22} />
+        <Card className="col-span-2 sm:col-span-1 border border-default-200/60 shadow-sm rounded-2xl bg-background/60 backdrop-blur-xl hover:border-primary-500/30 transition-all">
+          <CardBody className="p-3 flex items-center gap-2.5">
+            <div className="p-2.5 rounded-xl bg-primary/10 text-primary shrink-0">
+              <Star size={18} />
             </div>
-            <div>
-              <p className="text-xs text-default-400 font-semibold">{isAr ? "متوسط الإنتاجية" : "Avg Rating"}</p>
+            <div className="min-w-0">
+              <p className="text-[11px] text-default-400 font-semibold truncate">{isAr ? "متوسط الإنتاجية" : "Avg Rating"}</p>
               <div className="flex items-center gap-1">
-                <h3 className="text-xl font-black text-foreground">{metrics.avgProductivity}</h3>
+                <h3 className="text-lg font-black text-foreground">{metrics.avgProductivity}</h3>
                 <span className="text-xs text-amber-500">★</span>
               </div>
             </div>
@@ -704,114 +698,153 @@ export default function TaskDailyReportsPage() {
         </div>
       )}
 
-      {/* Table View */}
+      {/* Compact Table View (List Mode) */}
       {viewMode === "table" && filteredReports.length > 0 && (
-        <Card className="border border-default-200/60 shadow-sm rounded-3xl bg-background/60 backdrop-blur-xl overflow-hidden">
-          <CardBody className="p-0">
-            <Table aria-label="جدول تقارير إنجاز المهام" className="w-full">
-              <TableHeader>
-                <TableColumn>{t("daily_report.col_employee", "الموظف")}</TableColumn>
-                <TableColumn>{t("daily_report.col_date_time", "التاريخ والوقت")}</TableColumn>
-                <TableColumn>{t("daily_report.col_tasks", "المهام المكتملة")}</TableColumn>
-                <TableColumn>{t("daily_report.task_in_progress", "قيد التنفيذ")}</TableColumn>
-                <TableColumn>{t("daily_report.col_summary", "الملخص والمعوقات")}</TableColumn>
-                <TableColumn align="center">{isAr ? "الإجراءات" : "Actions"}</TableColumn>
-              </TableHeader>
-              <TableBody emptyContent="لا توجد تقارير مهام مطابقة">
-                {filteredReports.map((report) => (
-                  <TableRow key={report.id} className="hover:bg-default-50/50 transition-colors">
-                    <TableCell>
-                      <User
-                        name={report.employeeName}
-                        avatarProps={{
-                          src: report.userPhotoUrl,
-                          name: report.employeeName.slice(0, 2),
-                          size: "sm",
-                          className: "bg-purple-500/20 text-purple-600 font-bold",
-                        }}
-                      />
-                    </TableCell>
+        <Card className="border border-default-200/80 shadow-sm rounded-2xl bg-background/80 backdrop-blur-xl overflow-hidden">
+          <CardBody className="p-0 overflow-x-auto scrollbar-thin scrollbar-thumb-default-300">
+            <table className="w-full text-xs border-collapse text-start" dir={isAr ? "rtl" : "ltr"}>
+              <thead>
+                <tr className="border-b border-default-200/70 bg-default-100/70 text-default-600 font-bold text-[11px] uppercase tracking-wide">
+                  <th className="px-3 py-2.5 text-start whitespace-nowrap">{t("daily_report.col_employee", "الموظف")}</th>
+                  <th className="px-3 py-2.5 text-start whitespace-nowrap">{t("daily_report.col_date_time", "التاريخ والوقت")}</th>
+                  <th className="px-3 py-2.5 text-start">{t("daily_report.col_summary", "الملخص والمهام")}</th>
+                  <th className="px-3 py-2.5 text-start whitespace-nowrap">{isAr ? "التقييم والحالة" : "Rating & Status"}</th>
+                  <th className="px-3 py-2.5 text-center whitespace-nowrap">{isAr ? "الإجراءات" : "Actions"}</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-default-100/60">
+                {filteredReports.map((report) => {
+                  const hasBlockers = !!report.blockers && report.blockers.trim().length > 0;
+                  return (
+                    <tr key={report.id} className="hover:bg-purple-500/[0.03] transition-colors">
+                      {/* Employee Column */}
+                      <td className="px-3 py-2.5 align-middle whitespace-nowrap">
+                        <User
+                          name={report.employeeName}
+                          description={
+                            <span className="text-[10px] text-default-400 block font-medium">
+                              {isAr ? "عضو فريق" : "Team Member"}
+                            </span>
+                          }
+                          avatarProps={{
+                            src: report.userPhotoUrl,
+                            name: report.employeeName.slice(0, 2),
+                            size: "sm",
+                            className: "bg-purple-500/20 text-purple-600 font-bold border border-purple-500/30 shrink-0 h-8 w-8 text-xs",
+                          }}
+                        />
+                      </td>
 
-                    <TableCell>
-                      <div className="flex flex-col">
-                        <span className="text-xs font-bold text-foreground flex items-center gap-1">
-                          <Calendar size={13} className="text-default-400" />
-                          {report.date}
-                        </span>
-                        {report.totalHours && (
-                          <span className="text-[10px] text-default-400 font-medium">
-                            {report.totalHours} {isAr ? "ساعة عمل" : "hours"}
+                      {/* Date & Hours Column */}
+                      <td className="px-3 py-2.5 align-middle whitespace-nowrap">
+                        <div className="flex flex-col gap-0.5">
+                          <span className="text-xs font-bold text-foreground flex items-center gap-1">
+                            <Calendar size={12} className="text-purple-500 shrink-0" />
+                            {report.date}
                           </span>
-                        )}
-                      </div>
-                    </TableCell>
-
-                    <TableCell>
-                      <div className="flex flex-wrap gap-1">
-                        {report.tasksCompleted.length > 0 ? (
-                          report.tasksCompleted.map((t) => (
-                            <Chip key={t.id} size="sm" color="success" variant="flat" className="font-bold text-[10px]">
-                              ✓ {t.title}
-                            </Chip>
-                          ))
-                        ) : (
-                          <span className="text-xs text-default-300">—</span>
-                        )}
-                      </div>
-                    </TableCell>
-
-                    <TableCell>
-                      <div className="flex flex-wrap gap-1">
-                        {report.tasksInProgress.length > 0 ? (
-                          report.tasksInProgress.map((t) => (
-                            <Chip key={t.id} size="sm" color="warning" variant="flat" className="font-bold text-[10px]">
-                              ⏳ {t.title}
-                            </Chip>
-                          ))
-                        ) : (
-                          <span className="text-xs text-default-300">—</span>
-                        )}
-                      </div>
-                    </TableCell>
-
-                    <TableCell className="max-w-xs">
-                      <p className="text-xs text-foreground font-medium line-clamp-2">
-                        {report.summary}
-                      </p>
-                      {report.blockers && (
-                        <div className="mt-1 flex items-center gap-1 text-[10px] text-danger font-bold">
-                          <AlertTriangle size={11} />
-                          معوقات: {report.blockers}
+                          {report.totalHours ? (
+                            <span className="text-[10px] text-default-400 font-semibold flex items-center gap-1">
+                              <Clock size={10} className="text-amber-500 shrink-0" />
+                              {report.totalHours} {isAr ? "ساعة" : "h"}
+                            </span>
+                          ) : null}
                         </div>
-                      )}
-                    </TableCell>
+                      </td>
 
-                    <TableCell align="center">
-                      <div className="flex items-center justify-center gap-1">
-                        <Button
-                          size="sm"
-                          variant="flat"
-                          color="primary"
-                          onPress={() => handleOpenDetail(report)}
-                          startContent={<Eye size={14} />}
-                          className="font-bold text-xs rounded-xl"
-                        >
-                          {isAr ? "عرض" : "View"}
-                        </Button>
-                        <Button
-                          size="sm"
-                          isIconOnly
-                          variant="light"
-                          onPress={() => handlePrintReport(report)}
-                        >
-                          <Printer size={15} />
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                      {/* Summary & Tasks Column */}
+                      <td className="px-3 py-2.5 align-middle">
+                        <div className="space-y-1 max-w-md">
+                          <p className="text-xs text-foreground/90 font-medium line-clamp-1 leading-snug">
+                            {report.summary || (isAr ? "لا يوجد ملخص" : "No summary")}
+                          </p>
+
+                          <div className="flex flex-wrap items-center gap-1">
+                            {report.tasksCompleted.length > 0 && (
+                              <Chip size="sm" color="success" variant="flat" className="font-bold text-[9px] h-4 px-1.5 min-h-0">
+                                ✓ {report.tasksCompleted.length} {isAr ? "مكتملة" : "done"}
+                              </Chip>
+                            )}
+
+                            {report.tasksInProgress.length > 0 && (
+                              <Chip size="sm" color="warning" variant="flat" className="font-bold text-[9px] h-4 px-1.5 min-h-0">
+                                ⏳ {report.tasksInProgress.length} {isAr ? "قيد التنفيذ" : "in progress"}
+                              </Chip>
+                            )}
+
+                            {hasBlockers && (
+                              <span className="text-[9px] text-danger font-bold flex items-center gap-0.5 bg-danger-500/10 px-1.5 py-0.5 rounded-md">
+                                <AlertTriangle size={10} />
+                                {report.blockers}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </td>
+
+                      {/* Rating & Status Column */}
+                      <td className="px-3 py-2.5 align-middle whitespace-nowrap">
+                        <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-0.5 text-amber-500 font-bold text-xs">
+                            <Star size={12} className="fill-amber-500" />
+                            <span>{report.productivityRating || 5}/5</span>
+                          </div>
+                          {report.status === "reviewed" ? (
+                            <Chip size="sm" color="success" variant="flat" className="font-bold text-[9px] h-4 px-1.5">
+                              {isAr ? "مقيّم" : "Reviewed"}
+                            </Chip>
+                          ) : (
+                            <Chip size="sm" color="default" variant="flat" className="font-bold text-[9px] h-4 px-1.5">
+                              {isAr ? "مُقدّم" : "Submitted"}
+                            </Chip>
+                          )}
+                        </div>
+                      </td>
+
+                      {/* Actions Column */}
+                      <td className="px-3 py-2.5 align-middle whitespace-nowrap text-center">
+                        <div className="flex items-center justify-center gap-1">
+                          <Button
+                            size="sm"
+                            variant="flat"
+                            color="secondary"
+                            onPress={() => handleOpenDetail(report)}
+                            startContent={<Eye size={13} />}
+                            className="font-bold text-[11px] rounded-lg h-7 px-2.5 min-w-0"
+                          >
+                            {isAr ? "التفاصيل" : "Details"}
+                          </Button>
+
+                          <Tooltip content={isAr ? "طباعة" : "Print"}>
+                            <Button
+                              size="sm"
+                              isIconOnly
+                              variant="flat"
+                              onPress={() => handlePrintReport(report)}
+                              className="rounded-lg h-7 w-7 min-w-7"
+                            >
+                              <Printer size={13} />
+                            </Button>
+                          </Tooltip>
+
+                          <Tooltip content={isAr ? "واتساب" : "WhatsApp"}>
+                            <Button
+                              size="sm"
+                              isIconOnly
+                              variant="flat"
+                              color="success"
+                              onPress={() => handleShareWhatsApp(report)}
+                              className="rounded-xl h-8 w-8 min-w-8"
+                            >
+                              <Share2 size={15} />
+                            </Button>
+                          </Tooltip>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
           </CardBody>
         </Card>
       )}
