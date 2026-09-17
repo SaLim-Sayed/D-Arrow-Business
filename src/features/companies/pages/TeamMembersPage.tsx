@@ -14,14 +14,24 @@ import {
   Card,
   CardBody,
   Button,
+  Modal,
+  ModalContent,
+  ModalHeader,
+  ModalBody,
+  ModalFooter,
+  Input,
 } from "@heroui/react";
-import { MailPlus, Trash2, Key } from "lucide-react";
+import { MailPlus, Trash2, Key, AlertTriangle, UserX } from "lucide-react";
 import { localizedName } from "@/lib/localized-name";
 import { PermissionGuard } from "../components/PermissionGuard";
 import { InviteUserModal } from "../components/InviteUserModal";
 import { CustomPermissionsModal } from "../components/CustomPermissionsModal";
 import { useAllUsers } from "@/features/users/hooks/use-users";
 import { useUpdateUserRoleMutation } from "@/features/users/hooks/use-user-role-mutation";
+import {
+  useDeleteUserMutation,
+  useDeleteUserByEmailMutation,
+} from "@/features/users/hooks/use-delete-user-mutation";
 import {
   usePendingInvitesQuery,
   useRevokeInviteMutation,
@@ -58,10 +68,16 @@ export function TeamMembersPage() {
   const currentUserId = useAuthStore((s) => s.user?.id);
   const assignableRoles = getAssignableRoles(actorRole);
   const canEditPortals = canManagePortalAccess(actorRole);
+  const deleteUserMutation = useDeleteUserMutation();
+  const deleteUserByEmailMutation = useDeleteUserByEmailMutation();
   const [inviteOpen, setInviteOpen] = useState(false);
   const [customPermsMember, setCustomPermsMember] = useState<UserType | null>(null);
+  const [memberToDelete, setMemberToDelete] = useState<UserType | null>(null);
+  const [deleteEmailModalOpen, setDeleteEmailModalOpen] = useState(false);
+  const [emailToDeleteInput, setEmailToDeleteInput] = useState("");
 
   const roleLabel = (role: UserRole) => t(`team.globalRoles.${role}`);
+  const isSuperOrAdmin = actorRole === "super_admin" || actorRole === "admin";
 
   return (
     <PermissionGuard permission="users.manage_roles">
@@ -71,15 +87,30 @@ export function TeamMembersPage() {
             <h1 className="text-xl font-black">{t("team.pageTitle")}</h1>
             <p className="text-sm text-default-500">{t("team.pageSubtitle")}</p>
           </div>
-          {assignableRoles.length > 0 && (
-            <Button
-              color="primary"
-              startContent={<MailPlus className="h-4 w-4" />}
-              onPress={() => setInviteOpen(true)}
-            >
-              {t("team.invite.cta")}
-            </Button>
-          )}
+          <div className="flex items-center gap-2">
+            {isSuperOrAdmin && (
+              <Button
+                color="danger"
+                variant="flat"
+                startContent={<UserX className="h-4 w-4" />}
+                onPress={() => {
+                  setEmailToDeleteInput("");
+                  setDeleteEmailModalOpen(true);
+                }}
+              >
+                {t("team.deleteByEmail", "حذف بالبريد 🗑️")}
+              </Button>
+            )}
+            {assignableRoles.length > 0 && (
+              <Button
+                color="primary"
+                startContent={<MailPlus className="h-4 w-4" />}
+                onPress={() => setInviteOpen(true)}
+              >
+                {t("team.invite.cta")}
+              </Button>
+            )}
+          </div>
         </div>
 
         <Card className="border border-default-100">
@@ -100,6 +131,7 @@ export function TeamMembersPage() {
                   <TableColumn className="bg-default-50 text-default-500 font-bold text-xs py-3">{t("team.currentRole")}</TableColumn>
                   <TableColumn className="bg-default-50 text-default-500 font-bold text-xs py-3">{t("team.assignRole")}</TableColumn>
                   <TableColumn className="bg-default-50 text-default-500 font-bold text-xs py-3">{t("team.portalAccess")}</TableColumn>
+                  <TableColumn className="bg-default-50 text-default-500 font-bold text-xs py-3 text-center">{t("team.actions", "الإجراءات")}</TableColumn>
                 </TableHeader>
                 <TableBody>
                   {users.map((member) => {
@@ -189,6 +221,27 @@ export function TeamMembersPage() {
                             </div>
                           ) : (
                             <span className="text-xs text-default-400">—</span>
+                          )}
+                        </TableCell>
+                        <TableCell className="text-center">
+                          {canEdit && !isSelf ? (
+                            <Button
+                              size="sm"
+                              variant="light"
+                              color="danger"
+                              isIconOnly
+                              aria-label={t("team.deleteUser", "حذف المستخدم")}
+                              title={t("team.deleteUser", "حذف المستخدم وبياناته نهائياً من فيربيس")}
+                              isLoading={
+                                deleteUserMutation.isPending &&
+                                deleteUserMutation.variables?.userId === member.id
+                              }
+                              onPress={() => setMemberToDelete(member)}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          ) : (
+                            <span className="text-xs text-default-300">—</span>
                           )}
                         </TableCell>
                       </TableRow>
@@ -282,6 +335,120 @@ export function TeamMembersPage() {
           onOpenChange={(open) => !open && setCustomPermsMember(null)}
           member={customPermsMember}
         />
+
+        {/* Delete Member Confirmation Modal */}
+        <Modal
+          isOpen={!!memberToDelete}
+          onOpenChange={(open) => !open && setMemberToDelete(null)}
+          size="md"
+        >
+          <ModalContent>
+            {(onClose) => (
+              <>
+                <ModalHeader className="flex items-center gap-2 text-danger">
+                  <AlertTriangle className="h-5 w-5" />
+                  <span>{t("team.deleteConfirmTitle", "تأكيد حذف المستخدم نهائياً")}</span>
+                </ModalHeader>
+                <ModalBody className="space-y-3">
+                  <p className="text-sm text-default-600">
+                    {t(
+                      "team.deleteConfirmText",
+                      "هل أنت متأكد من حذف هذا المستخدم وكافة بياناته نهائياً من فيربيس؟"
+                    )}
+                  </p>
+                  {memberToDelete && (
+                    <div className="rounded-xl border border-default-200 bg-default-50 p-3 space-y-1">
+                      <p className="text-sm font-semibold">{memberToDelete.name}</p>
+                      <p className="text-xs text-default-500">{memberToDelete.email}</p>
+                      <Chip size="sm" variant="flat" color={ROLE_COLORS[memberToDelete.role]}>
+                        {roleLabel(memberToDelete.role)}
+                      </Chip>
+                    </div>
+                  )}
+                  <p className="text-xs text-danger-500 font-medium">
+                    ⚠️ {t("team.deleteWarning", "سيتم مسح سجل المستخدم من قاعدة بيانات فيربيس (users) وحساب الموظف والدعوات المعلقة ولن يتمكن من الدخول للمنصة مجدداً.")}
+                  </p>
+                </ModalBody>
+                <ModalFooter>
+                  <Button variant="flat" onPress={onClose}>
+                    {t("team.cancel", "إلغاء")}
+                  </Button>
+                  <Button
+                    color="danger"
+                    isLoading={deleteUserMutation.isPending}
+                    onPress={async () => {
+                      if (!memberToDelete) return;
+                      await deleteUserMutation.mutateAsync({
+                        userId: memberToDelete.id,
+                        email: memberToDelete.email,
+                      });
+                      onClose();
+                      setMemberToDelete(null);
+                    }}
+                  >
+                    {t("team.confirmDelete", "تأكيد الحذف النهائي 🗑️")}
+                  </Button>
+                </ModalFooter>
+              </>
+            )}
+          </ModalContent>
+        </Modal>
+
+        {/* Delete User by Email Modal */}
+        <Modal
+          isOpen={deleteEmailModalOpen}
+          onOpenChange={setDeleteEmailModalOpen}
+          size="md"
+        >
+          <ModalContent>
+            {(onClose) => (
+              <>
+                <ModalHeader className="flex items-center gap-2 text-danger">
+                  <UserX className="h-5 w-5" />
+                  <span>{t("team.deleteByEmailTitle", "حذف مستخدم من فيربيس عبر البريد")}</span>
+                </ModalHeader>
+                <ModalBody className="space-y-3">
+                  <p className="text-sm text-default-600">
+                    {t(
+                      "team.deleteByEmailDesc",
+                      "أدخل البريد الإلكتروني للمستخدم لحذف كافة سجلاته (User Profile, Employee, Invites) بالكامل من فيربيس:"
+                    )}
+                  </p>
+                  <Input
+                    type="email"
+                    label={t("team.email", "البريد الإلكتروني")}
+                    placeholder="user@example.com"
+                    variant="bordered"
+                    value={emailToDeleteInput}
+                    onValueChange={setEmailToDeleteInput}
+                    autoFocus
+                  />
+                  <p className="text-xs text-danger-500 font-medium">
+                    ⚠️ {t("team.deleteByEmailWarning", "هذا الإجراء سيقوم بفحص وحذف أي مستخدم أو موظف أو دعوة تحمل هذا البريد من فيربيس نهائياً.")}
+                  </p>
+                </ModalBody>
+                <ModalFooter>
+                  <Button variant="flat" onPress={onClose}>
+                    {t("team.cancel", "إلغاء")}
+                  </Button>
+                  <Button
+                    color="danger"
+                    isDisabled={!emailToDeleteInput.trim() || !emailToDeleteInput.includes("@")}
+                    isLoading={deleteUserByEmailMutation.isPending}
+                    onPress={async () => {
+                      if (!emailToDeleteInput.trim()) return;
+                      await deleteUserByEmailMutation.mutateAsync(emailToDeleteInput.trim());
+                      onClose();
+                      setEmailToDeleteInput("");
+                    }}
+                  >
+                    {t("team.confirmDeleteEmail", "حذف نهائي بالبريد 🗑️")}
+                  </Button>
+                </ModalFooter>
+              </>
+            )}
+          </ModalContent>
+        </Modal>
       </div>
     </PermissionGuard>
   );

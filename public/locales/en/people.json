@@ -467,6 +467,7 @@
     "skipped_notice": "Report skipped and checked out",
     "page_title": "Employee Daily Work Reports",
     "page_subtitle": "Track team achievements, challenges at checkout, and evaluate daily performance",
+    "scope_own": "My reports only",
     "refresh": "Refresh Data",
     "total_reports": "Total Reports",
     "completed_reports": "Completed Reports",

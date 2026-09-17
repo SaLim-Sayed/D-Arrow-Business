@@ -22,6 +22,13 @@ import type {
 
 const SERVICE_NAME = "DailyReportsService";
 
+function toMillis(value: string | Timestamp | undefined): number {
+  if (!value) return 0;
+  if (value instanceof Timestamp) return value.toMillis();
+  const parsed = Date.parse(value);
+  return Number.isNaN(parsed) ? 0 : parsed;
+}
+
 function mapDailyReportDoc(id: string, data: Record<string, unknown>): DailyReport {
   return {
     id,
@@ -146,14 +153,18 @@ export const DailyReportsService = {
   ): Promise<ApiResponse<DailyReport[]>> {
     return withLogging(SERVICE_NAME, "getDailyReports", (async () => {
       const reportsRef = collection(db, "companies", companyId, "daily_reports");
-      let q = query(reportsRef, orderBy("createdAt", "desc"));
-
-      if (filters?.employeeId) {
-        q = query(reportsRef, where("employeeId", "==", filters.employeeId), orderBy("createdAt", "desc"));
-      }
+      // Combining the employee filter with orderBy would need a composite index, so
+      // scoped queries sort in memory instead — a single member's history is small.
+      const q = filters?.employeeId
+        ? query(reportsRef, where("employeeId", "==", filters.employeeId))
+        : query(reportsRef, orderBy("createdAt", "desc"));
 
       const querySnapshot = await getDocs(q);
       let reports = querySnapshot.docs.map((docSnap) => mapDailyReportDoc(docSnap.id, docSnap.data()));
+
+      if (filters?.employeeId) {
+        reports.sort((a, b) => toMillis(b.createdAt) - toMillis(a.createdAt));
+      }
 
       if (filters?.startDate) {
         reports = reports.filter((r) => r.date >= filters.startDate!);
@@ -175,13 +186,24 @@ export const DailyReportsService = {
     })());
   },
 
+  /**
+   * Pass `employeeId` when the caller is not a manager: security rules only allow
+   * listing daily reports that are constrained to the signed-in user.
+   */
   async getDailyReportByAttendanceId(
     companyId: string,
-    attendanceId: string
+    attendanceId: string,
+    employeeId?: string
   ): Promise<ApiResponse<DailyReport | null>> {
     return withLogging(SERVICE_NAME, "getDailyReportByAttendanceId", (async () => {
       const reportsRef = collection(db, "companies", companyId, "daily_reports");
-      const q = query(reportsRef, where("attendanceId", "==", attendanceId));
+      const q = employeeId
+        ? query(
+            reportsRef,
+            where("employeeId", "==", employeeId),
+            where("attendanceId", "==", attendanceId)
+          )
+        : query(reportsRef, where("attendanceId", "==", attendanceId));
       const querySnapshot = await getDocs(q);
       
       if (querySnapshot.empty) {

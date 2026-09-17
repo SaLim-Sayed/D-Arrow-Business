@@ -379,11 +379,69 @@ export const PeopleService = {
 
   async deleteEmployee(companyId: string, employeeId: string): Promise<ApiResponse<void>> {
     return withLogging(SERVICE_NAME, "deleteEmployee", (async () => {
-      const docRef = doc(db, "companies", companyId, "employees", employeeId);
-      await deleteDoc(docRef);
+      const empRef = doc(db, "companies", companyId, "employees", employeeId);
+      const empSnap = await getDoc(empRef);
+      const empData = empSnap.exists() ? empSnap.data() : null;
+
+      // 1. Delete employee document from company
+      await deleteDoc(empRef);
+
+      const email = empData?.email ? String(empData.email).toLowerCase().trim() : null;
+      const userId = empData?.userId ? String(empData.userId).trim() : null;
+
+      // 2. Delete user profile from Firestore users collection if userId exists
+      if (userId) {
+        try {
+          const userDocRef = doc(db, "users", userId);
+          const userSnap = await getDoc(userDocRef);
+          if (userSnap.exists()) {
+            await deleteDoc(userDocRef);
+          }
+        } catch (e) {
+          console.warn(`[deleteEmployee] Failed to delete user doc for ${userId}:`, e);
+        }
+      }
+
+      // 3. If email exists, delete matching user documents from users collection
+      if (email) {
+        try {
+          const usersRef = collection(db, "users");
+          const qUsers = query(usersRef, where("email", "==", email));
+          const usersSnap = await getDocs(qUsers);
+          for (const uDoc of usersSnap.docs) {
+            await deleteDoc(uDoc.ref);
+          }
+        } catch (e) {
+          console.warn(`[deleteEmployee] Failed to delete user by email ${email}:`, e);
+        }
+
+        // 4. Delete matching company invites and top-level invites
+        try {
+          const companyInvitesRef = collection(db, "companies", companyId, "invites");
+          const qCompanyInvites = query(companyInvitesRef, where("email", "==", email));
+          const compInvSnap = await getDocs(qCompanyInvites);
+          for (const iDoc of compInvSnap.docs) {
+            await deleteDoc(iDoc.ref);
+          }
+        } catch (e) {
+          console.warn(`[deleteEmployee] Failed to delete company invites for ${email}:`, e);
+        }
+
+        try {
+          const topInvitesRef = collection(db, "invites");
+          const qTopInvites = query(topInvitesRef, where("email", "==", email));
+          const topInvSnap = await getDocs(qTopInvites);
+          for (const iDoc of topInvSnap.docs) {
+            await deleteDoc(iDoc.ref);
+          }
+        } catch (e) {
+          console.warn(`[deleteEmployee] Failed to delete top-level invites for ${email}:`, e);
+        }
+      }
+
       return {
         data: undefined,
-        message: "Employee deleted successfully",
+        message: "Employee and Firebase user records deleted successfully",
       };
     })());
   },

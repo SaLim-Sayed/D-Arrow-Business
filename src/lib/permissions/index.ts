@@ -16,6 +16,8 @@ export type Permission =
   | "people.manage_employees"
   | "people.approve_leave"
   | "people.view_performance"
+  /** See daily reports of every member; everyone can always see their own. */
+  | "people.view_all_reports"
   | "crm.view"
   | "crm.manage_leads"
   | "crm.manage_contacts"
@@ -54,6 +56,7 @@ const ALL_PERMISSIONS: Permission[] = [
   "people.manage_employees",
   "people.approve_leave",
   "people.view_performance",
+  "people.view_all_reports",
   "crm.view",
   "crm.manage_leads",
   "crm.manage_contacts",
@@ -87,6 +90,7 @@ export const ROLE_PERMISSIONS: Record<UserRole, readonly Permission[]> = {
     "people.manage_employees",
     "people.approve_leave",
     "people.view_performance",
+    "people.view_all_reports",
     "crm.view",
     "crm.manage_leads",
     "crm.manage_contacts",

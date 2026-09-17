@@ -56,14 +56,21 @@ const PEOPLE_SUB_ROLE_PERMISSIONS: Record<PeopleSubRole, readonly Permission[]> 
     "people.manage_employees",
     "people.approve_leave",
     "people.view_performance",
+    "people.view_all_reports",
   ],
   manager: [
     "people.view",
     "people.manage_employees",
     "people.approve_leave",
     "people.view_performance",
+    "people.view_all_reports",
   ],
-  hr: ["people.view", "people.manage_employees", "people.approve_leave"],
+  hr: [
+    "people.view",
+    "people.manage_employees",
+    "people.approve_leave",
+    "people.view_all_reports",
+  ],
   employee: ["people.view"],
 };
 

@@ -41,6 +41,7 @@ import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { useCompany } from "@/features/companies/context/company-context";
 import { useAuth } from "@/features/auth/context/auth-context";
+import { useAppPermissions } from "@/features/companies/hooks/use-app-permissions";
 import { DailyReportsService } from "@/features/people/api/daily-reports.service";
 import type { DailyReport } from "@/features/people/types/daily-report.types";
 
@@ -49,6 +50,7 @@ export default function TaskDailyReportsPage() {
   const isAr = i18n.language === "ar";
   const { companyId } = useCompany();
   const { user } = useAuth();
+  const { canViewAllReports } = useAppPermissions();
 
   const [reports, setReports] = useState<DailyReport[]>([]);
   const [loading, setLoading] = useState(true);
@@ -67,9 +69,15 @@ export default function TaskDailyReportsPage() {
 
   const fetchReports = async () => {
     if (!companyId) return;
+    // Without the org-wide permission the query itself is narrowed to the signed-in
+    // user, so other members' reports never reach the client.
+    if (!canViewAllReports && !user?.id) return;
     setLoading(true);
     try {
-      const res = await DailyReportsService.getDailyReports(companyId);
+      const res = await DailyReportsService.getDailyReports(
+        companyId,
+        canViewAllReports ? undefined : { employeeId: user!.id }
+      );
       if (res.data) {
         setReports(res.data.filter((r) => !r.isSkipped));
       }
@@ -83,7 +91,7 @@ export default function TaskDailyReportsPage() {
 
   useEffect(() => {
     fetchReports();
-  }, [companyId]);
+  }, [companyId, canViewAllReports, user?.id]);
 
   // Filtered reports
   const filteredReports = useMemo(() => {
@@ -327,8 +335,13 @@ export default function TaskDailyReportsPage() {
                   {filteredReports.length} {isAr ? "تقرير" : "reports"}
                 </Chip>
               </h1>
-              <p className="text-xs text-default-400 mt-0.5">
+              <p className="text-xs text-default-400 mt-0.5 flex items-center gap-2">
                 {t("daily_report.page_subtitle", "متابعة إنجازات الفريق والمهام المكتملة والمعوقات اليومية")}
+                {!canViewAllReports && (
+                  <Chip size="sm" variant="flat" color="primary" className="font-bold text-[10px] h-5">
+                    {t("daily_report.scope_own", isAr ? "تقاريري فقط" : "My reports only")}
+                  </Chip>
+                )}
               </p>
             </div>
           </div>
@@ -1058,8 +1071,9 @@ export default function TaskDailyReportsPage() {
                         <button
                           key={star}
                           type="button"
-                          onClick={() => setManagerRating(star)}
-                          className="focus:outline-none transition-transform hover:scale-110"
+                          onClick={() => canViewAllReports && setManagerRating(star)}
+                          disabled={!canViewAllReports}
+                          className="focus:outline-none transition-transform enabled:hover:scale-110 disabled:cursor-default"
                         >
                           <Star
                             size={24}
@@ -1070,25 +1084,39 @@ export default function TaskDailyReportsPage() {
                     </div>
                   </div>
 
-                  <Textarea
-                    label={isAr ? "ملاحظات الإدارة والتعليمات:" : "Manager Comments:"}
-                    placeholder={isAr ? "اكتب توجيهات المتابعة للموظف..." : "Add supervisor comments..."}
-                    value={managerComment}
-                    onValueChange={setManagerComment}
-                    variant="bordered"
-                    minRows={2}
-                    classNames={{ inputWrapper: "rounded-2xl bg-background" }}
-                  />
+                  {canViewAllReports ? (
+                    <>
+                      <Textarea
+                        label={isAr ? "ملاحظات الإدارة والتعليمات:" : "Manager Comments:"}
+                        placeholder={isAr ? "اكتب توجيهات المتابعة للموظف..." : "Add supervisor comments..."}
+                        value={managerComment}
+                        onValueChange={setManagerComment}
+                        variant="bordered"
+                        minRows={2}
+                        classNames={{ inputWrapper: "rounded-2xl bg-background" }}
+                      />
 
-                  <Button
-                    color="primary"
-                    onPress={handleSaveReview}
-                    isLoading={isSubmittingReview}
-                    className="font-bold text-xs rounded-2xl"
-                    startContent={<Check size={16} />}
-                  >
-                    {isAr ? "حفظ تقييم الإدارة" : "Save Review"}
-                  </Button>
+                      <Button
+                        color="primary"
+                        onPress={handleSaveReview}
+                        isLoading={isSubmittingReview}
+                        className="font-bold text-xs rounded-2xl"
+                        startContent={<Check size={16} />}
+                      >
+                        {isAr ? "حفظ تقييم الإدارة" : "Save Review"}
+                      </Button>
+                    </>
+                  ) : (
+                    <div className="space-y-1">
+                      <label className="text-xs font-bold text-foreground block">
+                        {isAr ? "ملاحظات الإدارة والتعليمات:" : "Manager Comments:"}
+                      </label>
+                      <p className="p-4 rounded-2xl bg-background border border-default-200 text-sm text-foreground leading-relaxed whitespace-pre-line">
+                        {selectedReport.managerComment?.trim() ||
+                          (isAr ? "لم تُضف ملاحظات من الإدارة بعد" : "No manager feedback yet")}
+                      </p>
+                    </div>
+                  )}
                 </div>
               </DrawerBody>
 

@@ -39,6 +39,7 @@ import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { useCompany } from "@/features/companies/context/company-context";
 import { useAuth } from "@/features/auth/context/auth-context";
+import { useAppPermissions } from "@/features/companies/hooks/use-app-permissions";
 import { DailyReportsService } from "../api/daily-reports.service";
 import type { DailyReport } from "../types/daily-report.types";
 
@@ -46,6 +47,7 @@ export default function DailyReportsPage() {
   const { t } = useTranslation("people");
   const { companyId } = useCompany();
   const { user } = useAuth();
+  const { canViewAllReports } = useAppPermissions();
 
   const [reports, setReports] = useState<DailyReport[]>([]);
   const [loading, setLoading] = useState(true);
@@ -63,9 +65,15 @@ export default function DailyReportsPage() {
 
   const fetchReports = async () => {
     if (!companyId) return;
+    // Without the org-wide permission the query itself is narrowed to the signed-in
+    // user, so other members' reports never reach the client.
+    if (!canViewAllReports && !user?.id) return;
     setLoading(true);
     try {
-      const res = await DailyReportsService.getDailyReports(companyId);
+      const res = await DailyReportsService.getDailyReports(
+        companyId,
+        canViewAllReports ? undefined : { employeeId: user!.id }
+      );
       if (res.data) {
         setReports(res.data);
       }
@@ -79,7 +87,7 @@ export default function DailyReportsPage() {
 
   useEffect(() => {
     fetchReports();
-  }, [companyId]);
+  }, [companyId, canViewAllReports, user?.id]);
 
   // Filtered reports
   const filteredReports = useMemo(() => {
@@ -149,8 +157,13 @@ export default function DailyReportsPage() {
             </div>
             {t("daily_report.page_title")}
           </h1>
-          <p className="text-sm text-default-400 mt-1">
+          <p className="text-sm text-default-400 mt-1 flex items-center gap-2">
             {t("daily_report.page_subtitle")}
+            {!canViewAllReports && (
+              <Chip size="sm" variant="flat" color="primary" className="font-bold text-[10px]">
+                {t("daily_report.scope_own")}
+              </Chip>
+            )}
           </p>
         </div>
 
@@ -381,7 +394,7 @@ export default function DailyReportsPage() {
                       onPress={() => handleOpenReviewModal(report)}
                       className="font-bold text-xs rounded-xl"
                     >
-                      التفاصيل والتقييم
+                      {canViewAllReports ? "التفاصيل والتقييم" : "التفاصيل"}
                     </Button>
                   </TableCell>
                 </TableRow>
@@ -488,20 +501,26 @@ export default function DailyReportsPage() {
 
                       <Divider />
 
-                      {/* Manager Feedback Form */}
+                      {/* Manager Feedback — editable for managers, read-only for the report owner */}
                       <div className="space-y-3">
                         <label className="text-xs font-black uppercase text-default-500 tracking-wider flex items-center gap-1.5">
                           <MessageSquare size={14} className="text-primary" />
                           ملاحظات وتقييم الإدارة / الموارد البشرية
                         </label>
-                        <Textarea
-                          placeholder="اكتب توجيهاتك أو ملاحظات التقييم للموظف..."
-                          value={managerComment}
-                          onValueChange={setManagerComment}
-                          variant="bordered"
-                          minRows={3}
-                          classNames={{ inputWrapper: "rounded-2xl" }}
-                        />
+                        {canViewAllReports ? (
+                          <Textarea
+                            placeholder="اكتب توجيهاتك أو ملاحظات التقييم للموظف..."
+                            value={managerComment}
+                            onValueChange={setManagerComment}
+                            variant="bordered"
+                            minRows={3}
+                            classNames={{ inputWrapper: "rounded-2xl" }}
+                          />
+                        ) : (
+                          <p className="p-4 rounded-2xl bg-default-50 border border-default-100 text-sm text-foreground leading-relaxed whitespace-pre-line">
+                            {selectedReport.managerComment?.trim() || "لم تُضف ملاحظات من الإدارة بعد"}
+                          </p>
+                        )}
                       </div>
                     </>
                   ) : (
@@ -519,7 +538,7 @@ export default function DailyReportsPage() {
                   <Button variant="flat" color="default" onPress={() => setSelectedReport(null)}>
                     إغلاق
                   </Button>
-                  {!selectedReport.isSkipped && (
+                  {!selectedReport.isSkipped && canViewAllReports && (
                     <Button 
                       color="primary" 
                       variant="shadow"

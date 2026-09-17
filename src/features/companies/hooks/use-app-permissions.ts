@@ -32,6 +32,8 @@ export function useAppPermissions() {
     canApproveLeave: hasEffectivePermission(ctx, "people.approve_leave"),
     canManageEmployees: hasEffectivePermission(ctx, "people.manage_employees"),
     canViewPerformance: hasEffectivePermission(ctx, "people.view_performance"),
+    /** Managers, HR and admins see everyone's daily reports; others see only their own. */
+    canViewAllReports: hasEffectivePermission(ctx, "people.view_all_reports"),
     canAccessSeed: hasEffectivePermission(ctx, "admin.seed"),
   };
 }

@@ -87,7 +87,9 @@ export function useDeleteEmployeeMutation() {
     mutationFn: (employeeId: string) => PeopleService.deleteEmployee(companyId!, employeeId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.people.employees(companyId!) });
-      toast.success(i18n.language === "ar" ? "تم حذف الموظف بنجاح" : "Employee deleted successfully");
+      queryClient.invalidateQueries({ queryKey: ["users"] });
+      queryClient.invalidateQueries({ queryKey: ["invites"] });
+      toast.success(i18n.language === "ar" ? "تم حذف الموظف وبياناته من فيربيس بنجاح" : "Employee and user records deleted successfully");
     },
     onError: (error: any) => {
       toast.error(error.message || (i18n.language === "ar" ? "فشل حذف الموظف" : "Failed to delete employee"));

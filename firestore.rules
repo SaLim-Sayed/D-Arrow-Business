@@ -24,6 +24,24 @@ service cloud.firestore {
         && userDoc().role in ['super_admin', 'admin'];
     }
 
+    // Effective People sub-role; empty string means "fall back to the global role".
+    function peopleSubRole() {
+      return userDoc().get('portalSubRoles', {}).get('people', '');
+    }
+
+    // Mirrors the `people.view_all_reports` permission in src/lib/permissions.
+    // Everyone can always read their own reports; this covers reading everyone's.
+    function canViewAllReports(companyId) {
+      return belongsToCompany(companyId) && (
+        userDoc().role == 'super_admin'
+        || 'people.view_all_reports' in userDoc().get('customPermissions', [])
+        || (
+          userDoc().role in ['admin', 'manager']
+          && (peopleSubRole() == '' || peopleSubRole() in ['admin', 'manager', 'hr'])
+        )
+      );
+    }
+
     // User profiles
     match /users/{userId} {
       // Own profile, or teammates in the same company
@@ -104,8 +122,36 @@ service cloud.firestore {
         allow list, write: if belongsToCompany(companyId);
       }
 
-      match /{allSubcollections=**} {
-        allow read, write: if belongsToCompany(companyId);
+      // Daily reports are private: authors see their own, managers/HR/admins see all.
+      // A list query is only permitted when it is filtered to the caller, which is
+      // exactly what DailyReportsService does for non-privileged users.
+      match /daily_reports/{reportId} {
+        allow read: if belongsToCompany(companyId) && (
+          resource.data.employeeId == request.auth.uid
+          || canViewAllReports(companyId)
+        );
+        allow create: if belongsToCompany(companyId)
+          && request.resource.data.employeeId == request.auth.uid;
+        // Authors may amend their own report; managers add the review fields.
+        allow update: if belongsToCompany(companyId) && (
+          resource.data.employeeId == request.auth.uid
+          || canViewAllReports(companyId)
+        );
+        allow delete: if isCompanyAdmin(companyId);
+      }
+
+      // Every other company subcollection stays open to company members.
+      // Rules are additive, so `daily_reports` must be excluded by name here —
+      // otherwise this block would re-grant what the stricter rule above denies.
+      match /{collection}/{docId} {
+        allow read, write: if belongsToCompany(companyId)
+          && collection != 'daily_reports';
+
+        // Nested data such as tasks/{id}/comments and conversations/{id}/messages.
+        match /{nested=**} {
+          allow read, write: if belongsToCompany(companyId)
+            && collection != 'daily_reports';
+        }
       }
     }
   }
