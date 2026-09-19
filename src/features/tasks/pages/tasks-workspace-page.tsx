@@ -16,7 +16,6 @@ import {
 } from "../components/tasks-ui";
 
 import { useAuth } from "@/features/auth/context/auth-context";
-import { useSprintsQuery } from "../hooks/use-tasks";
 
 const WORK_BASE = "/tasks/work";
 
@@ -25,8 +24,7 @@ export function TasksWorkspacePage() {
   const isAr = i18n.language === "ar";
   const location = useLocation();
   const [searchParams] = useSearchParams();
-  const { filters, setFilter } = useTasksUIStore();
-  const { data: allSprints } = useSprintsQuery();
+  const { setFilter } = useTasksUIStore();
   const { user } = useAuth();
 
   const isSalem =
@@ -41,17 +39,14 @@ export function TasksWorkspacePage() {
   const isList = location.pathname.endsWith("/list");
   const isBoard = !isList;
 
+  // The workspace shows every sprint by default; a sprint is only pre-selected
+  // when the user arrived from a specific sprint card (?sprintId=...).
   useEffect(() => {
     const sprintIdFromUrl = searchParams.get("sprintId");
     if (sprintIdFromUrl) {
       setFilter("sprintId", sprintIdFromUrl);
-    } else if (!filters.sprintId && allSprints?.data && allSprints.data.length > 0) {
-      const activeSprint = allSprints.data.find((s) => s.status === "active") || allSprints.data[0];
-      if (activeSprint) {
-        setFilter("sprintId", activeSprint.id);
-      }
     }
-  }, [searchParams, allSprints, setFilter, filters.sprintId]);
+  }, [searchParams, setFilter]);
 
   const viewTabs = [
     {
