@@ -28,7 +28,7 @@ export interface DailyReport {
   summary: string;
   blockers?: string;
   planTomorrow?: string;
-  productivityRating: number; // 1 to 5
+  productivityRating?: number; // Legacy reports may contain a self rating.
   
   // Emergency Skip
   status: DailyReportStatus;
@@ -60,7 +60,6 @@ export interface CreateDailyReportDTO {
   summary: string;
   blockers?: string;
   planTomorrow?: string;
-  productivityRating: number;
   
   isSkipped?: boolean;
   skipReason?: string;

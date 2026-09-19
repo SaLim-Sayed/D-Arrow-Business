@@ -84,11 +84,12 @@ export function TasksListView() {
 
   return (
     <>
+      <div className="w-full overflow-x-auto rounded-2xl border border-default-200/80 bg-content1">
       <Table
         aria-label="Tasks table"
         selectionMode="single"
         onRowAction={(key) => navigate(`/tasks/${key}`)}
-        className="bg-content1 rounded-2xl shadow-sm border border-default-200/80 overflow-hidden"
+        className="min-w-[640px] rounded-2xl bg-content1 shadow-sm"
       >
         <TableHeader>
           <TableColumn className="min-w-[250px]">{t("list.columns.title")}</TableColumn>
@@ -230,6 +231,7 @@ export function TasksListView() {
           }}
         </TableBody>
       </Table>
+      </div>
 
       {totalPages > 1 && (
         <div className="flex justify-center mt-6">

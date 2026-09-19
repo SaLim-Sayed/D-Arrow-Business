@@ -63,7 +63,7 @@ export default function AttendanceSettingsPage() {
     locations.find((l) => l.id === id)?.name ?? id;
 
   return (
-    <div className="animate-in fade-in space-y-6 pb-24 duration-300">
+    <div className="animate-in fade-in w-full min-w-0 space-y-6 pb-16 duration-300">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">{t("attendance_settings.title")}</h1>
@@ -73,6 +73,7 @@ export default function AttendanceSettingsPage() {
         </div>
         <Button
           color="primary"
+          className="w-full rounded-xl font-semibold sm:w-auto"
           startContent={<Plus className="h-4 w-4" />}
           onPress={() => {
             setEditingLocation(null);
@@ -167,8 +168,8 @@ export default function AttendanceSettingsPage() {
             {loadingEmployees ? (
               <p className="text-sm text-default-400">{t("attendance_settings.loading")}</p>
             ) : (
-              <div className="overflow-hidden rounded-xl border border-default-200">
-                <table className="w-full text-start text-sm">
+              <div className="overflow-x-auto rounded-xl border border-default-200">
+                <table className="min-w-[660px] w-full text-start text-sm">
                   <thead>
                     <tr className="border-b border-default-200 bg-default-50 text-xs uppercase text-default-500">
                       <th className="px-3 py-2.5 font-semibold">

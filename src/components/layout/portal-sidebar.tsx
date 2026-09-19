@@ -96,6 +96,21 @@ const GROUP_TITLES_AR: Record<string, string> = {
   messages: "المحادثات والرسائل",
 };
 
+const GROUP_TITLES_EN: Record<string, string> = {
+  general: "Overview",
+  sales: "Sales & revenue",
+  purchases: "Purchases & expenses",
+  reports_tax: "Reports & finance",
+  chart_accounts: "Accounts & settings",
+  deals_leads: "Leads & deals",
+  contracts_reports: "Documents & reports",
+  attendance_leave: "Attendance & leave",
+  performance: "Performance",
+  team_settings: "Team & settings",
+  work_sprints: "Work & sprints",
+  messages: "Messages",
+};
+
 interface PortalSidebarProps {
   portal: PortalId;
 }
@@ -334,8 +349,7 @@ export function PortalSidebar({ portal }: PortalSidebarProps) {
   };
 
   const getGroupLabel = (group: PortalNavTreeGroup) => {
-    if (GROUP_TITLES_AR[group.id]) return GROUP_TITLES_AR[group.id];
-    return t(group.labelKey);
+    return (i18n.dir() === "rtl" ? GROUP_TITLES_AR : GROUP_TITLES_EN)[group.id] ?? t(group.labelKey);
   };
 
   const isRtl = i18n.dir() === "rtl";
@@ -371,7 +385,7 @@ export function PortalSidebar({ portal }: PortalSidebarProps) {
   }, [favorites, allFlatItemsMap]);
 
   // Filter groups by search query
-  const filteredGroups = useMemo(() => {
+  const filteredGroups = (() => {
     if (!searchQuery.trim()) return treeGroups;
     const query = searchQuery.toLowerCase().trim();
     return treeGroups
@@ -389,14 +403,14 @@ export function PortalSidebar({ portal }: PortalSidebarProps) {
         return null;
       })
       .filter((g): g is PortalNavTreeGroup => g !== null);
-  }, [treeGroups, searchQuery, t, tCrm, tBilling, tChat]);
+  })();
 
   return (
     <aside
       className={cn(
         "fixed inset-y-0 start-0 z-30 hidden md:flex flex-col",
         "border-e border-default-200/80 bg-sidebar text-sidebar-foreground",
-        "transition-all duration-300 shadow-premium overflow-y-auto print:hidden",
+        "min-w-0 overflow-x-hidden transition-all duration-300 shadow-premium print:hidden",
         sidebarCollapsed ? "w-[5.5rem]" : "w-72"
       )}
     >
@@ -458,8 +472,8 @@ export function PortalSidebar({ portal }: PortalSidebarProps) {
                 >
                   <div className="flex items-center gap-2 min-w-0 flex-1 px-1 py-1 transition-all cursor-default">
                     <PortalIcon className={cn("h-5 w-5 shrink-0", portalDetails.iconColor)} />
-                    <span className="text-sm font-extrabold truncate text-foreground leading-snug">
-                      {portalDetails.titleAr}
+                    <span className="min-w-0 truncate text-sm font-extrabold text-foreground leading-snug">
+                      {isRtl ? portalDetails.titleAr : t(portalDetails.titleKey)}
                     </span>
                   </div>
                 </Tooltip>
@@ -489,7 +503,7 @@ export function PortalSidebar({ portal }: PortalSidebarProps) {
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="ابحث هنا..."
+                  placeholder={t("actions.search")}
                   className="w-full h-9 ps-9 pe-7 text-xs md:text-sm font-medium bg-transparent outline-none transition-all placeholder:text-default-400"
                 />
                 {searchQuery ? (
@@ -540,7 +554,7 @@ export function PortalSidebar({ portal }: PortalSidebarProps) {
             <nav
               ref={provided.innerRef}
               {...provided.droppableProps}
-              className="flex-1 space-y-2 p-3 overflow-y-auto"
+              className="min-h-0 min-w-0 flex-1 space-y-1.5 overflow-x-hidden overflow-y-auto px-2 py-3"
             >
               {/* Favorites Category Section */}
               {favoriteItems.length > 0 && !searchQuery.trim() && !sidebarCollapsed && (
@@ -608,7 +622,7 @@ export function PortalSidebar({ portal }: PortalSidebarProps) {
                         ref={draggableProvided.innerRef}
                         {...draggableProvided.draggableProps}
                         className={cn(
-                          "rounded-2xl transition-all duration-200",
+                          "min-w-0 max-w-full rounded-2xl transition-all duration-200",
                           snapshot.isDragging &&
                             "z-50 shadow-xl scale-[1.02] bg-background border border-primary/40"
                         )}
@@ -617,7 +631,7 @@ export function PortalSidebar({ portal }: PortalSidebarProps) {
                         {!sidebarCollapsed ? (
                           <div
                             className={cn(
-                              "group/node flex items-center justify-between px-3 py-2.5 rounded-xl transition-all duration-200 cursor-pointer select-none",
+                              "group/node flex min-w-0 items-center justify-between gap-2 rounded-xl px-2 py-2.5 transition-all duration-200 cursor-pointer select-none",
                               containsActiveChild
                                 ? "text-primary font-black bg-primary/5"
                                 : "hover:bg-default-100/80"
@@ -628,7 +642,7 @@ export function PortalSidebar({ portal }: PortalSidebarProps) {
                               <div
                                 {...draggableProvided.dragHandleProps}
                                 onClick={(e) => e.stopPropagation()}
-                                className="cursor-grab active:cursor-grabbing p-0.5 text-default-300 hover:text-default-600 opacity-0 group-hover/node:opacity-100 transition-opacity"
+                                className="hidden cursor-grab p-0.5 text-default-300 opacity-0 transition-opacity hover:text-default-600 group-hover/node:opacity-100 lg:block"
                                 title="اسحب لإعادة ترتيب المجموعة"
                               >
                                 <GripVertical className="h-4 w-4" />
@@ -652,7 +666,7 @@ export function PortalSidebar({ portal }: PortalSidebarProps) {
                                 )}
                                 <span
                                   className={cn(
-                                    "text-xs md:text-sm font-extrabold truncate",
+                                    "min-w-0 text-xs font-extrabold leading-snug md:text-sm",
                                     containsActiveChild ? "text-primary font-black" : "text-foreground"
                                   )}
                                 >
@@ -684,7 +698,7 @@ export function PortalSidebar({ portal }: PortalSidebarProps) {
                                 className={cn(
                                   sidebarCollapsed
                                     ? "space-y-1.5"
-                                    : "relative ms-6 ps-3 border-s-2 space-y-1.5 my-1.5 transition-colors",
+                                    : "relative ms-3 min-w-0 border-s-2 ps-2 space-y-1 my-1.5 transition-colors",
                                   containsActiveChild ? "border-primary/50" : "border-default-200"
                                 )}
                               >
@@ -705,7 +719,7 @@ export function PortalSidebar({ portal }: PortalSidebarProps) {
                                           ref={itemDraggableProvided.innerRef}
                                           {...itemDraggableProvided.draggableProps}
                                           className={cn(
-                                            "relative flex items-center",
+                                            "relative flex min-w-0 items-center",
                                             itemSnapshot.isDragging &&
                                               "z-50 shadow-md scale-[1.02] bg-background border border-primary/30 rounded-xl"
                                           )}
@@ -725,11 +739,11 @@ export function PortalSidebar({ portal }: PortalSidebarProps) {
                                             content={label}
                                             placement={isRtl ? "left" : "right"}
                                           >
-                                            <div className="group/item flex items-center w-full">
+                                            <div className="group/item flex min-w-0 w-full items-center">
                                               {!sidebarCollapsed && (
                                                 <div
                                                   {...itemDraggableProvided.dragHandleProps}
-                                                  className="cursor-grab active:cursor-grabbing p-1 text-default-300 hover:text-default-600 opacity-0 group-hover/item:opacity-100 transition-opacity"
+                                                  className="absolute -start-3 z-10 hidden cursor-grab p-0.5 text-default-400 opacity-0 transition-opacity hover:text-default-600 group-hover/item:opacity-100 lg:block"
                                                   title="اسحب لإعادة الترتيب داخل المجموعة"
                                                 >
                                                   <GripVertical className="h-3.5 w-3.5" />
@@ -741,7 +755,7 @@ export function PortalSidebar({ portal }: PortalSidebarProps) {
                                                 end={item.end}
                                                 className={({ isActive }) =>
                                                   cn(
-                                                    "relative flex flex-1 items-center gap-2.5 rounded-xl px-3 py-2 text-xs md:text-sm transition-all duration-200",
+                                                    "relative flex min-w-0 flex-1 items-center gap-2 rounded-xl px-2 py-2 text-xs transition-all duration-200 md:text-sm",
                                                     "hover:scale-[1.01] active:scale-[0.98]",
                                                     isActive
                                                       ? "text-primary font-black bg-primary/10 border-s-3 border-primary shadow-2xs"
@@ -763,7 +777,7 @@ export function PortalSidebar({ portal }: PortalSidebarProps) {
                                                     {!sidebarCollapsed && (
                                                       <span
                                                         className={cn(
-                                                          "truncate flex-1 text-xs md:text-sm",
+                                                          "min-w-0 flex-1 truncate text-xs md:text-sm",
                                                           isActive
                                                             ? "text-primary font-black"
                                                             : "text-default-800 font-bold"
@@ -779,7 +793,7 @@ export function PortalSidebar({ portal }: PortalSidebarProps) {
                                                         type="button"
                                                         onClick={(e) => toggleFavorite(item.path, e)}
                                                         className={cn(
-                                                          "p-0.5 rounded transition-opacity",
+                                                          "shrink-0 rounded p-0.5 transition-opacity",
                                                           isFav
                                                             ? "opacity-100 text-amber-400"
                                                             : "opacity-0 group-hover/item:opacity-100 text-default-400 hover:text-amber-400"
@@ -841,7 +855,7 @@ export function PortalSidebar({ portal }: PortalSidebarProps) {
               className="flex items-center justify-center gap-2 text-xs font-bold text-default-400 hover:text-foreground px-3 py-1.5 w-full rounded-xl transition-colors"
             >
               <RotateCcw className="h-3.5 w-3.5" />
-              <span>إعادة الترتيب الشجري الافتراضي</span>
+              <span className="min-w-0 truncate">{isRtl ? "إعادة الترتيب الافتراضي" : "Reset navigation order"}</span>
             </button>
           )}
 

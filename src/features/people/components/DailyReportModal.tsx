@@ -14,7 +14,6 @@ import {
 } from "@heroui/react";
 import { 
   ClipboardCheck, 
-  Star, 
   AlertTriangle, 
   Send, 
   LogOut, 
@@ -23,7 +22,6 @@ import {
   ListTodo, 
   Sparkles
 } from "lucide-react";
-import { motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { useAuth } from "@/features/auth/context/auth-context";
@@ -62,7 +60,6 @@ export function DailyReportModal({
   const [summary, setSummary] = useState("");
   const [blockers, setBlockers] = useState("");
   const [planTomorrow, setPlanTomorrow] = useState("");
-  const [productivityRating, setProductivityRating] = useState<number>(5);
   
   // Emergency Skip States
   const [showSkipConfirm, setShowSkipConfirm] = useState(false);
@@ -146,7 +143,6 @@ export function DailyReportModal({
         summary: summary.trim(),
         blockers: blockers.trim(),
         planTomorrow: planTomorrow.trim(),
-        productivityRating,
         isSkipped: false,
       });
 
@@ -177,7 +173,6 @@ export function DailyReportModal({
         tasksCompleted: [],
         tasksInProgress: [],
         summary: "تخطي إدخال التقرير اليومي (خروج طارئ)",
-        productivityRating: 0,
         isSkipped: true,
         skipReason: skipReason.trim() || "خروج طارئ",
       });
@@ -351,36 +346,6 @@ export function DailyReportModal({
                     />
                   </div>
 
-                  {/* Self Productivity Rating */}
-                  <div className="p-4 rounded-2xl bg-primary/5 border border-primary/20 flex flex-col md:flex-row items-center justify-between gap-4">
-                    <div>
-                      <span className="text-xs font-bold text-foreground block">
-                        {t("daily_report.rating_title")}
-                      </span>
-                      <span className="text-[11px] text-default-400">
-                        {t("daily_report.rating_subtitle")}
-                      </span>
-                    </div>
-
-                    <div className="flex items-center gap-1.5">
-                      {[1, 2, 3, 4, 5].map((star) => (
-                        <motion.button
-                          key={star}
-                          whileHover={{ scale: 1.2 }}
-                          whileTap={{ scale: 0.9 }}
-                          type="button"
-                          onClick={() => setProductivityRating(star)}
-                          className="p-1 text-warning focus:outline-none"
-                        >
-                          <Star 
-                            size={24} 
-                            fill={star <= productivityRating ? "currentColor" : "none"} 
-                            className={star <= productivityRating ? "drop-shadow-[0_0_8px_rgba(234,179,8,0.5)]" : "text-default-300"}
-                          />
-                        </motion.button>
-                      ))}
-                    </div>
-                  </div>
                 </>
               ) : (
                 /* Emergency Skip UI */

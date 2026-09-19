@@ -408,8 +408,8 @@ export function TaskDetailPage() {
   };
 
   return (
-    <div className="animate-in fade-in pb-24 duration-300">
-      <nav className="mb-3 flex items-center gap-1 px-4 text-sm text-default-500 md:px-6">
+    <div className="w-full min-w-0 animate-in fade-in pb-16 duration-300">
+      <nav className="mb-3 flex min-w-0 items-center gap-1 text-sm text-default-500">
         <Link to="/tasks" className="hover:text-primary">
           {t("module_name")}
         </Link>
@@ -423,7 +423,7 @@ export function TaskDetailPage() {
         </span>
       </nav>
 
-      <div className="flex min-h-[calc(100vh-64px)] flex-col lg:flex-row">
+      <div className="flex min-w-0 flex-col overflow-hidden rounded-2xl border border-default-200 bg-content1 shadow-sm lg:min-h-[calc(100vh-64px)] lg:flex-row">
         {/* LEFT SIDEBAR */}
         <aside className="flex w-full shrink-0 flex-col border-b border-default-200 bg-content1 lg:sticky lg:top-16 lg:h-[calc(100vh-64px)] lg:w-[280px] lg:border-b-0 lg:border-e">
           <div className="flex-1 space-y-3 overflow-y-auto p-4">

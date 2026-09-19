@@ -29,6 +29,21 @@ const GROUP_TITLES_AR: Record<string, string> = {
   messages: "المحادثات والرسائل",
 };
 
+const GROUP_TITLES_EN: Record<string, string> = {
+  general: "Overview",
+  sales: "Sales & revenue",
+  purchases: "Purchases & expenses",
+  reports_tax: "Reports & finance",
+  chart_accounts: "Accounts & settings",
+  deals_leads: "Leads & deals",
+  contracts_reports: "Documents & reports",
+  attendance_leave: "Attendance & leave",
+  performance: "Performance",
+  team_settings: "Team & settings",
+  work_sprints: "Work & sprints",
+  messages: "Messages",
+};
+
 const PORTAL_TITLES_AR: Record<PortalId | "picker" | "settings", string> = {
   billing: "المحاسبة والمالية",
   crm: "إدارة العملاء",
@@ -40,7 +55,7 @@ const PORTAL_TITLES_AR: Record<PortalId | "picker" | "settings", string> = {
 };
 
 export function MobileSidebar() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { t: tCrm } = useTranslation("crm");
   const { t: tBilling } = useTranslation("billing");
   const { t: tChat } = useTranslation("chat");
@@ -76,14 +91,15 @@ export function MobileSidebar() {
   };
 
   const getGroupLabel = (group: PortalNavTreeGroup) => {
-    if (GROUP_TITLES_AR[group.id]) return GROUP_TITLES_AR[group.id];
-    return t(group.labelKey);
+    return (i18n.dir() === "rtl" ? GROUP_TITLES_AR : GROUP_TITLES_EN)[group.id] ?? t(group.labelKey);
   };
 
-  const portalTitle = (portal && PORTAL_TITLES_AR[portal]) ? PORTAL_TITLES_AR[portal] : t("appName");
+  const portalTitle = i18n.dir() === "rtl" && portal && PORTAL_TITLES_AR[portal]
+    ? PORTAL_TITLES_AR[portal]
+    : t(`portals.${activePortalId}.short`, t("appName"));
 
   return (
-    <div className="flex h-full flex-col bg-sidebar text-foreground overflow-y-auto">
+    <div className="flex h-full min-w-0 flex-col overflow-x-hidden bg-sidebar text-foreground">
       {/* Top Mobile Header */}
       <div className="flex h-16 items-center justify-between border-b border-default-100 px-4 shrink-0 bg-default-50/50">
         <div className="flex items-center gap-3">
@@ -117,7 +133,7 @@ export function MobileSidebar() {
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="ابحث هنا..."
+            placeholder={t("actions.search")}
             className="w-full h-8.5 ps-8 pe-8 text-xs font-medium bg-default-100/70 focus:bg-background border border-default-200/70 focus:border-primary/60 rounded-xl outline-none transition-all placeholder:text-default-400"
           />
           {searchQuery && (
@@ -133,7 +149,7 @@ export function MobileSidebar() {
       </div>
 
       {/* Tree Groups Navigation */}
-      <nav className="flex-1 space-y-2 p-3 overflow-y-auto">
+      <nav className="min-h-0 min-w-0 flex-1 space-y-2 overflow-x-hidden overflow-y-auto p-3">
         {treeGroups.map((group) => {
           const isExpanded = searchQuery.trim() ? true : expandedGroups[group.id] ?? true;
           const query = searchQuery.toLowerCase().trim();
@@ -151,7 +167,7 @@ export function MobileSidebar() {
           );
 
           return (
-            <div key={group.id} className="rounded-xl transition-all">
+            <div key={group.id} className="min-w-0 rounded-xl transition-all">
               {/* Group Node Header */}
               <div
                 onClick={() => toggleGroup(group.id)}
@@ -176,7 +192,7 @@ export function MobileSidebar() {
                       )}
                     />
                   )}
-                  <span className={cn("text-xs font-bold truncate", containsActiveChild ? "text-primary font-black" : "text-default-800")}>
+                  <span className={cn("min-w-0 text-xs font-bold leading-snug", containsActiveChild ? "text-primary font-black" : "text-default-800")}>
                     {groupLabel}
                   </span>
                 </div>
@@ -187,7 +203,7 @@ export function MobileSidebar() {
 
               {/* Sub items branch */}
               {isExpanded && (
-                <div className={cn("ms-5 ps-3 border-s-2 space-y-1 my-1 relative", containsActiveChild ? "border-primary/50" : "border-default-200")}>
+                <div className={cn("relative ms-3 min-w-0 border-s-2 ps-2 space-y-1 my-1", containsActiveChild ? "border-primary/50" : "border-default-200")}>
                   {displayItems.map((item) => {
                     const Icon = item.icon;
                     const label = getItemLabel(item);
@@ -201,7 +217,7 @@ export function MobileSidebar() {
                           onClick={() => setMobileSidebarOpen(false)}
                           className={({ isActive }) =>
                             cn(
-                              "flex flex-1 items-center gap-2 rounded-xl px-2.5 py-2 text-xs transition-all",
+                              "flex min-w-0 flex-1 items-center gap-2 rounded-xl px-2.5 py-2 text-xs transition-all",
                               isActive
                                 ? "text-primary font-black bg-transparent"
                                 : "text-default-600 hover:bg-default-100/70 hover:text-default-900 font-semibold"

@@ -63,7 +63,7 @@ export function ApprovalsPage() {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="w-full min-w-0 space-y-6 pb-12 sm:space-y-8">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <h1 className="text-3xl font-black tracking-tight text-foreground">
@@ -81,9 +81,10 @@ export function ApprovalsPage() {
           {t("approvals.pending_requests")}
         </h2>
 
+        <div className="w-full overflow-x-auto rounded-2xl border border-default-200/80 bg-content1 shadow-sm">
         <Table 
           aria-label="Pending approvals table"
-          className="bg-white dark:bg-content1 rounded-2xl shadow-sm border border-default-100"
+          className="min-w-[680px]"
           removeWrapper
         >
           <TableHeader columns={columns}>
@@ -157,6 +158,7 @@ export function ApprovalsPage() {
             )}
           </TableBody>
         </Table>
+        </div>
       </div>
     </div>
   );

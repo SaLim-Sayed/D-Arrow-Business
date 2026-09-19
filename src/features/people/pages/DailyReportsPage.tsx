@@ -26,7 +26,6 @@ import {
   ClipboardCheck, 
   Calendar, 
   Search, 
-  Star, 
   AlertTriangle, 
   CheckCircle2, 
   Clock, 
@@ -42,6 +41,7 @@ import { useAuth } from "@/features/auth/context/auth-context";
 import { useAppPermissions } from "@/features/companies/hooks/use-app-permissions";
 import { DailyReportsService } from "../api/daily-reports.service";
 import type { DailyReport } from "../types/daily-report.types";
+import { alternatingDayKeys } from "@/lib/alternating-day-keys";
 
 export default function DailyReportsPage() {
   const { t } = useTranslation("people");
@@ -101,8 +101,9 @@ export default function DailyReportsPage() {
       const matchesDate = !selectedDate || r.date === selectedDate;
 
       return matchesSearch && matchesStatus && matchesDate;
-    });
+    }).sort((a, b) => b.date.localeCompare(a.date) || a.employeeName.localeCompare(b.employeeName));
   }, [reports, searchQuery, statusFilter, selectedDate]);
+  const tintedReportDays = alternatingDayKeys(filteredReports, (report) => report.date);
 
   // Key Statistics
   const stats = useMemo(() => {
@@ -111,12 +112,9 @@ export default function DailyReportsPage() {
     const skipped = reports.filter((r) => r.isSkipped).length;
     const withBlockers = reports.filter((r) => !!r.blockers && r.blockers.trim().length > 0).length;
 
-    const ratedReports = reports.filter((r) => !r.isSkipped && r.productivityRating > 0);
-    const avgRating = ratedReports.length > 0 
-      ? (ratedReports.reduce((acc, curr) => acc + curr.productivityRating, 0) / ratedReports.length).toFixed(1)
-      : "5.0";
+    const reviewed = reports.filter((r) => r.status === "reviewed").length;
 
-    return { total, submitted, skipped, withBlockers, avgRating };
+    return { total, submitted, skipped, withBlockers, reviewed };
   }, [reports]);
 
   const handleOpenReviewModal = (report: DailyReport) => {
@@ -147,17 +145,17 @@ export default function DailyReportsPage() {
   };
 
   return (
-    <div className="p-6 md:p-10 space-y-8 max-w-7xl mx-auto">
+    <div className="mx-auto w-full min-w-0 max-w-7xl space-y-6 pb-12 sm:space-y-8">
       {/* Page Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl md:text-3xl font-black text-foreground tracking-tight flex items-center gap-3">
+      <div className="flex flex-col gap-4 rounded-3xl border border-default-200/70 bg-content1 p-4 shadow-sm sm:p-6 md:flex-row md:items-center md:justify-between">
+        <div className="min-w-0">
+          <h1 className="flex items-center gap-3 text-xl font-black tracking-tight text-foreground sm:text-2xl md:text-3xl">
             <div className="p-3 rounded-2xl bg-primary/10 text-primary">
               <ClipboardCheck size={28} />
             </div>
             {t("daily_report.page_title")}
           </h1>
-          <p className="text-sm text-default-400 mt-1 flex items-center gap-2">
+          <p className="mt-2 flex flex-wrap items-center gap-2 text-sm text-default-500">
             {t("daily_report.page_subtitle")}
             {!canViewAllReports && (
               <Chip size="sm" variant="flat" color="primary" className="font-bold text-[10px]">
@@ -167,14 +165,14 @@ export default function DailyReportsPage() {
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex w-full items-center gap-3 md:w-auto">
           <Button 
             variant="flat" 
             color="primary" 
             onPress={fetchReports} 
             isLoading={loading}
             startContent={<RefreshCw size={16} />}
-            className="font-bold text-xs rounded-xl"
+            className="w-full rounded-xl font-bold text-xs md:w-auto"
           >
             {t("daily_report.refresh")}
           </Button>
@@ -182,7 +180,7 @@ export default function DailyReportsPage() {
       </div>
 
       {/* KPI Stats Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+      <div className="grid grid-cols-1 gap-3 min-[420px]:grid-cols-2 xl:grid-cols-5">
         <Card className="border border-default-200/60 shadow-sm rounded-3xl bg-background/60 backdrop-blur-xl">
           <CardBody className="p-5 flex flex-row items-center gap-4">
             <div className="p-3 rounded-2xl bg-primary/10 text-primary">
@@ -221,12 +219,12 @@ export default function DailyReportsPage() {
 
         <Card className="border border-default-200/60 shadow-sm rounded-3xl bg-background/60 backdrop-blur-xl">
           <CardBody className="p-5 flex flex-row items-center gap-4">
-            <div className="p-3 rounded-2xl bg-amber-500/10 text-amber-500">
-              <Star size={22} />
+            <div className="p-3 rounded-2xl bg-secondary/10 text-secondary">
+              <MessageSquare size={22} />
             </div>
             <div>
-              <p className="text-xs text-default-400 font-bold uppercase tracking-wider">{t("daily_report.avg_productivity")}</p>
-              <h3 className="text-2xl font-black text-foreground mt-0.5">{stats.avgRating} <span className="text-xs text-default-400">/ 5</span></h3>
+              <p className="text-xs text-default-500 font-bold">{t("daily_report.reviewed_reports")}</p>
+              <h3 className="text-2xl font-black text-foreground mt-0.5">{stats.reviewed}</h3>
             </div>
           </CardBody>
         </Card>
@@ -246,8 +244,8 @@ export default function DailyReportsPage() {
 
       {/* Filter Bar */}
       <Card className="border border-default-200/60 shadow-sm rounded-3xl bg-background/60 backdrop-blur-xl">
-        <CardBody className="p-4 flex flex-col md:flex-row items-center gap-4 justify-between">
-          <div className="flex flex-col md:flex-row items-center gap-3 w-full md:w-auto flex-1">
+        <CardBody className="flex flex-col items-stretch gap-3 p-4 lg:flex-row lg:items-center">
+          <div className="grid w-full min-w-0 grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-[minmax(220px,1fr)_180px_180px]">
             <Input
               placeholder={t("daily_report.search_placeholder")}
               value={searchQuery}
@@ -255,7 +253,7 @@ export default function DailyReportsPage() {
               startContent={<Search size={16} className="text-default-400" />}
               variant="bordered"
               size="sm"
-              className="w-full md:w-80"
+              className="w-full min-w-0"
               classNames={{ inputWrapper: "rounded-2xl" }}
             />
 
@@ -265,7 +263,7 @@ export default function DailyReportsPage() {
               onValueChange={setSelectedDate}
               size="sm"
               variant="bordered"
-              className="w-full md:w-48"
+              className="w-full min-w-0"
               classNames={{ inputWrapper: "rounded-2xl" }}
             />
 
@@ -274,7 +272,7 @@ export default function DailyReportsPage() {
               onSelectionChange={(keys) => setStatusFilter(Array.from(keys)[0] as string)}
               size="sm"
               variant="bordered"
-              className="w-full md:w-44"
+              className="w-full min-w-0"
               classNames={{ trigger: "rounded-2xl" }}
             >
               <SelectItem key="all">{t("daily_report.all_statuses")}</SelectItem>
@@ -289,23 +287,35 @@ export default function DailyReportsPage() {
       {/* Daily Reports Table */}
       <Card className="border border-default-200/60 shadow-sm rounded-3xl bg-background/60 backdrop-blur-xl overflow-hidden">
         <CardBody className="p-0">
-          <Table aria-label="جدول تقارير العمل اليومية" className="w-full">
+          <div className="w-full overflow-x-auto">
+          <Table
+            aria-label={t("daily_report.page_title")}
+            className="min-w-[820px]"
+            classNames={{
+              th: "h-12 bg-default-50/80 text-xs font-bold text-default-600",
+              td: "py-3.5",
+            }}
+          >
             <TableHeader>
-              <TableColumn>{t("daily_report.col_employee")}</TableColumn>
-              <TableColumn>{t("daily_report.col_date_time")}</TableColumn>
+              <TableColumn className="min-w-[180px]">{t("daily_report.col_employee")}</TableColumn>
+              <TableColumn className="min-w-[125px]">{t("daily_report.col_date_time")}</TableColumn>
               <TableColumn>{t("daily_report.col_status")}</TableColumn>
               <TableColumn>{t("daily_report.col_tasks")}</TableColumn>
-              <TableColumn>{t("daily_report.col_summary")}</TableColumn>
-              <TableColumn>{t("daily_report.col_rating")}</TableColumn>
+              <TableColumn className="min-w-[220px]">{t("daily_report.col_summary")}</TableColumn>
               <TableColumn align="center">{t("daily_report.col_actions")}</TableColumn>
             </TableHeader>
             <TableBody emptyContent="لا توجد تقارير عمل يومية تطابق البحث الحالية">
-              {filteredReports.map((report) => (
-                <TableRow key={report.id} className="hover:bg-default-50/50 transition-colors">
+              {filteredReports.map((report, index) => (
+                <TableRow
+                  key={report.id}
+                  className={[
+                    index > 0 && report.date !== filteredReports[index - 1].date && "attendance-day-divider",
+                    tintedReportDays.has(report.date) && "day-group-tinted",
+                  ].filter(Boolean).join(" ")}
+                >
                   <TableCell>
                     <User
-                      name={report.employeeName}
-                      description={report.employeeId}
+                      name={<span className="block max-w-[160px] truncate font-semibold" title={report.employeeName}>{report.employeeName}</span>}
                       avatarProps={{
                         src: report.userPhotoUrl,
                         name: report.employeeName.slice(0, 2),
@@ -315,7 +325,7 @@ export default function DailyReportsPage() {
                     />
                   </TableCell>
 
-                  <TableCell>
+                  <TableCell className="whitespace-nowrap">
                     <div className="flex flex-col">
                       <span className="text-xs font-bold text-foreground flex items-center gap-1">
                         <Calendar size={13} className="text-default-400" />
@@ -358,7 +368,7 @@ export default function DailyReportsPage() {
                   </TableCell>
 
                   <TableCell className="max-w-xs">
-                    <p className="text-xs text-foreground truncate font-medium">
+                    <p dir="auto" className="truncate text-xs font-medium text-foreground">
                       {report.summary}
                     </p>
                     {report.blockers && (
@@ -366,23 +376,6 @@ export default function DailyReportsPage() {
                         <AlertTriangle size={10} />
                         يوجد معوقات مسجلة
                       </span>
-                    )}
-                  </TableCell>
-
-                  <TableCell>
-                    {!report.isSkipped ? (
-                      <div className="flex items-center gap-1">
-                        {[1, 2, 3, 4, 5].map((star) => (
-                          <Star
-                            key={star}
-                            size={14}
-                            fill={star <= report.productivityRating ? "currentColor" : "none"}
-                            className={star <= report.productivityRating ? "text-amber-500" : "text-default-200"}
-                          />
-                        ))}
-                      </div>
-                    ) : (
-                      <span className="text-xs text-default-300">—</span>
                     )}
                   </TableCell>
 
@@ -401,6 +394,7 @@ export default function DailyReportsPage() {
               ))}
             </TableBody>
           </Table>
+          </div>
         </CardBody>
       </Card>
 

@@ -23,7 +23,7 @@ export function TaskCreatePage() {
   const title = parentId ? t("detail.addSubtask") : t("form.createTitle");
 
   return (
-    <div className="w-full animate-in fade-in pb-24 duration-300">
+    <div className="mx-auto w-full min-w-0 max-w-5xl animate-in fade-in pb-16 duration-300">
       <TasksPageHeader
         title={title}
         description={parentId ? t("form.createSubtaskFor") : t("form.pageDescription")}
@@ -35,7 +35,7 @@ export function TaskCreatePage() {
             to={backTo}
             size="sm"
             variant="bordered"
-            className="border-default-200 font-medium"
+            className="w-full rounded-xl border-default-200 font-medium sm:w-auto"
             startContent={<ArrowLeft className="h-4 w-4 rtl:rotate-180" />}
           >
             {t("nav.back")}
@@ -44,7 +44,7 @@ export function TaskCreatePage() {
       />
 
       {parentTask && (
-        <div className="mb-4 flex items-center gap-3 rounded-lg border border-primary/20 bg-primary-50/40 px-4 py-3">
+        <div className="mb-4 flex items-center gap-3 rounded-2xl border border-primary/20 bg-primary-50/40 px-4 py-3">
           <Layers className="h-5 w-5 shrink-0 text-primary" />
           <div className="min-w-0 flex-1 text-start">
             <p className="text-xs font-bold uppercase tracking-wide text-default-500">
@@ -61,7 +61,7 @@ export function TaskCreatePage() {
 
       <TasksShell>
         <div className="mb-6 flex items-center gap-3 border-b border-default-100 pb-5">
-          <div className="shrink-0 rounded-md bg-primary/10 p-2 text-primary">
+          <div className="shrink-0 rounded-xl bg-primary/10 p-2.5 text-primary">
             <ListTodo className="h-4 w-4" />
           </div>
           <div className="min-w-0 flex-1 text-start">

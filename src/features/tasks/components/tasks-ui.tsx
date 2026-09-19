@@ -41,7 +41,7 @@ export function TasksPageHeader({
       </nav>
       <div
         className={cn(
-          "flex flex-wrap items-center justify-between gap-3",
+          "flex flex-wrap items-center justify-between gap-3 min-w-0",
           compact ? "mb-2" : "mb-4"
         )}
       >
@@ -60,7 +60,7 @@ export function TasksPageHeader({
             </p>
           )}
         </div>
-        {action && <div className="shrink-0">{action}</div>}
+        {action && <div className="w-full min-w-0 sm:w-auto sm:shrink-0">{action}</div>}
       </div>
     </>
   );
@@ -79,7 +79,7 @@ export function TasksMetricCards({
   }[];
 }) {
   return (
-    <div className="mb-6 grid grid-cols-2 gap-3.5 lg:grid-cols-4">
+    <div className="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
       {items.map(({ key, label, value, icon: Icon, className, onPress }) => {
         const Wrapper = onPress ? "button" : "div";
         return (
@@ -88,7 +88,7 @@ export function TasksMetricCards({
             type={onPress ? "button" : undefined}
             onClick={onPress}
             className={cn(
-              "group relative flex items-center gap-4 rounded-3xl border border-default-200/70 bg-background/70 p-4 text-start shadow-sm backdrop-blur-xl transition-all duration-300",
+              "group relative flex min-w-0 items-center gap-3 rounded-2xl border border-default-200/70 bg-background/70 p-3 text-start shadow-sm backdrop-blur-xl transition-all duration-300 sm:gap-4 sm:rounded-3xl sm:p-4",
               onPress &&
                 "cursor-pointer hover:-translate-y-1 hover:border-primary/40 hover:bg-background/90 hover:shadow-lg hover:shadow-primary/5 active:translate-y-0"
             )}
@@ -222,7 +222,7 @@ export function TasksShell({
       {toolbar && (
         <div
           className={cn(
-            "shrink-0 border-b border-default-100 bg-default-50/60 px-5",
+            "shrink-0 border-b border-default-100 bg-default-50/60 px-3 sm:px-5",
             bleed ? "py-2.5" : "py-3.5"
           )}
         >
@@ -367,4 +367,3 @@ export function TasksQuickAction({
     </button>
   );
 }
-

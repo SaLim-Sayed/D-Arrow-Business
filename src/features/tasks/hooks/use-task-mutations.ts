@@ -206,7 +206,7 @@ export function useSeedWorkedTasks() {
         },
         {
           title: "تطوير واجهة التقرير اليومي وتكامل البيانات (Tasks Daily Reports Integration)",
-          description: "متابعة التقارير اليومية وتفاصيل الساعات المنجزة والتقييم الذاتي للموظفين.",
+          description: "متابعة التقارير اليومية وتفاصيل الساعات المنجزة للموظفين.",
           status: "in_progress" as const,
           priority: "high" as const,
           type: "task" as const,
@@ -253,7 +253,6 @@ export function useSeedWorkedTasks() {
             summary: "تم تنفيذ وتطوير كافة ميزات ولوحات المهام والدورات والتقارير اليومية بنجاح 🚀",
             blockers: "لا توجد عوائق حالياً",
             planTomorrow: "الاستمرار في تحسين تجربة المستخدم وإضافة الميزات الجديدة",
-            productivityRating: 5,
           });
         } catch (reportErr) {
           console.error("Failed to create master daily report:", reportErr);

@@ -48,7 +48,7 @@ export default function LeaveTrackerPage() {
   ];
 
   return (
-    <div dir={isAr ? "rtl" : "ltr"} className="p-4 md:p-8 max-w-7xl mx-auto space-y-8 animate-in fade-in duration-500">
+    <div dir={isAr ? "rtl" : "ltr"} className="mx-auto w-full min-w-0 max-w-7xl space-y-6 pb-12 animate-in fade-in duration-500 sm:space-y-8">
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
@@ -63,8 +63,8 @@ export default function LeaveTrackerPage() {
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
-          <Button color="primary" variant="shadow" className="rounded-2xl font-bold h-11 px-6 shadow-lg shadow-primary/25" startContent={<Plus size={18} />} onPress={onOpen}>
+        <div className="w-full sm:w-auto">
+          <Button color="primary" variant="shadow" className="w-full rounded-2xl font-bold h-11 px-6 shadow-lg shadow-primary/25 sm:w-auto" startContent={<Plus size={18} />} onPress={onOpen}>
             {isAr ? "تقديم طلب إجازة جديدة" : "Apply New Leave"}
           </Button>
         </div>
@@ -106,7 +106,8 @@ export default function LeaveTrackerPage() {
             </h2>
           </div>
 
-          <Table aria-label="جدول طلبات الإجازات" className="w-full">
+          <div className="w-full overflow-x-auto">
+          <Table aria-label="جدول طلبات الإجازات" className="min-w-[680px]">
             <TableHeader columns={columns}>
               {(column) => (
                 <TableColumn key={column.uid} className="bg-default-50 text-default-500 font-bold text-xs py-4">
@@ -136,6 +137,7 @@ export default function LeaveTrackerPage() {
               )}
             </TableBody>
           </Table>
+          </div>
         </CardBody>
       </Card>
     </div>

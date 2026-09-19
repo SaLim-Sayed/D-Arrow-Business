@@ -242,12 +242,12 @@ export function EmployeeTable({ employees, onView, onEdit, onDelete, onHire }: E
           size="sm"
         />
 
-        <div className="flex flex-wrap gap-2 flex-1">
+        <div className="grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto sm:flex-1 sm:flex-wrap">
           <Select
             {...selectFieldProps({ compact: true })}
             placeholder={t("profile.department")}
             size="sm"
-            className="w-36"
+            className="w-full sm:w-36"
             selectedKeys={departmentFilter ? [departmentFilter] : []}
             onSelectionChange={(keys) => {
               setDepartmentFilter(Array.from(keys as Set<string>)[0] || "");
@@ -264,7 +264,7 @@ export function EmployeeTable({ employees, onView, onEdit, onDelete, onHire }: E
             {...selectFieldProps({ compact: true })}
             placeholder={t("timesheets.col_status")}
             size="sm"
-            className="w-32"
+            className="w-full sm:w-32"
             selectedKeys={statusFilter ? [statusFilter] : []}
             onSelectionChange={(keys) => {
               setStatusFilter(Array.from(keys as Set<string>)[0] || "");
@@ -280,7 +280,7 @@ export function EmployeeTable({ employees, onView, onEdit, onDelete, onHire }: E
             {...selectFieldProps({ compact: true })}
             placeholder={t("profile.role")}
             size="sm"
-            className="w-32"
+            className="w-full sm:w-32"
             selectedKeys={roleFilter ? [roleFilter] : []}
             onSelectionChange={(keys) => {
               setRoleFilter(Array.from(keys as Set<string>)[0] || "");
@@ -324,9 +324,10 @@ export function EmployeeTable({ employees, onView, onEdit, onDelete, onHire }: E
       </div>
 
       {/* Table */}
+      <div className="w-full overflow-x-auto rounded-2xl border border-default-100">
       <Table
         aria-label={t("extra.org_structure")}
-        className="rounded-2xl shadow-sm border border-default-100"
+        className="min-w-[760px] rounded-2xl shadow-sm"
         removeWrapper
         bottomContent={
           pages > 1 ? (
@@ -381,6 +382,7 @@ export function EmployeeTable({ employees, onView, onEdit, onDelete, onHire }: E
           )}
         </TableBody>
       </Table>
+      </div>
     </div>
   );
 }

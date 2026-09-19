@@ -13,14 +13,14 @@ export default function HrSettingsHubPage() {
   const [selectedTab, setSelectedTab] = useState<string>("team");
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-300">
+    <div className="w-full min-w-0 space-y-6 pb-12 animate-in fade-in duration-300">
       {/* Header */}
       <div dir={isAr ? "rtl" : "ltr"} className="flex flex-col gap-1">
-        <div className="flex items-center gap-3">
+        <div className="flex items-start gap-3 sm:items-center">
           <div className="p-3 bg-primary/10 text-primary rounded-2xl border border-primary/20 shadow-sm">
             <Sliders size={24} />
           </div>
-          <div>
+          <div className="min-w-0">
             <h1 className="text-2xl font-black tracking-tight text-foreground">
               {isAr ? "إعدادات الفريق والأدوار والنظام" : "Team, Roles & System Settings"}
             </h1>
@@ -44,7 +44,7 @@ export default function HrSettingsHubPage() {
             radius="full"
             size="lg"
             classNames={{
-              tabList: "w-full overflow-x-auto scrollbar-hide flex-wrap sm:flex-nowrap gap-2 p-1.5 bg-default-100/70 dark:bg-default-50/20 rounded-2xl border border-default-200/50",
+              tabList: "w-full max-w-full overflow-x-auto scrollbar-hide flex-nowrap gap-2 p-1.5 bg-default-100/70 dark:bg-default-50/20 rounded-2xl border border-default-200/50",
               tab: "h-11 rounded-xl font-bold text-sm transition-all text-default-600 data-[selected=true]:text-primary-foreground data-[selected=true]:font-black shadow-none",
               tabContent: "font-bold flex items-center gap-2 px-1",
             }}

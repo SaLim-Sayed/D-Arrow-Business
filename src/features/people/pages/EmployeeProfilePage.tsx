@@ -63,6 +63,7 @@ import { AssignAttendanceLocationModal } from "../components/AssignAttendanceLoc
 import { useTranslation } from "react-i18next";
 import { useAppPermissions } from "@/features/companies/hooks/use-app-permissions";
 import { formatDate } from "@/lib/utils";
+import { alternatingDayKeys } from "@/lib/alternating-day-keys";
 import { MoneyAmount } from "@/components/shared/riyal-symbol";
 import { toast } from "sonner";
 import { employeeDisplayName, employeeInitials } from "../utils/geo";
@@ -107,6 +108,7 @@ export default function EmployeeProfilePage() {
 
   const { data: attendanceResponse } = useAttendanceQuery(employee?.id || "");
   const attendanceLogs = attendanceResponse?.data || [];
+  const tintedAttendanceDays = alternatingDayKeys(attendanceLogs, (log) => formatDate(log.date));
   const { data: locationsRes } = useWorkLocationsQuery();
   const workLocations = locationsRes?.data ?? [];
   const assignLocation = useAssignAttendanceLocationMutation();
@@ -198,7 +200,7 @@ export default function EmployeeProfilePage() {
   };
 
   return (
-    <div dir={isAr ? "rtl" : "ltr"} className="p-4 md:p-8 max-w-7xl mx-auto space-y-8 animate-in fade-in duration-500">
+    <div dir={isAr ? "rtl" : "ltr"} className="mx-auto w-full min-w-0 max-w-7xl space-y-6 pb-12 animate-in fade-in duration-500 sm:space-y-8">
       {/* === JISR HERO PROFILE HEADER === */}
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
         <Card className="border border-default-200/60 dark:border-default-100/40 shadow-lg rounded-3xl overflow-hidden bg-background/80 backdrop-blur-xl">
@@ -555,7 +557,8 @@ export default function EmployeeProfilePage() {
                   </Button>
                 </div>
 
-                <Table aria-label="جدول الحضور والإنصراف" className="w-full">
+                <div className="w-full overflow-x-auto rounded-2xl border border-default-100">
+                <Table aria-label="جدول الحضور والإنصراف" className="min-w-[640px]">
                   <TableHeader>
                     <TableColumn>{isAr ? "التاريخ" : "Date"}</TableColumn>
                     <TableColumn>{isAr ? "تسجيل الدخول" : "Check In"}</TableColumn>
@@ -564,8 +567,14 @@ export default function EmployeeProfilePage() {
                     <TableColumn>{isAr ? "الحالة" : "Status"}</TableColumn>
                   </TableHeader>
                   <TableBody emptyContent={isAr ? "لا توجد سجلات حضور مدونة لهذا الشهر" : "No attendance records found"}>
-                    {attendanceLogs.map((log: any) => (
-                      <TableRow key={log.id}>
+                    {attendanceLogs.map((log: any, index: number) => (
+                      <TableRow
+                        key={log.id}
+                        className={[
+                          index > 0 && formatDate(log.date) !== formatDate(attendanceLogs[index - 1].date) && "attendance-day-divider",
+                          tintedAttendanceDays.has(formatDate(log.date)) && "day-group-tinted",
+                        ].filter(Boolean).join(" ")}
+                      >
                         <TableCell className="font-bold text-xs">{formatDate(log.date)}</TableCell>
                         <TableCell className="text-xs">{log.checkIn ? new Date(log.checkIn).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "—"}</TableCell>
                         <TableCell className="text-xs">{log.checkOut ? new Date(log.checkOut).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "—"}</TableCell>
@@ -584,6 +593,7 @@ export default function EmployeeProfilePage() {
                     ))}
                   </TableBody>
                 </Table>
+                </div>
               </div>
             </Tab>
 
@@ -633,7 +643,8 @@ export default function EmployeeProfilePage() {
                 {/* Leave Requests Table */}
                 <div className="space-y-4">
                   <h4 className="font-bold text-sm text-foreground">{isAr ? "طلبات الإجازات السابقة" : "Leave Request History"}</h4>
-                  <Table aria-label="طلبات الإجازات" className="w-full">
+                  <div className="w-full overflow-x-auto rounded-2xl border border-default-100">
+                  <Table aria-label="طلبات الإجازات" className="min-w-[560px]">
                     <TableHeader>
                       <TableColumn>{isAr ? "نوع الإجازة" : "Type"}</TableColumn>
                       <TableColumn>{isAr ? "تاريخ البداية" : "Start Date"}</TableColumn>
@@ -655,6 +666,7 @@ export default function EmployeeProfilePage() {
                       ))}
                     </TableBody>
                   </Table>
+                  </div>
                 </div>
               </div>
             </Tab>

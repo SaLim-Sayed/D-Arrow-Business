@@ -38,6 +38,7 @@ import { employeeDisplayName } from "../utils/geo";
 import { selectFieldProps } from "@/components/shared/select-field";
 import { initialsFromName } from "@/lib/localized-name";
 import { avatarSrc } from "@/lib/image-utils";
+import { alternatingDayKeys } from "@/lib/alternating-day-keys";
 import type { Attendance, Employee } from "../types/people.types";
 
 const ROWS_PER_PAGE = 25;
@@ -398,6 +399,7 @@ export default function TimesheetsPage() {
     (currentPage - 1) * ROWS_PER_PAGE,
     currentPage * ROWS_PER_PAGE
   );
+  const tintedDays = alternatingDayKeys(filteredRows, (row) => row.date);
 
   const formatHours = (hours: number) => {
     if (hours <= 0) return "—";
@@ -479,7 +481,7 @@ export default function TimesheetsPage() {
   const isLoading = isEmployeesLoading || isAttendanceLoading;
 
   return (
-    <div dir={isAr ? "rtl" : "ltr"} className="p-4 md:p-8 max-w-7xl mx-auto space-y-8 animate-in fade-in duration-500">
+    <div dir={isAr ? "rtl" : "ltr"} className="mx-auto w-full min-w-0 max-w-7xl space-y-6 pb-12 animate-in fade-in duration-500 sm:space-y-8">
       {/* Page Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
@@ -512,7 +514,7 @@ export default function TimesheetsPage() {
       </div>
 
       {/* KPI Metrics */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 gap-3 min-[420px]:grid-cols-2 lg:grid-cols-4 lg:gap-4">
         <Card className="border border-default-200/60 shadow-sm rounded-3xl bg-background/80 backdrop-blur-xl">
           <CardBody className="p-4 flex flex-row items-center gap-3">
             <div className="p-3 rounded-2xl bg-emerald-500/10 text-emerald-500 shrink-0">
@@ -674,11 +676,12 @@ export default function TimesheetsPage() {
               <p className="text-sm font-semibold">{t("timesheets.no_logs")}</p>
             </div>
           ) : (
+            <div className="w-full overflow-x-auto">
             <Table
               aria-label={t("timesheets.title")}
               removeWrapper
               isHeaderSticky
-              className="w-full"
+              className="min-w-[920px]"
               classNames={{
                 th: "bg-default-100/70 text-default-500 text-[11px] font-black uppercase tracking-wide",
                 td: "py-3 border-b border-default-100 group-data-[last=true]/tr:border-0",
@@ -713,12 +716,19 @@ export default function TimesheetsPage() {
                 <TableColumn>{t("timesheets.col_status")}</TableColumn>
               </TableHeader>
               <TableBody>
-                {pageRows.map((row) => {
+                {pageRows.map((row, index) => {
                   const rowDate = fromDayKey(row.date);
                   const meta = statusMeta[row.status];
+                  const startsNewDay = index > 0 && row.date !== pageRows[index - 1].date;
 
                   return (
-                    <TableRow key={row.id}>
+                    <TableRow
+                      key={row.id}
+                      className={[
+                        startsNewDay && "attendance-day-divider",
+                        tintedDays.has(row.date) && "day-group-tinted",
+                      ].filter(Boolean).join(" ")}
+                    >
                       <TableCell>
                         <div className="flex flex-col leading-tight">
                           <span className="font-bold text-xs text-foreground">{dayFormatter.format(rowDate)}</span>
@@ -832,6 +842,7 @@ export default function TimesheetsPage() {
                 })}
               </TableBody>
             </Table>
+            </div>
           )}
         </CardBody>
       </Card>

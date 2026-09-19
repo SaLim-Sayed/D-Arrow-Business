@@ -29,9 +29,9 @@ export function PortalPageShell({
   return (
     <div
       className={cn(
-        "animate-in fade-in slide-in-from-bottom-4 duration-500 w-full mx-auto flex flex-col",
+        "portal-workspace animate-in fade-in slide-in-from-bottom-4 duration-500 w-full min-w-0 mx-auto flex flex-col",
         fullBleed
-          ? "-mx-4 md:-mx-6 max-w-none h-[calc(100dvh-var(--header-height)-3.5rem)] min-h-0 overflow-hidden"
+          ? "-mx-4 max-w-none min-w-0 md:-mx-6 md:h-[calc(100dvh-var(--header-height)-3.5rem)] md:min-h-0 md:overflow-hidden"
           : maxWidth === "wide"
             ? "max-w-[1600px]"
             : "max-w-7xl"
@@ -52,7 +52,7 @@ export function PortalPageShell({
         </div>
       )}
 
-      <div className="flex-1 min-h-0 overflow-hidden flex flex-col">
+      <div className="flex min-w-0 flex-1 flex-col md:min-h-0 md:overflow-hidden">
         {children}
       </div>
     </div>

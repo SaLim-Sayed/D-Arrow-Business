@@ -327,7 +327,7 @@ export default function PeopleDashboardPage() {
   ];
 
   return (
-    <div className="mx-auto max-w-7xl space-y-6 pb-10 animate-in fade-in duration-300">
+    <div className="mx-auto w-full min-w-0 max-w-7xl space-y-5 pb-10 animate-in fade-in duration-300 sm:space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0">
           <div className="mb-1 flex flex-wrap items-center gap-2">
@@ -347,7 +347,7 @@ export default function PeopleDashboardPage() {
             color="primary"
             startContent={<UserPlus size={18} />}
             onPress={onOpen}
-            className="h-11 shrink-0 rounded-xl px-5 font-semibold"
+            className="h-11 w-full rounded-xl px-5 font-semibold sm:w-auto sm:shrink-0"
           >
             {t("dashboard.new_hire")}
           </Button>
@@ -414,13 +414,13 @@ export default function PeopleDashboardPage() {
         </ModalContent>
       </Modal>
 
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+      <div className="grid grid-cols-1 gap-3 min-[420px]:grid-cols-2 lg:grid-cols-4">
         {metrics.map(({ key, label, value, icon: Icon, className, onPress }) => (
           <button
             key={key}
             type="button"
             onClick={onPress}
-            className="flex items-center gap-3 rounded-xl border border-default-200 bg-content1 px-3 py-3 text-start transition-colors hover:border-primary/30 hover:bg-primary/[0.03]"
+            className="flex min-w-0 items-center gap-3 rounded-2xl border border-default-200 bg-content1 px-4 py-3 text-start shadow-sm transition-colors hover:border-primary/30 hover:bg-primary/[0.03]"
           >
             <div className={cn("rounded-lg p-2.5", className)}>
               <Icon size={18} />

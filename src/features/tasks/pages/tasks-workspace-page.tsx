@@ -70,7 +70,7 @@ export function TasksWorkspacePage() {
       className={cn(
         "animate-in fade-in duration-300",
         isBoard &&
-          "flex h-[calc(100dvh-var(--header-height)-env(safe-area-inset-bottom,0px))] min-h-0 flex-col -mb-4 md:-mb-6"
+          "flex min-w-0 flex-col pb-4 md:-mb-6 md:h-[calc(100dvh-var(--header-height)-env(safe-area-inset-bottom,0px))] md:min-h-0 md:pb-0"
       )}
     >
       <div className={cn(isBoard && "shrink-0")}>
@@ -81,7 +81,7 @@ export function TasksWorkspacePage() {
           breadcrumbLabel={t("nav.dashboard")}
           breadcrumbTo="/tasks"
           action={
-            <div className="flex items-center gap-2">
+            <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto">
               <TasksTabBar
                 tabs={viewTabs.map((tab) => ({
                   key: tab.key,
@@ -98,7 +98,7 @@ export function TasksWorkspacePage() {
                   color="secondary"
                   isLoading={seedTasksMutation.isPending}
                   onPress={() => seedTasksMutation.mutate()}
-                  className="font-bold rounded-xl h-9"
+                  className="hidden font-bold rounded-xl h-9 lg:inline-flex"
                   startContent={!seedTasksMutation.isPending && <Sparkles className="h-4 w-4 text-purple-500" />}
                 >
                   {isAr ? "إضافة مهام الأيام السابقة 🚀" : "Add Worked Tasks 🚀"}
@@ -109,7 +109,7 @@ export function TasksWorkspacePage() {
                 to="/tasks/new"
                 size="sm"
                 color="primary"
-                className="font-bold rounded-xl shadow-sm shadow-primary/25 h-9"
+                className="font-bold rounded-xl shadow-sm shadow-primary/25 h-9 flex-1 sm:flex-none"
                 startContent={<Plus className="h-4 w-4" />}
               >
                 {t("list.newTask")}
@@ -140,7 +140,7 @@ export function TasksWorkspacePage() {
 
       <TasksShell
         bleed={isBoard}
-        className={cn(isBoard && "flex min-h-0 flex-1 flex-col")}
+        className={cn(isBoard && "flex min-w-0 flex-col md:min-h-0 md:flex-1")}
         toolbar={
           <div className="flex flex-wrap items-center justify-between gap-2">
             <TasksWorkspaceFilters compact={isBoard} />

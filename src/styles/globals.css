@@ -2,6 +2,72 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Shared finish for the Tasks and HR workspaces. Keep table scrolling inside
+   each section so narrow screens never widen the whole portal. */
+.portal-workspace {
+  color: hsl(var(--heroui-foreground));
+}
+
+.portal-workspace table {
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.portal-workspace table thead th {
+  background: hsl(var(--heroui-default-100) / 0.62);
+  color: hsl(var(--heroui-default-600));
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.portal-workspace table tbody tr {
+  transition: background-color 160ms ease;
+}
+
+.portal-workspace table tbody tr:hover {
+  background: hsl(var(--heroui-primary) / 0.045);
+}
+
+.portal-workspace table tbody td {
+  border-bottom: 1px solid hsl(var(--heroui-default-100) / 0.7);
+}
+
+.portal-workspace table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.portal-workspace table tbody tr.attendance-day-divider > td {
+  border-top: 10px solid hsl(var(--heroui-background));
+}
+
+.portal-workspace table tbody tr.day-group-tinted > td {
+  background: hsl(var(--heroui-primary) / 0.055);
+}
+
+.portal-workspace table tbody tr.day-group-tinted:hover > td {
+  background: hsl(var(--heroui-primary) / 0.1);
+}
+
+.portal-workspace table tbody tr.attendance-day-divider > td:first-child {
+  box-shadow: inset 3px 0 hsl(var(--heroui-primary) / 0.55);
+}
+
+[dir="rtl"] .portal-workspace table tbody tr.attendance-day-divider > td:first-child {
+  box-shadow: inset -3px 0 hsl(var(--heroui-primary) / 0.55);
+}
+
+.portal-workspace :is(button, a):focus-visible {
+  outline: 2px solid hsl(var(--heroui-primary));
+  outline-offset: 2px;
+}
+
+@media (max-width: 639px) {
+  .portal-workspace table th,
+  .portal-workspace table td {
+    white-space: nowrap;
+  }
+}
+
 @layer utilities {
   .glass {
     @apply bg-white/70 dark:bg-black/40 backdrop-blur-md border border-white/20 dark:border-white/10;

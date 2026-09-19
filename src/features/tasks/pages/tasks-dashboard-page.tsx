@@ -49,7 +49,7 @@ export function TasksDashboardPage() {
   ).size;
 
   return (
-    <div className="animate-in fade-in pb-16 duration-300 space-y-6 w-full max-w-full overflow-hidden p-2 sm:p-4 md:p-6">
+    <div className="animate-in fade-in pb-16 duration-300 space-y-6 w-full min-w-0 max-w-full">
       {/* Hero Section */}
       <div className="relative overflow-hidden rounded-3xl border border-default-200/80 bg-gradient-to-br from-primary/10 via-purple-500/5 to-content1/80 p-5 md:p-6 shadow-sm backdrop-blur-md">
         <div className="absolute -end-10 -top-10 h-44 w-44 rounded-full bg-primary/10 blur-3xl" aria-hidden />
@@ -68,13 +68,13 @@ export function TasksDashboardPage() {
             </div>
           </div>
           
-          <div className="flex flex-wrap items-center gap-2 shrink-0">
+          <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto sm:shrink-0">
             <Button
               variant="flat"
               color="secondary"
               onPress={() => setIsTutorialOpen(true)}
               startContent={<GraduationCap size={16} />}
-              className="font-bold text-xs rounded-2xl h-11 px-4 border border-secondary/20 shadow-sm"
+              className="font-bold text-xs rounded-2xl h-11 px-4 border border-secondary/20 shadow-sm flex-1 sm:flex-none"
             >
               {isAr ? "الدليل التعليمي للمهام 🎓" : "Tasks Training Guide 🎓"}
             </Button>
@@ -98,8 +98,8 @@ export function TasksDashboardPage() {
             <Kanban className="h-4.5 w-4.5" />
           </div>
           <div>
-            <h2 className="text-base font-black tracking-tight text-foreground">أدوات وموديلات العمل</h2>
-            <p className="text-xs text-default-400 font-medium">الوصول السريع إلى اللوحات والمهام ودورات التطوير</p>
+            <h2 className="text-base font-black tracking-tight text-foreground">{isAr ? "أدوات العمل" : "Work tools"}</h2>
+            <p className="text-xs text-default-400 font-medium">{isAr ? "وصول سريع إلى اللوحات والمهام ودورات التطوير" : "Quick access to boards, tasks, and sprints"}</p>
           </div>
         </div>
 
@@ -108,15 +108,15 @@ export function TasksDashboardPage() {
             to="/tasks/work"
             icon={Kanban}
             title={t("landing.apps.board.title", "مساحة العمل والمهام")}
-            description="متابعة كافة المهام عبر لوحة كانبان التفاعلية أو القائمة مع الفلترة حسب الحالة والأولوية"
+            description={isAr ? "متابعة المهام عبر اللوحة أو القائمة مع الفلترة حسب الحالة والأولوية" : "Track tasks in board or list view with status and priority filters"}
             badge={openTasks || undefined}
             iconClassName="bg-primary/10 text-primary border border-primary/20"
           />
           <TasksAppTile
             to="/tasks/daily-reports"
             icon={ClipboardCheck}
-            title="تقارير الإنجاز اليومية"
-            description="متابعة تقارير العمل اليومية للموظفين، ساعات العمل، الإنجازات وتقييمات المشرفين"
+            title={isAr ? "تقارير الإنجاز اليومية" : "Daily progress reports"}
+            description={isAr ? "متابعة تقارير العمل وساعات العمل والإنجازات والتقييمات" : "Review work reports, hours, progress, and supervisor feedback"}
             iconClassName="bg-sky-500/10 text-sky-600 border border-sky-500/20"
           />
           <TasksAppTile
@@ -201,4 +201,3 @@ export function TasksDashboardPage() {
     </div>
   );
 }
-

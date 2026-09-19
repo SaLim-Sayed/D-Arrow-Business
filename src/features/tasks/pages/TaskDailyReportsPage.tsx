@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { Fragment, useState, useEffect, useMemo } from "react";
 import {
   Card,
   CardBody,
@@ -44,6 +44,7 @@ import { useAuth } from "@/features/auth/context/auth-context";
 import { useAppPermissions } from "@/features/companies/hooks/use-app-permissions";
 import { DailyReportsService } from "@/features/people/api/daily-reports.service";
 import type { DailyReport } from "@/features/people/types/daily-report.types";
+import { alternatingDayKeys } from "@/lib/alternating-day-keys";
 
 export default function TaskDailyReportsPage() {
   const { t, i18n } = useTranslation("people");
@@ -116,8 +117,9 @@ export default function TaskDailyReportsPage() {
       const matchesDate = !selectedDate || r.date === selectedDate;
 
       return matchesText && matchesBlocker && matchesDate;
-    });
+    }).sort((a, b) => b.date.localeCompare(a.date) || a.employeeName.localeCompare(b.employeeName));
   }, [reports, searchQuery, blockersFilter, selectedDate]);
+  const tintedReportDays = alternatingDayKeys(filteredReports, (report) => report.date);
 
   // KPI Metrics Calculation
   const metrics = useMemo(() => {
@@ -126,8 +128,7 @@ export default function TaskDailyReportsPage() {
     let totalCompletedTasks = 0;
     let totalInProgressTasks = 0;
     let reportsWithBlockers = 0;
-    let totalRatingSum = 0;
-    let ratedCount = 0;
+    let reviewedReports = 0;
 
     reports.forEach((r) => {
       totalCompletedTasks += r.tasksCompleted?.length || 0;
@@ -135,20 +136,15 @@ export default function TaskDailyReportsPage() {
       if (r.blockers && r.blockers.trim().length > 0) {
         reportsWithBlockers += 1;
       }
-      if (r.productivityRating && r.productivityRating > 0) {
-        totalRatingSum += r.productivityRating;
-        ratedCount += 1;
-      }
+      if (r.status === "reviewed") reviewedReports += 1;
     });
-
-    const avgProductivity = ratedCount > 0 ? (totalRatingSum / ratedCount).toFixed(1) : "5.0";
 
     return {
       totalReports,
       totalCompletedTasks,
       totalInProgressTasks,
       reportsWithBlockers,
-      avgProductivity,
+      reviewedReports,
     };
   }, [reports]);
 
@@ -320,7 +316,7 @@ export default function TaskDailyReportsPage() {
   };
 
   return (
-    <div dir={isAr ? "rtl" : "ltr"} className="w-full space-y-5 overflow-hidden p-3 sm:p-4 md:p-6">
+    <div dir={isAr ? "rtl" : "ltr"} className="w-full min-w-0 space-y-5 pb-12">
       {/* Top Banner & Title */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 w-full">
         <div>
@@ -362,7 +358,7 @@ export default function TaskDailyReportsPage() {
       </div>
 
       {/* Analytics KPI Section */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-5 gap-3 w-full">
+      <div className="grid w-full grid-cols-1 gap-3 min-[420px]:grid-cols-2 sm:grid-cols-3 xl:grid-cols-5">
         <Card className="border border-default-200/60 shadow-sm rounded-2xl bg-background/60 backdrop-blur-xl hover:border-purple-500/30 transition-all">
           <CardBody className="p-3 flex items-center gap-2.5">
             <div className="p-2.5 rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400 shrink-0">
@@ -420,14 +416,11 @@ export default function TaskDailyReportsPage() {
         <Card className="col-span-2 sm:col-span-1 border border-default-200/60 shadow-sm rounded-2xl bg-background/60 backdrop-blur-xl hover:border-primary-500/30 transition-all">
           <CardBody className="p-3 flex items-center gap-2.5">
             <div className="p-2.5 rounded-xl bg-primary/10 text-primary shrink-0">
-              <Star size={18} />
+              <MessageSquare size={18} />
             </div>
             <div className="min-w-0">
-              <p className="text-[11px] text-default-400 font-semibold truncate">{isAr ? "متوسط الإنتاجية" : "Avg Rating"}</p>
-              <div className="flex items-center gap-1">
-                <h3 className="text-lg font-black text-foreground">{metrics.avgProductivity}</h3>
-                <span className="text-xs text-amber-500">★</span>
-              </div>
+              <p className="text-[11px] text-default-400 font-semibold truncate">{isAr ? "مراجعات الإدارة" : "Manager Reviews"}</p>
+              <h3 className="text-lg font-black text-foreground">{metrics.reviewedReports}</h3>
             </div>
           </CardBody>
         </Card>
@@ -542,12 +535,20 @@ export default function TaskDailyReportsPage() {
       {/* Grid View */}
       {viewMode === "grid" && filteredReports.length > 0 && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredReports.map((report) => {
+          {filteredReports.map((report, index) => {
             const hasBlockers = !!report.blockers && report.blockers.trim().length > 0;
+            const startsNewDay = index === 0 || report.date !== filteredReports[index - 1].date;
             return (
+              <Fragment key={report.id}>
+              {startsNewDay && (
+                <div className="col-span-full flex items-center gap-3 pt-2 text-sm font-bold text-default-600">
+                  <Calendar size={16} className="shrink-0 text-primary" />
+                  <span>{new Date(`${report.date}T00:00:00`).toLocaleDateString(isAr ? "ar-EG" : "en-US", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}</span>
+                  <span className="h-px flex-1 bg-default-200" aria-hidden="true" />
+                </div>
+              )}
               <Card
-                key={report.id}
-                className="border border-default-200/60 shadow-md hover:shadow-xl transition-all rounded-3xl bg-background/80 backdrop-blur-xl overflow-hidden flex flex-col justify-between"
+                className={`border shadow-md hover:shadow-xl transition-all rounded-3xl backdrop-blur-xl overflow-hidden flex flex-col justify-between ${tintedReportDays.has(report.date) ? "border-primary/20 bg-primary/[0.06]" : "border-default-200/60 bg-background/80"}`}
               >
                 <CardBody className="p-6 space-y-4">
                   {/* Employee & Date Header */}
@@ -570,10 +571,6 @@ export default function TaskDailyReportsPage() {
                     />
 
                     <div className="flex flex-col items-end gap-1">
-                      <div className="flex items-center gap-0.5 text-amber-500 text-xs font-black">
-                        <Star size={13} className="fill-amber-500" />
-                        <span>{report.productivityRating || 5}/5</span>
-                      </div>
                       {report.status === "reviewed" ? (
                         <Chip size="sm" color="success" variant="flat" className="font-bold text-[10px] h-5">
                           {isAr ? "مقيّم الإدارة" : "Reviewed"}
@@ -706,6 +703,7 @@ export default function TaskDailyReportsPage() {
                   </div>
                 </CardBody>
               </Card>
+              </Fragment>
             );
           })}
         </div>
@@ -715,21 +713,27 @@ export default function TaskDailyReportsPage() {
       {viewMode === "table" && filteredReports.length > 0 && (
         <Card className="border border-default-200/80 shadow-sm rounded-2xl bg-background/80 backdrop-blur-xl overflow-hidden">
           <CardBody className="p-0 overflow-x-auto scrollbar-thin scrollbar-thumb-default-300">
-            <table className="w-full text-xs border-collapse text-start" dir={isAr ? "rtl" : "ltr"}>
+            <table className="w-full min-w-[900px] border-collapse text-start text-xs" dir={isAr ? "rtl" : "ltr"}>
               <thead>
                 <tr className="border-b border-default-200/70 bg-default-100/70 text-default-600 font-bold text-[11px] uppercase tracking-wide">
                   <th className="px-3 py-2.5 text-start whitespace-nowrap">{t("daily_report.col_employee", "الموظف")}</th>
                   <th className="px-3 py-2.5 text-start whitespace-nowrap">{t("daily_report.col_date_time", "التاريخ والوقت")}</th>
                   <th className="px-3 py-2.5 text-start">{t("daily_report.col_summary", "الملخص والمهام")}</th>
-                  <th className="px-3 py-2.5 text-start whitespace-nowrap">{isAr ? "التقييم والحالة" : "Rating & Status"}</th>
+                  <th className="px-3 py-2.5 text-start whitespace-nowrap">{isAr ? "الحالة" : "Status"}</th>
                   <th className="px-3 py-2.5 text-center whitespace-nowrap">{isAr ? "الإجراءات" : "Actions"}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-default-100/60">
-                {filteredReports.map((report) => {
+                {filteredReports.map((report, index) => {
                   const hasBlockers = !!report.blockers && report.blockers.trim().length > 0;
                   return (
-                    <tr key={report.id} className="hover:bg-purple-500/[0.03] transition-colors">
+                    <tr
+                      key={report.id}
+                      className={[
+                        index > 0 && report.date !== filteredReports[index - 1].date && "attendance-day-divider",
+                        tintedReportDays.has(report.date) && "day-group-tinted",
+                      ].filter(Boolean).join(" ")}
+                    >
                       {/* Employee Column */}
                       <td className="px-3 py-2.5 align-middle whitespace-nowrap">
                         <User
@@ -794,13 +798,9 @@ export default function TaskDailyReportsPage() {
                         </div>
                       </td>
 
-                      {/* Rating & Status Column */}
+                      {/* Status Column */}
                       <td className="px-3 py-2.5 align-middle whitespace-nowrap">
                         <div className="flex items-center gap-2">
-                          <div className="flex items-center gap-0.5 text-amber-500 font-bold text-xs">
-                            <Star size={12} className="fill-amber-500" />
-                            <span>{report.productivityRating || 5}/5</span>
-                          </div>
                           {report.status === "reviewed" ? (
                             <Chip size="sm" color="success" variant="flat" className="font-bold text-[9px] h-4 px-1.5">
                               {isAr ? "مقيّم" : "Reviewed"}
@@ -947,19 +947,6 @@ export default function TaskDailyReportsPage() {
                     }}
                   />
 
-                  <div className="flex flex-col items-start sm:items-end gap-1.5">
-                    <span className="text-xs text-default-400 font-semibold">{isAr ? "تقييم الإنتاجية الذاتي:" : "Self Productivity:"}</span>
-                    <div className="flex items-center gap-1 text-amber-500 font-black text-lg">
-                      {[1, 2, 3, 4, 5].map((star) => (
-                        <Star
-                          key={star}
-                          size={18}
-                          className={star <= selectedReport.productivityRating ? "fill-amber-500 text-amber-500" : "text-default-300"}
-                        />
-                      ))}
-                      <span className="ms-2 text-foreground text-sm">({selectedReport.productivityRating}/5)</span>
-                    </div>
-                  </div>
                 </div>
 
                 {/* Completed Tasks */}

@@ -145,11 +145,11 @@ export default function PerformancePage() {
   };
   
   return (
-    <div className="space-y-8">
+    <div className="w-full min-w-0 space-y-6 pb-12 sm:space-y-8">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <div className="flex items-center gap-3 mb-1">
-            <h1 className="text-3xl font-black tracking-tight text-foreground">
+          <div className="mb-1 flex flex-wrap items-center gap-3">
+            <h1 className="text-2xl font-black tracking-tight text-foreground sm:text-3xl">
               {t("performance.title")}
             </h1>
             <Chip size="sm" variant="flat" color="primary" className="font-bold">
@@ -162,14 +162,14 @@ export default function PerformancePage() {
             {t("performance.subtitle")}
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex w-full gap-2 sm:w-auto">
           {canViewPerformance && (
             <Button 
               color="primary" 
               variant="shadow" 
               onPress={onOpen}
               startContent={<Plus size={18} />} 
-              className="font-bold shadow-lg shadow-primary/25 hover:shadow-primary/40 transition-shadow"
+              className="w-full font-bold shadow-lg shadow-primary/25 hover:shadow-primary/40 transition-shadow sm:w-auto"
             >
               {t("performance.start_cycle")}
             </Button>
