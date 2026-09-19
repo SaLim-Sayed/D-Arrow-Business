@@ -29,6 +29,56 @@ import type {
 
 const SERVICE_NAME = "PeopleService";
 
+/** Thrown so callers can show a field-level message instead of a generic failure. */
+export const EMPLOYEE_EMAIL_EXISTS = "EMPLOYEE_EMAIL_EXISTS";
+export const EMPLOYEE_EMAIL_REQUIRED = "EMPLOYEE_EMAIL_REQUIRED";
+
+function normalizeEmail(value: unknown): string {
+  return typeof value === "string" ? value.trim().toLowerCase() : "";
+}
+
+export interface EmployeeEmailCheck {
+  /** Another employee in this company already uses the email. */
+  isTaken: boolean;
+  /** A platform account with this email exists in this company. */
+  hasAccount: boolean;
+  /** Id of that account, so the employee record can point at it. */
+  linkedUserId: string;
+}
+
+/**
+ * Compares normalized values instead of using an equality query, so employees
+ * saved before emails were normalized still count as duplicates.
+ * `excludeEmployeeId` keeps an employee from clashing with itself on edit.
+ */
+async function lookupEmployeeEmail(
+  companyId: string,
+  email: string,
+  excludeEmployeeId?: string
+): Promise<EmployeeEmailCheck> {
+  const [employeesSnap, usersSnap] = await Promise.all([
+    getDocs(collection(db, "companies", companyId, "employees")),
+    // Scoped to the company because the security rules only expose teammates.
+    getDocs(
+      query(
+        collection(db, "users"),
+        where("companyId", "==", companyId),
+        where("email", "==", email)
+      )
+    ),
+  ]);
+
+  return {
+    isTaken: employeesSnap.docs.some(
+      (docSnap) =>
+        docSnap.id !== excludeEmployeeId &&
+        normalizeEmail((docSnap.data() as { email?: unknown }).email) === email
+    ),
+    hasAccount: !usersSnap.empty,
+    linkedUserId: usersSnap.docs[0]?.id ?? "",
+  };
+}
+
 function enrichEmployeeFromUser(
   id: string,
   data: Record<string, unknown>,
@@ -126,8 +176,18 @@ export const PeopleService = {
   async updateEmployee(companyId: string, employeeId: string, data: Partial<Employee>): Promise<ApiResponse<Employee>> {
     return withLogging(SERVICE_NAME, "updateEmployee", (async () => {
       const docRef = doc(db, "companies", companyId, "employees", employeeId);
+
+      // Keep emails unique when one is being changed.
+      const email = data.email !== undefined ? normalizeEmail(data.email) : undefined;
+      if (email !== undefined) {
+        if (!email) throw new Error(EMPLOYEE_EMAIL_REQUIRED);
+        const { isTaken } = await lookupEmployeeEmail(companyId, email, employeeId);
+        if (isTaken) throw new Error(EMPLOYEE_EMAIL_EXISTS);
+      }
+
       await updateDoc(docRef, {
         ...data,
+        ...(email !== undefined ? { email } : {}),
         updatedAt: serverTimestamp(),
       });
 
@@ -360,11 +420,32 @@ export const PeopleService = {
   },
 
   // Hiring & Deletion
+  /** Live validation for the hire form: duplicate email + linked account status. */
+  async checkEmployeeEmail(
+    companyId: string,
+    email: string,
+    excludeEmployeeId?: string
+  ): Promise<EmployeeEmailCheck> {
+    return withLogging(SERVICE_NAME, "checkEmployeeEmail", (async () => {
+      const normalized = normalizeEmail(email);
+      if (!normalized) return { isTaken: false, hasAccount: false, linkedUserId: "" };
+      return lookupEmployeeEmail(companyId, normalized, excludeEmployeeId);
+    })());
+  },
+
   async createEmployee(companyId: string, employeeData: Omit<Employee, 'id'>): Promise<ApiResponse<Employee>> {
     return withLogging(SERVICE_NAME, "createEmployee", (async () => {
+      const email = normalizeEmail(employeeData.email);
+      if (!email) throw new Error(EMPLOYEE_EMAIL_REQUIRED);
+
+      const { isTaken, linkedUserId } = await lookupEmployeeEmail(companyId, email);
+      if (isTaken) throw new Error(EMPLOYEE_EMAIL_EXISTS);
+
       const employeesRef = collection(db, "companies", companyId, "employees");
       const docRef = await addDoc(employeesRef, {
         ...employeeData,
+        email,
+        userId: linkedUserId || employeeData.userId || "",
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
       });
