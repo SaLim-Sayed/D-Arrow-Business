@@ -4,7 +4,8 @@ import { Pagination } from "@/components/shared/pagination";
 import { PriorityBadge } from "@/components/shared/priority-badge";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { formatDate } from "@/lib/utils";
-import { localizedName } from "@/lib/localized-name";
+import { initialsFromName, localizedName } from "@/lib/localized-name";
+import { avatarSrc } from "@/lib/image-utils";
 import { TASK_STATUSES, TASK_PRIORITIES } from "@/lib/constants";
 import {
   Avatar,
@@ -103,12 +104,10 @@ export function TasksListView() {
               name: task.assignee?.name,
               nameAr: task.assignee?.nameAr,
             });
-            const initials = (assigneeName || task.assignee?.name || "")
-              .split(" ")
-              .map((n: string) => n[0])
-              .join("")
-              .toUpperCase()
-              .slice(0, 2);
+            const initials = initialsFromName(
+              assigneeName || task.assignee?.email || "",
+              "?"
+            );
 
             return (
               <TableRow key={task.id} className="hover:bg-default-100/50 transition-colors">
@@ -185,7 +184,7 @@ export function TasksListView() {
                     <div className="flex items-center gap-2">
                       <Avatar
                         size="sm"
-                        src={task.assignee.avatar}
+                        src={avatarSrc(task.assignee.avatar)}
                         fallback={initials}
                         showFallback
                         className="h-6 w-6 text-[10px]"

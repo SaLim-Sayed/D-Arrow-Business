@@ -629,7 +629,9 @@ export function KanbanBoard() {
     sprintId: filters.sprintId ?? undefined,
     overdueOnly: filters.overdueOnly || undefined,
     completedThisWeek: filters.completedThisWeek || undefined,
-    pageSize: 100,
+    // The board has no pagination, so keep this aligned with the service fetch
+    // limit — otherwise the default "all sprints" view would silently drop tasks.
+    pageSize: 500,
   });
 
   const updateTask = useUpdateTask();

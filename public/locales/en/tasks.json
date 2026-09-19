@@ -73,6 +73,9 @@
     "views": {
       "list": "List",
       "board": "Board"
+    },
+    "filters": {
+      "allSprints": "All sprints"
     }
   },
   "list": {

@@ -5,6 +5,7 @@ import {
   Dropdown,
   DropdownItem,
   DropdownMenu,
+  DropdownSection,
   DropdownTrigger,
   Input,
 } from "@heroui/react";
@@ -22,6 +23,9 @@ interface TasksWorkspaceFiltersProps {
   compact?: boolean;
 }
 
+/** Sentinel for the "no sprint filter" choice; the store keeps it as `null`. */
+const ALL_SPRINTS_KEY = "__all__";
+
 export function TasksWorkspaceFilters({ compact }: TasksWorkspaceFiltersProps) {
   const { t, i18n } = useTranslation("tasks");
   const isAr = i18n.language === "ar";
@@ -32,6 +36,7 @@ export function TasksWorkspaceFilters({ compact }: TasksWorkspaceFiltersProps) {
 
   const sprints = allSprints?.data || [];
   const selectedSprint = sprints.find((s) => s.id === filters.sprintId) ?? null;
+  const allSprintsLabel = t("workspace.filters.allSprints", isAr ? "كل الدورات" : "All sprints");
 
   const priorities = ["low", "medium", "high", "urgent"] as const;
   const selectedAssignee = allUsers?.find((u) => u.id === filters.assigneeId) ?? null;
@@ -73,11 +78,7 @@ export function TasksWorkspaceFilters({ compact }: TasksWorkspaceFiltersProps) {
             )}
             startContent={<Zap className="h-3.5 w-3.5 text-primary" />}
           >
-            {selectedSprint
-              ? selectedSprint.name
-              : isAr
-              ? "الدورة (Sprint)"
-              : "Sprint"}
+            {selectedSprint ? selectedSprint.name : allSprintsLabel}
             {filters.sprintId && (
               <span
                 role="button"
@@ -95,26 +96,45 @@ export function TasksWorkspaceFilters({ compact }: TasksWorkspaceFiltersProps) {
         <DropdownMenu
           aria-label="Filter by sprint"
           selectionMode="single"
-          selectedKeys={filters.sprintId ? new Set([filters.sprintId]) : new Set()}
+          disallowEmptySelection
+          selectedKeys={new Set([filters.sprintId ?? ALL_SPRINTS_KEY])}
           onSelectionChange={(keys) => {
             const selected = Array.from(keys)[0] as string | undefined;
-            setFilter("sprintId", selected ?? null);
+            setFilter(
+              "sprintId",
+              !selected || selected === ALL_SPRINTS_KEY ? null : selected
+            );
           }}
         >
-          {sprints.map((s) => (
+          <DropdownSection showDivider>
             <DropdownItem
-              key={s.id}
+              key={ALL_SPRINTS_KEY}
+              className="font-bold"
               endContent={
-                s.status === "active" ? (
-                  <Chip size="sm" color="primary" variant="flat" className="h-4 text-[9px] font-extrabold px-1">
-                    🚀 {isAr ? "النشطة" : "Active"}
-                  </Chip>
-                ) : undefined
+                <Chip size="sm" variant="flat" className="h-4 text-[9px] font-extrabold px-1">
+                  {isAr ? "الافتراضي" : "Default"}
+                </Chip>
               }
             >
-              {s.name}
+              {allSprintsLabel}
             </DropdownItem>
-          ))}
+          </DropdownSection>
+          <DropdownSection>
+            {sprints.map((s) => (
+              <DropdownItem
+                key={s.id}
+                endContent={
+                  s.status === "active" ? (
+                    <Chip size="sm" color="primary" variant="flat" className="h-4 text-[9px] font-extrabold px-1">
+                      🚀 {isAr ? "النشطة" : "Active"}
+                    </Chip>
+                  ) : undefined
+                }
+              >
+                {s.name}
+              </DropdownItem>
+            ))}
+          </DropdownSection>
         </DropdownMenu>
       </Dropdown>
 

@@ -4,6 +4,8 @@ import type { Task } from "../types/task.types";
 import { Avatar, Card, CardBody, Chip } from "@heroui/react";
 import { MessageSquare, MoreHorizontal, Paperclip, CalendarClock } from "lucide-react";
 import { cn, formatDate } from "@/lib/utils";
+import { initialsFromName, localizedName } from "@/lib/localized-name";
+import { avatarSrc } from "@/lib/image-utils";
 
 function HighlightText({ text, query }: { text: string; query?: string }) {
   if (!query?.trim()) return <>{text}</>;
@@ -47,14 +49,15 @@ export function TaskCard({
   searchQuery,
 }: TaskCardProps) {
   const navigate = useNavigate();
-  const { t } = useTranslation("tasks");
+  const { t, i18n } = useTranslation("tasks");
 
-  const initials = (task.assignee?.name ?? "")
-    .split(" ")
-    .map((n) => n[0])
-    .join("")
-    .toUpperCase()
-    .slice(0, 2);
+  const assigneeName = task.assignee
+    ? localizedName(i18n.language, {
+        name: task.assignee.name,
+        nameAr: task.assignee.nameAr,
+      }) || task.assignee.email
+    : "";
+  const initials = initialsFromName(assigneeName, "?");
 
   const isOverdue =
     !!task.dueDate &&
@@ -116,16 +119,26 @@ export function TaskCard({
               )}
             </div>
             {task.assignee && (
-              <Avatar
-                size="sm"
-                src={task.assignee.avatar}
-                fallback={initials}
-                showFallback
-                className={cn(
-                  "ring-2 ring-background shadow-xs",
-                  compact ? "h-5 w-5 text-[8px]" : "h-6 w-6 text-[10px]"
-                )}
-              />
+              <div className="flex min-w-0 items-center gap-1.5" title={assigneeName}>
+                <span
+                  className={cn(
+                    "truncate font-bold text-default-500",
+                    compact ? "max-w-[70px] text-[9px]" : "max-w-[110px] text-[10px]"
+                  )}
+                >
+                  {assigneeName}
+                </span>
+                <Avatar
+                  size="sm"
+                  src={avatarSrc(task.assignee.avatar)}
+                  fallback={initials}
+                  showFallback
+                  className={cn(
+                    "shrink-0 ring-2 ring-background shadow-xs",
+                    compact ? "h-5 w-5 text-[8px]" : "h-6 w-6 text-[10px]"
+                  )}
+                />
+              </div>
             )}
           </div>
 

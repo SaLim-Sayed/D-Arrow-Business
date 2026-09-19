@@ -73,6 +73,9 @@
     "views": {
       "list": "قائمة",
       "board": "لوحة"
+    },
+    "filters": {
+      "allSprints": "كل الدورات"
     }
   },
   "list": {
