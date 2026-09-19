@@ -2,7 +2,18 @@ import { create } from "zustand";
 import { PeopleService } from "@/features/people/api/people.service";
 import { toast } from "sonner";
 import { db } from "@/lib/firebase";
-import { collection, query, where, getDocs, getDoc, addDoc, serverTimestamp } from "firebase/firestore";
+import {
+  collection,
+  query,
+  where,
+  getDocs,
+  getDoc,
+  addDoc,
+  updateDoc,
+  serverTimestamp,
+  type DocumentData,
+  type DocumentSnapshot,
+} from "firebase/firestore";
 import { useAuthStore } from "./auth.store";
 import { AttendanceNotificationService } from "@/features/people/api/attendance-notifications.service";
 import { captureAttendanceGeo } from "@/features/people/utils/attendance-geo-check";
@@ -185,44 +196,63 @@ export const useAttendanceStore = create<AttendanceState>((set, get) => ({
     if (!companyId || !userId) return;
     try {
       const employeesRef = collection(db, "companies", companyId, "employees");
-      const q = query(employeesRef, where("userId", "==", userId));
-      let empSnap = await getDocs(q);
-      
-      if (empSnap.empty) {
+      const authUser = useAuthStore.getState().user;
+      const authEmail = authUser?.email?.trim().toLowerCase() || "";
+
+      let employeeDoc: DocumentSnapshot<DocumentData> | undefined = (
+        await getDocs(query(employeesRef, where("userId", "==", userId)))
+      ).docs[0];
+
+      if (!employeeDoc) {
         const allEmpSnap = await getDocs(employeesRef);
-        const found = allEmpSnap.docs.find(d => d.data().userId === userId);
-        if (found) empSnap = { docs: [found], empty: false } as any;
+        employeeDoc = allEmpSnap.docs.find((d) => d.data().userId === userId);
+
+        // The hire flow creates the employee record before the person ever signs
+        // in, and it carries no userId yet. Whichever provider they use (Google
+        // included), their record is claimed by email instead of creating a
+        // second one that would split their attendance in two.
+        if (!employeeDoc && authEmail) {
+          const byEmail = allEmpSnap.docs.find(
+            (d) => String(d.data().email ?? "").trim().toLowerCase() === authEmail
+          );
+          if (byEmail) {
+            const existing = byEmail.data();
+            const hasName = Boolean(existing.name || existing.firstName || existing.lastName);
+            await updateDoc(byEmail.ref, {
+              userId,
+              ...(hasName || !authUser?.name ? {} : { name: authUser.name }),
+              updatedAt: serverTimestamp(),
+            });
+            employeeDoc = byEmail;
+          }
+        }
       }
-      
-      if (empSnap.empty) {
-        const authUser = useAuthStore.getState().user;
-        if (authUser) {
-          const newEmpDoc = await addDoc(employeesRef, {
-            userId,
-            name: authUser.name,
-            email: authUser.email,
-            role: authUser.role || "employee",
-            department: "General",
-            shiftStatus: "off-duty",
-            workType: "remote",
-            attendanceCheckMode: "flexible",
-            autoStartTimer: true,
-            allowRemoteTimer: true,
-            joiningDate: new Date().toISOString(),
-            createdAt: serverTimestamp(),
-            updatedAt: serverTimestamp(),
-          });
-          const createdDoc = await getDoc(newEmpDoc);
-          empSnap = { docs: [createdDoc], empty: false } as any;
-        } else {
+
+      if (!employeeDoc) {
+        if (!authUser) {
           set({ isInitialized: true });
           return;
         }
+        const newEmpDoc = await addDoc(employeesRef, {
+          userId,
+          name: authUser.name,
+          email: authEmail || authUser.email,
+          role: authUser.role || "employee",
+          department: "General",
+          shiftStatus: "off-duty",
+          workType: "remote",
+          attendanceCheckMode: "flexible",
+          autoStartTimer: true,
+          allowRemoteTimer: true,
+          joiningDate: new Date().toISOString(),
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp(),
+        });
+        employeeDoc = await getDoc(newEmpDoc);
       }
-      
-      const employeeDoc = empSnap.docs[0];
+
       const employeeId = employeeDoc.id;
-      const employeeData = employeeDoc.data();
+      const employeeData = employeeDoc.data() ?? {};
       set({ employeeId, isInitialized: true });
 
       const res = await PeopleService.getAttendance(companyId, employeeId);
