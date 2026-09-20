@@ -38,7 +38,7 @@ import { employeeDisplayName } from "../utils/geo";
 import { selectFieldProps } from "@/components/shared/select-field";
 import { initialsFromName } from "@/lib/localized-name";
 import { avatarSrc } from "@/lib/image-utils";
-import { alternatingDayKeys } from "@/lib/alternating-day-keys";
+import { dayToneByKey } from "@/lib/day-tone-by-key";
 import type { Attendance, Employee } from "../types/people.types";
 
 const ROWS_PER_PAGE = 25;
@@ -399,7 +399,7 @@ export default function TimesheetsPage() {
     (currentPage - 1) * ROWS_PER_PAGE,
     currentPage * ROWS_PER_PAGE
   );
-  const tintedDays = alternatingDayKeys(filteredRows, (row) => row.date);
+  const dayTones = dayToneByKey(filteredRows, (row) => row.date);
 
   const formatHours = (hours: number) => {
     if (hours <= 0) return "—";
@@ -726,7 +726,7 @@ export default function TimesheetsPage() {
                       key={row.id}
                       className={[
                         startsNewDay && "attendance-day-divider",
-                        tintedDays.has(row.date) && "day-group-tinted",
+                        `day-group-tone-${dayTones.get(row.date) ?? 0}`,
                       ].filter(Boolean).join(" ")}
                     >
                       <TableCell>

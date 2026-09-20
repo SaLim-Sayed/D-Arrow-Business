@@ -54,6 +54,12 @@ export interface PortalNavTreeGroup {
   items: PortalNavItem[];
 }
 
+/** Match a navigation item without letting an index route highlight every child page. */
+export function isPortalNavItemActive(item: PortalNavItem, pathname: string): boolean {
+  const currentPath = pathname.replace(/\/+$/, "") || "/";
+  return currentPath === item.path || (!item.end && currentPath.startsWith(`${item.path}/`));
+}
+
 export const TASKS_NAV_TREE: PortalNavTreeGroup[] = [
   {
     id: "general",

@@ -41,13 +41,16 @@ import { useAuth } from "@/features/auth/context/auth-context";
 import { useAppPermissions } from "@/features/companies/hooks/use-app-permissions";
 import { DailyReportsService } from "../api/daily-reports.service";
 import type { DailyReport } from "../types/daily-report.types";
-import { alternatingDayKeys } from "@/lib/alternating-day-keys";
+import { useReportAvatar } from "../hooks/use-report-avatar";
+import { initialsFromName } from "@/lib/localized-name";
+import { dayToneByKey } from "@/lib/day-tone-by-key";
 
 export default function DailyReportsPage() {
   const { t } = useTranslation("people");
   const { companyId } = useCompany();
   const { user } = useAuth();
   const { canViewAllReports } = useAppPermissions();
+  const reportAvatar = useReportAvatar();
 
   const [reports, setReports] = useState<DailyReport[]>([]);
   const [loading, setLoading] = useState(true);
@@ -103,7 +106,7 @@ export default function DailyReportsPage() {
       return matchesSearch && matchesStatus && matchesDate;
     }).sort((a, b) => b.date.localeCompare(a.date) || a.employeeName.localeCompare(b.employeeName));
   }, [reports, searchQuery, statusFilter, selectedDate]);
-  const tintedReportDays = alternatingDayKeys(filteredReports, (report) => report.date);
+  const reportDayTones = dayToneByKey(filteredReports, (report) => report.date);
 
   // Key Statistics
   const stats = useMemo(() => {
@@ -308,19 +311,35 @@ export default function DailyReportsPage() {
               {filteredReports.map((report, index) => (
                 <TableRow
                   key={report.id}
+                  tabIndex={0}
+                  aria-label={`عرض تفاصيل تقرير ${report.employeeName} بتاريخ ${report.date}`}
+                  onClick={(event) => {
+                    if ((event.target as HTMLElement).closest("button, a, [role='button']")) return;
+                    handleOpenReviewModal(report);
+                  }}
+                  onKeyDown={(event) => {
+                    if (event.target !== event.currentTarget) return;
+                    if (event.key === "Enter" || event.key === " ") {
+                      event.preventDefault();
+                      handleOpenReviewModal(report);
+                    }
+                  }}
                   className={[
+                    "report-clickable-row",
                     index > 0 && report.date !== filteredReports[index - 1].date && "attendance-day-divider",
-                    tintedReportDays.has(report.date) && "day-group-tinted",
+                    `day-group-tone-${reportDayTones.get(report.date) ?? 0}`,
                   ].filter(Boolean).join(" ")}
                 >
                   <TableCell>
                     <User
                       name={<span className="block max-w-[160px] truncate font-semibold" title={report.employeeName}>{report.employeeName}</span>}
                       avatarProps={{
-                        src: report.userPhotoUrl,
-                        name: report.employeeName.slice(0, 2),
+                        src: reportAvatar(report),
+                        name: report.employeeName,
+                        fallback: initialsFromName(report.employeeName),
+                        showFallback: true,
                         size: "sm",
-                        className: "bg-primary/20 text-primary font-bold"
+                        className: "bg-primary/10 text-primary font-bold"
                       }}
                     />
                   </TableCell>
@@ -417,10 +436,12 @@ export default function DailyReportsPage() {
                       name={selectedReport.employeeName}
                       description={`تقرير يوم: ${selectedReport.date}`}
                       avatarProps={{
-                        src: selectedReport.userPhotoUrl,
-                        name: selectedReport.employeeName.slice(0, 2),
+                        src: reportAvatar(selectedReport),
+                        name: selectedReport.employeeName,
+                        fallback: initialsFromName(selectedReport.employeeName),
+                        showFallback: true,
                         size: "md",
-                        className: "bg-primary/20 text-primary font-bold"
+                        className: "bg-primary/10 text-primary font-bold"
                       }}
                     />
                     <Chip 

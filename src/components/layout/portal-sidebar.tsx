@@ -13,7 +13,6 @@ import {
   Search,
   Star,
   Folder,
-  FolderOpen,
   Maximize2,
   Minimize2,
   X,
@@ -29,6 +28,7 @@ import { NavLink, useLocation } from "react-router-dom";
 import type { PortalId } from "@/lib/portal-permissions";
 import {
   getNavTreeForPortal,
+  isPortalNavItemActive,
   type PortalNavTreeGroup,
   type PortalNavItem,
 } from "@/lib/portal-nav";
@@ -212,10 +212,9 @@ export function PortalSidebar({ portal }: PortalSidebarProps) {
 
   // Auto-expand active group on location change
   useEffect(() => {
-    const currentPath = location.pathname;
     treeGroups.forEach((group) => {
       const containsActive = group.items.some(
-        (item) => item.path === currentPath || (item.path !== "/" && currentPath.startsWith(item.path))
+        (item) => isPortalNavItemActive(item, location.pathname)
       );
       if (containsActive) {
         setExpandedGroups((prev) => {
@@ -606,9 +605,8 @@ export function PortalSidebar({ portal }: PortalSidebarProps) {
                   ? true
                   : expandedGroups[group.id] ?? true;
 
-                const containsActiveChild = group.items.some(
-                  (i) => i.path === location.pathname || (i.path !== "/" && location.pathname.startsWith(i.path))
-                );
+                const containsActiveChild = group.items.some((item) => isPortalNavItemActive(item, location.pathname));
+                const GroupIcon = group.icon ?? Folder;
 
                 return (
                   <Draggable
@@ -631,10 +629,10 @@ export function PortalSidebar({ portal }: PortalSidebarProps) {
                         {!sidebarCollapsed ? (
                           <div
                             className={cn(
-                              "group/node flex min-w-0 items-center justify-between gap-2 rounded-xl px-2 py-2.5 transition-all duration-200 cursor-pointer select-none",
+                              "group/node flex min-w-0 items-center justify-between gap-2 rounded-xl px-2.5 py-2 transition-colors duration-200 cursor-pointer select-none",
                               containsActiveChild
-                                ? "text-primary font-black bg-primary/5"
-                                : "hover:bg-default-100/80"
+                                ? "bg-primary/[0.06] text-primary"
+                                : "text-default-600 hover:bg-default-100/80"
                             )}
                             onClick={() => toggleGroup(group.id)}
                           >
@@ -648,26 +646,12 @@ export function PortalSidebar({ portal }: PortalSidebarProps) {
                                 <GripVertical className="h-4 w-4" />
                               </div>
 
-                              <div className="flex items-center gap-2.5 min-w-0 flex-1 text-start">
-                                {isExpanded ? (
-                                  <FolderOpen
-                                    className={cn(
-                                      "h-4.5 w-4.5 shrink-0 transition-colors",
-                                      containsActiveChild ? "text-primary fill-primary/20" : "text-primary/70"
-                                    )}
-                                  />
-                                ) : (
-                                  <Folder
-                                    className={cn(
-                                      "h-4.5 w-4.5 shrink-0 transition-colors",
-                                      containsActiveChild ? "text-primary fill-primary/20" : "text-default-400"
-                                    )}
-                                  />
-                                )}
+                              <div className="flex items-center gap-2 min-w-0 flex-1 text-start">
+                                <GroupIcon className={cn("h-4 w-4 shrink-0", containsActiveChild ? "text-primary" : "text-default-500")} />
                                 <span
                                   className={cn(
-                                    "min-w-0 text-xs font-extrabold leading-snug md:text-sm",
-                                    containsActiveChild ? "text-primary font-black" : "text-foreground"
+                                    "min-w-0 text-xs font-semibold leading-snug md:text-sm",
+                                    containsActiveChild ? "text-primary" : "text-default-700"
                                   )}
                                 >
                                   {getGroupLabel(group)}
@@ -688,7 +672,7 @@ export function PortalSidebar({ portal }: PortalSidebarProps) {
                           </div>
                         ) : null}
 
-                        {/* Tree Child Items Branch with Authentic Tree Elbow Connectors (├─ / └─) */}
+                        {/* Group items */}
                         {(isExpanded || sidebarCollapsed) && (
                           <Droppable droppableId={`items-${group.id}`} type={`ITEM_${group.id}`}>
                             {(itemsProvided) => (
@@ -698,8 +682,7 @@ export function PortalSidebar({ portal }: PortalSidebarProps) {
                                 className={cn(
                                   sidebarCollapsed
                                     ? "space-y-1.5"
-                                    : "relative ms-3 min-w-0 border-s-2 ps-2 space-y-1 my-1.5 transition-colors",
-                                  containsActiveChild ? "border-primary/50" : "border-default-200"
+                                    : "relative ms-2 min-w-0 space-y-0.5 ps-1 my-1"
                                 )}
                               >
                                 {group.items.map((item, itemIndex) => {
@@ -724,16 +707,6 @@ export function PortalSidebar({ portal }: PortalSidebarProps) {
                                               "z-50 shadow-md scale-[1.02] bg-background border border-primary/30 rounded-xl"
                                           )}
                                         >
-                                          {/* Horizontal Tree Elbow Connector Branch */}
-                                          {!sidebarCollapsed && (
-                                            <div
-                                              className={cn(
-                                                "absolute -start-[14px] top-1/2 w-3.5 h-[2px] transition-colors pointer-events-none",
-                                                containsActiveChild ? "bg-primary/50" : "bg-default-300/70"
-                                              )}
-                                            />
-                                          )}
-
                                           <Tooltip
                                             isDisabled={!sidebarCollapsed}
                                             content={label}
@@ -755,32 +728,32 @@ export function PortalSidebar({ portal }: PortalSidebarProps) {
                                                 end={item.end}
                                                 className={({ isActive }) =>
                                                   cn(
-                                                    "relative flex min-w-0 flex-1 items-center gap-2 rounded-xl px-2 py-2 text-xs transition-all duration-200 md:text-sm",
-                                                    "hover:scale-[1.01] active:scale-[0.98]",
+                                                    "relative flex min-w-0 flex-1 items-center gap-2.5 rounded-xl px-2.5 py-1.5 text-xs transition-all duration-200 md:text-sm",
                                                     isActive
-                                                      ? "text-primary font-black bg-primary/10 border-s-3 border-primary shadow-2xs"
-                                                      : "text-default-700 hover:bg-default-100/80 hover:text-foreground font-bold",
+                                                      ? "bg-primary/[0.09] font-bold text-primary ring-1 ring-inset ring-primary/20 shadow-sm"
+                                                      : "font-medium text-default-700 hover:bg-default-100/80 hover:text-foreground",
                                                     sidebarCollapsed && "justify-center px-0 py-3"
                                                   )
                                                 }
                                               >
                                                 {({ isActive }) => (
                                                   <>
-                                                    <Icon
-                                                      className={cn(
-                                                        "h-4.5 w-4.5 shrink-0 transition-transform group-hover/item:scale-110",
-                                                        isActive
-                                                          ? "text-primary fill-primary/20"
-                                                          : "text-default-500 group-hover/item:text-foreground"
-                                                      )}
-                                                    />
+                                                    {isActive && !sidebarCollapsed && (
+                                                      <span className="absolute inset-y-2 start-0 w-1 rounded-full bg-primary" aria-hidden="true" />
+                                                    )}
+                                                    <span className={cn(
+                                                      "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-colors",
+                                                      isActive ? "bg-primary/15 text-primary" : "bg-default-100/60 text-default-500 group-hover/item:bg-default-200/70"
+                                                    )}>
+                                                      <Icon className="h-4 w-4" />
+                                                    </span>
                                                     {!sidebarCollapsed && (
                                                       <span
                                                         className={cn(
                                                           "min-w-0 flex-1 truncate text-xs md:text-sm",
                                                           isActive
-                                                            ? "text-primary font-black"
-                                                            : "text-default-800 font-bold"
+                                                            ? "font-bold text-primary"
+                                                            : "font-medium text-default-700"
                                                         )}
                                                       >
                                                         {label}

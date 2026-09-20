@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { useLayoutStore } from "@/stores/layout.store";
-import { LayoutGrid, FolderOpen, Folder, ChevronDown, Search, X } from "lucide-react";
+import { LayoutGrid, Folder, ChevronDown, Search, X } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { NavLink, useLocation } from "react-router-dom";
 import { Logo } from "../shared/logo";
@@ -9,6 +9,7 @@ import { LanguageSwitcherRow } from "./language-switcher";
 import { getPortalFromPath, type PortalId } from "@/lib/portal-permissions";
 import {
   getNavTreeForPortal,
+  isPortalNavItemActive,
   type PortalNavTreeGroup,
   type PortalNavItem,
 } from "@/lib/portal-nav";
@@ -162,9 +163,8 @@ export function MobileSidebar() {
           if (query && !groupMatch && matchingItems.length === 0) return null;
 
           const displayItems = query && !groupMatch ? matchingItems : group.items;
-          const containsActiveChild = group.items.some(
-            (i) => i.path === location.pathname || (i.path !== "/" && location.pathname.startsWith(i.path))
-          );
+          const containsActiveChild = group.items.some((item) => isPortalNavItemActive(item, location.pathname));
+          const GroupIcon = group.icon ?? Folder;
 
           return (
             <div key={group.id} className="min-w-0 rounded-xl transition-all">
@@ -172,27 +172,13 @@ export function MobileSidebar() {
               <div
                 onClick={() => toggleGroup(group.id)}
                 className={cn(
-                  "flex items-center justify-between px-2.5 py-2 rounded-xl transition-all cursor-pointer select-none",
-                  containsActiveChild ? "text-primary font-black bg-transparent" : "hover:bg-default-100/80"
+                  "flex items-center justify-between rounded-xl px-2.5 py-2 transition-colors cursor-pointer select-none",
+                  containsActiveChild ? "bg-primary/[0.06] text-primary" : "text-default-600 hover:bg-default-100/80"
                 )}
               >
                 <div className="flex items-center gap-2 min-w-0 flex-1">
-                  {isExpanded ? (
-                    <FolderOpen
-                      className={cn(
-                        "h-4 w-4 shrink-0 transition-colors",
-                        containsActiveChild ? "text-primary fill-primary/20" : "text-primary/70"
-                      )}
-                    />
-                  ) : (
-                    <Folder
-                      className={cn(
-                        "h-4 w-4 shrink-0 transition-colors",
-                        containsActiveChild ? "text-primary fill-primary/20" : "text-default-400"
-                      )}
-                    />
-                  )}
-                  <span className={cn("min-w-0 text-xs font-bold leading-snug", containsActiveChild ? "text-primary font-black" : "text-default-800")}>
+                  <GroupIcon className={cn("h-4 w-4 shrink-0", containsActiveChild ? "text-primary" : "text-default-500")} />
+                  <span className={cn("min-w-0 text-xs font-semibold leading-snug", containsActiveChild ? "text-primary" : "text-default-700")}>
                     {groupLabel}
                   </span>
                 </div>
@@ -203,31 +189,36 @@ export function MobileSidebar() {
 
               {/* Sub items branch */}
               {isExpanded && (
-                <div className={cn("relative ms-3 min-w-0 border-s-2 ps-2 space-y-1 my-1", containsActiveChild ? "border-primary/50" : "border-default-200")}>
+                <div className="relative ms-2 min-w-0 space-y-0.5 ps-1 my-1">
                   {displayItems.map((item) => {
                     const Icon = item.icon;
                     const label = getItemLabel(item);
 
                     return (
                       <div key={item.path} className="relative flex items-center">
-                        <div className={cn("absolute -start-[14px] top-1/2 w-3.5 h-[2px] pointer-events-none", containsActiveChild ? "bg-primary/50" : "bg-default-300/70")} />
                         <NavLink
                           to={item.path}
                           end={item.end}
                           onClick={() => setMobileSidebarOpen(false)}
                           className={({ isActive }) =>
                             cn(
-                              "flex min-w-0 flex-1 items-center gap-2 rounded-xl px-2.5 py-2 text-xs transition-all",
+                              "relative flex min-w-0 flex-1 items-center gap-2.5 rounded-xl px-2.5 py-1.5 text-xs transition-all",
                               isActive
-                                ? "text-primary font-black bg-transparent"
-                                : "text-default-600 hover:bg-default-100/70 hover:text-default-900 font-semibold"
+                                ? "bg-primary/[0.09] font-bold text-primary ring-1 ring-inset ring-primary/20 shadow-sm"
+                                : "font-medium text-default-700 hover:bg-default-100/70 hover:text-default-900"
                             )
                           }
                         >
                           {({ isActive }) => (
                             <>
-                              <Icon className={cn("h-4 w-4 shrink-0", isActive ? "text-primary fill-primary/20" : "text-default-500")} />
-                              <span className={cn("truncate flex-1", isActive ? "text-primary font-black" : "text-default-700 font-semibold")}>
+                              {isActive && <span className="absolute inset-y-2 start-0 w-1 rounded-full bg-primary" aria-hidden="true" />}
+                              <span className={cn(
+                                "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg",
+                                isActive ? "bg-primary/15 text-primary" : "bg-default-100/60 text-default-500"
+                              )}>
+                                <Icon className="h-4 w-4" />
+                              </span>
+                              <span className={cn("min-w-0 flex-1 truncate", isActive ? "font-bold text-primary" : "font-medium text-default-700")}>
                                 {label}
                               </span>
                               {item.path === "/chat" && (

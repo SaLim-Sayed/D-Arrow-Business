@@ -63,7 +63,7 @@ import { AssignAttendanceLocationModal } from "../components/AssignAttendanceLoc
 import { useTranslation } from "react-i18next";
 import { useAppPermissions } from "@/features/companies/hooks/use-app-permissions";
 import { formatDate } from "@/lib/utils";
-import { alternatingDayKeys } from "@/lib/alternating-day-keys";
+import { dayToneByKey } from "@/lib/day-tone-by-key";
 import { MoneyAmount } from "@/components/shared/riyal-symbol";
 import { toast } from "sonner";
 import { employeeDisplayName, employeeInitials } from "../utils/geo";
@@ -108,7 +108,7 @@ export default function EmployeeProfilePage() {
 
   const { data: attendanceResponse } = useAttendanceQuery(employee?.id || "");
   const attendanceLogs = attendanceResponse?.data || [];
-  const tintedAttendanceDays = alternatingDayKeys(attendanceLogs, (log) => formatDate(log.date));
+  const attendanceDayTones = dayToneByKey(attendanceLogs, (log) => formatDate(log.date));
   const { data: locationsRes } = useWorkLocationsQuery();
   const workLocations = locationsRes?.data ?? [];
   const assignLocation = useAssignAttendanceLocationMutation();
@@ -572,7 +572,7 @@ export default function EmployeeProfilePage() {
                         key={log.id}
                         className={[
                           index > 0 && formatDate(log.date) !== formatDate(attendanceLogs[index - 1].date) && "attendance-day-divider",
-                          tintedAttendanceDays.has(formatDate(log.date)) && "day-group-tinted",
+                          `day-group-tone-${attendanceDayTones.get(formatDate(log.date)) ?? 0}`,
                         ].filter(Boolean).join(" ")}
                       >
                         <TableCell className="font-bold text-xs">{formatDate(log.date)}</TableCell>

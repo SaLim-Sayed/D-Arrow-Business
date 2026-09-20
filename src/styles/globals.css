@@ -28,6 +28,15 @@
   background: hsl(var(--heroui-primary) / 0.045);
 }
 
+.portal-workspace table tbody tr.report-clickable-row {
+  cursor: pointer;
+}
+
+.portal-workspace table tbody tr.report-clickable-row:focus-visible {
+  outline: 2px solid hsl(var(--heroui-primary));
+  outline-offset: -2px;
+}
+
 .portal-workspace table tbody td {
   border-bottom: 1px solid hsl(var(--heroui-default-100) / 0.7);
 }
@@ -40,12 +49,33 @@
   border-top: 10px solid hsl(var(--heroui-background));
 }
 
-.portal-workspace table tbody tr.day-group-tinted > td {
-  background: hsl(var(--heroui-primary) / 0.055);
+.portal-workspace .day-group-tone-0 { --day-rgb: 14 165 233; }
+.portal-workspace .day-group-tone-1 { --day-rgb: 16 185 129; }
+.portal-workspace .day-group-tone-2 { --day-rgb: 245 158 11; }
+.portal-workspace .day-group-tone-3 { --day-rgb: 139 92 246; }
+
+.portal-workspace table tbody tr[class*="day-group-tone-"] > td {
+  background: rgb(var(--day-rgb) / 0.09);
 }
 
-.portal-workspace table tbody tr.day-group-tinted:hover > td {
-  background: hsl(var(--heroui-primary) / 0.1);
+.portal-workspace table tbody tr[class*="day-group-tone-"]:hover > td {
+  background: rgb(var(--day-rgb) / 0.15);
+}
+
+.portal-workspace .report-day-card {
+  border-color: rgb(var(--day-rgb) / 0.3);
+  background: rgb(var(--day-rgb) / 0.075);
+}
+
+.portal-workspace .report-day-heading {
+  border-inline-start: 3px solid rgb(var(--day-rgb) / 0.7);
+  background: rgb(var(--day-rgb) / 0.09);
+}
+
+.dark .portal-workspace table tbody tr[class*="day-group-tone-"] > td,
+.dark .portal-workspace .report-day-card,
+.dark .portal-workspace .report-day-heading {
+  background: rgb(var(--day-rgb) / 0.13);
 }
 
 .portal-workspace table tbody tr.attendance-day-divider > td:first-child {

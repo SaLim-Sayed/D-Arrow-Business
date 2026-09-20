@@ -44,7 +44,9 @@ import { useAuth } from "@/features/auth/context/auth-context";
 import { useAppPermissions } from "@/features/companies/hooks/use-app-permissions";
 import { DailyReportsService } from "@/features/people/api/daily-reports.service";
 import type { DailyReport } from "@/features/people/types/daily-report.types";
-import { alternatingDayKeys } from "@/lib/alternating-day-keys";
+import { useReportAvatar } from "@/features/people/hooks/use-report-avatar";
+import { initialsFromName } from "@/lib/localized-name";
+import { dayToneByKey } from "@/lib/day-tone-by-key";
 
 export default function TaskDailyReportsPage() {
   const { t, i18n } = useTranslation("people");
@@ -52,6 +54,7 @@ export default function TaskDailyReportsPage() {
   const { companyId } = useCompany();
   const { user } = useAuth();
   const { canViewAllReports } = useAppPermissions();
+  const reportAvatar = useReportAvatar();
 
   const [reports, setReports] = useState<DailyReport[]>([]);
   const [loading, setLoading] = useState(true);
@@ -119,7 +122,7 @@ export default function TaskDailyReportsPage() {
       return matchesText && matchesBlocker && matchesDate;
     }).sort((a, b) => b.date.localeCompare(a.date) || a.employeeName.localeCompare(b.employeeName));
   }, [reports, searchQuery, blockersFilter, selectedDate]);
-  const tintedReportDays = alternatingDayKeys(filteredReports, (report) => report.date);
+  const reportDayTones = dayToneByKey(filteredReports, (report) => report.date);
 
   // KPI Metrics Calculation
   const metrics = useMemo(() => {
@@ -541,14 +544,14 @@ export default function TaskDailyReportsPage() {
             return (
               <Fragment key={report.id}>
               {startsNewDay && (
-                <div className="col-span-full flex items-center gap-3 pt-2 text-sm font-bold text-default-600">
+                <div className={`report-day-heading day-group-tone-${reportDayTones.get(report.date) ?? 0} col-span-full flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-bold text-default-700`}>
                   <Calendar size={16} className="shrink-0 text-primary" />
                   <span>{new Date(`${report.date}T00:00:00`).toLocaleDateString(isAr ? "ar-EG" : "en-US", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}</span>
                   <span className="h-px flex-1 bg-default-200" aria-hidden="true" />
                 </div>
               )}
               <Card
-                className={`border shadow-md hover:shadow-xl transition-all rounded-3xl backdrop-blur-xl overflow-hidden flex flex-col justify-between ${tintedReportDays.has(report.date) ? "border-primary/20 bg-primary/[0.06]" : "border-default-200/60 bg-background/80"}`}
+                className={`report-day-card day-group-tone-${reportDayTones.get(report.date) ?? 0} flex flex-col justify-between overflow-hidden rounded-3xl border shadow-sm backdrop-blur-xl transition-all hover:shadow-lg`}
               >
                 <CardBody className="p-6 space-y-4">
                   {/* Employee & Date Header */}
@@ -563,10 +566,12 @@ export default function TaskDailyReportsPage() {
                         </span>
                       }
                       avatarProps={{
-                        src: report.userPhotoUrl,
-                        name: report.employeeName.slice(0, 2),
+                        src: reportAvatar(report),
+                        name: report.employeeName,
+                        fallback: initialsFromName(report.employeeName),
+                        showFallback: true,
                         size: "md",
-                        className: "bg-purple-500/20 text-purple-600 font-bold border border-purple-500/30",
+                        className: "bg-primary/10 text-primary font-bold border border-primary/20",
                       }}
                     />
 
@@ -729,9 +734,23 @@ export default function TaskDailyReportsPage() {
                   return (
                     <tr
                       key={report.id}
+                      tabIndex={0}
+                      aria-label={`${isAr ? "عرض تفاصيل تقرير" : "View report details for"} ${report.employeeName} ${report.date}`}
+                      onClick={(event) => {
+                        if ((event.target as HTMLElement).closest("button, a, [role='button']")) return;
+                        handleOpenDetail(report);
+                      }}
+                      onKeyDown={(event) => {
+                        if (event.target !== event.currentTarget) return;
+                        if (event.key === "Enter" || event.key === " ") {
+                          event.preventDefault();
+                          handleOpenDetail(report);
+                        }
+                      }}
                       className={[
+                        "report-clickable-row",
                         index > 0 && report.date !== filteredReports[index - 1].date && "attendance-day-divider",
-                        tintedReportDays.has(report.date) && "day-group-tinted",
+                        `day-group-tone-${reportDayTones.get(report.date) ?? 0}`,
                       ].filter(Boolean).join(" ")}
                     >
                       {/* Employee Column */}
@@ -744,10 +763,12 @@ export default function TaskDailyReportsPage() {
                             </span>
                           }
                           avatarProps={{
-                            src: report.userPhotoUrl,
-                            name: report.employeeName.slice(0, 2),
+                            src: reportAvatar(report),
+                            name: report.employeeName,
+                            fallback: initialsFromName(report.employeeName),
+                            showFallback: true,
                             size: "sm",
-                            className: "bg-purple-500/20 text-purple-600 font-bold border border-purple-500/30 shrink-0 h-8 w-8 text-xs",
+                            className: "bg-primary/10 text-primary font-bold border border-primary/20 shrink-0 h-8 w-8 text-xs",
                           }}
                         />
                       </td>
@@ -940,10 +961,12 @@ export default function TaskDailyReportsPage() {
                       </div>
                     }
                     avatarProps={{
-                      src: selectedReport.userPhotoUrl,
-                      name: selectedReport.employeeName.slice(0, 2),
+                      src: reportAvatar(selectedReport),
+                      name: selectedReport.employeeName,
+                      fallback: initialsFromName(selectedReport.employeeName),
+                      showFallback: true,
                       size: "lg",
-                      className: "bg-purple-500/20 text-purple-600 font-bold border-2 border-purple-500/30",
+                      className: "bg-primary/10 text-primary font-bold border-2 border-primary/20",
                     }}
                   />
 
