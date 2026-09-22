@@ -35,7 +35,8 @@ export const AttendanceNotificationService = {
     employeeName: string,
     actionType: "Started Work" | "Resumed Work" | "Checked Out",
     notifType: NotificationType,
-    totalTimeStr: string = "N/A"
+    totalTimeStr: string = "N/A",
+    employeeId?: string
   ) {
     try {
       const usersToNotify = await this.getAdminsToNotify(companyId);
@@ -52,7 +53,7 @@ export const AttendanceNotificationService = {
           type: notifType,
           title: `Attendance: ${actionType}`,
           message: `${employeeName} has ${actionType.toLowerCase()}.${totalTimeStr !== "N/A" ? ` Total time: ${totalTimeStr}` : ""}`,
-          link: "/people", // Link admins to the people dashboard
+          link: employeeId ? `/people/${employeeId}` : "/people/timesheets",
         }).catch((err) => console.error(`[AttendanceNotification] Failed in-app notif for ${userId}`, err));
       });
       await Promise.allSettled(inAppPromises);
@@ -88,20 +89,20 @@ export const AttendanceNotificationService = {
     }
   },
 
-  async notifyWorkStarted(companyId: string, employeeName: string) {
-    return this.dispatchNotifications(companyId, employeeName, "Started Work", "attendance_started");
+  async notifyWorkStarted(companyId: string, employeeName: string, employeeId?: string) {
+    return this.dispatchNotifications(companyId, employeeName, "Started Work", "attendance_started", "N/A", employeeId);
   },
 
-  async notifyWorkResumed(companyId: string, employeeName: string) {
-    return this.dispatchNotifications(companyId, employeeName, "Resumed Work", "attendance_resumed");
+  async notifyWorkResumed(companyId: string, employeeName: string, employeeId?: string) {
+    return this.dispatchNotifications(companyId, employeeName, "Resumed Work", "attendance_resumed", "N/A", employeeId);
   },
 
-  async notifyShiftCompleted(companyId: string, employeeName: string, totalSeconds: number) {
+  async notifyShiftCompleted(companyId: string, employeeName: string, totalSeconds: number, employeeId?: string) {
     // Format total time (e.g. 8h 30m)
     const hours = Math.floor(totalSeconds / 3600);
     const minutes = Math.floor((totalSeconds % 3600) / 60);
     const totalTimeStr = `${hours}h ${minutes}m`;
 
-    return this.dispatchNotifications(companyId, employeeName, "Checked Out", "attendance_completed", totalTimeStr);
+    return this.dispatchNotifications(companyId, employeeName, "Checked Out", "attendance_completed", totalTimeStr, employeeId);
   }
 };

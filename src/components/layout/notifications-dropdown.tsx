@@ -8,7 +8,7 @@ import {
   ScrollShadow,
   Spinner,
 } from "@heroui/react";
-import { Bell, BellRing, Check, CircleAlert, Briefcase, MessageSquare, AtSign, FileCheck } from "lucide-react";
+import { Bell, BellRing, Check, CircleAlert, Briefcase, MessageSquare, AtSign, FileCheck, Inbox } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import {
@@ -23,92 +23,10 @@ import {
   useMarkNotificationAsRead,
   useMarkAllNotificationsAsRead,
 } from "@/features/notifications/hooks/use-notifications";
+import { getLocalizedNotification } from "@/features/notifications/utils/localize-notification";
 import type { AppNotification } from "@/features/notifications/types/notification.types";
 
-function getLocalizedNotification(
-  notification: AppNotification,
-  t: (key: string, options?: any) => string
-): { title: string; message: string } {
-  const { type, title, message } = notification;
-
-  if (!type) {
-    return { title, message };
-  }
-
-  switch (type) {
-    case "task_created":
-    case "task_updated":
-    case "task_assigned": {
-      const match = message.match(/^The task "(.+)" was (?:created|updated|assigned) by (.+?)\.?$/);
-      if (match) {
-        const taskTitle = match[1];
-        const actionBy = match[2];
-        return {
-          title: t(`notifications.types.${type}.title`),
-          message: t(`notifications.types.${type}.message`, { taskTitle, actionBy }),
-        };
-      }
-      break;
-    }
-    case "attendance_started": {
-      const match = message.match(/^(.+) has started work\.?$/);
-      if (match) {
-        const employeeName = match[1];
-        return {
-          title: t(`notifications.types.${type}.title`),
-          message: t(`notifications.types.${type}.message`, { employeeName }),
-        };
-      }
-      break;
-    }
-    case "attendance_resumed": {
-      const match = message.match(/^(.+) has resumed work\.?$/);
-      if (match) {
-        const employeeName = match[1];
-        return {
-          title: t(`notifications.types.${type}.title`),
-          message: t(`notifications.types.${type}.message`, { employeeName }),
-        };
-      }
-      break;
-    }
-    case "attendance_completed": {
-      const match = message.match(/^(.+) has checked out\.?(?: Total time: (.+?))?\.?$/);
-      if (match) {
-        const employeeName = match[1];
-        const totalTime = match[2] || "N/A";
-        return {
-          title: t(`notifications.types.${type}.title`),
-          message: t(`notifications.types.${type}.message`, { employeeName, totalTime }),
-        };
-      }
-      break;
-    }
-    case "chat_mention": {
-      const looksStoredPhrase = /mentioned|أشار/i.test(title);
-      if (looksStoredPhrase) return { title, message };
-      return {
-        title: t("notifications.types.chat_mention.title", { name: title }),
-        message,
-      };
-    }
-    case "chat_message":
-      return {
-        title: t("notifications.types.chat_message.title", { name: title }),
-        message,
-      };
-    case "document_approval":
-      return {
-        title: t("notifications.types.document_approval.title"),
-        message: t("notifications.types.document_approval.message", {
-          name: title,
-          message,
-        }),
-      };
-  }
-
-  return { title, message };
-}
+const DROPDOWN_PREVIEW = 8;
 
 export function NotificationsDropdown() {
   const { t, i18n } = useTranslation("common");
@@ -223,7 +141,7 @@ export function NotificationsDropdown() {
           ) : (
             <ScrollShadow className="max-h-[400px]">
               <div className="flex flex-col">
-                {notifications.map((notification) => {
+                {notifications.slice(0, DROPDOWN_PREVIEW).map((notification) => {
                   const localized = getLocalizedNotification(notification, t);
                   return (
                     <button
@@ -263,6 +181,23 @@ export function NotificationsDropdown() {
               </div>
             </ScrollShadow>
           )}
+
+          <div className="border-t border-default-100 p-2">
+            <Button
+              fullWidth
+              size="sm"
+              variant="light"
+              color="primary"
+              startContent={<Inbox className="h-4 w-4" />}
+              className="font-bold"
+              onPress={() => {
+                setIsOpen(false);
+                navigate("/notifications");
+              }}
+            >
+              {t("notifications.viewAll")}
+            </Button>
+          </div>
         </div>
       </PopoverContent>
     </Popover>

@@ -22,7 +22,7 @@ export const NotificationsService = {
     const q = query(
       notificationsRef,
       where("userId", "==", userId),
-      limit(50)
+      limit(300)
     );
 
     const snapshot = await getDocs(q);
@@ -52,7 +52,7 @@ export const NotificationsService = {
     const q = query(
       notificationsRef,
       where("userId", "==", userId),
-      limit(50)
+      limit(300)
     );
 
     return onSnapshot(q, (snapshot) => {

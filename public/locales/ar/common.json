@@ -148,6 +148,16 @@
     "browserEnabled": "تم تفعيل تنبيهات المتصفح.",
     "browserDenied": "تم رفض إذن التنبيهات من المتصفح. يمكنك تفعيله من إعدادات الموقع.",
     "empty": "لا توجد إشعارات بعد.",
+    "viewAll": "عرض كل الإشعارات",
+    "pageTitle": "كل الإشعارات",
+    "pageSubtitle": "الإشعارات الجديدة والقديمة في مكان واحد",
+    "searchPlaceholder": "ابحث في الإشعارات...",
+    "filterAll": "الكل",
+    "filterUnread": "غير مقروء",
+    "filterRead": "مقروء",
+    "today": "اليوم",
+    "yesterday": "أمس",
+    "earlier": "الأقدم",
     "types": {
       "task_created": {
         "title": "تم إنشاء المهمة",

@@ -134,9 +134,9 @@ export const useAttendanceStore = create<AttendanceState>((set, get) => ({
       const authUser = useAuthStore.getState().user;
       if (authUser) {
         if (wasOnBreak) {
-          AttendanceNotificationService.notifyWorkResumed(companyId, authUser.name);
+          AttendanceNotificationService.notifyWorkResumed(companyId, authUser.name, finalEmployeeId);
         } else {
-          AttendanceNotificationService.notifyWorkStarted(companyId, authUser.name);
+          AttendanceNotificationService.notifyWorkStarted(companyId, authUser.name, finalEmployeeId);
         }
       }
     } catch (error) {
@@ -183,7 +183,7 @@ export const useAttendanceStore = create<AttendanceState>((set, get) => ({
 
       const authUser = useAuthStore.getState().user;
       if (authUser) {
-        AttendanceNotificationService.notifyShiftCompleted(companyId, authUser.name, totalSeconds);
+        AttendanceNotificationService.notifyShiftCompleted(companyId, authUser.name, totalSeconds, finalEmployeeId);
       }
     } catch (error) {
       toast.error(geoErrorToast(error, "checkout_failed"));

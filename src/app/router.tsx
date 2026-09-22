@@ -42,6 +42,7 @@ import HrSettingsHubPage from "@/features/people/pages/HrSettingsHubPage";
 import TimesheetsPage from "@/features/people/pages/TimesheetsPage";
 import DailyReportsPage from "@/features/people/pages/DailyReportsPage";
 import TaskDailyReportsPage from "@/features/tasks/pages/TaskDailyReportsPage";
+import NotificationsPage from "@/features/notifications/pages/NotificationsPage";
 import { SettingsLayout } from "@/features/companies/components/SettingsLayout";
 import { CompanySettingsPage } from "@/features/companies/pages/CompanySettingsPage";
 import { PricingPage } from "@/features/companies/pages/PricingPage";
@@ -249,6 +250,10 @@ export const router = createBrowserRouter([
           {
             path: "profile",
             element: <ProfilePage />,
+          },
+          {
+            path: "notifications",
+            element: <NotificationsPage />,
           },
           {
             path: "*",

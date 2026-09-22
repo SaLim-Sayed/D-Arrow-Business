@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Avatar,
   Button,
@@ -165,6 +166,7 @@ function summarizeDay(
 export default function TimesheetsPage() {
   const { t, i18n } = useTranslation("people");
   const isAr = i18n.language === "ar";
+  const navigate = useNavigate();
   const { data: employeesResponse, isLoading: isEmployeesLoading } = useEmployeesQuery();
   const { data: attendanceResponse, isLoading: isAttendanceLoading } = useAllAttendanceQuery();
 
@@ -739,7 +741,12 @@ export default function TimesheetsPage() {
                       </TableCell>
 
                       <TableCell>
-                        <div className="flex items-center gap-2.5 min-w-0">
+                        <button
+                          type="button"
+                          onClick={() => navigate(`/people/${row.ownerId}`)}
+                          className="flex items-center gap-2.5 min-w-0 rounded-xl text-start hover:opacity-80"
+                          aria-label={t("profile.open", { name: row.name })}
+                        >
                           <Avatar
                             size="sm"
                             src={row.avatar}
@@ -768,7 +775,7 @@ export default function TimesheetsPage() {
                               </span>
                             ) : null}
                           </div>
-                        </div>
+                        </button>
                       </TableCell>
 
                       <TableCell>

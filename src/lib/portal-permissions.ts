@@ -46,7 +46,7 @@ export function getPortalFromPath(pathname: string): PortalId | "picker" | "sett
   if (pathname.startsWith("/billing")) return "billing";
   if (pathname.startsWith("/chat")) return "chat";
   if (pathname.startsWith("/settings")) return "settings";
-  if (pathname === "/profile" || pathname === "/seed") return null;
+  if (pathname === "/profile" || pathname === "/notifications" || pathname === "/seed") return null;
   return null;
 }
 
