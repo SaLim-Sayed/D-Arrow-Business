@@ -148,6 +148,16 @@
     "browserEnabled": "Browser alerts enabled.",
     "browserDenied": "Notification permission was denied. You can re-enable it in site settings.",
     "empty": "No notifications yet.",
+    "viewAll": "View all notifications",
+    "pageTitle": "All notifications",
+    "pageSubtitle": "New and previous alerts in one place",
+    "searchPlaceholder": "Search notifications...",
+    "filterAll": "All",
+    "filterUnread": "Unread",
+    "filterRead": "Read",
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "earlier": "Earlier",
     "types": {
       "task_created": {
         "title": "Task Created",

@@ -13,8 +13,7 @@ import {
   TableRow, 
   TableCell, 
   Chip, 
-  User, 
-  Modal, 
+  Modal,  
   ModalContent, 
   ModalHeader, 
   ModalBody, 
@@ -42,7 +41,7 @@ import { useAppPermissions } from "@/features/companies/hooks/use-app-permission
 import { DailyReportsService } from "../api/daily-reports.service";
 import type { DailyReport } from "../types/daily-report.types";
 import { useReportAvatar } from "../hooks/use-report-avatar";
-import { initialsFromName } from "@/lib/localized-name";
+import { EmployeeProfileLink } from "../components/EmployeeProfileLink";
 import { dayToneByKey } from "@/lib/day-tone-by-key";
 
 export default function DailyReportsPage() {
@@ -331,16 +330,10 @@ export default function DailyReportsPage() {
                   ].filter(Boolean).join(" ")}
                 >
                   <TableCell>
-                    <User
-                      name={<span className="block max-w-[160px] truncate font-semibold" title={report.employeeName}>{report.employeeName}</span>}
-                      avatarProps={{
-                        src: reportAvatar(report),
-                        name: report.employeeName,
-                        fallback: initialsFromName(report.employeeName),
-                        showFallback: true,
-                        size: "sm",
-                        className: "bg-primary/10 text-primary font-bold"
-                      }}
+                    <EmployeeProfileLink
+                      employeeId={report.employeeId}
+                      name={report.employeeName}
+                      avatarUrl={reportAvatar(report)}
                     />
                   </TableCell>
 
@@ -432,17 +425,12 @@ export default function DailyReportsPage() {
               <>
                 <ModalHeader className="flex flex-col gap-1 border-b border-default-100/60 pb-4 pt-6 px-6">
                   <div className="flex items-center justify-between">
-                    <User
+                    <EmployeeProfileLink
+                      employeeId={selectedReport.employeeId}
                       name={selectedReport.employeeName}
                       description={`تقرير يوم: ${selectedReport.date}`}
-                      avatarProps={{
-                        src: reportAvatar(selectedReport),
-                        name: selectedReport.employeeName,
-                        fallback: initialsFromName(selectedReport.employeeName),
-                        showFallback: true,
-                        size: "md",
-                        className: "bg-primary/10 text-primary font-bold"
-                      }}
+                      avatarUrl={reportAvatar(selectedReport)}
+                      size="md"
                     />
                     <Chip 
                       size="sm" 

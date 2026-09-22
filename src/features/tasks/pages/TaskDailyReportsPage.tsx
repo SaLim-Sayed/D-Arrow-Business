@@ -5,7 +5,6 @@ import {
   Button,
   Input,
   Chip,
-  User,
   Drawer,
   DrawerContent,
   DrawerHeader,
@@ -45,7 +44,7 @@ import { useAppPermissions } from "@/features/companies/hooks/use-app-permission
 import { DailyReportsService } from "@/features/people/api/daily-reports.service";
 import type { DailyReport } from "@/features/people/types/daily-report.types";
 import { useReportAvatar } from "@/features/people/hooks/use-report-avatar";
-import { initialsFromName } from "@/lib/localized-name";
+import { EmployeeProfileLink } from "@/features/people/components/EmployeeProfileLink";
 import { dayToneByKey } from "@/lib/day-tone-by-key";
 
 export default function TaskDailyReportsPage() {
@@ -556,7 +555,8 @@ export default function TaskDailyReportsPage() {
                 <CardBody className="p-6 space-y-4">
                   {/* Employee & Date Header */}
                   <div className="flex items-start justify-between gap-3">
-                    <User
+                    <EmployeeProfileLink
+                      employeeId={report.employeeId}
                       name={report.employeeName}
                       description={
                         <span className="text-[11px] text-default-400 flex items-center gap-1 mt-0.5">
@@ -565,14 +565,9 @@ export default function TaskDailyReportsPage() {
                           {report.totalHours ? ` • ${report.totalHours}h` : ""}
                         </span>
                       }
-                      avatarProps={{
-                        src: reportAvatar(report),
-                        name: report.employeeName,
-                        fallback: initialsFromName(report.employeeName),
-                        showFallback: true,
-                        size: "md",
-                        className: "bg-primary/10 text-primary font-bold border border-primary/20",
-                      }}
+                      avatarUrl={reportAvatar(report)}
+                      size="md"
+                      avatarClassName="border border-primary/20"
                     />
 
                     <div className="flex flex-col items-end gap-1">
@@ -755,21 +750,16 @@ export default function TaskDailyReportsPage() {
                     >
                       {/* Employee Column */}
                       <td className="px-3 py-2.5 align-middle whitespace-nowrap">
-                        <User
+                        <EmployeeProfileLink
+                          employeeId={report.employeeId}
                           name={report.employeeName}
                           description={
                             <span className="text-[10px] text-default-400 block font-medium">
                               {isAr ? "عضو فريق" : "Team Member"}
                             </span>
                           }
-                          avatarProps={{
-                            src: reportAvatar(report),
-                            name: report.employeeName,
-                            fallback: initialsFromName(report.employeeName),
-                            showFallback: true,
-                            size: "sm",
-                            className: "bg-primary/10 text-primary font-bold border border-primary/20 shrink-0 h-8 w-8 text-xs",
-                          }}
+                          avatarUrl={reportAvatar(report)}
+                          avatarClassName="border border-primary/20 shrink-0 h-8 w-8 text-xs"
                         />
                       </td>
 
@@ -949,7 +939,8 @@ export default function TaskDailyReportsPage() {
               <DrawerBody className="p-6 space-y-6 overflow-y-auto">
                 {/* Employee Header Profile */}
                 <div className="p-5 rounded-3xl bg-default-50/70 border border-default-200/60 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                  <User
+                  <EmployeeProfileLink
+                    employeeId={selectedReport.employeeId}
                     name={selectedReport.employeeName}
                     description={
                       <div className="space-y-1 mt-1">
@@ -960,14 +951,9 @@ export default function TaskDailyReportsPage() {
                         </p>
                       </div>
                     }
-                    avatarProps={{
-                      src: reportAvatar(selectedReport),
-                      name: selectedReport.employeeName,
-                      fallback: initialsFromName(selectedReport.employeeName),
-                      showFallback: true,
-                      size: "lg",
-                      className: "bg-primary/10 text-primary font-bold border-2 border-primary/20",
-                    }}
+                    avatarUrl={reportAvatar(selectedReport)}
+                    size="lg"
+                    avatarClassName="border-2 border-primary/20"
                   />
 
                 </div>
