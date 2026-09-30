@@ -2,6 +2,7 @@ import { Outlet, useLocation } from "react-router-dom";
 import { Header } from "./header";
 import { PortalSidebar } from "./portal-sidebar";
 import { PortalPickerDrawer } from "@/features/portals/components/PortalPickerDrawer";
+import { LateCheckInAlertModal } from "@/features/people/components/LateCheckInAlertModal";
 import { useSyncLastPortal } from "@/features/portals/hooks/use-sync-last-portal";
 import { useMeetingReminders } from "@/features/meetings/hooks/use-meeting-reminders";
 import { getPortalFromPath } from "@/lib/portal-permissions";
@@ -51,6 +52,7 @@ export function AppLayout({ children }: { children?: React.ReactNode } = {}) {
         isOpen={portalPickerOpen}
         onOpenChange={setPortalPickerOpen}
       />
+      <LateCheckInAlertModal />
     </div>
   );
 }

@@ -325,15 +325,22 @@
     "cancel": "إلغاء"
   },
   "time_tracker": {
-    "clock_in": "تسجيل دخول",
-    "clock_out": "تسجيل خروج",
-    "take_break": "أخذ استراحة",
-    "end_break": "إنهاء الاستراحة",
-    "working": "يعمل",
+    "daily_focus": "التركيز اليومي",
+    "system": "النظام",
+    "on_duty": "في العمل",
     "on_break": "في استراحة",
-    "off_duty": "خارج الدوام",
-    "shift_status": "حالة الدوام",
-    "current_time": "الوقت الحالي"
+    "off_duty": "خارج العمل",
+    "focus": "التركيز",
+    "back_to_work": "العودة للعمل",
+    "check_in_resume": "تسجيل دخول / استئناف",
+    "check_out_end": "تسجيل خروج / إنهاء الجلسة",
+    "on": "نشط",
+    "break": "استراحة",
+    "off": "مغلق",
+    "resume_work": "استئناف العمل",
+    "take_break": "أخذ استراحة",
+    "must_be_on_duty": "يجب أن تكون في العمل لأخذ استراحة",
+    "productivity_mode": "وضع الإنتاجية العالية"
   },
   "departments": {
     "Engineering": "الهندسة",
@@ -393,24 +400,6 @@
     "filtered": "(مصفى)",
     "total": "الإجمالي"
   },
-  "time_tracker": {
-    "daily_focus": "التركيز اليومي",
-    "system": "النظام",
-    "on_duty": "في العمل",
-    "on_break": "في استراحة",
-    "off_duty": "خارج العمل",
-    "focus": "التركيز",
-    "back_to_work": "العودة للعمل",
-    "check_in_resume": "تسجيل دخول / استئناف",
-    "check_out_end": "تسجيل خروج / إنهاء الجلسة",
-    "on": "نشط",
-    "break": "استراحة",
-    "off": "مغلق",
-    "resume_work": "استئناف العمل",
-    "take_break": "أخذ استراحة",
-    "must_be_on_duty": "يجب أن تكون في العمل لأخذ استراحة",
-    "productivity_mode": "وضع الإنتاجية العالية"
-  },
   "toast": {
     "leave_submitted": "تم تقديم طلب الإجازة بنجاح",
     "leave_failed": "فشل تقديم طلب الإجازة",
@@ -438,7 +427,11 @@
     "gps_denied": "صلاحية الموقع مطلوبة لتسجيل الحضور. اسمح بالـ GPS ثم أعد المحاولة.",
     "gps_unavailable": "تعذر قراءة موقعك. حاول مرة أخرى وأنت في موقع العمل.",
     "location_not_assigned": "لم يُعيَّن لك موقع حضور. اطلب من مديرك تحديد المكان.",
-    "outside_location": "أنت خارج نطاق {{name}} (تبعد {{distance}} م، المسموح {{radius}} م)."
+    "outside_location": "أنت خارج نطاق {{name}} (تبعد {{distance}} م، المسموح {{radius}} م).",
+    "late_checkin": "سجّلت حضورك متأخراً بـ {{minutes}} دقيقة.",
+    "late_checkin_deducted": "سجّلت حضورك متأخراً بـ {{minutes}} دقيقة — سيتم خصم هذه المرة من راتبك.",
+    "late_checkin_alert_title": "تسجيل حضور متأخر",
+    "late_checkin_ack": "تم، فهمت"
   },
   "attendance_settings": {
     "title": "مواقع تسجيل الحضور",
@@ -490,7 +483,18 @@
     "location_deleted": "تم حذف موقع العمل",
     "location_delete_failed": "تعذر حذف موقع العمل",
     "assignment_saved": "تم حفظ موقع الموظف",
-    "assignment_failed": "تعذر حفظ موقع الموظف"
+    "assignment_failed": "تعذر حفظ موقع الموظف",
+    "tab_policy": "سياسة التأخير",
+    "late_policy_title": "خصم التأخير عند تسجيل الحضور",
+    "late_policy_hint": "تُطبّق على مستوى الشركة بالكامل. أول (العدد المسموح − 1) من مرات التأخير في كل شهر ميلادي بدون خصم. ومن مرة التأخير التي تبلغ العدد المحدد فصاعداً، يُخصم عدد دقائق التأخير الفعلي لذلك اليوم.",
+    "late_cutoff_label": "وقت آخر موعد لتسجيل الحضور",
+    "late_cutoff_hint": "أي تسجيل حضور بعد هذا الوقت يُعتبر متأخراً.",
+    "late_threshold_label": "عدد مرات التأخير المسموح بها قبل الخصم",
+    "late_threshold_hint": "مثال: 3 تعني أن أول مرتين تأخير كل شهر بدون خصم، ويبدأ الخصم من المرة الثالثة.",
+    "save_policy": "حفظ السياسة",
+    "unsaved_changes": "تغييرات غير محفوظة",
+    "late_policy_saved": "تم حفظ سياسة التأخير",
+    "late_policy_save_failed": "فشل حفظ سياسة التأخير"
   },
   "daily_report": {
     "title": "التقرير اليومي لإنجاز العمل",

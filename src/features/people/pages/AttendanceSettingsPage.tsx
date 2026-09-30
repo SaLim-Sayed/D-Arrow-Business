@@ -9,14 +9,16 @@ import {
   Tab,
   Tabs,
 } from "@heroui/react";
-import { MapPin, Pencil, Plus, Search, Trash2, UserCog } from "lucide-react";
+import { Clock, MapPin, Pencil, Plus, Search, Trash2, UserCog } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useAppPermissions } from "@/features/companies/hooks/use-app-permissions";
 import {
   useAssignAttendanceLocationMutation,
+  useAttendanceLatePolicyQuery,
   useCreateWorkLocationMutation,
   useDeleteWorkLocationMutation,
   useEmployeesQuery,
+  useUpdateAttendanceLatePolicyMutation,
   useUpdateWorkLocationMutation,
   useWorkLocationsQuery,
 } from "../hooks/use-people";
@@ -35,6 +37,8 @@ export default function AttendanceSettingsPage() {
   const updateLocation = useUpdateWorkLocationMutation();
   const deleteLocation = useDeleteWorkLocationMutation();
   const assignMutation = useAssignAttendanceLocationMutation();
+  const { data: latePolicyRes, isLoading: loadingLatePolicy } = useAttendanceLatePolicyQuery();
+  const updateLatePolicy = useUpdateAttendanceLatePolicyMutation();
 
   const locations = locationsRes?.data ?? [];
   const employees = employeesRes?.data ?? [];
@@ -44,6 +48,33 @@ export default function AttendanceSettingsPage() {
   const [assignOpen, setAssignOpen] = useState(false);
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
   const [search, setSearch] = useState("");
+
+  const serverLatePolicy = latePolicyRes?.data;
+  const [latePolicyDraft, setLatePolicyDraft] = useState<{
+    lateCutoffTime: string;
+    lateThreshold: string;
+  } | null>(null);
+
+  const lateCutoffTime = latePolicyDraft?.lateCutoffTime ?? serverLatePolicy?.lateCutoffTime ?? "11:30";
+  const lateThreshold = latePolicyDraft?.lateThreshold ?? String(serverLatePolicy?.lateThreshold ?? 3);
+
+  const setLateCutoffTime = (value: string) =>
+    setLatePolicyDraft({ lateCutoffTime: value, lateThreshold });
+  const setLateThreshold = (value: string) =>
+    setLatePolicyDraft({ lateCutoffTime, lateThreshold: value });
+
+  const thresholdNumber = Math.max(1, parseInt(lateThreshold, 10) || 3);
+  const latePolicyDirty =
+    !!serverLatePolicy &&
+    (serverLatePolicy.lateCutoffTime !== lateCutoffTime ||
+      serverLatePolicy.lateThreshold !== thresholdNumber);
+
+  const handleSaveLatePolicy = () => {
+    updateLatePolicy.mutate(
+      { lateCutoffTime, lateThreshold: thresholdNumber },
+      { onSuccess: () => setLatePolicyDraft(null) }
+    );
+  };
 
   const filteredEmployees = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -151,6 +182,70 @@ export default function AttendanceSettingsPage() {
                 </Card>
               ))
             )}
+          </div>
+        </Tab>
+
+        <Tab key="policy" title={t("attendance_settings.tab_policy")}>
+          <div className="mt-4 max-w-xl space-y-4">
+            <Card className="border border-default-200 shadow-sm">
+              <CardBody className="gap-5">
+                <div className="flex items-start gap-3">
+                  <div className="mt-0.5 rounded-lg bg-primary/10 p-2">
+                    <Clock className="h-4 w-4 text-primary" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold">{t("attendance_settings.late_policy_title")}</h3>
+                    <p className="text-sm text-default-500">
+                      {t("attendance_settings.late_policy_hint")}
+                    </p>
+                  </div>
+                </div>
+
+                {loadingLatePolicy ? (
+                  <p className="text-sm text-default-400">{t("attendance_settings.loading")}</p>
+                ) : (
+                  <>
+                    <Input
+                      type="time"
+                      label={t("attendance_settings.late_cutoff_label")}
+                      description={t("attendance_settings.late_cutoff_hint")}
+                      variant="bordered"
+                      value={lateCutoffTime}
+                      onValueChange={setLateCutoffTime}
+                      className="max-w-xs"
+                    />
+
+                    <Input
+                      type="number"
+                      min={1}
+                      label={t("attendance_settings.late_threshold_label")}
+                      description={t("attendance_settings.late_threshold_hint")}
+                      variant="bordered"
+                      value={lateThreshold}
+                      onValueChange={setLateThreshold}
+                      className="max-w-xs"
+                    />
+
+                    <div className="flex items-center gap-3 pt-1">
+                      <Button
+                        color="primary"
+                        className="rounded-xl font-semibold"
+                        isDisabled={!latePolicyDirty}
+                        isLoading={updateLatePolicy.isPending}
+                        onPress={handleSaveLatePolicy}
+                      >
+                        {t("attendance_settings.save_policy")}
+                      </Button>
+                      {latePolicyDirty ? (
+                        <span className="text-xs text-default-400">
+                          {t("attendance_settings.unsaved_changes")}
+                        </span>
+                      ) : null}
+                    </div>
+                  </>
+                )}
+              </CardBody>
+            </Card>
           </div>
         </Tab>
 

@@ -107,7 +107,34 @@ export interface Attendance {
   hasDailyReport?: boolean;
   dailyReportId?: string;
   skippedReport?: boolean;
+  /** Minutes past the company's late-checkin cutoff. 0/absent when on time. */
+  lateMinutes?: number;
+  /**
+   * Minutes deducted for this day's lateness. Only set once the employee has
+   * used up their grace occurrences for the month (see AttendanceLatePolicy).
+   */
+  deductionMinutes?: number;
 }
+
+/**
+ * Company-wide lateness policy (admin-configurable, Settings → Attendance →
+ * Late Policy). The first `lateThreshold - 1` late check-ins in a calendar
+ * month are grace — no deduction. From the `lateThreshold`-th late check-in
+ * of the month onward, each one is deducted (in minutes late that day).
+ */
+export interface AttendanceLatePolicy {
+  /** 24h "HH:mm", compared in the browser's local time (same convention the rest of attendance uses). */
+  lateCutoffTime: string;
+  /** How many late check-ins in a month before deductions start. */
+  lateThreshold: number;
+  updatedAt?: Date | Timestamp;
+  updatedBy?: string;
+}
+
+export const DEFAULT_ATTENDANCE_LATE_POLICY: AttendanceLatePolicy = {
+  lateCutoffTime: "11:30",
+  lateThreshold: 3,
+};
 
 export type AttendanceCheckMode = "geofence" | "flexible";
 

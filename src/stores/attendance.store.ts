@@ -52,8 +52,10 @@ interface AttendanceState {
   isInitialized: boolean;
   startTime: number | null; // For precise drift-free calculation
   isReportModalOpen: boolean;
+  lateCheckInAlert: { minutes: number; deducted: boolean } | null;
   
   setReportModalOpen: (open: boolean) => void;
+  dismissLateCheckInAlert: () => void;
   startTimer: () => void;
   stopTimer: () => void;
   
@@ -74,8 +76,10 @@ export const useAttendanceStore = create<AttendanceState>((set, get) => ({
   isInitialized: false,
   startTime: null,
   isReportModalOpen: false,
+  lateCheckInAlert: null,
 
   setReportModalOpen: (open: boolean) => set({ isReportModalOpen: open }),
+  dismissLateCheckInAlert: () => set({ lateCheckInAlert: null }),
 
   startTimer: () => {
     if (get().intervalId) return;
@@ -130,6 +134,12 @@ export const useAttendanceStore = create<AttendanceState>((set, get) => ({
       get().startTimer();
       await get().syncWithDb(companyId, userId);
       toast.success(at("attendance_toast.shift_started"));
+
+      const lateMinutes = res.data.lateMinutes ?? 0;
+      const deductionMinutes = res.data.deductionMinutes ?? 0;
+      if (lateMinutes > 0) {
+        set({ lateCheckInAlert: { minutes: lateMinutes, deducted: deductionMinutes > 0 } });
+      }
 
       const authUser = useAuthStore.getState().user;
       if (authUser) {

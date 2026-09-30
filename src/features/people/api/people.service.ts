@@ -5,6 +5,7 @@ import {
   doc, 
   addDoc, 
   updateDoc,
+  setDoc,
   deleteDoc,
   query,
   where,
@@ -25,7 +26,9 @@ import type {
   WorkLocation,
   CreateWorkLocationDTO,
   AttendanceGeoPayload,
+  AttendanceLatePolicy,
 } from "../types/people.types";
+import { DEFAULT_ATTENDANCE_LATE_POLICY } from "../types/people.types";
 
 const SERVICE_NAME = "PeopleService";
 
@@ -131,7 +134,86 @@ function enrichEmployeeFromUser(
   } as Employee;
 }
 
+// --- Attendance lateness/deduction policy -----------------------------
+
+const ATTENDANCE_SETTINGS_DOC = (companyId: string) =>
+  doc(db, "companies", companyId, "settings", "attendance");
+
+async function getAttendanceLatePolicy(companyId: string): Promise<AttendanceLatePolicy> {
+  const snap = await getDoc(ATTENDANCE_SETTINGS_DOC(companyId));
+  if (!snap.exists()) return { ...DEFAULT_ATTENDANCE_LATE_POLICY };
+  const data = snap.data() as Partial<AttendanceLatePolicy>;
+  return {
+    lateCutoffTime: data.lateCutoffTime || DEFAULT_ATTENDANCE_LATE_POLICY.lateCutoffTime,
+    lateThreshold:
+      Number.isFinite(data.lateThreshold) && (data.lateThreshold as number) >= 1
+        ? (data.lateThreshold as number)
+        : DEFAULT_ATTENDANCE_LATE_POLICY.lateThreshold,
+  };
+}
+
+/** Minutes `checkInAt` falls past "HH:mm" on the same local day, or 0 if on time. */
+function computeLateMinutes(checkInAt: Date, cutoffTime: string): number {
+  const [hh, mm] = cutoffTime.split(":").map((n) => parseInt(n, 10));
+  if (!Number.isFinite(hh) || !Number.isFinite(mm)) return 0;
+  const cutoff = new Date(checkInAt);
+  cutoff.setHours(hh, mm, 0, 0);
+  const diffMs = checkInAt.getTime() - cutoff.getTime();
+  return diffMs > 0 ? Math.round(diffMs / 60000) : 0;
+}
+
+/** How many of this employee's attendance days were already "late" so far this calendar month. */
+async function countLateOccurrencesThisMonth(
+  companyId: string,
+  employeeId: string,
+  monthKey: string // "YYYY-MM"
+): Promise<number> {
+  const attendanceRef = collection(db, "companies", companyId, "attendance");
+  const q = query(attendanceRef, where("employeeId", "==", employeeId));
+  const snapshot = await getDocs(q);
+  let count = 0;
+  for (const docSnap of snapshot.docs) {
+    const data = docSnap.data() as Attendance;
+    if (data.status === "late" && typeof data.date === "string" && data.date.startsWith(monthKey)) {
+      count += 1;
+    }
+  }
+  return count;
+}
+
 export const PeopleService = {
+  // Company-wide lateness/deduction policy (Settings → Attendance → Late Policy).
+  attendanceSettings: {
+    async get(companyId: string): Promise<ApiResponse<AttendanceLatePolicy>> {
+      return withLogging(SERVICE_NAME, "attendanceSettings.get", (async () => ({
+        data: await getAttendanceLatePolicy(companyId),
+        message: "Success",
+      }))());
+    },
+    async update(
+      companyId: string,
+      patch: Partial<AttendanceLatePolicy>,
+      updatedBy?: string
+    ): Promise<ApiResponse<AttendanceLatePolicy>> {
+      return withLogging(SERVICE_NAME, "attendanceSettings.update", (async () => {
+        const current = await getAttendanceLatePolicy(companyId);
+        const next: AttendanceLatePolicy = {
+          lateCutoffTime: patch.lateCutoffTime?.trim() || current.lateCutoffTime,
+          lateThreshold:
+            Number.isFinite(patch.lateThreshold) && (patch.lateThreshold as number) >= 1
+              ? (patch.lateThreshold as number)
+              : current.lateThreshold,
+        };
+        await setDoc(
+          ATTENDANCE_SETTINGS_DOC(companyId),
+          { ...next, updatedAt: serverTimestamp(), updatedBy: updatedBy ?? null },
+          { merge: true }
+        );
+        return { data: next, message: "Attendance policy updated" };
+      })());
+    },
+  },
+
   // Employee Management
   async getEmployees(companyId: string): Promise<ApiResponse<Employee[]>> {
     return withLogging(SERVICE_NAME, "getEmployees", (async () => {
@@ -293,13 +375,32 @@ export const PeopleService = {
   ): Promise<ApiResponse<Attendance>> {
     return withLogging(SERVICE_NAME, "checkIn", (async () => {
       const attendanceRef = collection(db, "companies", companyId, "attendance");
-      const date = new Date().toISOString().split('T')[0];
+      const now = new Date();
+      const date = now.toISOString().split('T')[0];
+
+      // Lateness: compare against the company's late-checkin cutoff (Settings
+      // → Attendance → Late Policy). The first (threshold - 1) late check-ins
+      // in a calendar month are grace; from the threshold-th one onward, each
+      // is deducted (in minutes late that day).
+      const policy = await getAttendanceLatePolicy(companyId);
+      const lateMinutes = computeLateMinutes(now, policy.lateCutoffTime);
+      let deductionMinutes = 0;
+      if (lateMinutes > 0) {
+        const monthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+        const priorLateCount = await countLateOccurrencesThisMonth(companyId, employeeId, monthKey);
+        const occurrenceNumber = priorLateCount + 1; // this check-in counts too
+        if (occurrenceNumber >= policy.lateThreshold) {
+          deductionMinutes = lateMinutes;
+        }
+      }
 
       const payload: Record<string, unknown> = {
         employeeId,
         date,
         checkIn: serverTimestamp(),
-        status: "present",
+        status: lateMinutes > 0 ? "late" : "present",
+        lateMinutes,
+        deductionMinutes,
         createdAt: serverTimestamp(),
       };
       if (geo) {

@@ -325,15 +325,22 @@
     "cancel": "Cancel"
   },
   "time_tracker": {
-    "clock_in": "Clock In",
-    "clock_out": "Clock Out",
-    "take_break": "Take Break",
-    "end_break": "End Break",
-    "working": "Working",
+    "daily_focus": "Daily Focus",
+    "system": "System",
+    "on_duty": "On Duty",
     "on_break": "On Break",
     "off_duty": "Off Duty",
-    "shift_status": "Shift Status",
-    "current_time": "Current Time"
+    "focus": "Focus",
+    "back_to_work": "Back to Work",
+    "check_in_resume": "Check In / Resume",
+    "check_out_end": "Check Out / End Session",
+    "on": "On",
+    "break": "Break",
+    "off": "Off",
+    "resume_work": "Resume Work",
+    "take_break": "Take a break",
+    "must_be_on_duty": "Must be on duty to take a break",
+    "productivity_mode": "High Productivity Mode"
   },
   "departments": {
     "Engineering": "Engineering",
@@ -393,24 +400,6 @@
     "filtered": "(filtered)",
     "total": "total"
   },
-  "time_tracker": {
-    "daily_focus": "Daily Focus",
-    "system": "System",
-    "on_duty": "On Duty",
-    "on_break": "On Break",
-    "off_duty": "Off Duty",
-    "focus": "Focus",
-    "back_to_work": "Back to Work",
-    "check_in_resume": "Check In / Resume",
-    "check_out_end": "Check Out / End Session",
-    "on": "On",
-    "break": "Break",
-    "off": "Off",
-    "resume_work": "Resume Work",
-    "take_break": "Take a break",
-    "must_be_on_duty": "Must be on duty to take a break",
-    "productivity_mode": "High Productivity Mode"
-  },
   "toast": {
     "leave_submitted": "Leave request submitted successfully",
     "leave_failed": "Failed to submit leave request",
@@ -438,7 +427,11 @@
     "gps_denied": "Location permission is required to check in. Allow GPS and try again.",
     "gps_unavailable": "Could not read your GPS location. Try again near the workplace.",
     "location_not_assigned": "No attendance location is assigned to you. Ask your manager to set it.",
-    "outside_location": "You are outside {{name}} ({{distance}} m away, allowed {{radius}} m)."
+    "outside_location": "You are outside {{name}} ({{distance}} m away, allowed {{radius}} m).",
+    "late_checkin": "You checked in {{minutes}} min late.",
+    "late_checkin_deducted": "You checked in {{minutes}} min late — this occurrence will be deducted from your pay.",
+    "late_checkin_alert_title": "Late check-in",
+    "late_checkin_ack": "Got it"
   },
   "attendance_settings": {
     "title": "Attendance locations",
@@ -490,7 +483,18 @@
     "location_deleted": "Work site deleted",
     "location_delete_failed": "Could not delete the work site",
     "assignment_saved": "Employee location saved",
-    "assignment_failed": "Could not save employee location"
+    "assignment_failed": "Could not save employee location",
+    "tab_policy": "Late policy",
+    "late_policy_title": "Check-in lateness deduction",
+    "late_policy_hint": "Applies company-wide. The first (threshold − 1) late check-ins each calendar month are a grace period — no deduction. From the threshold-th late check-in onward, that day's actual late minutes are deducted.",
+    "late_cutoff_label": "Check-in cutoff time",
+    "late_cutoff_hint": "Check-ins after this time are counted as late.",
+    "late_threshold_label": "Grace occurrences before deduction",
+    "late_threshold_hint": "Example: 3 means the first 2 late check-ins each month are free; deductions start from the 3rd.",
+    "save_policy": "Save policy",
+    "unsaved_changes": "Unsaved changes",
+    "late_policy_saved": "Late policy saved",
+    "late_policy_save_failed": "Failed to save late policy"
   },
   "daily_report": {
     "title": "Daily Work Report",

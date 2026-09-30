@@ -2,7 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { QUERY_KEYS } from "@/lib/constants";
 import { PeopleService } from "../api/people.service";
 import { useCompany } from "@/features/companies/context/company-context";
-import type { LeaveRequest, PerformanceReview, Asset, Announcement, Employee, CreateWorkLocationDTO } from "../types/people.types";
+import type { LeaveRequest, PerformanceReview, Asset, Announcement, Employee, CreateWorkLocationDTO, AttendanceLatePolicy } from "../types/people.types";
 import { toast } from "sonner";
 import i18n from "@/lib/i18n";
 
@@ -313,6 +313,35 @@ export function useAssignAttendanceLocationMutation() {
     },
     onError: (error: { message?: string }) => {
       toast.error(error.message || t("attendance_settings.assignment_failed"));
+    },
+  });
+}
+
+export function useAttendanceLatePolicyQuery() {
+  const { companyId } = useCompany();
+
+  return useQuery({
+    queryKey: QUERY_KEYS.people.attendanceSettings(companyId!),
+    queryFn: () => PeopleService.attendanceSettings.get(companyId!),
+    enabled: !!companyId,
+  });
+}
+
+export function useUpdateAttendanceLatePolicyMutation() {
+  const { companyId } = useCompany();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (patch: Partial<AttendanceLatePolicy>) =>
+      PeopleService.attendanceSettings.update(companyId!, patch),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: QUERY_KEYS.people.attendanceSettings(companyId!),
+      });
+      toast.success(t("attendance_settings.late_policy_saved"));
+    },
+    onError: (error: { message?: string }) => {
+      toast.error(error.message || t("attendance_settings.late_policy_save_failed"));
     },
   });
 }

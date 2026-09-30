@@ -306,4 +306,89 @@ export const DailyReportsService = {
       return { data: undefined, message: "Task added to daily report" };
     })());
   },
+
+  async addSalimQuickReports(
+    companyId: string,
+    user: { id: string; name: string; avatar?: string }
+  ): Promise<ApiResponse<void>> {
+    return withLogging(SERVICE_NAME, "addSalimQuickReports", (async () => {
+      const yesterdayStr = "2026-09-29";
+      const todayStr = "2026-09-30";
+
+      const reportsRef = collection(db, "companies", companyId, "daily_reports");
+      const attendanceRef = collection(db, "companies", companyId, "attendance");
+
+      // 1. Attendance today (06:27 to 12:00)
+      const checkInDate = new Date(`${todayStr}T06:27:00.000Z`);
+      const checkOutDate = new Date(`${todayStr}T12:00:00.000Z`);
+
+      const attDoc = await addDoc(attendanceRef, {
+        employeeId: user.id,
+        date: todayStr,
+        checkIn: checkInDate,
+        checkOut: checkOutDate,
+        totalHours: 5.55,
+        status: "present",
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      });
+
+      // 2. Yesterday's Report (2026-09-29)
+      await addDoc(reportsRef, {
+        companyId,
+        employeeId: user.id,
+        employeeName: user.name || "سالم",
+        userPhotoUrl: user.avatar || null,
+        date: yesterdayStr,
+        attendanceId: "att_prev_day",
+        checkInTime: "08:00",
+        checkOutTime: "17:00",
+        totalHours: 9,
+        tasksCompleted: [
+          { id: "t_inv_01", title: "تصحيح نظام الدعوات وتسجيل الدخول", status: "done" },
+          { id: "t_acc_01", title: "اجتماع مع أحمد بخصوص المحاسبة", status: "done" },
+        ],
+        tasksInProgress: [],
+        summary: "تم العمل يوم أمس على تصحيح نظام الدعوات وتسجيل الدخول، وعقد اجتماع مناقشة للنظام المحاسبي مع أحمد.",
+        blockers: "",
+        planTomorrow: "العمل على الخصم، الحضور والانصراف، وفصل نظام المحاسبة",
+        status: "submitted",
+        isSkipped: false,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      });
+
+      // 3. Today's Report (2026-09-30)
+      await addDoc(reportsRef, {
+        companyId,
+        employeeId: user.id,
+        employeeName: user.name || "سالم",
+        userPhotoUrl: user.avatar || null,
+        date: todayStr,
+        attendanceId: attDoc.id,
+        checkInTime: "06:27",
+        checkOutTime: "12:00",
+        totalHours: 5.55,
+        tasksCompleted: [
+          { id: "t_disc_01", title: "العمل على موضوع الخصم", status: "done" },
+          { id: "t_att_02", title: "تطوير وتحسين نظام الحضور والانصراف", status: "done" },
+          { id: "t_sep_01", title: "فصل النظام المحاسبي ليصبح شبيهاً بنظام دفترة", status: "done" },
+        ],
+        tasksInProgress: [],
+        summary: "تم تسجيل الحضور من 6:27 إلى 12:00. والعمل اليوم على موضوع الخصم، وتحديث نظام الحضور، وفصل النظام المحاسبي ليصبح شبيه بدفترة.",
+        blockers: "",
+        planTomorrow: "اختبار وتطبيق ميزات الخصم والمحاسبة",
+        status: "submitted",
+        isSkipped: false,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      });
+
+      return {
+        data: undefined,
+        message: "تم حفظ وتقييد سجلات وتقارير سالم بنجاح (أمس واليوم)",
+      };
+    })());
+  },
 };
+
