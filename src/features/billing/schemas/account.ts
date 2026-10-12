@@ -71,10 +71,21 @@ export type Account = z.infer<typeof accountSchema>;
 export type CreateAccountDTO = Omit<Account, "id" | "createdAt" | "updatedAt">;
 export type UpdateAccountDTO = Partial<CreateAccountDTO>;
 
-/**
- * Default Chart of Accounts template
- * Based on standard accounting practices
- */
+type DefaultAccountInput = Pick<CreateAccountDTO, "code" | "name" | "type" | "subType"> &
+  Partial<Omit<CreateAccountDTO, "code" | "name" | "type" | "subType" | "isActive">>;
+
+const defaultAccount = (account: DefaultAccountInput): Omit<CreateAccountDTO, "isActive"> => ({
+  currency: "SAR",
+  currentBalance: 0,
+  isSystemAccount: false,
+  reconcile: false,
+  allowManualEntries: true,
+  deprecated: false,
+  ...account,
+});
+
+/** Standard SME chart of accounts. Existing automation relies on the legacy
+ * 1000/1200/2000/2100/4000/5000 codes, so those codes remain stable. */
 export const DEFAULT_CHART_OF_ACCOUNTS: Omit<CreateAccountDTO, "isActive">[] = [
   // ASSETS (1000-1999)
   {
@@ -161,6 +172,19 @@ export const DEFAULT_CHART_OF_ACCOUNTS: Omit<CreateAccountDTO, "isActive">[] = [
     allowManualEntries: true,
     deprecated: false,
   },
+  defaultAccount({ code: "1010", name: "Petty Cash", type: "asset", subType: "cash", reconcile: true }),
+  defaultAccount({ code: "1110", name: "Current Bank Account", type: "asset", subType: "bank", reconcile: true }),
+  defaultAccount({ code: "1210", name: "Allowance for Doubtful Accounts", type: "asset", subType: "accounts_receivable" }),
+  defaultAccount({ code: "1310", name: "Inventory in Transit", type: "asset", subType: "inventory" }),
+  defaultAccount({ code: "1410", name: "Employee Advances", type: "asset", subType: "other_current_asset" }),
+  defaultAccount({ code: "1420", name: "Supplier Advances", type: "asset", subType: "other_current_asset" }),
+  defaultAccount({ code: "1510", name: "Furniture and Equipment", type: "asset", subType: "fixed_asset" }),
+  defaultAccount({ code: "1520", name: "Computers and Technology", type: "asset", subType: "fixed_asset" }),
+  defaultAccount({ code: "1530", name: "Vehicles", type: "asset", subType: "fixed_asset" }),
+  defaultAccount({ code: "1610", name: "Accumulated Depreciation - Furniture", type: "asset", subType: "fixed_asset" }),
+  defaultAccount({ code: "1620", name: "Accumulated Depreciation - Computers", type: "asset", subType: "fixed_asset" }),
+  defaultAccount({ code: "1630", name: "Accumulated Depreciation - Vehicles", type: "asset", subType: "fixed_asset" }),
+  defaultAccount({ code: "1700", name: "Input VAT Receivable", type: "asset", subType: "current_asset", isSystemAccount: true }),
   
   // LIABILITIES (2000-2999)
   {
@@ -235,6 +259,12 @@ export const DEFAULT_CHART_OF_ACCOUNTS: Omit<CreateAccountDTO, "isActive">[] = [
     allowManualEntries: true,
     deprecated: false,
   },
+  defaultAccount({ code: "2010", name: "Other Trade Payables", type: "liability", subType: "accounts_payable" }),
+  defaultAccount({ code: "2110", name: "Output VAT Payable", type: "liability", subType: "tax_payable", isSystemAccount: true }),
+  defaultAccount({ code: "2120", name: "Withholding Tax Payable", type: "liability", subType: "tax_payable" }),
+  defaultAccount({ code: "2310", name: "Salaries Payable", type: "liability", subType: "accrued_expenses" }),
+  defaultAccount({ code: "2320", name: "Social Insurance Payable", type: "liability", subType: "accrued_expenses" }),
+  defaultAccount({ code: "2410", name: "Bank Loans", type: "liability", subType: "long_term_liability" }),
 
   // EQUITY (3000-3999)
   {
@@ -261,6 +291,9 @@ export const DEFAULT_CHART_OF_ACCOUNTS: Omit<CreateAccountDTO, "isActive">[] = [
     allowManualEntries: true,
     deprecated: false,
   },
+  defaultAccount({ code: "3010", name: "Additional Paid-in Capital", type: "equity", subType: "share_capital" }),
+  defaultAccount({ code: "3200", name: "Current Year Earnings", type: "equity", subType: "retained_earnings", isSystemAccount: true }),
+  defaultAccount({ code: "3300", name: "Owner Drawings", type: "equity", subType: "equity" }),
   
   // INCOME (4000-4999)
   {
@@ -299,6 +332,10 @@ export const DEFAULT_CHART_OF_ACCOUNTS: Omit<CreateAccountDTO, "isActive">[] = [
     allowManualEntries: true,
     deprecated: false,
   },
+  defaultAccount({ code: "4010", name: "Product Sales", type: "income", subType: "sales_revenue" }),
+  defaultAccount({ code: "4020", name: "Sales Returns and Allowances", type: "income", subType: "operating_income" }),
+  defaultAccount({ code: "4030", name: "Sales Discounts", type: "income", subType: "operating_income" }),
+  defaultAccount({ code: "4210", name: "Commission Income", type: "income", subType: "other_income" }),
   
   // EXPENSES (5000-5999)
   {
@@ -385,4 +422,18 @@ export const DEFAULT_CHART_OF_ACCOUNTS: Omit<CreateAccountDTO, "isActive">[] = [
     allowManualEntries: true,
     deprecated: false,
   },
+  defaultAccount({ code: "5010", name: "COGS - Materials", type: "expense", subType: "cost_of_goods_sold" }),
+  defaultAccount({ code: "5020", name: "COGS - Services", type: "expense", subType: "cost_of_goods_sold" }),
+  defaultAccount({ code: "5030", name: "Purchase Discounts Received", type: "expense", subType: "cost_of_goods_sold" }),
+  defaultAccount({ code: "5110", name: "Employee Benefits", type: "expense", subType: "salary_expense" }),
+  defaultAccount({ code: "5410", name: "Maintenance Expense", type: "expense", subType: "operating_expense" }),
+  defaultAccount({ code: "5420", name: "Marketing and Advertising", type: "expense", subType: "operating_expense" }),
+  defaultAccount({ code: "5430", name: "Depreciation Expense", type: "expense", subType: "operating_expense" }),
+  defaultAccount({ code: "5440", name: "Bank Fees and Charges", type: "expense", subType: "operating_expense" }),
+  defaultAccount({ code: "5450", name: "Travel and Transportation", type: "expense", subType: "operating_expense" }),
+  defaultAccount({ code: "5460", name: "Office Supplies", type: "expense", subType: "operating_expense" }),
+  defaultAccount({ code: "5470", name: "Professional Fees", type: "expense", subType: "operating_expense" }),
+  defaultAccount({ code: "5480", name: "Insurance Expense", type: "expense", subType: "operating_expense" }),
+  defaultAccount({ code: "5490", name: "Telecommunication Expense", type: "expense", subType: "operating_expense" }),
+  defaultAccount({ code: "5510", name: "Bad Debt Expense", type: "expense", subType: "other_expense" }),
 ];

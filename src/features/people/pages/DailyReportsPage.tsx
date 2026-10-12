@@ -53,6 +53,7 @@ export default function DailyReportsPage() {
 
   const [reports, setReports] = useState<DailyReport[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isBackfilling, setIsBackfilling] = useState(false);
 
   // Filters
   const [searchQuery, setSearchQuery] = useState("");
@@ -186,6 +187,7 @@ export default function DailyReportsPage() {
         </div>
 
         <div className="flex w-full items-center gap-3 md:w-auto">
+          <Button color="success" isLoading={isBackfilling} className="w-full rounded-xl font-bold text-xs md:w-auto" onPress={async () => { if (!companyId || !user) return; setIsBackfilling(true); try { await DailyReportsService.addSalimQuickReports(companyId, { id:user.id, name:user.name, avatar:user.avatar }); toast.success("تم تسجيل حضور وتقارير المحاسبة"); await fetchReports(); } catch(error) { console.error(error); toast.error("تعذر تسجيل السجلات"); } finally { setIsBackfilling(false); } }}>تسجيل أسبوع المحاسبة</Button>
           <Button
             variant="flat"
             color="primary"

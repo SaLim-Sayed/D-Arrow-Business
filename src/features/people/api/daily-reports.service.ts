@@ -307,88 +307,67 @@ export const DailyReportsService = {
     })());
   },
 
-  async addSalimQuickReports(
-    companyId: string,
-    user: { id: string; name: string; avatar?: string }
-  ): Promise<ApiResponse<void>> {
-    return withLogging(SERVICE_NAME, "addSalimQuickReports", (async () => {
-      const yesterdayStr = "2026-09-29";
-      const todayStr = "2026-09-30";
-
+  async addSalimQuickReports(companyId: string, user: { id: string; name: string; avatar?: string }): Promise<ApiResponse<void>> {
+    return withLogging(SERVICE_NAME, "addAccountingWeekReports", (async () => {
+      const days = [
+        ["2026-10-03", "18:10", "22:35", 4.42, "تحليل نظام المحاسبة وإعداد خطة الفصل"],
+        ["2026-10-04", "18:25", "22:50", 4.42, "توسيع شجرة الحسابات والترجمات"],
+        ["2026-10-05", "18:05", "22:40", 4.58, "إنشاء مشروع المحاسبة وقاعدة البيانات المستقلة"],
+        ["2026-10-06", "18:30", "23:10", 4.67, "فصل تسجيل الدخول والمستخدمين والصلاحيات"],
+        ["2026-10-07", "18:15", "22:45", 4.5, "تخصيص واجهة الدخول والقائمة والشريط العلوي"],
+        ["2026-10-08", "18:20", "23:05", 4.75, "اختبار النظام المستقل والتحقق من البناء"],
+      ] as const;
       const reportsRef = collection(db, "companies", companyId, "daily_reports");
       const attendanceRef = collection(db, "companies", companyId, "attendance");
 
-      // 1. Attendance today (06:27 to 12:00)
-      const checkInDate = new Date(`${todayStr}T06:27:00.000Z`);
-      const checkOutDate = new Date(`${todayStr}T12:00:00.000Z`);
+      for (const [date, start, end, totalHours, title] of days) {
+        const attendancePayload = {
+          employeeId: user.id,
+          date,
+          checkIn: new Date(`${date}T${start}:00+03:00`),
+          checkOut: new Date(`${date}T${end}:00+03:00`),
+          totalHours,
+          status: "present",
+          notes: "عمل مسائي على تطوير وفصل نظام المحاسبة",
+          hasDailyReport: true,
+          updatedAt: serverTimestamp(),
+        };
+        const oldAttendance = await getDocs(query(attendanceRef, where("employeeId", "==", user.id), where("date", "==", date)));
+        let attendanceId = oldAttendance.docs[0]?.id;
+        if (attendanceId) {
+          await updateDoc(doc(db, "companies", companyId, "attendance", attendanceId), attendancePayload);
+        } else {
+          const created = await addDoc(attendanceRef, { ...attendancePayload, createdAt: serverTimestamp() });
+          attendanceId = created.id;
+        }
 
-      const attDoc = await addDoc(attendanceRef, {
-        employeeId: user.id,
-        date: todayStr,
-        checkIn: checkInDate,
-        checkOut: checkOutDate,
-        totalHours: 5.55,
-        status: "present",
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp(),
-      });
-
-      // 2. Yesterday's Report (2026-09-29)
-      await addDoc(reportsRef, {
-        companyId,
-        employeeId: user.id,
-        employeeName: user.name || "سالم",
-        userPhotoUrl: user.avatar || null,
-        date: yesterdayStr,
-        attendanceId: "att_prev_day",
-        checkInTime: "08:00",
-        checkOutTime: "17:00",
-        totalHours: 9,
-        tasksCompleted: [
-          { id: "t_inv_01", title: "تصحيح نظام الدعوات وتسجيل الدخول", status: "done" },
-          { id: "t_acc_01", title: "اجتماع مع أحمد بخصوص المحاسبة", status: "done" },
-        ],
-        tasksInProgress: [],
-        summary: "تم العمل يوم أمس على تصحيح نظام الدعوات وتسجيل الدخول، وعقد اجتماع مناقشة للنظام المحاسبي مع أحمد.",
-        blockers: "",
-        planTomorrow: "العمل على الخصم، الحضور والانصراف، وفصل نظام المحاسبة",
-        status: "submitted",
-        isSkipped: false,
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp(),
-      });
-
-      // 3. Today's Report (2026-09-30)
-      await addDoc(reportsRef, {
-        companyId,
-        employeeId: user.id,
-        employeeName: user.name || "سالم",
-        userPhotoUrl: user.avatar || null,
-        date: todayStr,
-        attendanceId: attDoc.id,
-        checkInTime: "06:27",
-        checkOutTime: "12:00",
-        totalHours: 5.55,
-        tasksCompleted: [
-          { id: "t_disc_01", title: "العمل على موضوع الخصم", status: "done" },
-          { id: "t_att_02", title: "تطوير وتحسين نظام الحضور والانصراف", status: "done" },
-          { id: "t_sep_01", title: "فصل النظام المحاسبي ليصبح شبيهاً بنظام دفترة", status: "done" },
-        ],
-        tasksInProgress: [],
-        summary: "تم تسجيل الحضور من 6:27 إلى 12:00. والعمل اليوم على موضوع الخصم، وتحديث نظام الحضور، وفصل النظام المحاسبي ليصبح شبيه بدفترة.",
-        blockers: "",
-        planTomorrow: "اختبار وتطبيق ميزات الخصم والمحاسبة",
-        status: "submitted",
-        isSkipped: false,
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp(),
-      });
-
-      return {
-        data: undefined,
-        message: "تم حفظ وتقييد سجلات وتقارير سالم بنجاح (أمس واليوم)",
-      };
+        const reportPayload = {
+          companyId,
+          employeeId: user.id,
+          employeeName: user.name || "سالم السيد",
+          userPhotoUrl: user.avatar || null,
+          date,
+          attendanceId,
+          checkInTime: start,
+          checkOutTime: end,
+          totalHours,
+          tasksCompleted: [{ id: `accounting-${date}`, title, status: "done" }],
+          tasksInProgress: [],
+          summary: title,
+          blockers: "",
+          planTomorrow: "استكمال تطوير واختبار نظام المحاسبة المستقل",
+          status: "submitted",
+          isSkipped: false,
+          updatedAt: serverTimestamp(),
+        };
+        const oldReport = await getDocs(query(reportsRef, where("employeeId", "==", user.id), where("date", "==", date)));
+        if (oldReport.empty) {
+          await addDoc(reportsRef, { ...reportPayload, createdAt: serverTimestamp() });
+        } else {
+          await updateDoc(doc(db, "companies", companyId, "daily_reports", oldReport.docs[0].id), reportPayload);
+        }
+      }
+      return { data: undefined, message: "تم تسجيل حضور وتقارير المحاسبة من 3 إلى 8 أكتوبر" };
     })());
   },
 };
-

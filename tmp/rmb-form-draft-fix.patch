@@ -1,0 +1,178 @@
+--- a/controllers/mobile/frmFetchBillDetailsController/frmFetchBillDetailsController.js
++++ b/controllers/mobile/frmFetchBillDetailsController/frmFetchBillDetailsController.js
+@@ -1,6 +1,7 @@
+ define({ 
+   billerData: {},
+   billerRowData: {},
++  draft: null,
+   billers: [],
+   billType: "",
+   billMode: "",
+@@ -13,10 +14,24 @@
+       if(data){
+         this.billMode = data.billMode;
+         if(data.billerData){
++          const nextBillerId = data.billerRowData && data.billerRowData.billerId;
++          const previousDraft = this.draft;
+           this.billerData = data.billerData;
+           this.billerRowData = data.billerRowData;
+           this.billers = data.billers;
+           this.navigateFrom = data.navigateFrom;
++          if(data.draft){
++            this.draft = data.draft;
++          }else if(previousDraft && previousDraft.billerId === nextBillerId){
++            this.draft = previousDraft;
++          }else{
++            this.draft = {
++              billerId: nextBillerId,
++              shortName: (this.billerRowData && this.billerRowData.billDescription) || "",
++              billAccountNumber: (this.billerRowData && this.billerRowData.billAccountNumber) || "",
++              billType: (this.billerRowData && this.billerRowData.billType) || ""
++            };
++          }
+           this.setUI();
+         }
+       }
+@@ -47,7 +62,6 @@
+       }
+       this.view.flxBillerName.shadowType = constants.BACKGROUND_SHADOW;
+       this.view.flxBillerName.shadowDepth = 3;
+-      this.view.lblCounter.text="0/35";
+       this.btnNextEnabled(false);
+       this.view.tooltipnew.dismissToolTip();
+       this.view.flxShortNameContainer.isVisible = (this.billMode === "1") ? true : false;
+@@ -65,6 +79,10 @@
+       dynamicPlaceHolder = (!commonHelperObject.isNullEmptyUndefiend(dynamicPlaceHolder)) ? dynamicPlaceHolder : "";
+       let txtBoxBillAccountNumObj = commonHelperObject.createTextBoxObject("", "", "", "", true, constants.TEXTBOX_KEY_BOARD_STYLE_DEFAULT, false,maxTextLengthAccNum, constants.TEXTBOX_INPUT_MODE_NUMERIC, dynamicPlaceHolder,"","",this.validateAccountNumber,"","");
+       this.view.txtBoxBillAccNum.setTextBoxData(txtBoxBillAccountNumObj);
++      this.draft = this.draft || {};
++      this.view.txtBoxShortName.setText(this.draft.shortName || "");
++      this.view.txtBoxBillAccNum.setText(this.draft.billAccountNumber || "");
++      this.view.lblCounter.text = (this.draft.shortName || "").length + "/35";
+       this.view.lblTitle.text = (!commonHelperObject.isNullEmptyUndefiend(dynamicPlaceHolder)) ? dynamicPlaceHolder : kony.i18n.getLocalizedString("com.bab.bills.billAccNum");
+       this.view.lblTitle.skin = "sknLblTxtBoxCompTitleStandard";
+       this.view.lblInfoIcon.skin = "sknLblInfoIcon";
+@@ -79,6 +97,11 @@
+       this.view.lblInfoIcon.onTouchStart = this.infoIconClicked;
+       this.billType = "";
+       this.showBillType();
++      if(this.draft.billType){
++        this.selectBillType({id: this.draft.billType === BABConstants.sadad.prePaid ? "flxPrePaid" : "flxPostPaid"});
++      }else{
++        this.validateAllFields();
++      }
+       this.view.flxTooltipContainer.isVisible = false;
+       this.initialPostioningToolTip();
+     }catch(e){
+@@ -191,6 +214,7 @@
+       var billAccNum = this.view.txtBoxBillAccNum.getText();
+       var billName = this.view.lblBillName.text;
+       var billNo = this.view.lblBillNo.text;
++      this.saveFormDraft();
+ 
+       this.billerRowData.billerName = this.view.lblBillName.text;
+       this.billerRowData.billDescription = shortName;
+@@ -226,6 +250,10 @@
+         billerRowData: this.billerRowData,
+         billAmount: "",
+         dueDate: "",
++        billerData: this.billerData,
++        billMode: this.billMode,
++        billers: this.billers,
++        draft: this.draft,
+         navigateFrom: this.navigateFrom
+       };
+       const featureManagement = require("FeatureManagement");
+@@ -242,6 +270,7 @@
+   fetchBillDetails(){
+     try{
+       kony.print("Inside fetchBillDetails");
++      this.saveFormDraft();
+       var billAccNum=this.view.txtBoxBillAccNum.getText();
+       var billNo= this.view.lblBillNo.text;
+       
+@@ -380,6 +409,7 @@
+   validateAllFields: function(){
+     try{
+       kony.print("In validateAllFields");
++      this.saveFormDraft();
+       let shortName = this.view.txtBoxShortName.getText().trim();
+       let billAccNum = this.view.txtBoxBillAccNum.getText();
+ 
+@@ -403,6 +433,21 @@
+     }
+   },
+  
++  saveFormDraft: function(){
++    try{
++      if(!this.view || !this.view.txtBoxShortName || !this.view.txtBoxBillAccNum){return;}
++      this.draft = {
++        billerId: (this.billerRowData && this.billerRowData.billerId) || (this.draft && this.draft.billerId) || "",
++        shortName: this.view.txtBoxShortName.getText() || "",
++        billAccountNumber: this.view.txtBoxBillAccNum.getText() || "",
++        billType: this.billType || ""
++      };
++    }catch(ex){
++      kony.print("saveFormDraft exception ::"+JSON.stringify(ex));
++      commonHelperObject.logCustomError("frmFetchBillDetailsController.js", "saveFormDraft", ex);
++    }
++  },
++
+   validateAccountNumber: function(){
+     try{
+       kony.print("In validateAccountNumber");
+--- a/controllers/mobile/frmSadadAddBillReviewController/frmSadadAddBillReviewController.js
++++ b/controllers/mobile/frmSadadAddBillReviewController/frmSadadAddBillReviewController.js
+@@ -2,7 +2,11 @@
+   return {
+     navigateFrom: "",
+     billerRowData: {},
++    billerData: {},
++    billers: [],
++    billMode: "",
+     flowType: "",
++    draft: null,
+     screenConstants: {
+       POSTPAID: "POSTPAID",
+       PREPAID: "PREPAID"
+@@ -15,6 +19,10 @@
+           this.billerRowData = {};
+           this.flowType = navData.flowType;
+           this.navigateFrom = navData.navigateFrom;
++          this.billerData = navData.billerData || {};
++          this.billers = navData.billers || [];
++          this.billMode = navData.billMode || "";
++          this.draft = navData.draft || null;
+           if(this.flowType === BABConstants.sadadAggregator.flowType){
+             this.billerRowData = navData.billerData;
+             this.setSadadAggregatorUI();
+@@ -305,11 +313,27 @@
+     onBackBtnClicked: function(){
+       try{
+         kony.print("In frmSadadAddBillReview : onBackBtnClicked");
++        const draft = this.draft || {
++          shortName: this.billerRowData.billDescription || "",
++          billAccountNumber: this.billerRowData.billAccountNumber || "",
++          billType: this.billerRowData.billType || ""
++        };
+         if(this.flowType === BABConstants.sadadAggregator.flowType){
+-          navigationManager("frmSadadAggreAddNewBill", null);
++          navigationManager("frmSadadAggreAddNewBill", {
++            billMode: this.billerRowData.billMode,
++            billerData: this.billerRowData,
++            draft: draft
++          });
+         }
+         else{
+-          navigationManager("frmFetchBillDetails", null);
++          navigationManager("frmFetchBillDetails", {
++            billMode: this.billMode || this.billerRowData.billMode,
++            billerData: this.billerData,
++            billerRowData: this.billerRowData,
++            billers: this.billers,
++            navigateFrom: this.navigateFrom,
++            draft: draft
++          });
+         }
+       }catch(ex){
+         kony.print("In onBackBtnClicked : Exception -> "+JSON.stringify(ex));
