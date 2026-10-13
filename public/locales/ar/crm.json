@@ -205,13 +205,57 @@
       "email": "البريد",
       "phone": "الهاتف",
       "account": "الحساب",
-      "assigned": "المسؤول",
+      "classification": "التصنيف",
+      "satisfaction": "الرضا",
+      "interests": "الاهتمامات",
+      "assigned": "المسؤول المتابع",
       "created": "تاريخ الإنشاء",
       "actions": "إجراءات"
+    },
+    "classification": {
+      "label": "التصنيف",
+      "all": "جميع التصنيفات",
+      "actual_client": "عميل فعلي",
+      "potential_lead": "عميل محتمل",
+      "callback": "معاودة الاتصال"
+    },
+    "satisfaction": {
+      "label": "مستوى الرضا",
+      "all": "جميع مستويات الرضا",
+      "satisfied": "راضي",
+      "neutral": "محايد",
+      "unsatisfied": "غير راضي",
+      "notes": "ملاحظات الرضا / الشكاوى"
+    },
+    "interests": {
+      "label": "اهتمامات العميل",
+      "placeholder": "حدد أو اكتب اهتمامات العميل...",
+      "website": "موقع إلكتروني",
+      "store": "متجر إلكتروني",
+      "marketingOffer": "عروض وتسويق",
+      "socialMedia": "إدارة سوشيال ميديا",
+      "branding": "هوية بصرية",
+      "photography": "تصوير وإنتاج مرئي",
+      "seo": "سيو ومحركات بحث"
+    },
+    "directory": {
+      "tab": "دليل الأرقام الموحد",
+      "tableTab": "جدول جهات الاتصال",
+      "title": "دليل الأرقام وجهات الاتصال الموحد",
+      "subtitle": "كافة أرقام الهواتف والتواصل في مكان واحد للاتصال الفوري والمتابعة السريعة",
+      "callNow": "اتصال هاتف",
+      "whatsapp": "واتساب",
+      "copy": "نسخ الرقم",
+      "copied": "تم نسخ الرقم بنجاح",
+      "secondaryPhone": "هاتف بديل",
+      "whatsappPhone": "واتساب مخصص",
+      "noPhone": "لا يوجد رقم مسجل"
     },
     "filters": {
       "assignedTo": "مسند إلى",
       "unassigned": "غير مسند",
+      "classification": "التصنيف",
+      "satisfaction": "الرضا",
       "clear": "مسح التصفية"
     },
     "form": {
@@ -220,22 +264,28 @@
       "firstName": "الاسم الأول",
       "lastName": "اسم العائلة",
       "email": "البريد",
-      "phone": "الهاتف",
+      "phone": "الهاتف الأساسي",
+      "secondaryPhone": "هاتف إضافي (بديل)",
+      "whatsappPhone": "رقم الواتساب",
       "jobTitle": "المسمى الوظيفي",
       "department": "القسم",
-      "accountName": "الحساب",
+      "accountName": "الحساب / الشركة",
+      "classification": "تصنيف جهة الاتصال",
+      "satisfaction": "مستوى رضا العميل",
+      "satisfactionNotes": "ملاحظات حول تجربة أو رضا العميل",
+      "interests": "اهتمامات العميل (الموقع، عروض، متجر...)",
       "commercialRegister": "السجل التجاري",
       "commercialRegisterPlaceholder": "1010123456",
       "commercialRegisterHint": "رقم السجل التجاري الرسمي لربطه بالحسابات لاحقاً (اختياري)",
-      "assignedTo": "المستخدم المسند",
+      "assignedTo": "الموظف المتابع",
       "cancel": "إلغاء",
       "create": "إنشاء",
       "save": "حفظ"
     },
     "toast": {
-      "created": "تم إنشاء جهة الاتصال",
+      "created": "تم إنشاء جهة الاتصال بنجاح",
       "createFailed": "فشل الإنشاء",
-      "updated": "تم التحديث",
+      "updated": "تم تحديث جهة الاتصال بنجاح",
       "updateFailed": "فشل التحديث"
     }
   },
@@ -592,6 +642,20 @@
     "deleteSuccess": "تم حذف العقد",
     "deleteError": "تعذر حذف العقد",
     "exportSuccess": "تم تحميل ملف PDF للعقد",
-    "exportError": "تعذر إنشاء ملف PDF للعقد"
+    "exportError": "تعذر إنشاء ملف PDF للعقد",
+    "templates": "أنواع ونماذج العقود",
+    "templatesHint": "اختر نموذج العقد المطلوب لتحميل بنود الخدمات المناسبة والبنود القانونية المتخصصة",
+    "servicesTitle": "بنود الخدمات المطلوبة وتوجيهها لمهام الأقسام",
+    "servicesHint": "حدد الخدمات التي يحتاجها العميل؛ بمجرد التحديد والترحيل تتحول كل خدمة إلى مهمة رئيسية للقسم المختص وتتفرع لمهام فرعية متسلسلة للموظفين",
+    "convertToTasks": "ترحيل الخدمات المحددة إلى مهام الأقسام",
+    "converting": "جاري ترحيل المهام للأقسام...",
+    "convertedBanner": "تم ترحيل بنود الخدمات بنجاح إلى مهام الأقسام التنفيذية",
+    "convertedTasksCount": "تم إنشاء {{count}} مهمة رئيسية وفرعية متسلسلة في نظام المهام",
+    "viewTasks": "الانتقال لجدول المهام",
+    "addService": "إضافة بند خدمة مخصص",
+    "department": "القسم المختص",
+    "subtasksCount": "مهام فرعية متسلسلة",
+    "estimatedHours": "ساعة تقديرية",
+    "durationDays": "يوم عمل"
   }
 }

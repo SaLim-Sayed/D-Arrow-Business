@@ -2,7 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import type { Task } from "../types/task.types";
 import { Avatar, Card, CardBody, Chip } from "@heroui/react";
-import { MessageSquare, MoreHorizontal, Paperclip, CalendarClock } from "lucide-react";
+import { MessageSquare, MoreHorizontal, Paperclip, CalendarClock, Clock, FileText, AlertTriangle } from "lucide-react";
 import { cn, formatDate } from "@/lib/utils";
 import { initialsFromName, localizedName } from "@/lib/localized-name";
 import { avatarSrc } from "@/lib/image-utils";
@@ -165,9 +165,49 @@ export function TaskCard({
             </h4>
           </div>
 
-          {/* Priority & Tags */}
+          {/* Department, Sequence Order, Priority & Tags */}
           {!compact && (
-            <div className="flex flex-wrap gap-1.5 pt-0.5">
+            <div className="flex flex-wrap gap-1.5 pt-0.5 items-center">
+              {task.sequenceOrder !== undefined && task.sequenceOrder !== null && (
+                <Chip
+                  size="sm"
+                  variant="flat"
+                  color="primary"
+                  className="h-5 text-[9px] font-extrabold px-1.5 rounded-md"
+                >
+                  #{task.sequenceOrder}
+                </Chip>
+              )}
+              {task.department && (
+                <Chip
+                  size="sm"
+                  variant="flat"
+                  className="h-5 text-[9px] font-bold bg-primary/10 text-primary border border-primary/20 rounded-md"
+                >
+                  {task.department}
+                </Chip>
+              )}
+              {task.estimatedHours && (
+                <Chip
+                  size="sm"
+                  variant="bordered"
+                  className="h-5 text-[9px] font-semibold text-default-500 rounded-md"
+                  startContent={<Clock className="h-2.5 w-2.5" />}
+                >
+                  {task.estimatedHours} س
+                </Chip>
+              )}
+              {task.contractId && (
+                <Chip
+                  size="sm"
+                  variant="flat"
+                  color="secondary"
+                  className="h-5 text-[9px] font-bold rounded-md"
+                  startContent={<FileText className="h-2.5 w-2.5" />}
+                >
+                  عقد
+                </Chip>
+              )}
               <Chip
                 size="sm"
                 variant="flat"
@@ -194,6 +234,13 @@ export function TaskCard({
                   {tag}
                 </Chip>
               ))}
+            </div>
+          )}
+
+          {/* Delay Alert if overdue with delay reason */}
+          {!compact && isOverdue && task.delayReason && (
+            <div className="rounded-lg bg-danger/10 border border-danger/20 px-2 py-1 text-[10px] text-danger-700 dark:text-danger-400 font-medium">
+              <span className="font-bold">سبب التأخير:</span> {task.delayReason}
             </div>
           )}
 

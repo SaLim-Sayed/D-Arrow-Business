@@ -55,10 +55,12 @@ export function TasksListView() {
   const updateTask = useUpdateTask();
   const isLoading = isTasksLoading || !allUsers;
 
-  const tasks = (data?.data ?? []).map((task: Task) => ({
-    ...task,
-    assignee: allUsers?.find((u) => u.id === task.assigneeId) || null,
-  }));
+  const tasks = (data?.data ?? [])
+    .filter((task: Task) => (!filters.department ? true : task.department === filters.department))
+    .map((task: Task) => ({
+      ...task,
+      assignee: allUsers?.find((u) => u.id === task.assigneeId) || null,
+    }));
   const totalPages = data?.totalPages ?? 1;
 
   if (isLoading) {
@@ -113,19 +115,46 @@ export function TasksListView() {
             return (
               <TableRow key={task.id} className="hover:bg-default-100/50 transition-colors">
                 <TableCell>
-                  <div className="flex flex-col gap-0.5">
-                    {task.parentId && (
-                      <span
-                        className="text-[10px] font-bold text-primary cursor-pointer hover:underline"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          navigate(`/tasks/${task.parentId}`);
-                        }}
-                      >
-                        ↑ TSK-{task.parentId.slice(-4).toUpperCase()}
+                  <div className="flex flex-col gap-1">
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      {task.parentId && (
+                        <span
+                          className="text-[10px] font-bold text-primary cursor-pointer hover:underline"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            navigate(`/tasks/${task.parentId}`);
+                          }}
+                        >
+                          ↑ TSK-{task.parentId.slice(-4).toUpperCase()}
+                        </span>
+                      )}
+                      {task.sequenceOrder !== undefined && task.sequenceOrder !== null && (
+                        <span className="text-[10px] font-extrabold bg-primary/10 text-primary px-1.5 py-0.5 rounded">
+                          #{task.sequenceOrder}
+                        </span>
+                      )}
+                      {task.department && (
+                        <span className="text-[10px] font-semibold bg-default-100 text-default-600 px-1.5 py-0.5 rounded">
+                          {task.department}
+                        </span>
+                      )}
+                      {task.estimatedHours && (
+                        <span className="text-[10px] text-default-400">
+                          ({task.estimatedHours} س)
+                        </span>
+                      )}
+                      {task.contractId && (
+                        <span className="text-[10px] font-bold bg-secondary/10 text-secondary px-1.5 py-0.5 rounded">
+                          عقد
+                        </span>
+                      )}
+                    </div>
+                    <span className="font-bold text-foreground text-sm">{task.title}</span>
+                    {task.delayReason && (
+                      <span className="text-[10px] text-danger-600 font-medium">
+                        سبب التأخير: {task.delayReason}
                       </span>
                     )}
-                    <span className="font-bold text-foreground text-sm">{task.title}</span>
                   </div>
                 </TableCell>
                 <TableCell onClick={(e) => e.stopPropagation()}>

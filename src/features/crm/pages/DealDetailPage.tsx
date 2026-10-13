@@ -1,6 +1,5 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
-import { useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Button, Card, CardBody, Chip, Input } from "@heroui/react";
 import {
@@ -12,6 +11,7 @@ import {
   StickyNote,
   Paperclip,
   User,
+  FileSignature,
 } from "lucide-react";
 import { LoadingSpinner } from "@/components/shared/loading-spinner";
 import { FieldBox } from "@/components/shared/field-box";
@@ -48,6 +48,7 @@ import type { ActivityType } from "../types/activities.types";
 export function DealDetailPage() {
   const { dealId = "" } = useParams();
   const { t } = useTranslation("crm");
+  const navigate = useNavigate();
   const { canManageDeals } = useCrmPermissions();
   const { data: dealRes, isLoading } = useDealQuery(dealId);
   const contactId = dealRes?.data.contactId ?? "";
@@ -91,17 +92,30 @@ export function DealDetailPage() {
               </Chip>
             }
             actions={
-              canManageDeals ? (
-                <Button
-                  color="primary"
-                  variant="flat"
-                  startContent={<Pencil className="h-4 w-4" />}
-                  className="rounded-full font-bold"
-                  onPress={() => setEditOpen(true)}
-                >
-                  {t("dealDetail.edit")}
-                </Button>
-              ) : undefined
+              <div className="flex items-center gap-2">
+                {deal.stage === "won" && (
+                  <Button
+                    color="success"
+                    variant="solid"
+                    startContent={<FileSignature className="h-4 w-4" />}
+                    className="rounded-full font-bold text-white shadow-sm shadow-success/30"
+                    onPress={() => navigate("/crm/contracts")}
+                  >
+                    صياغة وتوقيع العقد
+                  </Button>
+                )}
+                {canManageDeals && (
+                  <Button
+                    color="primary"
+                    variant="flat"
+                    startContent={<Pencil className="h-4 w-4" />}
+                    className="rounded-full font-bold"
+                    onPress={() => setEditOpen(true)}
+                  >
+                    {t("dealDetail.edit")}
+                  </Button>
+                )}
+              </div>
             }
             stageBar={
               canManageDeals ? (

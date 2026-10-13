@@ -168,19 +168,268 @@ export function defaultContractClauses(): ContractClause[] {
 export const DEFAULT_CONTRACT_PREAMBLE =
   "حيث أن الطرف الأول شركة تجارية متخصصة في التسويق والدعاية والإعلان والتصميم والبرمجة وحيث أن الطرف الثاني يرغب في الاستفادة من خدمات الطرف الأول فقد التقت إرادة الطرفان على أن يتعاقد الطرفان وذلك حسب البنود التالية:";
 
+export interface ContractTemplateDefinition {
+  id: string;
+  name: string;
+  title: string;
+  department: string;
+  defaultServices: ContractServiceItem[];
+  fields: ContractDynamicField[];
+}
+
+export const CONTRACT_TEMPLATES: Record<string, ContractTemplateDefinition> = {
+  marketing: {
+    id: "marketing",
+    name: "عقد خدمات تسويقية وحملات إعلانية",
+    title: "عقد اتفاق خدمات تسويقية وإعلانية",
+    department: "التسويق الرقمي",
+    fields: defaultContractFields(),
+    defaultServices: [
+      {
+        id: uid("srv"),
+        name: "إعداد الخطة التسويقية وتحديد الجمهور المستهدف",
+        department: "التسويق الرقمي",
+        description: "تحليل المنافسين، دراسة الجمهور المستهدف، ووضع استراتيجية الحملات",
+        estimatedHours: 15,
+        durationDays: 7,
+        selected: true,
+        subtasks: [
+          { id: uid("st"), title: "تحليل السوق والمنافسين", sequenceOrder: 1, estimatedHours: 5 },
+          { id: uid("st"), title: "صياغة الرسائل التسويقية", sequenceOrder: 2, estimatedHours: 5 },
+          { id: uid("st"), title: "تحديد قنوات الإعلان والميزانيات", sequenceOrder: 3, estimatedHours: 5 },
+        ],
+      },
+      {
+        id: uid("srv"),
+        name: "إدارة وإطلاق الحملات الإعلانية الممولة",
+        department: "التسويق الرقمي",
+        description: "إدارة إعلانات سناب شات، إنستغرام، تيك توك، وجوجل",
+        estimatedHours: 30,
+        durationDays: 30,
+        selected: true,
+        subtasks: [
+          { id: uid("st"), title: "تجهيز الحسابات الإعلانية وتتبع التحويلات", sequenceOrder: 1, estimatedHours: 5 },
+          { id: uid("st"), title: "إطلاق الحملات وضبط الاستهداف", sequenceOrder: 2, estimatedHours: 10 },
+          { id: uid("st"), title: "تحسين الأداء اليومي وA/B Testing", sequenceOrder: 3, estimatedHours: 15 },
+        ],
+      },
+      {
+        id: uid("srv"),
+        name: "التقارير الدورية وتحليل العائد على الإنفاق (ROAS)",
+        department: "التسويق الرقمي",
+        description: "تقديم تقارير أسبوعية وشهرية بأداء الحملات والنتائج",
+        estimatedHours: 10,
+        durationDays: 30,
+        selected: true,
+      },
+    ],
+  },
+  ecommerce: {
+    id: "ecommerce",
+    name: "عقد إدارة ورفع صور متجر إلكتروني",
+    title: "عقد اتفاق خدمات إدارة ورفع صور المتجر",
+    department: "الإنتاج والتسويق",
+    fields: defaultContractFields(),
+    defaultServices: [
+      {
+        id: uid("srv"),
+        name: "رفع صور وتسمية المنتجات على المتجر",
+        department: "الإنتاج والتسويق",
+        description: "رفع صور المنتجات بعدد محدد مع كتابة المسميات بدقة",
+        estimatedHours: 25,
+        durationDays: 15,
+        selected: true,
+        subtasks: [
+          { id: uid("st"), title: "استلام الصور وتدقيق الجودة والمقاسات", sequenceOrder: 1, estimatedHours: 5 },
+          { id: uid("st"), title: "رفع المنتجات وتسميتها على لوحة التحكم", sequenceOrder: 2, estimatedHours: 15 },
+          { id: uid("st"), title: "مراجعة الروابط والأسعار وتأكيد الاعتماد", sequenceOrder: 3, estimatedHours: 5 },
+        ],
+      },
+      {
+        id: uid("srv"),
+        name: "ترتيب وتنسيق تصنيفات المتجر الإلكتروني",
+        department: "البرمجة والتطوير",
+        description: "تنظيم الأقسام والتصنيفات وتسهيل تجربة التصفح",
+        estimatedHours: 10,
+        durationDays: 5,
+        selected: true,
+      },
+    ],
+  },
+  web_development: {
+    id: "web_development",
+    name: "عقد تصميم وتطوير موقع / متجر إلكتروني",
+    title: "عقد اتفاق تصميم وتطوير متجر إلكتروني",
+    department: "البرمجة والتطوير",
+    fields: [
+      field("startDate", "تاريخ بدء التنفيذ", toContractDateIso()),
+      field("durationDays", "مدة المشروع (أيام)", "30"),
+      field("serviceSummary", "ملخص الخدمة", "تصميم وتطوير متجر إلكتروني متكامل"),
+      field("storeUrl", "النطاق المطلوب", "example.com"),
+      field("amountExclVat", "القيمة بدون ضريبة", "5000"),
+      field("vatRate", "نسبة الضريبة %", "15"),
+      field("amountInclVat", "القيمة شامل الضريبة", "5750"),
+      field("reviewDays", "مدة المراجعة (أيام عمل)", "3"),
+      field("cureDays", "مهلة المعالجة (أيام)", "15"),
+      field("disputeDays", "مهلة التسوية الودية (أيام)", "15"),
+      field("jurisdictionCity", "مدينة الاختصاص", "الأحساء"),
+    ],
+    defaultServices: [
+      {
+        id: uid("srv"),
+        name: "تصميم واجهات وتجربة المستخدم UI/UX للمتجر",
+        department: "التصميم والهوية",
+        description: "تصميم الهيكل التفاعلي وتجربة التصفح المتجاوبة للهواتف والشاشات",
+        estimatedHours: 20,
+        durationDays: 10,
+        selected: true,
+        subtasks: [
+          { id: uid("st"), title: "تصميم الصفحة الرئيسية وصفحات الأقسام", sequenceOrder: 1, estimatedHours: 8 },
+          { id: uid("st"), title: "تصميم صفحات المنتجات وسلة الشراء", sequenceOrder: 2, estimatedHours: 7 },
+          { id: uid("st"), title: "اعتماد النموذج المبدئي مع العميل", sequenceOrder: 3, estimatedHours: 5 },
+        ],
+      },
+      {
+        id: uid("srv"),
+        name: "برمجة وتطوير المتجر وربط بوابات الدفع والشحن",
+        department: "البرمجة والتطوير",
+        description: "برمجة القوالب وربط بوابات مدى، فيزا، تابي، تمارا، وشركات الشحن",
+        estimatedHours: 40,
+        durationDays: 15,
+        selected: true,
+        subtasks: [
+          { id: uid("st"), title: "إعداد بيئة العمل وتركيب وتخصيص القالب", sequenceOrder: 1, estimatedHours: 10 },
+          { id: uid("st"), title: "تكامل بوابات الدفع الإلكتروني وحسابات الشحن", sequenceOrder: 2, estimatedHours: 15 },
+          { id: uid("st"), title: "إعداد صفحات الشروط وسياسات الاسترجاع", sequenceOrder: 3, estimatedHours: 5 },
+          { id: uid("st"), title: "فحص الأداء وتوافق المتصفحات والأجهزة", sequenceOrder: 4, estimatedHours: 10 },
+        ],
+      },
+      {
+        id: uid("srv"),
+        name: "فحص الجودة والإطلاق الرسمي للمتجر",
+        department: "البرمجة والتطوير",
+        description: "اختبار عمليات الشراء التجريبية وإطلاق المتجر رسمياً",
+        estimatedHours: 10,
+        durationDays: 5,
+        selected: true,
+      },
+    ],
+  },
+  social_media: {
+    id: "social_media",
+    name: "عقد إدارة حسابات التواصل الاجتماعي وصناعة المحتوى",
+    title: "عقد اتفاق إدارة وسائل التواصل وصناعة المحتوى",
+    department: "صناعة المحتوى",
+    fields: [
+      field("startDate", "تاريخ بدء التنفيذ", toContractDateIso()),
+      field("durationDays", "مدة العقد (أيام)", "30"),
+      field("serviceSummary", "ملخص الخدمة", "إدارة حسابات التواصل وصناعة المحتوى والتصاميم"),
+      field("amountExclVat", "القيمة الشهرية بدون ضريبة", "3000"),
+      field("vatRate", "نسبة الضريبة %", "15"),
+      field("amountInclVat", "القيمة شامل الضريبة", "3450"),
+      field("reviewDays", "مدة المراجعة (أيام عمل)", "2"),
+      field("cureDays", "مهلة المعالجة (أيام)", "15"),
+      field("disputeDays", "مهلة التسوية الودية (أيام)", "15"),
+      field("jurisdictionCity", "مدينة الاختصاص", "الأحساء"),
+    ],
+    defaultServices: [
+      {
+        id: uid("srv"),
+        name: "كتابة وإعداد خطة المحتوى الشهري",
+        department: "صناعة المحتوى",
+        description: "كتابة نصوص البوستات، السيناريوهات، وجدول النشر الشهري",
+        estimatedHours: 15,
+        durationDays: 7,
+        selected: true,
+        subtasks: [
+          { id: uid("st"), title: "العصف الذهني وموضوعات الشهر", sequenceOrder: 1, estimatedHours: 5 },
+          { id: uid("st"), title: "كتابة الكابشنز ونصوص الستوري والريلز", sequenceOrder: 2, estimatedHours: 7 },
+          { id: uid("st"), title: "اعتماد خطة النشر مع العميل", sequenceOrder: 3, estimatedHours: 3 },
+        ],
+      },
+      {
+        id: uid("srv"),
+        name: "تصميم المنشورات والستوريات الإبداعية",
+        department: "التصميم والهوية",
+        description: "تصميم بوستات، إنفوجرافيك، وبوسترات تفاعلية متناسقة مع الهوية",
+        estimatedHours: 25,
+        durationDays: 20,
+        selected: true,
+      },
+      {
+        id: uid("srv"),
+        name: "النشر وإدارة الحسابات والتفاعل مع المتابعين",
+        department: "صناعة المحتوى",
+        description: "جدولة المنشورات والرد على التعليقات والرسائل الخاصة",
+        estimatedHours: 20,
+        durationDays: 30,
+        selected: true,
+      },
+    ],
+  },
+  video_production: {
+    id: "video_production",
+    name: "عقد إنتاج مرئي وتصوير فوتوغرافي وفيديو",
+    title: "عقد اتفاق خدمات الإنتاج والتصوير المرئي",
+    department: "الإنتاج والتصوير",
+    fields: [
+      field("startDate", "تاريخ بدء التنفيذ", toContractDateIso()),
+      field("durationDays", "مدة العمل (أيام)", "14"),
+      field("serviceSummary", "ملخص الخدمة", "تصوير إعلاني احترافي مع المونتاج وتعديل الألوان"),
+      field("amountExclVat", "القيمة بدون ضريبة", "4000"),
+      field("vatRate", "نسبة الضريبة %", "15"),
+      field("amountInclVat", "القيمة شامل الضريبة", "4600"),
+      field("reviewDays", "مدة المراجعة (أيام عمل)", "2"),
+      field("cureDays", "مهلة المعالجة (أيام)", "15"),
+      field("disputeDays", "مهلة التسوية الودية (أيام)", "15"),
+      field("jurisdictionCity", "مدينة الاختصاص", "الأحساء"),
+    ],
+    defaultServices: [
+      {
+        id: uid("srv"),
+        name: "التصوير الميداني للمنتجات والمقر والمشاهد",
+        department: "الإنتاج والتصوير",
+        description: "جلسات تصوير سينمائي وفوتوغرافي باستخدام كاميرات وإضاءات احترافية",
+        estimatedHours: 12,
+        durationDays: 3,
+        selected: true,
+        subtasks: [
+          { id: uid("st"), title: "تجهيز موقع التصوير والإضاءات", sequenceOrder: 1, estimatedHours: 3 },
+          { id: uid("st"), title: "تنفيذ جلسة التصوير وتسجيل اللقطات", sequenceOrder: 2, estimatedHours: 7 },
+          { id: uid("st"), title: "فرز واختيار أفضل اللقطات", sequenceOrder: 3, estimatedHours: 2 },
+        ],
+      },
+      {
+        id: uid("srv"),
+        name: "المونتاج وتعديل الألوان والمؤثرات الصوتية",
+        department: "المونتاج والإنتاج",
+        description: "تحرير الفيديو، إضافة المؤثرات البصرية، والموسيقى المرخصة",
+        estimatedHours: 18,
+        durationDays: 7,
+        selected: true,
+      },
+    ],
+  },
+};
+
 export function createDefaultContractForm(
-  overrides?: Partial<ContractFormDraft>
+  overrides?: Partial<ContractFormDraft>,
+  templateId = "marketing"
 ): ContractFormDraft {
   const today = toContractDateIso();
+  const tmpl = CONTRACT_TEMPLATES[templateId] || CONTRACT_TEMPLATES.marketing;
+
   return {
-    title: "عقد اتفاق خدمات تسويقية",
+    title: tmpl.title,
+    contractType: tmpl.id,
     contractNumber: formatContractNumber(),
     contractDateIso: today,
     preamble: DEFAULT_CONTRACT_PREAMBLE,
     provider: defaultProviderParty(),
     client: emptyClientParty(),
-    fields: defaultContractFields(),
+    fields: tmpl.fields,
     clauses: defaultContractClauses(),
+    services: tmpl.defaultServices,
     pageCount: "4",
     signatureDateIso: today,
     ...overrides,

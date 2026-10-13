@@ -6,7 +6,8 @@ import { useTaskQuery, useSprintsQuery, useTasksQuery, useAllTasksQuery } from "
 import { toast } from "sonner";
 import type { Task } from "../types/task.types";
 import { useAllUsers } from "@/features/users/hooks/use-users";
-import { useUpdateTask, useDeleteTask } from "../hooks/use-task-mutations";
+import { useUpdateTask, useDeleteTask, useCreateTask } from "../hooks/use-task-mutations";
+import { useAuthStore } from "@/stores/auth.store";
 import { TaskComments } from "../components/task-comments";
 import { TaskHistory } from "../components/task-history";
 import { AttachmentThumbnail, isLikelyImageUrl } from "../components/attachment-thumbnail";
@@ -29,6 +30,7 @@ import {
   Textarea,
   Input,
   Progress,
+  Select,
 } from "@heroui/react";
 import { AppDatePicker } from "@/components/shared/app-date-picker";
 import { parseDate } from "@internationalized/date";
@@ -51,6 +53,10 @@ import {
   History,
   UserRound,
   CalendarRange,
+  Workflow,
+  PlayCircle,
+  AlertTriangle,
+  CheckCircle2,
 } from "lucide-react";
 import { TASK_STATUSES, TASK_PRIORITIES } from "@/lib/constants";
 import { formatDate } from "@/lib/utils";
@@ -125,46 +131,278 @@ function SectionCard({
   );
 }
 
-function SubtasksList({ parentId }: { parentId: string }) {
-  const { t } = useTranslation("tasks");
+interface SubtasksListProps {
+  parentId: string;
+  parentTask?: Task | null;
+}
+
+function SubtasksList({ parentId, parentTask }: SubtasksListProps) {
+  const { t, i18n } = useTranslation("tasks");
   const navigate = useNavigate();
+  const { data: users } = useAllUsers();
   const { data, isLoading } = useTasksQuery({ parentId, pageSize: 50 });
+  const createTaskMutation = useCreateTask();
+
+  const [createModalOpen, setCreateModalOpen] = useState(false);
+  const [newSubtaskTitle, setNewSubtaskTitle] = useState("");
+  const [newSubtaskAssignee, setNewSubtaskAssignee] = useState<string | null>(null);
+  const [newSubtaskOrder, setNewSubtaskOrder] = useState<number>(1);
+  const [newSubtaskHours, setNewSubtaskHours] = useState<string>("");
+  const [newSubtaskDueDate, setNewSubtaskDueDate] = useState<string>("");
 
   if (isLoading) return <Spinner size="sm" />;
 
-  const subtasks = data?.data || [];
+  const subtasks = (data?.data || []).slice().sort((a, b) => {
+    const orderA = a.sequenceOrder ?? 999;
+    const orderB = b.sequenceOrder ?? 999;
+    if (orderA !== orderB) return orderA - orderB;
+    return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+  });
 
-  if (subtasks.length === 0) {
-    return (
-      <div className="text-center py-6 rounded-lg border border-dashed border-default-200 bg-default-50/50 space-y-3">
-        <p className="text-sm text-default-500">{t("detail.noSubtasks")}</p>
+  const handleCreateSubtask = async () => {
+    if (!newSubtaskTitle.trim()) {
+      toast.error("يرجى إدخال عنوان المهمة الفرعية");
+      return;
+    }
+    await createTaskMutation.mutateAsync({
+      title: newSubtaskTitle.trim(),
+      parentId,
+      type: "subtask",
+      priority: parentTask?.priority || "medium",
+      status: "todo",
+      sprintId: parentTask?.sprintId || null,
+      assigneeId: newSubtaskAssignee,
+      sequenceOrder: Number(newSubtaskOrder) || subtasks.length + 1,
+      estimatedHours: newSubtaskHours ? Number(newSubtaskHours) : undefined,
+      dueDate: newSubtaskDueDate || null,
+      department: parentTask?.department,
+    });
+    setNewSubtaskTitle("");
+    setNewSubtaskAssignee(null);
+    setNewSubtaskHours("");
+    setNewSubtaskDueDate("");
+    setCreateModalOpen(false);
+    toast.success("تمت إضافة المهمة الفرعية بنجاح في تسلسل العمل");
+  };
+
+  const getAssigneeUser = (id?: string | null) => {
+    if (!id) return null;
+    return users?.find((u) => u.id === id);
+  };
+
+  return (
+    <div className="space-y-4">
+      {/* Visual Workflow Sequence Stepper if multiple subtasks */}
+      {subtasks.length > 0 && (
+        <div className="p-4 bg-default-50/80 rounded-2xl border border-default-200/70 space-y-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Workflow className="h-4 w-4 text-primary" />
+              <span className="text-xs font-bold text-default-800">
+                تسلسل المهام ومسار الموظفين بالتتابع:
+              </span>
+            </div>
+            <span className="text-xs font-medium text-default-500">
+              {subtasks.filter((s) => s.status === "done").length} من {subtasks.length} مهام منجزة
+            </span>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2 pt-1">
+            {subtasks.map((st, idx) => {
+              const assignee = getAssigneeUser(st.assigneeId);
+              const isDone = st.status === "done";
+              const isInProgress = st.status === "in_progress";
+
+              return (
+                <div key={st.id} className="flex items-center gap-2">
+                  <div
+                    className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border text-xs transition-all ${
+                      isDone
+                        ? "bg-success-50/80 border-success-200 text-success-800 font-semibold"
+                        : isInProgress
+                        ? "bg-primary-50 border-primary-300 text-primary-800 font-bold shadow-sm"
+                        : "bg-default-100/60 border-default-200 text-default-600"
+                    }`}
+                  >
+                    <span className="w-5 h-5 rounded-full bg-white dark:bg-black/30 flex items-center justify-center text-[10px] font-mono font-bold">
+                      {st.sequenceOrder || idx + 1}
+                    </span>
+                    <span className="max-w-[120px] truncate" title={st.title}>
+                      {st.title}
+                    </span>
+                    {assignee && (
+                      <span className="text-[11px] opacity-80 border-s border-current ps-1.5 font-normal">
+                        {assignee.name}
+                      </span>
+                    )}
+                    {isDone && <CheckCircle2 className="h-3.5 w-3.5 text-success" />}
+                  </div>
+                  {idx < subtasks.length - 1 && (
+                    <ArrowRight className="h-3 w-3 text-default-300 rtl:rotate-180 shrink-0" />
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Action to add subtask */}
+      <div className="flex items-center justify-between">
+        <span className="text-xs font-bold text-default-600">
+          المهام الفرعية المجدولة ({subtasks.length})
+        </span>
         <Button
           size="sm"
           color="primary"
           variant="flat"
           startContent={<Plus className="w-4 h-4" />}
-          onPress={() => navigate(`/tasks/new?parentId=${parentId}`)}
-          className="font-semibold"
+          onPress={() => {
+            setNewSubtaskOrder(subtasks.length + 1);
+            setCreateModalOpen(true);
+          }}
+          className="font-bold rounded-xl"
         >
           {t("detail.addSubtask")}
         </Button>
       </div>
-    );
-  }
 
-  return (
-    <div className="space-y-2">
-      {subtasks.map((st) => (
-        <Link key={st.id} to={`/tasks/${st.id}`} className="block group">
-          <div className="flex items-center justify-between p-3 rounded-lg border border-default-200 bg-content1 hover:border-primary/30 hover:bg-primary-50/20 transition-colors">
-            <div className="flex items-center gap-3 min-w-0">
-              <StatusBadge status={st.status} />
-              <span className="font-semibold text-sm truncate group-hover:text-primary transition-colors">{st.title}</span>
-            </div>
-            <ArrowRight className="h-4 w-4 text-default-400 shrink-0 group-hover:text-primary transition-all rtl:rotate-180 group-hover:translate-x-0.5 rtl:group-hover:-translate-x-0.5" />
-          </div>
-        </Link>
-      ))}
+      {subtasks.length === 0 ? (
+        <div className="text-center py-8 rounded-2xl border border-dashed border-default-200 bg-default-50/50 space-y-3">
+          <p className="text-sm text-default-500">{t("detail.noSubtasks")}</p>
+          <Button
+            size="sm"
+            color="primary"
+            variant="flat"
+            startContent={<Plus className="w-4 h-4" />}
+            onPress={() => {
+              setNewSubtaskOrder(1);
+              setCreateModalOpen(true);
+            }}
+            className="font-semibold rounded-xl"
+          >
+            {t("detail.addSubtask")}
+          </Button>
+        </div>
+      ) : (
+        <div className="space-y-2">
+          {subtasks.map((st, idx) => {
+            const assignee = getAssigneeUser(st.assigneeId);
+            return (
+              <Link key={st.id} to={`/tasks/${st.id}`} className="block group">
+                <div className="flex items-center justify-between p-3.5 rounded-2xl border border-default-200 bg-content1 hover:border-primary/40 hover:bg-primary-50/15 transition-all shadow-sm">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <span className="w-6 h-6 rounded-lg bg-default-100 flex items-center justify-center text-xs font-mono font-bold text-default-700 shrink-0">
+                      #{st.sequenceOrder || idx + 1}
+                    </span>
+                    <StatusBadge status={st.status} />
+                    <div className="min-w-0">
+                      <span className="font-bold text-sm truncate block group-hover:text-primary transition-colors">
+                        {st.title}
+                      </span>
+                      {st.estimatedHours ? (
+                        <span className="text-[11px] text-default-400 font-medium">
+                          الوقت المقدر: {st.estimatedHours} ساعة
+                        </span>
+                      ) : null}
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-3 shrink-0">
+                    {assignee ? (
+                      <div className="flex items-center gap-1.5 px-2.5 py-1 bg-default-100/70 rounded-xl text-xs font-semibold text-default-700">
+                        <UserRound className="h-3 w-3 text-primary" />
+                        <span>{assignee.name}</span>
+                      </div>
+                    ) : (
+                      <span className="text-xs text-default-400 italic">غير مسند</span>
+                    )}
+                    <ArrowRight className="h-4 w-4 text-default-400 shrink-0 group-hover:text-primary transition-all rtl:rotate-180 group-hover:translate-x-0.5 rtl:group-hover:-translate-x-0.5" />
+                  </div>
+                </div>
+              </Link>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Quick Modal to Add Subtask with sequence and assignee */}
+      <Modal isOpen={createModalOpen} onOpenChange={setCreateModalOpen} size="lg">
+        <ModalContent>
+          {(onClose) => (
+            <>
+              <ModalHeader className="font-black text-lg">
+                إضافة مهمة فرعية وتسلسل تنفيذي
+              </ModalHeader>
+              <ModalBody className="space-y-4">
+                <Input
+                  label="عنوان المهمة الفرعية"
+                  placeholder="مثال: تجهيز التصاميم المبدئية..."
+                  value={newSubtaskTitle}
+                  onValueChange={setNewSubtaskTitle}
+                  isRequired
+                />
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <Select
+                    label="الموظف المختص"
+                    placeholder="اختر الموظف..."
+                    selectedKeys={newSubtaskAssignee ? [newSubtaskAssignee] : []}
+                    onSelectionChange={(keys) => {
+                      const v = Array.from(keys)[0] as string | undefined;
+                      setNewSubtaskAssignee(v ?? null);
+                    }}
+                  >
+                    {(users ?? []).map((u) => (
+                      <SelectItem key={u.id} textValue={u.name}>
+                        {u.name}
+                      </SelectItem>
+                    ))}
+                  </Select>
+
+                  <Input
+                    label="ترتيب التسلسل (الخطوة #)"
+                    type="number"
+                    min={1}
+                    value={String(newSubtaskOrder)}
+                    onValueChange={(v) => setNewSubtaskOrder(Number(v))}
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <Input
+                    label="الوقت المقدر (ساعات)"
+                    type="number"
+                    min={0}
+                    placeholder="مثال: 4"
+                    value={newSubtaskHours}
+                    onValueChange={setNewSubtaskHours}
+                  />
+                  <Input
+                    label="تاريخ الاستحقاق"
+                    type="date"
+                    value={newSubtaskDueDate}
+                    onValueChange={setNewSubtaskDueDate}
+                  />
+                </div>
+              </ModalBody>
+              <ModalFooter>
+                <Button variant="light" onPress={onClose}>
+                  إلغاء
+                </Button>
+                <Button
+                  color="primary"
+                  className="font-bold"
+                  isLoading={createTaskMutation.isPending}
+                  onPress={handleCreateSubtask}
+                >
+                  إضافة المهمة للتسلسل
+                </Button>
+              </ModalFooter>
+            </>
+          )}
+        </ModalContent>
+      </Modal>
     </div>
   );
 }
@@ -191,6 +429,9 @@ export function TaskDetailPage() {
   const [isUploading, setIsUploading] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const currentUser = useAuthStore((s) => s.user);
+  const [delayReasonInput, setDelayReasonInput] = useState("");
 
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
@@ -290,6 +531,50 @@ export function TaskDetailPage() {
       return next;
     });
     setIsDirty(true);
+  };
+
+  useEffect(() => {
+    if (baseTask?.delayReason) {
+      setDelayReasonInput(baseTask.delayReason);
+    }
+  }, [baseTask?.delayReason]);
+
+  const handleClaimAndStart = () => {
+    if (!task) return;
+    const uid = currentUser?.id || null;
+    updateMutation.mutate(
+      {
+        id: task.id,
+        data: {
+          status: "in_progress",
+          claimedAt: new Date().toISOString(),
+          claimedBy: uid,
+          assigneeId: task.assigneeId || uid,
+        },
+      },
+      {
+        onSuccess: () => {
+          toast.success("تم استلام المهمة وتحويلها تلقائياً إلى 'قيد التنفيذ'");
+        },
+      }
+    );
+  };
+
+  const handleSaveDelayReason = () => {
+    if (!task || !delayReasonInput.trim()) return;
+    updateMutation.mutate(
+      {
+        id: task.id,
+        data: {
+          delayReason: delayReasonInput.trim(),
+        },
+      },
+      {
+        onSuccess: () => {
+          toast.success("تم توثيق وحفظ سبب التأخير بنجاح");
+        },
+      }
+    );
   };
 
   const handleSave = () => {
@@ -587,6 +872,107 @@ export function TaskDetailPage() {
               icon={<ListTodo className="w-5 h-5" />}
             >
               <div className="space-y-6">
+                {/* 1. AUTO-CLAIM & START BANNER */}
+                {task.status === "todo" && (
+                  <div className="p-4 bg-gradient-to-r from-amber-500/10 via-primary-500/10 to-transparent rounded-2xl border border-amber-300 dark:border-amber-800 flex flex-wrap items-center justify-between gap-3">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2.5 bg-amber-500 text-white rounded-xl shadow-sm">
+                        <PlayCircle className="h-5 w-5" />
+                      </div>
+                      <div>
+                        <h4 className="font-bold text-sm text-default-900">
+                          المهمة بانتظار الاستلام والبدء
+                        </h4>
+                        <p className="text-xs text-default-500">
+                          عند النقر على استلام المهمة ستتحول تلقائياً إلى حالة "قيد التنفيذ".
+                        </p>
+                      </div>
+                    </div>
+                    <Button
+                      color="primary"
+                      size="sm"
+                      className="font-bold rounded-xl shadow-md"
+                      startContent={<PlayCircle className="h-4 w-4" />}
+                      onPress={handleClaimAndStart}
+                      isLoading={updateMutation.isPending}
+                    >
+                      استلام المهمة وبدء التنفيذ
+                    </Button>
+                  </div>
+                )}
+
+                {/* 2. OVERDUE DELAY ALERT & DELAY REASON LOGGING */}
+                {task.dueDate && new Date(task.dueDate).getTime() < Date.now() && task.status !== "done" && (
+                  <div className="p-4 bg-danger-500/10 rounded-2xl border border-danger-200 dark:border-danger-900/50 space-y-3">
+                    <div className="flex items-start gap-3">
+                      <div className="p-2 bg-danger-500 text-white rounded-xl">
+                        <AlertTriangle className="h-5 w-5" />
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex items-center justify-between">
+                          <h4 className="font-bold text-sm text-danger-700 dark:text-danger-400">
+                            تنبيه: المهمة متأخرة عن الموعد المحدد!
+                          </h4>
+                          <span className="text-xs font-mono font-bold text-danger-600 bg-danger-100 dark:bg-danger-950/40 px-2 py-0.5 rounded-lg">
+                            الاستحقاق: {formatDate(task.dueDate)}
+                          </span>
+                        </div>
+                        <p className="text-xs text-default-600 mt-1">
+                          يرجى توثيق وكتابة أسباب التأخير لمتابعة سير العمل ومعالجة المعوقات.
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2 pt-1">
+                      <Input
+                        size="sm"
+                        variant="bordered"
+                        placeholder="اكتب سبب التأخير هنا..."
+                        value={delayReasonInput}
+                        onValueChange={setDelayReasonInput}
+                        className="flex-1 bg-white dark:bg-content1"
+                      />
+                      <Button
+                        size="sm"
+                        color="danger"
+                        variant="flat"
+                        className="font-bold rounded-xl"
+                        onPress={handleSaveDelayReason}
+                        isLoading={updateMutation.isPending}
+                      >
+                        حفظ سبب التأخير
+                      </Button>
+                    </div>
+                    {task.delayReason && (
+                      <div className="text-xs text-default-600 bg-white/60 dark:bg-black/20 p-2 rounded-xl">
+                        <span className="font-bold text-default-700">السبب المسجل حالياً: </span>
+                        {task.delayReason}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Additional task badges */}
+                {(task.department || task.claimedAt || task.estimatedHours) && (
+                  <div className="flex flex-wrap gap-2">
+                    {task.department && (
+                      <Chip size="sm" variant="flat" color="secondary" className="font-bold">
+                        القسم المختص: {task.department}
+                      </Chip>
+                    )}
+                    {task.claimedAt && (
+                      <Chip size="sm" variant="flat" color="success" className="font-bold">
+                        تم الاستلام في: {formatDate(task.claimedAt)}
+                      </Chip>
+                    )}
+                    {task.estimatedHours ? (
+                      <Chip size="sm" variant="bordered" className="font-medium">
+                        الوقت المقدر: {task.estimatedHours} ساعة
+                      </Chip>
+                    ) : null}
+                  </div>
+                )}
+
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 md:gap-6">
                   {task.type === "subtask" && (
                     <div className="sm:col-span-2">
@@ -1025,7 +1411,7 @@ export function TaskDetailPage() {
                 ) : undefined
               }
             >
-              <SubtasksList parentId={task.id} />
+              <SubtasksList parentId={task.id} parentTask={task} />
             </SectionCard>
           </div>
 

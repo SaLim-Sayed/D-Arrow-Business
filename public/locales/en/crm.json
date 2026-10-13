@@ -211,13 +211,57 @@
       "email": "EMAIL",
       "phone": "PHONE",
       "account": "ACCOUNT",
-      "assigned": "ASSIGNED",
+      "classification": "CLASSIFICATION",
+      "satisfaction": "SATISFACTION",
+      "interests": "INTERESTS",
+      "assigned": "FOLLOW-UP AGENT",
       "created": "CREATED",
       "actions": "ACTIONS"
+    },
+    "classification": {
+      "label": "Classification",
+      "all": "All Classifications",
+      "actual_client": "Actual Client",
+      "potential_lead": "Potential Lead",
+      "callback": "Call Back"
+    },
+    "satisfaction": {
+      "label": "Customer Satisfaction",
+      "all": "All Satisfaction Levels",
+      "satisfied": "Satisfied",
+      "neutral": "Neutral",
+      "unsatisfied": "Unsatisfied",
+      "notes": "Satisfaction Notes / Feedback"
+    },
+    "interests": {
+      "label": "Client Interests",
+      "placeholder": "Select or type client interests...",
+      "website": "Website",
+      "store": "E-Commerce Store",
+      "marketingOffer": "Marketing & Promotions",
+      "socialMedia": "Social Media Management",
+      "branding": "Branding & Visual Identity",
+      "photography": "Media & Photography",
+      "seo": "SEO & Search Engine"
+    },
+    "directory": {
+      "tab": "Unified Directory",
+      "tableTab": "Contacts Table",
+      "title": "Unified Contact & Phone Directory",
+      "subtitle": "All phone numbers and communication links in one central place for instant calling and follow-up",
+      "callNow": "Call",
+      "whatsapp": "WhatsApp",
+      "copy": "Copy Number",
+      "copied": "Phone number copied successfully",
+      "secondaryPhone": "Secondary Phone",
+      "whatsappPhone": "WhatsApp Phone",
+      "noPhone": "No registered phone"
     },
     "filters": {
       "assignedTo": "Assigned to",
       "unassigned": "Unassigned",
+      "classification": "Classification",
+      "satisfaction": "Satisfaction",
       "clear": "Clear filters"
     },
     "form": {
@@ -226,22 +270,28 @@
       "firstName": "First name",
       "lastName": "Last name",
       "email": "Email",
-      "phone": "Phone",
+      "phone": "Primary Phone",
+      "secondaryPhone": "Secondary Phone",
+      "whatsappPhone": "WhatsApp Phone",
       "jobTitle": "Job title",
       "department": "Department",
       "accountName": "Account",
+      "classification": "Contact Classification",
+      "satisfaction": "Satisfaction Status",
+      "satisfactionNotes": "Satisfaction Notes / Feedback",
+      "interests": "Client Interests (Website, Offer, Store...)",
       "commercialRegister": "Commercial register",
       "commercialRegisterPlaceholder": "1010123456",
       "commercialRegisterHint": "Official commercial registration number for linking to accounts later (optional)",
-      "assignedTo": "Assigned user",
+      "assignedTo": "Follow-up Agent",
       "cancel": "Cancel",
       "create": "Create contact",
       "save": "Save changes"
     },
     "toast": {
-      "created": "Contact created",
+      "created": "Contact created successfully",
       "createFailed": "Failed to create contact",
-      "updated": "Contact updated",
+      "updated": "Contact updated successfully",
       "updateFailed": "Failed to update contact"
     }
   },
@@ -596,6 +646,20 @@
     "deleteSuccess": "Contract deleted",
     "deleteError": "Could not delete contract",
     "exportSuccess": "Contract PDF downloaded",
-    "exportError": "Could not generate the contract PDF"
+    "exportError": "Could not generate the contract PDF",
+    "templates": "Contract Types & Templates",
+    "templatesHint": "Choose a contract template to populate corresponding service items and clauses",
+    "servicesTitle": "Service Items & Department Tasks Routing",
+    "servicesHint": "Select required client services; upon migration, each service becomes a main task routed to its department with sequential subtasks",
+    "convertToTasks": "Convert Services to Department Tasks",
+    "converting": "Routing tasks to departments...",
+    "convertedBanner": "Services have been successfully migrated to department tasks",
+    "convertedTasksCount": "{{count}} main and sequential subtasks were generated in the task system",
+    "viewTasks": "View Tasks Board",
+    "addService": "Add Custom Service Item",
+    "department": "Department",
+    "subtasksCount": "Sequential subtasks",
+    "estimatedHours": "Estimated hours",
+    "durationDays": "Work days"
   }
 }

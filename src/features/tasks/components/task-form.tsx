@@ -45,6 +45,16 @@ const TASK_STATUS_VALUES = ["todo", "in_progress", "in_review", "done"] as const
 const TASK_PRIORITY_VALUES = ["low", "medium", "high", "urgent"] as const;
 const TASK_TYPE_VALUES = ["task", "subtask"] as const;
 
+export const DEPARTMENT_OPTIONS = [
+  "التسويق الرقمي",
+  "الإنتاج والتسويق",
+  "البرمجة والتطوير",
+  "التصميم والهوية",
+  "صناعة المحتوى",
+  "الإنتاج والتصوير",
+  "المونتاج والإنتاج",
+];
+
 type TaskFormValues = {
   title: string;
   description: string;
@@ -55,6 +65,9 @@ type TaskFormValues = {
   parentId?: string | null;
   sprintId?: string | null;
   dueDate?: string | null;
+  department?: string | null;
+  estimatedHours?: number | null;
+  sequenceOrder?: number | null;
 };
 
 const taskSchema = z
@@ -68,6 +81,9 @@ const taskSchema = z
     parentId: z.string().nullable().optional(),
     sprintId: z.string().nullable().optional(),
     dueDate: z.string().nullable().optional(),
+    department: z.string().nullable().optional(),
+    estimatedHours: z.union([z.number(), z.string()]).nullable().optional(),
+    sequenceOrder: z.union([z.number(), z.string()]).nullable().optional(),
   })
   .superRefine((data, ctx) => {
     if (data.type === "subtask" && !data.parentId) {
@@ -168,6 +184,9 @@ export function TaskForm({
       dueDate: defaultValues?.dueDate
         ? defaultValues.dueDate.split("T")[0]
         : null,
+      department: defaultValues?.department ?? null,
+      estimatedHours: defaultValues?.estimatedHours ?? null,
+      sequenceOrder: defaultValues?.sequenceOrder ?? null,
     },
   });
 
@@ -258,6 +277,9 @@ export function TaskForm({
       sprintId: values.sprintId ?? null,
       assigneeId: values.assigneeId ?? null,
       dueDate: isoDueDate,
+      department: values.department ? String(values.department) : undefined,
+      estimatedHours: values.estimatedHours ? Number(values.estimatedHours) : undefined,
+      sequenceOrder: values.sequenceOrder ? Number(values.sequenceOrder) : undefined,
     };
 
     if (attachmentUrls.length > 0) {
@@ -670,6 +692,66 @@ export function TaskForm({
           />
         )}
       />
+
+      <Controller
+        name="department"
+        control={control}
+        render={({ field }: { field: any }) => (
+          <SearchableSelect
+            label="القسم المختص"
+            aria-label="القسم المختص"
+            placeholder="اختر القسم المختص..."
+            searchPlaceholder="بحث في الأقسام..."
+            selectedKey={field.value ?? null}
+            triggerLabel={field.value || undefined}
+            onSelectionChange={(key) => {
+              field.onChange(key || null);
+            }}
+          >
+            {DEPARTMENT_OPTIONS.map((dept) => (
+              <SelectItem key={dept} textValue={dept}>
+                {dept}
+              </SelectItem>
+            ))}
+          </SearchableSelect>
+        )}
+      />
+
+      <div className="grid grid-cols-2 gap-3">
+        <Controller
+          name="estimatedHours"
+          control={control}
+          render={({ field }: { field: any }) => (
+            <Input
+              type="number"
+              label="الوقت التقديري (ساعات)"
+              placeholder="مثال: 5"
+              value={field.value != null ? String(field.value) : ""}
+              onChange={(e) =>
+                field.onChange(e.target.value ? Number(e.target.value) : null)
+              }
+              classNames={fieldClassNames}
+            />
+          )}
+        />
+
+        <Controller
+          name="sequenceOrder"
+          control={control}
+          render={({ field }: { field: any }) => (
+            <Input
+              type="number"
+              label="رقم التسلسل التنفيذي"
+              placeholder="مثال: 1"
+              value={field.value != null ? String(field.value) : ""}
+              onChange={(e) =>
+                field.onChange(e.target.value ? Number(e.target.value) : null)
+              }
+              classNames={fieldClassNames}
+            />
+          )}
+        />
+      </div>
       </div>
       </div>
 

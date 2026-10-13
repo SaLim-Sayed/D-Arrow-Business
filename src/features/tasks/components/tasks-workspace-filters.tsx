@@ -9,7 +9,7 @@ import {
   DropdownTrigger,
   Input,
 } from "@heroui/react";
-import { Filter, Search, UserCircle2, X, CircleDot, AlertTriangle, CheckCircle2, Zap } from "lucide-react";
+import { Filter, Search, UserCircle2, X, CircleDot, AlertTriangle, CheckCircle2, Zap, Briefcase } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 import { localizedName } from "@/lib/localized-name";
@@ -17,6 +17,7 @@ import { TASK_STATUSES } from "@/lib/constants";
 import { useAllUsers } from "@/features/users/hooks/use-users";
 import { useSprintsQuery } from "../hooks/use-tasks";
 import { useTasksUIStore } from "../store/tasks-ui.store";
+import { DEPARTMENT_OPTIONS } from "./task-form";
 import type { TaskPriority, TaskStatus } from "../types/task.types";
 
 interface TasksWorkspaceFiltersProps {
@@ -46,6 +47,7 @@ export function TasksWorkspaceFilters({ compact }: TasksWorkspaceFiltersProps) {
     filters.status.length > 0 ||
     !!filters.assigneeId ||
     !!filters.sprintId ||
+    !!filters.department ||
     filters.overdueOnly ||
     filters.completedThisWeek;
 
@@ -132,6 +134,62 @@ export function TasksWorkspaceFilters({ compact }: TasksWorkspaceFiltersProps) {
                 }
               >
                 {s.name}
+              </DropdownItem>
+            ))}
+          </DropdownSection>
+        </DropdownMenu>
+      </Dropdown>
+
+      {/* Department Filter */}
+      <Dropdown>
+        <DropdownTrigger>
+          <Button
+            size="sm"
+            variant="bordered"
+            className={cn(
+              "rounded-xl border-default-200/80 bg-content1 font-semibold gap-1.5 h-9 min-h-9",
+              compact ? "text-xs" : "text-xs",
+              filters.department && "border-primary/40 bg-primary/10 text-primary"
+            )}
+            startContent={<Briefcase className="h-3.5 w-3.5 text-primary" />}
+          >
+            {filters.department ? filters.department : (isAr ? "كل الأقسام" : "All departments")}
+            {filters.department && (
+              <span
+                role="button"
+                className="ms-1 hover:text-danger p-0.5"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setFilter("department", null);
+                }}
+              >
+                <X className="h-3 w-3" />
+              </span>
+            )}
+          </Button>
+        </DropdownTrigger>
+        <DropdownMenu
+          aria-label="Filter by department"
+          selectionMode="single"
+          disallowEmptySelection
+          selectedKeys={new Set([filters.department ?? "__all__"])}
+          onSelectionChange={(keys) => {
+            const selected = Array.from(keys)[0] as string | undefined;
+            setFilter(
+              "department",
+              !selected || selected === "__all__" ? null : selected
+            );
+          }}
+        >
+          <DropdownSection showDivider>
+            <DropdownItem key="__all__" className="font-bold">
+              {isAr ? "جميع الأقسام" : "All departments"}
+            </DropdownItem>
+          </DropdownSection>
+          <DropdownSection>
+            {DEPARTMENT_OPTIONS.map((dept) => (
+              <DropdownItem key={dept}>
+                {dept}
               </DropdownItem>
             ))}
           </DropdownSection>

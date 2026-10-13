@@ -1,11 +1,17 @@
-import type { Contact } from "../types/contacts.types";
+import type {
+  Contact,
+  ContactClassification,
+  CustomerSatisfaction,
+} from "../types/contacts.types";
 
-export type ContactSortField = "name" | "email" | "accountName" | "createdAt";
+export type ContactSortField = "name" | "email" | "accountName" | "createdAt" | "classification" | "satisfaction";
 export type ContactSortOrder = "asc" | "desc";
 
 export interface ContactsListParams {
   search?: string;
   assignedTo?: string;
+  classification?: ContactClassification | "all";
+  satisfaction?: CustomerSatisfaction | "all";
   sortField?: ContactSortField;
   sortOrder?: ContactSortOrder;
   page?: number;
@@ -19,16 +25,20 @@ export function contactDisplayName(contact: Contact): string {
 function contactMatchesSearch(contact: Contact, search: string): boolean {
   const q = search.trim().toLowerCase();
   if (!q) return true;
+  const interestsStr = (contact.interests || []).join(" ");
   return [
     contact.firstName,
     contact.lastName,
     contactDisplayName(contact),
     contact.email,
     contact.phone,
+    contact.secondaryPhone,
+    contact.whatsappPhone,
     contact.accountName,
     contact.commercialRegister,
     contact.jobTitle,
     contact.department,
+    interestsStr,
   ]
     .filter(Boolean)
     .some((v) => String(v).toLowerCase().includes(q));
@@ -42,8 +52,15 @@ export function filterContacts(contacts: Contact[], params: ContactsListParams):
       params.assignedTo &&
       params.assignedTo !== "__unassigned__" &&
       contact.assignedTo !== params.assignedTo
-    )
+    ) {
       return false;
+    }
+    if (params.classification && params.classification !== "all") {
+      if (contact.classification !== params.classification) return false;
+    }
+    if (params.satisfaction && params.satisfaction !== "all") {
+      if (contact.satisfaction !== params.satisfaction) return false;
+    }
     return true;
   });
 }
@@ -69,6 +86,14 @@ export function sortContacts(
       case "accountName":
         av = (a.accountName || "").toLowerCase();
         bv = (b.accountName || "").toLowerCase();
+        break;
+      case "classification":
+        av = a.classification || "";
+        bv = b.classification || "";
+        break;
+      case "satisfaction":
+        av = a.satisfaction || "";
+        bv = b.satisfaction || "";
         break;
       case "createdAt":
       default:

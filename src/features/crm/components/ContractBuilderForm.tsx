@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Accordion,
   AccordionItem,
@@ -7,6 +8,8 @@ import {
   Select,
   SelectItem,
   Textarea,
+  Checkbox,
+  Chip,
 } from "@heroui/react";
 import {
   ArrowDown,
@@ -20,12 +23,23 @@ import {
   Sparkles,
   Trash2,
   UserRound,
+  Workflow,
+  CheckCircle2,
+  Layers,
+  Send,
+  Calendar,
+  Clock,
+  Briefcase,
+  ExternalLink,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { selectFieldProps } from "@/components/shared/select-field";
 import { useCompanyProfile } from "@/features/companies/hooks/use-company-profile";
+import { useCompany } from "@/features/companies/context/company-context";
+import { useAuthStore } from "@/stores/auth.store";
+import { TaskService } from "@/features/tasks/api/tasks.service";
 import { useContactsQuery } from "../hooks/use-contacts";
 import { contactDisplayName } from "../utils/contacts-list.utils";
 import { generateQuotationPdf } from "../utils/generate-quotation-pdf";
@@ -36,11 +50,13 @@ import type {
   ContractFormDraft,
   ContractParty,
   SavedContract,
+  ContractServiceItem,
 } from "../types/contract.types";
 import {
   createDefaultContractForm,
   formatContractNumber,
   toContractDateIso,
+  CONTRACT_TEMPLATES,
 } from "../constants/contract-templates";
 import {
   useContractsQuery,
@@ -81,6 +97,19 @@ const MONEY_KEYS = new Set([
 const inputClassNames = {
   inputWrapper:
     "bg-white dark:bg-content1 shadow-none border border-default-200 group-data-[focus=true]:border-primary",
+};
+
+const DEPARTMENT_COLORS: Record<
+  string,
+  "primary" | "secondary" | "success" | "warning" | "default"
+> = {
+  "التسويق الرقمي": "primary",
+  "الإنتاج والتسويق": "primary",
+  "البرمجة والتطوير": "secondary",
+  "التصميم والهوية": "warning",
+  "صناعة المحتوى": "success",
+  "الإنتاج والتصوير": "default",
+  "المونتاج والإنتاج": "default",
 };
 
 function buildCompanyInfo(
@@ -276,6 +305,11 @@ export function ContractBuilderForm() {
   const contacts = contactsRes?.data ?? [];
   const printRef = useRef<HTMLDivElement>(null);
 
+  const navigate = useNavigate();
+  const { companyId } = useCompany();
+  const { user } = useAuthStore();
+  const [convertingTasks, setConvertingTasks] = useState(false);
+
   const [form, setForm] = useState<ContractFormDraft>(() =>
     createDefaultContractForm()
   );
@@ -352,27 +386,206 @@ export function ContractBuilderForm() {
 
   const loadContract = (c: SavedContract) => {
     setSavedId(c.id);
-    setForm(c.form);
+    const tmplKey = c.form.contractType || "marketing";
+    const tmpl = CONTRACT_TEMPLATES[tmplKey];
+    setForm({
+      ...c.form,
+      contractType: tmplKey,
+      services:
+        c.form.services && c.form.services.length > 0
+          ? c.form.services
+          : tmpl?.defaultServices || [],
+      convertedToTasks: c.convertedToTasks ?? c.form.convertedToTasks ?? false,
+      createdTaskIds: c.createdTaskIds ?? c.form.createdTaskIds ?? [],
+    });
   };
 
-  const resetNew = () => {
+  const resetNew = (templateKey = form.contractType || "marketing") => {
     setSavedId(null);
     setForm(
-      createDefaultContractForm({
-        contractNumber: formatContractNumber(),
-        contractDateIso: toContractDateIso(),
-        signatureDateIso: toContractDateIso(),
-        provider: {
-          name: company.nameAr,
-          commercialRegister: company.commercialRegister,
-          taxNumber: company.taxNumber,
-          address: company.addressAr,
-          representative: form.provider.representative || "علي المسلم",
-          phone: company.phone,
-          email: company.email,
+      createDefaultContractForm(
+        {
+          contractNumber: formatContractNumber(),
+          contractDateIso: toContractDateIso(),
+          signatureDateIso: toContractDateIso(),
+          provider: {
+            name: company.nameAr,
+            commercialRegister: company.commercialRegister,
+            taxNumber: company.taxNumber,
+            address: company.addressAr,
+            representative: form.provider.representative || "علي المسلم",
+            phone: company.phone,
+            email: company.email,
+          },
         },
-      })
+        templateKey
+      )
     );
+  };
+
+  const handleSelectTemplate = (templateKey: string) => {
+    const tmpl = CONTRACT_TEMPLATES[templateKey];
+    if (!tmpl) return;
+    setForm((prev) => ({
+      ...prev,
+      contractType: templateKey,
+      title: tmpl.title,
+      fields: tmpl.fields,
+      services: tmpl.defaultServices.map((s) => ({ ...s, selected: true })),
+      convertedToTasks: false,
+      createdTaskIds: [],
+    }));
+    toast.success(`تم اختيار قالب: ${tmpl.name}`);
+  };
+
+  const toggleService = (serviceId: string) => {
+    setForm((prev) => ({
+      ...prev,
+      services: (prev.services || []).map((s) =>
+        s.id === serviceId ? { ...s, selected: !s.selected } : s
+      ),
+    }));
+  };
+
+  const addCustomService = () => {
+    const newService: ContractServiceItem = {
+      id: uid("srv"),
+      name: "خدمة مخصصة إضافية",
+      department: "التسويق الرقمي",
+      description: "بند خدمة مخصص حسب متطلبات واحتياجات العميل",
+      estimatedHours: 8,
+      durationDays: 5,
+      selected: true,
+      subtasks: [
+        {
+          id: uid("st"),
+          title: "بدء تجهيز متطلبات الخدمة واعتماد خطة العمل",
+          sequenceOrder: 1,
+          estimatedHours: 2,
+        },
+      ],
+    };
+    setForm((prev) => ({
+      ...prev,
+      services: [...(prev.services || []), newService],
+    }));
+  };
+
+  const removeService = (serviceId: string) => {
+    setForm((prev) => ({
+      ...prev,
+      services: (prev.services || []).filter((s) => s.id !== serviceId),
+    }));
+  };
+
+  const handleConvertServicesToTasks = async () => {
+    if (!companyId) {
+      toast.error("لم يتم العثور على معرّف الشركة");
+      return;
+    }
+    const currentServices = form.services || [];
+    const selectedServices = currentServices.filter((s) => s.selected);
+    if (selectedServices.length === 0) {
+      toast.error("يرجى اختيار خدمة واحدة على الأقل لترحيلها");
+      return;
+    }
+
+    setConvertingTasks(true);
+    try {
+      const createdIds: string[] = [];
+      const actor = {
+        userId: user?.id || "system",
+        userName: user?.displayName || user?.name || "مدير النظام",
+      };
+
+      for (const service of selectedServices) {
+        // 1. Create main department task
+        const mainTitle = `${service.name} — ${form.client.name || form.title}`;
+        const mainDesc = [
+          `📌 مهمة رئيسية مرحلة من العقد رقم: ${form.contractNumber}`,
+          `العميل: ${form.client.name || "غير محدد"}`,
+          `القسم المختص: ${service.department}`,
+          service.description ? `التفاصيل: ${service.description}` : "",
+          `المدة المقدرة: ${service.durationDays || 7} أيام (${service.estimatedHours || 0} ساعة)`,
+        ]
+          .filter(Boolean)
+          .join("\n");
+
+        const mainRes = await TaskService.createTask(
+          companyId,
+          {
+            title: mainTitle,
+            description: mainDesc,
+            status: "todo",
+            priority: "high",
+            type: "task",
+            department: service.department,
+            estimatedHours: service.estimatedHours,
+            contractId: savedId || undefined,
+            serviceItemId: service.id,
+            contactId: form.contactId,
+          },
+          actor
+        );
+
+        const mainTaskId = mainRes.data.id;
+        createdIds.push(mainTaskId);
+
+        // 2. Create child subtasks with sequenceOrder
+        const sortedSubtasks = [...(service.subtasks || [])].sort(
+          (a, b) => (a.sequenceOrder || 0) - (b.sequenceOrder || 0)
+        );
+
+        for (let idx = 0; idx < sortedSubtasks.length; idx++) {
+          const sub = sortedSubtasks[idx];
+          const seqNum = sub.sequenceOrder || idx + 1;
+          const subRes = await TaskService.createTask(
+            companyId,
+            {
+              title: sub.title,
+              description: `مهمة فرعية مرحلة من بند: ${service.name}\nالتسلسل التنفيذي: #${seqNum}\nالقسم: ${service.department}`,
+              status: "todo",
+              priority: "medium",
+              type: "subtask",
+              parentId: mainTaskId,
+              department: service.department,
+              sequenceOrder: seqNum,
+              estimatedHours: sub.estimatedHours,
+              contractId: savedId || undefined,
+            },
+            actor
+          );
+          createdIds.push(subRes.data.id);
+        }
+      }
+
+      const updatedDraft: ContractFormDraft = {
+        ...form,
+        convertedToTasks: true,
+        createdTaskIds: createdIds,
+      };
+      setForm(updatedDraft);
+
+      if (savedId) {
+        await updateMutation.mutateAsync({
+          id: savedId,
+          data: {
+            form: updatedDraft,
+            convertedToTasks: true,
+            createdTaskIds: createdIds,
+          },
+        });
+      }
+
+      toast.success(
+        `تم ترحيل ${selectedServices.length} خدمات بنجاح وإنشاء ${createdIds.length} مهمة رئيسية وفرعية متسلسلة للأقسام!`
+      );
+    } catch (err) {
+      console.error("Failed to convert services to tasks:", err);
+      toast.error("حدث خطأ أثناء ترحيل المهام للأقسام");
+    } finally {
+      setConvertingTasks(false);
+    }
   };
 
   const onSelectContact = (contactId: string) => {
@@ -461,6 +674,8 @@ export function ContractBuilderForm() {
       status: "draft" as const,
       form,
       contactId: form.contactId,
+      convertedToTasks: form.convertedToTasks || false,
+      createdTaskIds: form.createdTaskIds || [],
       ...pendingApprovalFields(),
     };
     if (savedId) {
@@ -587,13 +802,64 @@ export function ContractBuilderForm() {
         }}
       />
 
+      {/* Contract Template Selector */}
+      <div className="overflow-hidden rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/[0.04] via-content1 to-secondary/[0.03] p-4 sm:p-5 shadow-sm">
+        <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <Sparkles className="h-4 w-4 text-primary" />
+            <span className="text-sm font-bold text-default-800">
+              {t("contract.templates")}
+            </span>
+          </div>
+          <span className="text-xs text-default-500">
+            {t("contract.templatesHint")}
+          </span>
+        </div>
+        <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+          {Object.values(CONTRACT_TEMPLATES).map((tmpl) => {
+            const isSelected = (form.contractType || "marketing") === tmpl.id;
+            return (
+              <button
+                key={tmpl.id}
+                type="button"
+                onClick={() => handleSelectTemplate(tmpl.id)}
+                className={cn(
+                  "relative flex flex-col justify-between rounded-xl border p-3 text-start transition-all",
+                  isSelected
+                    ? "border-primary bg-primary/10 shadow-sm shadow-primary/20 ring-2 ring-primary/30"
+                    : "border-default-200 bg-white/70 hover:border-default-300 hover:bg-default-50/60 dark:bg-content1"
+                )}
+              >
+                <div>
+                  <div className="flex items-center justify-between gap-1 mb-1">
+                    <span className="text-xs font-bold text-default-900 leading-snug">
+                      {tmpl.name}
+                    </span>
+                    {isSelected && (
+                      <CheckCircle2 className="h-4 w-4 shrink-0 text-primary" />
+                    )}
+                  </div>
+                  <p className="text-[11px] text-default-500 line-clamp-2">
+                    {tmpl.department}
+                  </p>
+                </div>
+                <div className="mt-2.5 flex items-center justify-between text-[10px] text-default-400">
+                  <span>{tmpl.defaultServices.length} خدمات</span>
+                  <span>{tmpl.fields.find((f) => f.key === "durationDays")?.value || "15"} يوم</span>
+                </div>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
       {/* Progress rail */}
       <div className="overflow-hidden rounded-2xl border border-default-200 bg-content1 p-4 sm:p-5">
         <div className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-default-400">
           <Sparkles className="h-3.5 w-3.5 text-primary" />
           {t("contract.progressLabel")}
         </div>
-        <ol className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+        <ol className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {[
             {
               n: 1,
@@ -609,6 +875,12 @@ export function ContractBuilderForm() {
             },
             {
               n: 3,
+              label: t("contract.servicesTitle"),
+              done: Boolean(form.convertedToTasks),
+              active: clientReady && detailsReady && !form.convertedToTasks,
+            },
+            {
+              n: 4,
               label: t("contract.stepDownload"),
               done: false,
               active: clientReady && detailsReady,
@@ -618,7 +890,7 @@ export function ContractBuilderForm() {
               {i < arr.length - 1 && (
                 <span
                   className={cn(
-                    "absolute start-4 top-8 hidden h-[calc(100%-1rem)] w-px sm:start-auto sm:top-4 sm:end-[-0.75rem] sm:block sm:h-px sm:w-[calc(100%-2rem)]",
+                    "absolute start-4 top-8 hidden h-[calc(100%-1rem)] w-px lg:start-auto lg:top-4 lg:end-[-0.75rem] lg:block lg:h-px lg:w-[calc(100%-2rem)]",
                     s.done ? "bg-success/50" : "bg-default-200"
                   )}
                   aria-hidden
@@ -627,7 +899,7 @@ export function ContractBuilderForm() {
               <StepBadge n={s.n} done={s.done} active={s.active} />
               <span
                 className={cn(
-                  "text-sm font-semibold",
+                  "text-xs font-semibold truncate",
                   s.done || s.active ? "text-default-800" : "text-default-400"
                 )}
               >
@@ -776,6 +1048,207 @@ export function ContractBuilderForm() {
                 ))}
               </div>
             </div>
+          </SectionShell>
+
+          <SectionShell
+            step={3}
+            title={t("contract.servicesTitle")}
+            hint={t("contract.servicesHint")}
+            done={Boolean(form.convertedToTasks)}
+            active={clientReady && detailsReady && !form.convertedToTasks}
+            accent={form.convertedToTasks ? "success" : "primary"}
+          >
+            {/* Conversion status banner */}
+            {form.convertedToTasks ? (
+              <div className="rounded-xl border border-success/30 bg-success/[0.08] p-4 text-success-800 dark:text-success-300">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-success text-white shadow-sm shadow-success/30">
+                      <CheckCircle2 className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-bold text-success-900 dark:text-success-200">
+                        {t("contract.convertedBanner")}
+                      </h4>
+                      <p className="text-xs text-success-700 dark:text-success-400">
+                        {t("contract.convertedTasksCount", {
+                          count: form.createdTaskIds?.length || (form.services?.length || 0),
+                        })}
+                      </p>
+                    </div>
+                  </div>
+                  <Button
+                    color="success"
+                    variant="solid"
+                    size="sm"
+                    className="font-bold text-white shadow-sm shadow-success/30"
+                    endContent={<ExternalLink className="h-3.5 w-3.5" />}
+                    onPress={() => navigate("/tasks")}
+                  >
+                    {t("contract.viewTasks")}
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div className="rounded-xl border border-primary/20 bg-primary/[0.04] p-3.5 sm:p-4">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div className="flex items-center gap-2.5">
+                    <Workflow className="h-5 w-5 text-primary" />
+                    <div>
+                      <h4 className="text-xs font-bold text-default-900">
+                        ترحيل الخدمات إلى مهام الأقسام التنفيذية
+                      </h4>
+                      <p className="text-[11px] text-default-500">
+                        سيتم إنشاء مهام رئيسية للأقسام وتوزيع المهام الفرعية المتسلسلة على الموظفين تلقائياً.
+                      </p>
+                    </div>
+                  </div>
+                  <Button
+                    color="primary"
+                    size="sm"
+                    className="font-bold shadow-sm shadow-primary/25"
+                    startContent={<Workflow className="h-4 w-4" />}
+                    isLoading={convertingTasks}
+                    onPress={() => void handleConvertServicesToTasks()}
+                  >
+                    {t("contract.convertToTasks")}
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {/* List of service items */}
+            <div className="space-y-3">
+              {(form.services || []).map((service, sIndex) => {
+                const deptColor =
+                  DEPARTMENT_COLORS[service.department] || "primary";
+                return (
+                  <div
+                    key={service.id || `srv-${sIndex}`}
+                    className={cn(
+                      "rounded-xl border p-3.5 sm:p-4 transition-all",
+                      service.selected
+                        ? "border-default-300 bg-white shadow-sm dark:bg-content1"
+                        : "border-default-200 bg-default-50/50 opacity-60"
+                    )}
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex items-start gap-3">
+                        <Checkbox
+                          isSelected={service.selected}
+                          onValueChange={() => toggleService(service.id)}
+                          className="mt-0.5"
+                        />
+                        <div>
+                          <div className="flex flex-wrap items-center gap-2">
+                            <span className="text-sm font-bold text-default-900">
+                              {service.name || (service as any).title}
+                            </span>
+                            <Chip
+                              size="sm"
+                              variant="flat"
+                              color={deptColor}
+                              className="text-[10px] font-semibold"
+                            >
+                              {service.department}
+                            </Chip>
+                            {service.estimatedHours && (
+                              <Chip
+                                size="sm"
+                                variant="bordered"
+                                className="text-[10px] text-default-600"
+                                startContent={<Clock className="h-3 w-3" />}
+                              >
+                                {service.estimatedHours} {t("contract.estimatedHours")}
+                              </Chip>
+                            )}
+                            {service.durationDays && (
+                              <Chip
+                                size="sm"
+                                variant="bordered"
+                                className="text-[10px] text-default-600"
+                              >
+                                {service.durationDays} {t("contract.durationDays")}
+                              </Chip>
+                            )}
+                          </div>
+                          {service.description && (
+                            <p className="mt-1 text-xs text-default-500 leading-relaxed">
+                              {service.description}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+
+                      <Button
+                        isIconOnly
+                        size="sm"
+                        variant="light"
+                        color="danger"
+                        aria-label="حذف الخدمة"
+                        onPress={() => removeService(service.id)}
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
+
+                    {/* Sequential subtasks timeline */}
+                    {service.subtasks && service.subtasks.length > 0 && (
+                      <div className="mt-3.5 rounded-lg border border-dashed border-default-200 bg-default-50/70 p-2.5 sm:p-3">
+                        <div className="mb-2 flex items-center justify-between text-[11px] font-semibold text-default-500">
+                          <span className="flex items-center gap-1.5">
+                            <Layers className="h-3.5 w-3.5 text-primary" />
+                            {t("contract.subtasksCount")} ({service.subtasks.length})
+                          </span>
+                          <span className="text-[10px] text-default-400">
+                            تسلسل تنفيذي مرتبط
+                          </span>
+                        </div>
+                        <div className="flex flex-wrap items-center gap-2">
+                          {service.subtasks
+                            .slice()
+                            .sort((a, b) => (a.sequenceOrder || 0) - (b.sequenceOrder || 0))
+                            .map((st, stIdx, arr) => (
+                              <div
+                                key={st.id || `st-${stIdx}`}
+                                className="flex items-center gap-1.5"
+                              >
+                                <div className="flex items-center gap-1.5 rounded-md border border-default-200 bg-white px-2 py-1 text-xs shadow-xs dark:bg-content1">
+                                  <span className="inline-flex h-4 min-w-4 items-center justify-center rounded bg-primary/10 px-1 text-[10px] font-bold text-primary">
+                                    #{st.sequenceOrder || stIdx + 1}
+                                  </span>
+                                  <span className="text-[11px] font-medium text-default-800">
+                                    {st.title}
+                                  </span>
+                                  {st.estimatedHours && (
+                                    <span className="text-[10px] text-default-400">
+                                      ({st.estimatedHours}س)
+                                    </span>
+                                  )}
+                                </div>
+                                {stIdx < arr.length - 1 && (
+                                  <span className="text-default-300 font-bold text-xs">
+                                    ←
+                                  </span>
+                                )}
+                              </div>
+                            ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+
+            <Button
+              variant="flat"
+              size="sm"
+              startContent={<Plus className="h-4 w-4" />}
+              onPress={addCustomService}
+            >
+              {t("contract.addService")}
+            </Button>
           </SectionShell>
 
           <div className="overflow-hidden rounded-2xl border border-default-200 bg-content1">
@@ -967,7 +1440,7 @@ export function ContractBuilderForm() {
           </div>
 
           <SectionShell
-            step={3}
+            step={4}
             title={t("contract.stepDownload")}
             hint={t("contract.stepDownloadHint")}
             active={clientReady && detailsReady}

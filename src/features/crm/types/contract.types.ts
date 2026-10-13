@@ -32,15 +32,37 @@ export interface ContractDynamicField {
   value: string;
 }
 
+export interface ContractServiceSubtask {
+  id: string;
+  title: string;
+  estimatedHours?: number;
+  sequenceOrder?: number;
+}
+
+export interface ContractServiceItem {
+  id: string;
+  name: string;
+  department: string;
+  description?: string;
+  estimatedHours?: number;
+  durationDays?: number;
+  selected: boolean;
+  subtasks?: ContractServiceSubtask[];
+}
+
 export interface ContractFormDraft {
   title: string;
   contractNumber: string;
+  contractType?: string;
   contractDateIso: string;
   preamble: string;
   provider: ContractParty;
   client: ContractParty;
   fields: ContractDynamicField[];
   clauses: ContractClause[];
+  services?: ContractServiceItem[];
+  convertedToTasks?: boolean;
+  createdTaskIds?: string[];
   /** Shown in final provisions, e.g. "4" */
   pageCount: string;
   signatureDateIso: string;
@@ -61,6 +83,8 @@ export interface SavedContract {
   approvalStatus?: "pending" | "approved";
   approvedAt?: string | null;
   approvedBy?: string | null;
+  convertedToTasks?: boolean;
+  createdTaskIds?: string[];
 }
 
 export type CreateContractDTO = Omit<

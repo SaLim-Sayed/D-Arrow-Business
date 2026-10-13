@@ -651,15 +651,15 @@ export function KanbanBoard() {
     [data?.data, allUsers]
   );
 
-  const tasks = useMemo(
-    () =>
-      baseTasks.map((task) =>
-        statusOverrides[task.id]
-          ? { ...task, status: statusOverrides[task.id]! }
-          : task
-      ),
-    [baseTasks, statusOverrides]
-  );
+  const tasks = useMemo(() => {
+    const mapped = baseTasks.map((task) =>
+      statusOverrides[task.id]
+        ? { ...task, status: statusOverrides[task.id]! }
+        : task
+    );
+    if (!filters.department) return mapped;
+    return mapped.filter((t) => t.department === filters.department);
+  }, [baseTasks, statusOverrides, filters.department]);
 
   useEffect(() => {
     setStatusOverrides((prev) => {

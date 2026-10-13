@@ -30,11 +30,14 @@ import {
   CreditCard,
   FileText,
   Plus,
+  FileSignature,
+  Workflow,
 } from "lucide-react";
 import { PageHeader } from "@/components/shared/page-header";
 import { LoadingSpinner } from "@/components/shared/loading-spinner";
 import { FieldBox } from "@/components/shared/field-box";
 import { useContactQuery } from "../hooks/use-contacts";
+import { useContractsQuery } from "../hooks/use-contracts";
 import { useDealsQuery } from "../hooks/use-deals";
 import { useCrmPermissions } from "../hooks/use-crm-permissions";
 import { useClientReportsQuery } from "../hooks/use-client-reports";
@@ -106,6 +109,12 @@ export function ContactDetailPage() {
     [dealsRes?.data, contactId]
   );
 
+  const { data: contractsRes, isLoading: contractsLoading } = useContractsQuery();
+  const contactContracts = useMemo(
+    () => (contractsRes?.data ?? []).filter((c) => c.contactId === contactId),
+    [contractsRes?.data, contactId]
+  );
+
 
   if (isLoading || !contactRes) return <LoadingSpinner />;
   const contact = contactRes.data;
@@ -142,33 +151,79 @@ export function ContactDetailPage() {
         />
       </div>
 
-      <Card className="border border-default-100">
-        <CardBody className="p-4 flex flex-wrap items-center gap-3">
-          {contact.jobTitle && (
-            <Chip variant="flat" size="sm">
-              {contact.jobTitle}
-            </Chip>
-          )}
-          {contact.department && (
-            <Chip variant="bordered" size="sm">
-              {contact.department}
-            </Chip>
-          )}
-          {contact.accountName && (
-            <Chip variant="bordered" size="sm" startContent={<Building2 className="h-3 w-3" />}>
-              {contact.accountName}
-            </Chip>
-          )}
-          {contact.commercialRegister && (
-            <Chip variant="flat" size="sm" color="primary">
-              {t("contacts.form.commercialRegister")}: {contact.commercialRegister}
-            </Chip>
-          )}
-          {contact.taxNumber && (
-            <Chip variant="flat" size="sm" color="secondary">
-              {t("contacts.form.taxNumber") || "Tax No"}: {contact.taxNumber}
-            </Chip>
-          )}
+      <Card className="border border-default-100 shadow-sm rounded-3xl bg-default-50/50">
+        <CardBody className="p-4 flex flex-wrap items-center justify-between gap-3">
+          <div className="flex flex-wrap items-center gap-2">
+            {/* Classification */}
+            {contact.classification === "actual_client" && (
+              <Chip color="success" variant="flat" size="sm" className="font-bold border border-success-200">
+                🟢 {t("contacts.classification.actual_client")}
+              </Chip>
+            )}
+            {contact.classification === "potential_lead" && (
+              <Chip color="warning" variant="flat" size="sm" className="font-bold border border-warning-200">
+                🟡 {t("contacts.classification.potential_lead")}
+              </Chip>
+            )}
+            {contact.classification === "callback" && (
+              <Chip color="primary" variant="flat" size="sm" className="font-bold border border-primary-200">
+                🔵 {t("contacts.classification.callback")}
+              </Chip>
+            )}
+
+            {/* Satisfaction */}
+            {contact.satisfaction === "satisfied" && (
+              <Chip color="success" variant="dot" size="sm" className="font-bold">
+                😊 {t("contacts.satisfaction.satisfied")}
+              </Chip>
+            )}
+            {contact.satisfaction === "neutral" && (
+              <Chip color="warning" variant="dot" size="sm" className="font-bold">
+                😐 {t("contacts.satisfaction.neutral")}
+              </Chip>
+            )}
+            {contact.satisfaction === "unsatisfied" && (
+              <Chip color="danger" variant="dot" size="sm" className="font-bold">
+                😞 {t("contacts.satisfaction.unsatisfied")}
+              </Chip>
+            )}
+
+            {contact.jobTitle && (
+              <Chip variant="flat" size="sm">
+                {contact.jobTitle}
+              </Chip>
+            )}
+            {contact.department && (
+              <Chip variant="bordered" size="sm">
+                {contact.department}
+              </Chip>
+            )}
+            {contact.accountName && (
+              <Chip variant="bordered" size="sm" startContent={<Building2 className="h-3 w-3" />}>
+                {contact.accountName}
+              </Chip>
+            )}
+            {contact.commercialRegister && (
+              <Chip variant="flat" size="sm" color="primary">
+                {t("contacts.form.commercialRegister")}: {contact.commercialRegister}
+              </Chip>
+            )}
+            {contact.taxNumber && (
+              <Chip variant="flat" size="sm" color="secondary">
+                {t("contacts.form.taxNumber") || "Tax No"}: {contact.taxNumber}
+              </Chip>
+            )}
+          </div>
+
+          {/* Follow-up Employee Box */}
+          <div className="flex items-center gap-2 px-3 py-1.5 bg-primary-50/70 dark:bg-primary-950/30 rounded-2xl border border-primary-200/50">
+            <span className="text-xs text-default-500 font-medium">الموظف المتابع:</span>
+            {assignee ? (
+              <span className="text-xs font-bold text-primary">{assignee.name}</span>
+            ) : (
+              <span className="text-xs text-default-400 italic">{t("contacts.filters.unassigned")}</span>
+            )}
+          </div>
         </CardBody>
       </Card>
 
@@ -187,39 +242,120 @@ export function ContactDetailPage() {
             </span>
           }
         >
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
-            <FieldBox label={t("contacts.form.firstName")}>{contact.firstName}</FieldBox>
-            <FieldBox label={t("contacts.form.lastName")}>{contact.lastName || "—"}</FieldBox>
-            <FieldBox label={t("contacts.form.email")} icon={<Mail className="h-3.5 w-3.5" />}>
-              {contact.email ? (
-                <a href={`mailto:${contact.email}`} className="text-primary hover:underline">
-                  {contact.email}
-                </a>
-              ) : (
-                "—"
-              )}
-            </FieldBox>
-            <FieldBox label={t("contacts.form.phone")} icon={<Phone className="h-3.5 w-3.5" />}>
-              {contact.phone || "—"}
-            </FieldBox>
-            <FieldBox label={t("contacts.form.jobTitle")}>{contact.jobTitle || "—"}</FieldBox>
-            <FieldBox label={t("contacts.form.department")}>{contact.department || "—"}</FieldBox>
-            <FieldBox label={t("contacts.form.accountName")} icon={<Building2 className="h-3.5 w-3.5" />}>
-              {contact.accountName || "—"}
-            </FieldBox>
-            <FieldBox label={t("contacts.form.commercialRegister")}>
-              {contact.commercialRegister || "—"}
-            </FieldBox>
-            <FieldBox label={t("contacts.form.taxNumber") || "Tax Number"}>
-              {contact.taxNumber || "—"}
-            </FieldBox>
-            <FieldBox label={t("contacts.form.billingAddress") || "Billing Address"}>
-              {contact.billingAddress || "—"}
-            </FieldBox>
-            <FieldBox label={t("contacts.form.assignedTo")}>
-              {assignee?.name ?? t("contacts.filters.unassigned")}
-            </FieldBox>
-            <FieldBox label={t("contacts.columns.created")}>{formatDate(contact.createdAt)}</FieldBox>
+          <div className="space-y-4 pt-4">
+            {/* Quick Contact Bar */}
+            <div className="p-4 bg-default-50 rounded-3xl border border-default-200/70 flex flex-wrap items-center justify-between gap-4">
+              <div className="flex flex-wrap items-center gap-4">
+                {contact.phone && (
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-default-500 font-bold">الهاتف:</span>
+                    <span className="font-mono text-sm font-bold text-default-800">{contact.phone}</span>
+                    <Button
+                      size="sm"
+                      variant="flat"
+                      color="primary"
+                      className="rounded-xl h-7"
+                      as="a"
+                      href={`tel:${contact.phone}`}
+                    >
+                      اتصال
+                    </Button>
+                  </div>
+                )}
+                {contact.secondaryPhone && (
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-default-500 font-bold">هاتف إضافي:</span>
+                    <span className="font-mono text-sm font-semibold text-default-700">{contact.secondaryPhone}</span>
+                    <Button
+                      size="sm"
+                      variant="light"
+                      className="rounded-xl h-7 text-primary"
+                      as="a"
+                      href={`tel:${contact.secondaryPhone}`}
+                    >
+                      اتصال
+                    </Button>
+                  </div>
+                )}
+                {(contact.whatsappPhone || contact.phone) && (
+                  <Button
+                    size="sm"
+                    variant="flat"
+                    color="success"
+                    className="rounded-xl font-bold h-7"
+                    as="a"
+                    href={`https://wa.me/${(contact.whatsappPhone || contact.phone).replace(/\D/g, "")}`}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    واتساب
+                  </Button>
+                )}
+              </div>
+            </div>
+
+            {/* Client Interests */}
+            {contact.interests && contact.interests.length > 0 && (
+              <div className="p-4 bg-default-50/60 rounded-3xl border border-default-100 space-y-2">
+                <span className="text-xs font-bold text-default-600 block">اهتمامات العميل:</span>
+                <div className="flex flex-wrap gap-1.5">
+                  {contact.interests.map((interest) => (
+                    <Chip key={interest} size="sm" color="primary" variant="flat" className="font-medium">
+                      ✦ {interest}
+                    </Chip>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Satisfaction notes */}
+            {contact.satisfactionNotes && (
+              <div className="p-4 bg-amber-50/50 dark:bg-amber-950/20 rounded-3xl border border-amber-200/50 space-y-1">
+                <span className="text-xs font-bold text-amber-800 dark:text-amber-200">
+                  ملاحظات تجربة ورضا العميل:
+                </span>
+                <p className="text-sm text-default-700">{contact.satisfactionNotes}</p>
+              </div>
+            )}
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <FieldBox label={t("contacts.form.firstName")}>{contact.firstName}</FieldBox>
+              <FieldBox label={t("contacts.form.lastName")}>{contact.lastName || "—"}</FieldBox>
+              <FieldBox label={t("contacts.form.email")} icon={<Mail className="h-3.5 w-3.5" />}>
+                {contact.email ? (
+                  <a href={`mailto:${contact.email}`} className="text-primary hover:underline">
+                    {contact.email}
+                  </a>
+                ) : (
+                  "—"
+                )}
+              </FieldBox>
+              <FieldBox label={t("contacts.form.phone")} icon={<Phone className="h-3.5 w-3.5" />}>
+                {contact.phone || "—"}
+              </FieldBox>
+              <FieldBox label={t("contacts.form.jobTitle")}>{contact.jobTitle || "—"}</FieldBox>
+              <FieldBox label={t("contacts.form.department")}>{contact.department || "—"}</FieldBox>
+              <FieldBox label={t("contacts.form.accountName")} icon={<Building2 className="h-3.5 w-3.5" />}>
+                {contact.accountName || "—"}
+              </FieldBox>
+              <FieldBox label="الموظف المتابع المسؤول">
+                {assignee?.name ? (
+                  <span className="font-bold text-primary">{assignee.name}</span>
+                ) : (
+                  t("contacts.filters.unassigned")
+                )}
+              </FieldBox>
+              <FieldBox label={t("contacts.form.commercialRegister")}>
+                {contact.commercialRegister || "—"}
+              </FieldBox>
+              <FieldBox label={t("contacts.form.taxNumber") || "Tax Number"}>
+                {contact.taxNumber || "—"}
+              </FieldBox>
+              <FieldBox label={t("contacts.form.billingAddress") || "Billing Address"}>
+                {contact.billingAddress || "—"}
+              </FieldBox>
+              <FieldBox label={t("contacts.columns.created")}>{formatDate(contact.createdAt)}</FieldBox>
+            </div>
           </div>
         </Tab>
 
@@ -507,6 +643,106 @@ export function ContactDetailPage() {
                     <div className="mt-4 pt-3 border-t border-default-100 flex justify-between items-center text-xs text-default-400">
                       <span>الموظف: <strong className="text-foreground font-semibold">{report.authorName}</strong></span>
                       <span className="text-blue-600 font-semibold hover:underline">عرض المستند ←</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </Tab>
+        <Tab
+          key="contracts"
+          title={
+            <span className="flex items-center gap-1.5">
+              <FileSignature className="h-4 w-4 text-primary" />
+              العقود ({contactContracts.length})
+            </span>
+          }
+        >
+          <div className="pt-4 space-y-4">
+            <div className="flex flex-wrap items-center justify-between gap-3 bg-default-50 p-4 rounded-xl border border-default-100">
+              <div>
+                <h4 className="font-bold text-sm text-foreground">
+                  عقود العميل ونماذج الخدمات
+                </h4>
+                <p className="text-xs text-default-500 mt-0.5">
+                  العقود المبرمة وبنود الخدمات المرتبطة بمهام الأقسام التنفيذية
+                </p>
+              </div>
+              <Button
+                color="primary"
+                size="sm"
+                className="font-bold rounded-xl"
+                startContent={<Plus className="w-4 h-4" />}
+                onPress={() => navigate("/crm/contracts")}
+              >
+                إنشاء عقد جديد
+              </Button>
+            </div>
+
+            {contractsLoading ? (
+              <LoadingSpinner />
+            ) : contactContracts.length === 0 ? (
+              <div className="text-center py-10 bg-default-50/50 border border-default-100 rounded-xl">
+                <FileSignature className="w-10 h-10 text-default-400 mx-auto mb-2" />
+                <p className="text-default-500 text-sm font-medium">لا توجد عقود مسجلة لهذا العميل حتى الآن.</p>
+                <p className="text-xs text-default-400 mt-1">اضغط على زر إنشاء عقد جديد لصياغة عقد وتحويل خدماته إلى مهام الأقسام.</p>
+                <Button
+                  color="primary"
+                  variant="flat"
+                  size="sm"
+                  className="mt-4 font-bold"
+                  startContent={<Plus className="h-4 w-4" />}
+                  onPress={() => navigate("/crm/contracts")}
+                >
+                  إنشاء عقد الآن
+                </Button>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {contactContracts.map((c) => (
+                  <div
+                    key={c.id}
+                    className="p-4 rounded-xl border border-default-200 bg-background hover:bg-default-50 transition-all hover:shadow-md flex flex-col justify-between"
+                  >
+                    <div>
+                      <div className="flex justify-between items-center gap-2 mb-2">
+                        <span className="text-xs font-mono font-bold text-primary px-2 py-0.5 rounded bg-primary/10 border border-primary/20">
+                          #{c.form.contractNumber}
+                        </span>
+                        <Chip
+                          size="sm"
+                          variant="flat"
+                          color={c.convertedToTasks ? "success" : "default"}
+                          startContent={c.convertedToTasks ? <Workflow className="h-3 w-3" /> : undefined}
+                          className="text-[10px] font-bold"
+                        >
+                          {c.convertedToTasks ? "مرحّل لمهام الأقسام" : "مسودة"}
+                        </Chip>
+                      </div>
+                      <h4 className="font-bold text-sm text-foreground line-clamp-1 mb-1">
+                        {c.title}
+                      </h4>
+                      <p className="text-xs text-default-500">
+                        تاريخ العقد: {c.form.contractDateIso} · بنود الخدمات: {c.form.services?.length || 0}
+                      </p>
+                    </div>
+
+                    <div className="mt-4 pt-3 border-t border-default-100 flex justify-between items-center text-xs">
+                      <span className="text-default-400 font-mono">
+                        {c.form.fields.find((f) => f.key === "amountInclVat")?.value
+                          ? `${c.form.fields.find((f) => f.key === "amountInclVat")?.value} ر.س`
+                          : "—"}
+                      </span>
+                      <Button
+                        size="sm"
+                        variant="light"
+                        color="primary"
+                        className="font-bold h-7"
+                        onPress={() => navigate("/crm/contracts")}
+                      >
+                        عرض العقد ←
+                      </Button>
                     </div>
                   </div>
                 ))}
