@@ -172,6 +172,19 @@ export const AuthService = {
 
       const idToken = await getIdToken(firebaseUser);
 
+      const rawName = (data.companyName || "").trim();
+      const lowerName = rawName.toLowerCase();
+      const isDefaultDArrow =
+        lowerName === "darrow" ||
+        lowerName === "d-arrow" ||
+        lowerName === "d-arrow business" ||
+        lowerName === "دي أرو" ||
+        lowerName === "دي أرو للأعمال";
+
+      const normalizedCompanyId = isDefaultDArrow
+        ? "d-arrow"
+        : lowerName.replace(/\s+/g, "-") || "default-company";
+
       const userData: User = {
         id: firebaseUser.uid,
         email: data.email,
@@ -179,7 +192,7 @@ export const AuthService = {
         nameAr: "",
         avatar: `https://avatar.vercel.sh/${firebaseUser.uid}`,
         role: "admin",
-        companyId: data.companyName.toLowerCase().replace(/\s+/g, "-") || "default-company",
+        companyId: normalizedCompanyId,
         companyName: data.companyName,
       };
 
@@ -190,13 +203,16 @@ export const AuthService = {
         updatedAt: new Date().toISOString(),
       });
 
-      await setDoc(doc(db, "companies", userData.companyId), {
-        name: data.companyName,
-        commercialRegister: data.commercialRegister?.trim() || "",
-        defaultCurrency: "SAR",
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      });
+      await setDoc(
+        doc(db, "companies", userData.companyId),
+        {
+          name: data.companyName,
+          commercialRegister: data.commercialRegister?.trim() || "",
+          defaultCurrency: "SAR",
+          updatedAt: new Date().toISOString(),
+        },
+        { merge: true }
+      );
 
       return {
         data: {
