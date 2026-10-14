@@ -142,7 +142,24 @@
       "deleteError": "فشل حذف الدعوة",
       "deleteAll": "حذف كل الدعوات",
       "deleteAllConfirm": "حذف جميع الدعوات المرسلة لهذه الشركة؟",
-      "deletedAll": "تم حذف {{count}} دعوة"
+      "deletedAll": "تم حذف {{count}} دعوة",
+      "modeLink": "رابط دعوة",
+      "modePassword": "إنشاء بكلمة سر",
+      "passwordSubtitle": "أنشئ الحساب الآن وسلّم بيانات الدخول للعضو بنفسك.",
+      "name": "الاسم الكامل",
+      "namePlaceholder": "اسم العضو",
+      "password": "كلمة السر",
+      "passwordHint": "8 أحرف على الأقل.",
+      "generatePassword": "توليد",
+      "mustChangePassword": "اطلب منه تغيير كلمة السر أول ما يدخل",
+      "createSubmit": "إنشاء الحساب",
+      "created": "تم إنشاء الحساب. سلّم بيانات الدخول للعضو.",
+      "credentialsTitle": "بيانات الدخول",
+      "copyCredentials": "نسخ البيانات",
+      "credentialsCopied": "تم نسخ بيانات الدخول",
+      "emailInUse": "هذا البريد له حساب بالفعل. أرسل له رابط دعوة بدلاً من ذلك أو استخدم بريداً آخر.",
+      "weakPassword": "كلمة السر ضعيفة. استخدم 8 أحرف على الأقل.",
+      "createError": "فشل إنشاء الحساب"
     }
   },
   "roles": {

@@ -52,6 +52,54 @@ service cloud.firestore {
       );
     }
 
+    // Fields that decide what a user can reach. Only company admins, or the
+    // founding / invite-acceptance flows below, may set them.
+    function privilegedUserKeys() {
+      return ['role', 'companyId', 'portalAccess', 'portalSubRoles', 'customPermissions'];
+    }
+
+    function companyDocPath(companyId) {
+      return /databases/$(database)/documents/companies/$(companyId);
+    }
+
+    function signedInEmail() {
+      return request.auth.token.get('email', '') is string
+        ? request.auth.token.get('email', '').lower()
+        : '';
+    }
+
+    // Registration / Google sign-up founds a brand-new company. The company must
+    // not exist before this write and must exist after it, so the profile and the
+    // company are written together in one batch. This is what stops someone from
+    // typing an existing company's name and becoming its admin.
+    function foundsNewCompany(data) {
+      return data.role == 'admin'
+        && data.companyId is string
+        && data.companyId.size() > 0
+        && !exists(companyDocPath(data.companyId))
+        && existsAfter(companyDocPath(data.companyId));
+    }
+
+    // Joining an existing company requires a pending invite addressed to the
+    // signed-in email, and the profile must match it field for field.
+    function inviteMatches(invite, data) {
+      return invite.status == 'pending'
+        && invite.email.lower() == signedInEmail()
+        && invite.companyId == data.companyId
+        && invite.role == data.role
+        && (!('expiresAtTs' in invite) || invite.expiresAtTs > request.time)
+        && data.get('portalAccess', []) == (invite.get('portalAccess', null) == null ? [] : invite.portalAccess)
+        && data.get('portalSubRoles', {}) == (invite.get('portalSubRoles', null) == null ? {} : invite.portalSubRoles)
+        && data.get('customPermissions', []) == [];
+    }
+
+    function acceptsInvite(data) {
+      return data.get('inviteToken', '') is string
+        && data.get('inviteToken', '') != ''
+        && exists(/databases/$(database)/documents/invites/$(data.inviteToken))
+        && inviteMatches(get(/databases/$(database)/documents/invites/$(data.inviteToken)).data, data);
+    }
+
     // User profiles
     match /users/{userId} {
       // Own profile, or teammates in the same company
@@ -60,13 +108,22 @@ service cloud.firestore {
         || (hasUserDoc() && resource.data.companyId == userDoc().companyId)
       );
 
-      // New account (register / invite accept / Google)
-      allow create: if signedIn() && request.auth.uid == userId;
+      // New account: either founding a new company or accepting an invite.
+      allow create: if signedIn()
+        && request.auth.uid == userId
+        && (foundsNewCompany(request.resource.data) || acceptsInvite(request.resource.data));
 
-      // Self update, or company admin updating teammates
       allow update: if signedIn() && (
-        request.auth.uid == userId
-        || (hasUserDoc() && isCompanyAdmin(resource.data.companyId))
+        // Self: profile fields only, never role, company or permissions
+        (request.auth.uid == userId
+          && !request.resource.data.diff(resource.data).affectedKeys().hasAny(privilegedUserKeys()))
+        // Company admin managing a teammate: can't move them to another company,
+        // and only a super admin can hand out super admin.
+        || (isCompanyAdmin(resource.data.companyId)
+          && request.resource.data.companyId == resource.data.companyId
+          && (request.resource.data.get('role', '') != 'super_admin'
+            || resource.data.get('role', '') == 'super_admin'
+            || userDoc().role == 'super_admin'))
       );
 
       allow delete: if hasUserDoc() && isCompanyAdmin(resource.data.companyId);
@@ -85,23 +142,30 @@ service cloud.firestore {
         && isCompanyAdmin(request.resource.data.companyId)
         && request.resource.data.status == 'pending'
         && request.resource.data.email is string
-        && request.resource.data.token == token;
+        && request.resource.data.token == token
+        && (request.resource.data.role != 'super_admin' || userDoc().role == 'super_admin');
 
       allow update: if signedIn() && (
-        isCompanyAdmin(resource.data.companyId)
+        (isCompanyAdmin(resource.data.companyId)
+          && request.resource.data.companyId == resource.data.companyId)
+        // The invitee marks their own invite accepted, and nothing else
         || (
           resource.data.status == 'pending'
           && request.resource.data.status == 'accepted'
           && request.auth.uid == request.resource.data.acceptedBy
+          && resource.data.email.lower() == signedInEmail()
+          && request.resource.data.diff(resource.data).affectedKeys()
+            .hasOnly(['status', 'acceptedAt', 'acceptedBy'])
         )
       );
 
       allow delete: if signedIn() && isCompanyAdmin(resource.data.companyId);
     }
 
-    // OTP password-reset codes (EmailJS flow)
+    // OTP password-reset codes (EmailJS flow). OtpService is not wired into any
+    // page; keep the collection closed instead of world-readable.
     match /otpResets/{id} {
-      allow read, write: if true;
+      allow read, write: if false;
     }
 
     // Public invoice PDF shares (QR scan → PDF). No auth required to open.
@@ -124,7 +188,11 @@ service cloud.firestore {
 
     match /companies/{companyId} {
       allow read, write: if belongsToCompany(companyId);
-      allow create: if signedIn();
+      // Founding: only alongside creating your own profile for this company,
+      // in the same batch (see foundsNewCompany).
+      allow create: if signedIn()
+        && !hasUserDoc()
+        && getAfter(/databases/$(database)/documents/users/$(request.auth.uid)).data.companyId == companyId;
 
       // Allow public unauthenticated single GET for client reports (direct share link)
       match /client_reports/{reportId} {

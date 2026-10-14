@@ -11,7 +11,7 @@ import {
   signInWithPopup,
 } from "firebase/auth";
 import { auth, db } from "@/lib/firebase";
-import { doc, getDoc, setDoc } from "firebase/firestore";
+import { doc, getDoc, setDoc, writeBatch, type Firestore } from "firebase/firestore";
 import type { ApiResponse } from "@/types/api.types";
 import { withLogging } from "@/lib/service-utils";
 import type {
@@ -22,9 +22,80 @@ import type {
 } from "../types/auth.types";
 import { mapFirestoreUser } from "../utils/map-user";
 import { InvitesService } from "@/features/companies/api/invites.service";
+import type { TeamInvite } from "@/features/companies/types/invite.types";
 import { STORAGE_KEYS } from "@/lib/constants";
 
 const SERVICE_NAME = "AuthService";
+
+/**
+ * Every new sign-up founds its own company. The id comes from the user's uid,
+ * never from the company name, so typing an existing company's name can't land
+ * someone inside it. Firestore rules enforce the same thing server-side.
+ */
+function newCompanyIdFor(uid: string): string {
+  return `co-${uid}`.toLowerCase().replace(/[^a-z0-9-]/g, "-");
+}
+
+/**
+ * Writes the invitee's profile and marks the invite accepted in one batch, as
+ * the signed-in invitee. Firestore rules check the profile against the invite
+ * (company, role, portal access, email), so both writes must go together.
+ * `firestore` is a parameter so admins can run this through a secondary app.
+ */
+export async function writeAcceptedInvite(
+  firestore: Firestore,
+  params: {
+    uid: string;
+    name: string;
+    photoURL?: string | null;
+    invite: TeamInvite;
+    mustChangePassword?: boolean;
+  }
+): Promise<User> {
+  const { uid, name, invite } = params;
+  const userData: User = {
+    id: uid,
+    email: invite.email,
+    name: name.trim(),
+    nameAr: "",
+    avatar: params.photoURL || `https://avatar.vercel.sh/${uid}`,
+    role: invite.role,
+    companyId: invite.companyId,
+    companyName: invite.companyName,
+    portalAccess: invite.portalAccess ?? undefined,
+    portalSubRoles: invite.portalSubRoles ?? undefined,
+  };
+
+  const now = new Date().toISOString();
+  const batch = writeBatch(firestore);
+  batch.set(doc(firestore, "users", uid), {
+    ...userData,
+    portalAccess: invite.portalAccess ?? [],
+    portalSubRoles: invite.portalSubRoles ?? {},
+    inviteToken: invite.token,
+    ...(params.mustChangePassword ? { mustChangePassword: true } : {}),
+    createdAt: now,
+    updatedAt: now,
+  });
+  batch.update(doc(firestore, "invites", invite.token), {
+    status: "accepted",
+    acceptedAt: now,
+    acceptedBy: uid,
+  });
+  await batch.commit();
+  return userData;
+}
+
+/** Throws the same error codes the accept-invite page already understands. */
+export function assertInviteUsable(invite: TeamInvite | null): asserts invite is TeamInvite {
+  if (!invite) throw new Error("INVITE_NOT_FOUND");
+  if (invite.status === "expired" || new Date(invite.expiresAt).getTime() < Date.now()) {
+    throw new Error("INVITE_EXPIRED");
+  }
+  if (invite.status === "revoked") throw new Error("INVITE_REVOKED");
+  if (invite.status === "accepted") throw new Error("INVITE_ACCEPTED");
+  if (invite.status !== "pending") throw new Error("INVITE_INVALID");
+}
 const googleProvider = new GoogleAuthProvider();
 
 async function buildLoginResponse(
@@ -116,8 +187,7 @@ export const AuthService = {
           firebaseUser.email?.split("@")[0] ||
           "User";
         const companyName = `${displayName}'s Workspace`;
-        const companyId =
-          `co-${firebaseUser.uid}`.toLowerCase().replace(/[^a-z0-9-]/g, "-");
+        const companyId = newCompanyIdFor(firebaseUser.uid);
 
         const newUser: User = {
           id: firebaseUser.uid,
@@ -132,19 +202,18 @@ export const AuthService = {
           companyName,
         };
 
-        await setDoc(userDocRef, {
-          ...newUser,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        });
-
-        await setDoc(doc(db, "companies", companyId), {
+        // Profile and company together: rules only allow founding in one batch.
+        const now = new Date().toISOString();
+        const batch = writeBatch(db);
+        batch.set(userDocRef, { ...newUser, createdAt: now, updatedAt: now });
+        batch.set(doc(db, "companies", companyId), {
           name: companyName,
           commercialRegister: "",
           defaultCurrency: "SAR",
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
+          createdAt: now,
+          updatedAt: now,
         });
+        await batch.commit();
 
         userData = newUser as unknown as Record<string, unknown>;
       }
@@ -172,18 +241,9 @@ export const AuthService = {
 
       const idToken = await getIdToken(firebaseUser);
 
-      const rawName = (data.companyName || "").trim();
-      const lowerName = rawName.toLowerCase();
-      const isDefaultDArrow =
-        lowerName === "darrow" ||
-        lowerName === "d-arrow" ||
-        lowerName === "d-arrow business" ||
-        lowerName === "دي أرو" ||
-        lowerName === "دي أرو للأعمال";
-
-      const normalizedCompanyId = isDefaultDArrow
-        ? "d-arrow"
-        : lowerName.replace(/\s+/g, "-") || "default-company";
+      // Registration always founds a new company. Joining an existing one is
+      // only possible through an invite (link, or created by an admin).
+      const newCompanyId = newCompanyIdFor(firebaseUser.uid);
 
       const userData: User = {
         id: firebaseUser.uid,
@@ -192,27 +252,25 @@ export const AuthService = {
         nameAr: "",
         avatar: `https://avatar.vercel.sh/${firebaseUser.uid}`,
         role: "admin",
-        companyId: normalizedCompanyId,
+        companyId: newCompanyId,
         companyName: data.companyName,
       };
 
-      await setDoc(doc(db, "users", firebaseUser.uid), {
+      const now = new Date().toISOString();
+      const batch = writeBatch(db);
+      batch.set(doc(db, "users", firebaseUser.uid), {
         ...userData,
-        companyName: data.companyName,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
+        createdAt: now,
+        updatedAt: now,
       });
-
-      await setDoc(
-        doc(db, "companies", userData.companyId),
-        {
-          name: data.companyName,
-          commercialRegister: data.commercialRegister?.trim() || "",
-          defaultCurrency: "SAR",
-          updatedAt: new Date().toISOString(),
-        },
-        { merge: true }
-      );
+      batch.set(doc(db, "companies", newCompanyId), {
+        name: data.companyName,
+        commercialRegister: data.commercialRegister?.trim() || "",
+        defaultCurrency: "SAR",
+        createdAt: now,
+        updatedAt: now,
+      });
+      await batch.commit();
 
       return {
         data: {
@@ -232,21 +290,7 @@ export const AuthService = {
   }): Promise<ApiResponse<LoginResponse>> {
     return withLogging(SERVICE_NAME, "acceptInvite", (async () => {
       const invite = await InvitesService.getByToken(input.token);
-      if (!invite) {
-        throw new Error("INVITE_NOT_FOUND");
-      }
-      if (invite.status === "expired" || new Date(invite.expiresAt).getTime() < Date.now()) {
-        throw new Error("INVITE_EXPIRED");
-      }
-      if (invite.status === "revoked") {
-        throw new Error("INVITE_REVOKED");
-      }
-      if (invite.status === "accepted") {
-        throw new Error("INVITE_ACCEPTED");
-      }
-      if (invite.status !== "pending") {
-        throw new Error("INVITE_INVALID");
-      }
+      assertInviteUsable(invite);
 
       const userCredential = await createUserWithEmailAndPassword(
         auth,
@@ -259,30 +303,12 @@ export const AuthService = {
         displayName: input.name.trim(),
       });
 
-      const userData: User = {
-        id: firebaseUser.uid,
-        email: invite.email,
-        name: input.name.trim(),
-        nameAr: "",
-        avatar:
-          firebaseUser.photoURL ||
-          `https://avatar.vercel.sh/${firebaseUser.uid}`,
-        role: invite.role,
-        companyId: invite.companyId,
-        companyName: invite.companyName,
-        portalAccess: invite.portalAccess ?? undefined,
-        portalSubRoles: invite.portalSubRoles ?? undefined,
-      };
-
-      await setDoc(doc(db, "users", firebaseUser.uid), {
-        ...userData,
-        portalAccess: invite.portalAccess ?? [],
-        portalSubRoles: invite.portalSubRoles ?? {},
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
+      const userData = await writeAcceptedInvite(db, {
+        uid: firebaseUser.uid,
+        name: input.name,
+        photoURL: firebaseUser.photoURL,
+        invite,
       });
-
-      await InvitesService.markAccepted(input.token, firebaseUser.uid);
 
       const idToken = await getIdToken(firebaseUser);
       try {

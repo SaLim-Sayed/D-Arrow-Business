@@ -142,7 +142,24 @@
       "deleteError": "Failed to delete invitation",
       "deleteAll": "Delete all invites",
       "deleteAllConfirm": "Delete all sent invitations for this company?",
-      "deletedAll": "Deleted {{count}} invitation(s)"
+      "deletedAll": "Deleted {{count}} invitation(s)",
+      "modeLink": "Invite link",
+      "modePassword": "Create with password",
+      "passwordSubtitle": "Create the account now and hand the login details to the member yourself.",
+      "name": "Full name",
+      "namePlaceholder": "Member's name",
+      "password": "Password",
+      "passwordHint": "At least 8 characters.",
+      "generatePassword": "Generate",
+      "mustChangePassword": "Ask them to change the password on first sign-in",
+      "createSubmit": "Create account",
+      "created": "Account created. Share the sign-in details with the member.",
+      "credentialsTitle": "Sign-in details",
+      "copyCredentials": "Copy details",
+      "credentialsCopied": "Sign-in details copied",
+      "emailInUse": "This email already has an account. Send an invite link instead, or use a different email.",
+      "weakPassword": "Password is too weak. Use at least 8 characters.",
+      "createError": "Failed to create the account"
     }
   },
   "roles": {

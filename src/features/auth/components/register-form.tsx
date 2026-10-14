@@ -1,4 +1,4 @@
-import { Button, Input, Select, SelectItem } from "@heroui/react";
+import { Button, Input } from "@heroui/react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   AlertCircle,
@@ -9,7 +9,6 @@ import {
   FileDigit,
   Lock,
   Mail,
-  Plus,
   User,
 } from "lucide-react";
 import { useMemo, useState } from "react";
@@ -39,27 +38,6 @@ export function RegisterForm() {
   const navigate = useNavigate();
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [isCustomCompany, setIsCustomCompany] = useState(false);
-  const [selectedCompanyKey, setSelectedCompanyKey] =
-    useState<string>("DArrow");
-  const [savedCustomCompanies, setSavedCustomCompanies] = useState<string[]>(
-    () => {
-      try {
-        const raw = localStorage.getItem("darrow_custom_companies");
-        if (raw) {
-          const parsed = JSON.parse(raw);
-          if (Array.isArray(parsed)) {
-            return parsed.filter(
-              (c) => typeof c === "string" && c !== "DArrow",
-            );
-          }
-        }
-      } catch {
-        // ignore
-      }
-      return [];
-    },
-  );
   const { initialize } = useAuthStore();
 
   const registerSchema = useMemo(
@@ -80,37 +58,9 @@ export function RegisterForm() {
 
   type RegisterFormData = z.infer<typeof registerSchema>;
 
-  const companyOptions = useMemo(() => {
-    return [
-      {
-        key: "DArrow",
-        label: "DArrow",
-        subtitle: t("register.defaultCompanyBadge"),
-        isDefault: true,
-        isCustomAction: false,
-      },
-
-      ...savedCustomCompanies.map((c) => ({
-        key: c,
-        label: c,
-        subtitle: "",
-        isDefault: false,
-        isCustomAction: false,
-      })),
-      {
-        key: "__custom__",
-        label: t("register.newCompanyOption"),
-        subtitle: "",
-        isDefault: false,
-        isCustomAction: true,
-      },
-    ];
-  }, [savedCustomCompanies, t]);
-
   const {
     control,
     handleSubmit,
-    setValue,
     formState: { isSubmitting, errors, isSubmitted },
   } = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
@@ -119,7 +69,7 @@ export function RegisterForm() {
     defaultValues: {
       name: "",
       email: "",
-      companyName: "DArrow",
+      companyName: "",
       commercialRegister: "",
       password: "",
     },
@@ -127,28 +77,6 @@ export function RegisterForm() {
 
   async function onSubmit(data: RegisterFormData) {
     setError("");
-
-    if (
-      data.companyName &&
-      data.companyName !== "DArrow" &&
-      data.companyName !== "D-Arrow Business"
-    ) {
-      try {
-        if (!savedCustomCompanies.includes(data.companyName)) {
-          const updated = [data.companyName, ...savedCustomCompanies].slice(
-            0,
-            5,
-          );
-          setSavedCustomCompanies(updated);
-          localStorage.setItem(
-            "darrow_custom_companies",
-            JSON.stringify(updated),
-          );
-        }
-      } catch {
-        // ignore
-      }
-    }
 
     try {
       await AuthService.register(data);
@@ -222,169 +150,30 @@ export function RegisterForm() {
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <div className="flex flex-col">
-          {isCustomCompany ? (
-            <div className="flex flex-col animate-in fade-in duration-200">
-              <div className="flex items-center justify-between pb-1">
-                <label className="font-semibold text-default-700 text-sm">
-                  {t("register.newCompanyTitle")}
-                </label>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setIsCustomCompany(false);
-                    setSelectedCompanyKey("DArrow");
-                    setValue("companyName", "DArrow", { shouldValidate: true });
-                  }}
-                  className="text-xs text-primary font-bold hover:underline transition-colors flex items-center gap-1"
-                >
-                  <Building2 className="h-3 w-3" />
-                  <span>{t("register.returnToPreset")}</span>
-                </button>
-              </div>
-
-              <Controller
-                name="companyName"
-                control={control}
-                render={({ field }) => (
-                  <Input
-                    {...field}
-                    placeholder={t("register.newCompanyPlaceholder")}
-                    variant="bordered"
-                    size="lg"
-                    radius="lg"
-                    autoFocus
-                    isInvalid={isSubmitted && !!errors.companyName}
-                    errorMessage={
-                      isSubmitted ? errors.companyName?.message : undefined
-                    }
-                    startContent={
-                      <Building2 className="pointer-events-none h-4 w-4 text-primary shrink-0" />
-                    }
-                    classNames={inputClassNames}
-                  />
-                )}
-              />
-            </div>
-          ) : (
-            <div className="flex flex-col">
-              <div className="flex items-center justify-between pb-1">
-                <label className="font-semibold text-default-700 text-sm">
-                  {t("register.companyName")}
-                </label>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setIsCustomCompany(true);
-                    setValue("companyName", "", { shouldValidate: false });
-                  }}
-                  className="text-xs text-primary font-bold hover:underline transition-colors flex items-center gap-1"
-                >
-                  <Plus className="h-3 w-3" />
-                  <span>{t("register.writeNewCompany")}</span>
-                </button>
-              </div>
-
-              <Controller
-                name="companyName"
-                control={control}
-                render={({ field }) => (
-                  <Select
-                    aria-label={t("register.companyName")}
-                    placeholder={t("register.companyNamePlaceholder")}
-                    variant="bordered"
-                    size="lg"
-                    radius="lg"
-                    items={companyOptions}
-                    selectedKeys={
-                      new Set([field.value || selectedCompanyKey || "DArrow"])
-                    }
-                    onSelectionChange={(keys) => {
-                      const val = Array.from(keys)[0] as string | undefined;
-                      if (!val) return;
-                      if (val === "__custom__") {
-                        setIsCustomCompany(true);
-                        setValue("companyName", "", { shouldValidate: false });
-                      } else {
-                        setSelectedCompanyKey(val);
-                        field.onChange(val);
-                      }
-                    }}
-                    startContent={
-                      <Building2 className="pointer-events-none h-4 w-4 text-default-400 shrink-0" />
-                    }
-                    isInvalid={isSubmitted && !!errors.companyName}
-                    errorMessage={
-                      isSubmitted ? errors.companyName?.message : undefined
-                    }
-                    classNames={{
-                      trigger: cn(
-                        "bg-default-50/50 shadow-none border-default-200 min-h-12",
-                        "data-[focus=true]:border-primary data-[focus=true]:ring-2 data-[focus=true]:ring-primary/15",
-                        "data-[open=true]:border-primary data-[open=true]:ring-2 data-[open=true]:ring-primary/15",
-                        "data-[invalid=true]:border-danger data-[invalid=true]:ring-2 data-[invalid=true]:ring-danger/15",
-                        "transition-all duration-200",
-                      ),
-                      value: "text-sm text-start font-medium",
-                      errorMessage: inputClassNames.errorMessage,
-                    }}
-                  >
-                    {(item) => (
-                      <SelectItem
-                        key={item.key}
-                        textValue={item.label}
-                        className={
-                          item.isCustomAction
-                            ? "border-t border-default-100 text-primary font-bold mt-1"
-                            : ""
-                        }
-                      >
-                        <div className="flex items-center justify-between gap-2 w-full">
-                          <div className="flex items-center gap-2">
-                            {item.isCustomAction ? (
-                              <Plus className="h-4 w-4 text-primary" />
-                            ) : (
-                              <Building2
-                                className={cn(
-                                  "h-4 w-4 shrink-0",
-                                  item.isDefault
-                                    ? "text-primary"
-                                    : "text-default-400",
-                                )}
-                              />
-                            )}
-                            <span
-                              className={cn(
-                                "text-sm",
-                                item.isDefault
-                                  ? "font-bold text-primary"
-                                  : "font-medium",
-                              )}
-                            >
-                              {item.label}
-                            </span>
-                          </div>
-                          {item.subtitle ? (
-                            <span
-                              className={cn(
-                                "text-[10px]",
-                                item.isDefault
-                                  ? "px-1.5 py-0.5 rounded bg-primary-100/60 dark:bg-primary-900/40 text-primary font-bold"
-                                  : "text-default-400",
-                              )}
-                            >
-                              {item.subtitle}
-                            </span>
-                          ) : null}
-                        </div>
-                      </SelectItem>
-                    )}
-                  </Select>
-                )}
-              />
-            </div>
+        {/* Sign-up always creates a new company. Employees join an existing
+            company through an invite from its admin, not from this form. */}
+        <Controller
+          name="companyName"
+          control={control}
+          render={({ field }) => (
+            <Input
+              {...field}
+              label={t("register.companyName")}
+              labelPlacement="outside"
+              placeholder={t("register.newCompanyPlaceholder")}
+              description={t("register.joinViaInviteHint")}
+              variant="bordered"
+              size="lg"
+              radius="lg"
+              isInvalid={isSubmitted && !!errors.companyName}
+              errorMessage={isSubmitted ? errors.companyName?.message : undefined}
+              startContent={
+                <Building2 className="pointer-events-none h-4 w-4 text-default-400 shrink-0" />
+              }
+              classNames={inputClassNames}
+            />
           )}
-        </div>
+        />
 
         <Controller
           name="commercialRegister"

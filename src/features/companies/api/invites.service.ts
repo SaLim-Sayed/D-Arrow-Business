@@ -116,8 +116,9 @@ async function sendInviteEmail(params: {
 export const InvitesService = {
   async createInvite(
     actorRole: UserRole,
-    input: CreateInviteInput
-  ): Promise<{ invite: TeamInvite; inviteUrl: string; emailMode: "sent" | "logged" }> {
+    input: CreateInviteInput,
+    options: { sendEmail?: boolean } = {}
+  ): Promise<{ invite: TeamInvite; inviteUrl: string; emailMode: "sent" | "logged" | "skipped" }> {
     return withLogging(SERVICE_NAME, "createInvite", (async () => {
       const email = input.email.trim().toLowerCase();
       if (!email || !email.includes("@")) {
@@ -156,7 +157,8 @@ export const InvitesService = {
           ? crypto.randomUUID().replace(/-/g, "")
           : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
 
-      const expiresAt = new Date(Date.now() + INVITE_TTL_MS).toISOString();
+      const expiresAtMs = Date.now() + INVITE_TTL_MS;
+      const expiresAt = new Date(expiresAtMs).toISOString();
       const ref = doc(db, "invites", token);
       const payload = {
         token,
@@ -169,6 +171,8 @@ export const InvitesService = {
         status: "pending" as const,
         createdAt: serverTimestamp(),
         expiresAt,
+        // Timestamp twin of expiresAt so Firestore rules can enforce expiry.
+        expiresAtTs: Timestamp.fromMillis(expiresAtMs),
         acceptedAt: null,
         acceptedBy: null,
         portalAccess: input.portalAccess ?? null,
@@ -182,13 +186,16 @@ export const InvitesService = {
         createdAt: new Date().toISOString(),
       });
       const inviteUrl = inviteLink(token);
-      const emailMode = await sendInviteEmail({
-        email,
-        inviteUrl,
-        companyName: input.companyName,
-        inviterName: input.invitedByName,
-        role: input.role,
-      });
+      const emailMode =
+        options.sendEmail === false
+          ? ("skipped" as const)
+          : await sendInviteEmail({
+              email,
+              inviteUrl,
+              companyName: input.companyName,
+              inviterName: input.invitedByName,
+              role: input.role,
+            });
 
       return { invite, inviteUrl, emailMode };
     })());

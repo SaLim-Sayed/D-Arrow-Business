@@ -42,5 +42,6 @@ export function mapFirestoreUser(
     portalAccess: parsePortalAccess(data?.portalAccess),
     portalSubRoles: parsePortalSubRoles(data?.portalSubRoles),
     customPermissions: parseCustomPermissions(data?.customPermissions),
+    mustChangePassword: data?.mustChangePassword === true,
   };
 }

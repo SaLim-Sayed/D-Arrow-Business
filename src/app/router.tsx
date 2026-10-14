@@ -1,4 +1,5 @@
-import { createBrowserRouter, Navigate } from "react-router-dom";
+import { createBrowserRouter, Navigate, type RouteObject } from "react-router-dom";
+import { initCompanyUrl } from "./company-url";
 import { LoginPage } from "@/features/auth/pages/login-page";
 import { RegisterPage } from "@/features/auth/pages/register-page";
 import { ProfilePage } from "@/features/auth/pages/profile-page";
@@ -81,7 +82,7 @@ import FiscalClosingPage from "@/features/billing/pages/FiscalClosingPage";
 import { ChatLayout } from "@/features/chat/components/ChatLayout";
 import { ChatPage } from "@/features/chat/pages/ChatPage";
 
-export const router = createBrowserRouter([
+const routes: RouteObject[] = [
   {
     path: "/",
     errorElement: <ErrorPage />,
@@ -267,4 +268,7 @@ export const router = createBrowserRouter([
     path: "*",
     element: <NotFoundPage />,
   },
-]);
+];
+
+// The company id is the first URL segment; see company-url.ts.
+export const router = createBrowserRouter(routes, { basename: initCompanyUrl(routes) });

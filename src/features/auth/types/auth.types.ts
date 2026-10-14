@@ -18,6 +18,8 @@ export interface User {
   portalSubRoles?: PortalSubRoles;
   /** Granular custom permissions granted to this user. */
   customPermissions?: import("@/lib/permissions").Permission[];
+  /** Set when an admin created the account with a password; cleared once the user picks their own. */
+  mustChangePassword?: boolean;
 }
 
 export interface LoginRequest {

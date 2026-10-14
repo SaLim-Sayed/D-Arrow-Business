@@ -3,6 +3,7 @@ import { Header } from "./header";
 import { PortalSidebar } from "./portal-sidebar";
 import { PortalPickerDrawer } from "@/features/portals/components/PortalPickerDrawer";
 import { LateCheckInAlertModal } from "@/features/people/components/LateCheckInAlertModal";
+import { ForcePasswordChangeModal } from "@/features/auth/components/ForcePasswordChangeModal";
 import { useSyncLastPortal } from "@/features/portals/hooks/use-sync-last-portal";
 import { useMeetingReminders } from "@/features/meetings/hooks/use-meeting-reminders";
 import { getPortalFromPath } from "@/lib/portal-permissions";
@@ -53,6 +54,7 @@ export function AppLayout({ children }: { children?: React.ReactNode } = {}) {
         onOpenChange={setPortalPickerOpen}
       />
       <LateCheckInAlertModal />
+      <ForcePasswordChangeModal />
     </div>
   );
 }

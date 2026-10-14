@@ -5,6 +5,7 @@ import { useCompany } from "@/features/companies/context/company-context";
 import { useAuthStore } from "@/stores/auth.store";
 import { useAppPermissions } from "../hooks/use-app-permissions";
 import { InvitesService } from "../api/invites.service";
+import { CreateMemberService } from "../api/create-member.service";
 import type { UserRole } from "@/features/auth/types/auth.types";
 
 export function usePendingInvitesQuery() {
@@ -55,6 +56,49 @@ export function useCreateInviteMutation() {
         return;
       }
       toast.error(t("team.invite.sendError"));
+    },
+  });
+}
+
+export function useCreateMemberWithPasswordMutation() {
+  const { t } = useTranslation("settings");
+  const queryClient = useQueryClient();
+  const { companyId } = useCompany();
+  const { role } = useAppPermissions();
+  const user = useAuthStore((s) => s.user);
+
+  return useMutation({
+    mutationFn: async (input: {
+      name: string;
+      email: string;
+      password: string;
+      role: UserRole;
+      mustChangePassword: boolean;
+    }) => {
+      if (!companyId || !user || !role) {
+        throw new Error("Missing context");
+      }
+      return CreateMemberService.createWithPassword(role, {
+        ...input,
+        companyId,
+        companyName: user.companyName || companyId,
+        invitedBy: user.id,
+        invitedByName: user.name,
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["users", "all", companyId] });
+      queryClient.invalidateQueries({ queryKey: ["invites", "pending", companyId] });
+      toast.success(t("team.invite.created"));
+    },
+    onError: (error: Error & { code?: string }) => {
+      if (error.message === "USER_EXISTS") return void toast.error(t("team.invite.userExists"));
+      if (error.message === "INVITE_EXISTS") return void toast.error(t("team.invite.alreadyPending"));
+      if (error.code === "auth/email-already-in-use") return void toast.error(t("team.invite.emailInUse"));
+      if (error.message === "WEAK_PASSWORD" || error.code === "auth/weak-password") {
+        return void toast.error(t("team.invite.weakPassword"));
+      }
+      toast.error(t("team.invite.createError"));
     },
   });
 }
