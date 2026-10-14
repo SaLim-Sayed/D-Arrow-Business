@@ -40,7 +40,6 @@ import {
   Meh,
   UserCheck,
   Building2,
-  Sparkles,
   BookUser,
   List,
 } from "lucide-react";
@@ -55,7 +54,7 @@ import {
 } from "../utils/contacts-list.utils";
 import { ContactFormModal } from "../components/ContactFormModal";
 import { formatDate } from "@/lib/utils";
-import type { ContactClassification, CustomerSatisfaction, Contact } from "../types/contacts.types";
+import type { ContactClassification, CustomerSatisfaction } from "../types/contacts.types";
 
 const DEFAULT_PARAMS: ContactsListParams = {
   page: 1,
@@ -479,8 +478,8 @@ export function ContactsListPage() {
                           <UserAvatar
                             name={assignee.name}
                             avatarProps={{
-                              src: assignee.avatarUrl,
-                              size: "xs",
+                              src: assignee.avatar,
+                              size: "sm",
                             }}
                             className="text-xs font-semibold"
                           />

@@ -62,6 +62,7 @@ export interface Task {
   claimedBy?: string | null;
   contractId?: string;
   serviceItemId?: string;
+  contactId?: string;
   tags: string[];
   dueDate: string | null;
   startDate?: string | null;
@@ -91,6 +92,7 @@ export interface CreateTaskDTO {
   claimedBy?: string | null;
   contractId?: string;
   serviceItemId?: string;
+  contactId?: string;
   tags?: string[];
   dueDate?: string | null;
   startDate?: string | null;
@@ -115,6 +117,7 @@ export interface UpdateTaskDTO {
   claimedBy?: string | null;
   contractId?: string;
   serviceItemId?: string;
+  contactId?: string;
   tags?: string[];
   dueDate?: string | null;
   startDate?: string | null;

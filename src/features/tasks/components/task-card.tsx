@@ -2,7 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import type { Task } from "../types/task.types";
 import { Avatar, Card, CardBody, Chip } from "@heroui/react";
-import { MessageSquare, MoreHorizontal, Paperclip, CalendarClock, Clock, FileText, AlertTriangle } from "lucide-react";
+import { MessageSquare, MoreHorizontal, Paperclip, CalendarClock, Clock, FileText } from "lucide-react";
 import { cn, formatDate } from "@/lib/utils";
 import { initialsFromName, localizedName } from "@/lib/localized-name";
 import { avatarSrc } from "@/lib/image-utils";

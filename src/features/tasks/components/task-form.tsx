@@ -66,8 +66,8 @@ type TaskFormValues = {
   sprintId?: string | null;
   dueDate?: string | null;
   department?: string | null;
-  estimatedHours?: number | null;
-  sequenceOrder?: number | null;
+  estimatedHours?: number | string | null;
+  sequenceOrder?: number | string | null;
 };
 
 const taskSchema = z

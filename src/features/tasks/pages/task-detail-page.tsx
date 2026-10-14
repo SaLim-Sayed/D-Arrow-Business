@@ -137,8 +137,7 @@ interface SubtasksListProps {
 }
 
 function SubtasksList({ parentId, parentTask }: SubtasksListProps) {
-  const { t, i18n } = useTranslation("tasks");
-  const navigate = useNavigate();
+  const { t } = useTranslation("tasks");
   const { data: users } = useAllUsers();
   const { data, isLoading } = useTasksQuery({ parentId, pageSize: 50 });
   const createTaskMutation = useCreateTask();

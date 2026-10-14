@@ -3,6 +3,7 @@ import type {
   ContractDynamicField,
   ContractFormDraft,
   ContractParty,
+  ContractServiceItem,
 } from "../types/contract.types";
 
 function uid(prefix: string): string {

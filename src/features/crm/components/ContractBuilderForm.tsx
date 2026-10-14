@@ -26,10 +26,7 @@ import {
   Workflow,
   CheckCircle2,
   Layers,
-  Send,
-  Calendar,
   Clock,
-  Briefcase,
   ExternalLink,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
@@ -495,7 +492,7 @@ export function ContractBuilderForm() {
       const createdIds: string[] = [];
       const actor = {
         userId: user?.id || "system",
-        userName: user?.displayName || user?.name || "مدير النظام",
+        userName: user?.name || "مدير النظام",
       };
 
       for (const service of selectedServices) {
@@ -743,7 +740,7 @@ export function ContractBuilderForm() {
           <Button
             variant="light"
             startContent={<FilePlus className="h-4 w-4" />}
-            onPress={resetNew}
+            onPress={() => resetNew()}
           >
             {t("contract.new")}
           </Button>
@@ -783,7 +780,7 @@ export function ContractBuilderForm() {
                 aria-label={t("contract.delete")}
                 onPress={() => {
                   if (!window.confirm(t("contract.deleteConfirm"))) return;
-                  void deleteMutation.mutateAsync(savedId).then(resetNew);
+                  void deleteMutation.mutateAsync(savedId).then(() => resetNew());
                 }}
               >
                 <Trash2 className="h-4 w-4" />

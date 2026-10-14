@@ -8,7 +8,6 @@ import {
   Input,
   Select,
   SelectItem,
-  Textarea,
   Chip,
 } from "@heroui/react";
 import { useForm, Controller } from "react-hook-form";
@@ -24,7 +23,7 @@ import {
 } from "../schemas/contact.schema";
 import { useCreateContactMutation, useUpdateContactMutation } from "../hooks/use-contacts";
 import type { Contact } from "../types/contacts.types";
-import { Heart, MessageSquare, Phone, Plus, Smile, UserCheck } from "lucide-react";
+import { MessageSquare, Phone, Plus, Smile, UserCheck } from "lucide-react";
 
 interface ContactFormModalProps {
   isOpen: boolean;
